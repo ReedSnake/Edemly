@@ -1,0 +1,38 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36603.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "server", "uchat_server\server.csproj", "{F6A68122-2AB4-4B9E-8638-225A9300D950}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{8EC462FD-D22E-90A8-E5CE-7E832BA40C5D}"
+	ProjectSection(SolutionItems) = preProject
+		.gitattributes = .gitattributes
+		.gitignore = .gitignore
+		README.md = README.md
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "client", "uchat\client.csproj", "{C2CFFDA7-D4E2-1B92-6AE1-26C53483BB3B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F6A68122-2AB4-4B9E-8638-225A9300D950}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F6A68122-2AB4-4B9E-8638-225A9300D950}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F6A68122-2AB4-4B9E-8638-225A9300D950}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F6A68122-2AB4-4B9E-8638-225A9300D950}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C2CFFDA7-D4E2-1B92-6AE1-26C53483BB3B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C2CFFDA7-D4E2-1B92-6AE1-26C53483BB3B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C2CFFDA7-D4E2-1B92-6AE1-26C53483BB3B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C2CFFDA7-D4E2-1B92-6AE1-26C53483BB3B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {2CE83DCE-5ED2-471C-BD45-2F5280030689}
+	EndGlobalSection
+EndGlobal

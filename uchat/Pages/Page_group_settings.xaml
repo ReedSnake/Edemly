@@ -1,0 +1,354 @@
+﻿<Page x:Class="uchat.Pages.Page_group_settings"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:lang="clr-namespace:uchat.Lang"
+      mc:Ignorable="d" 
+      d:DesignHeight="720" d:DesignWidth="1280"
+      Background="#EAFFFD">
+
+    <Grid>
+        <Grid.Background>
+            <LinearGradientBrush StartPoint="1,1" EndPoint="0,0">
+                <GradientStop Color="#004040" Offset="0.7"/>
+                <GradientStop Color="#057272" Offset="0.0"/>
+            </LinearGradientBrush>
+        </Grid.Background>
+
+        <!-- Header с кнопкой назад -->
+        <Border Height="80" 
+                Panel.ZIndex="1000" Margin="70,48,70,592">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Back Button -->
+                <Button x:Name="BackButton"
+                        Grid.Column="0"
+                        Click="BackButton_Click"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Top"
+                        Background="Transparent"
+                        Foreground="{DynamicResource ThemeBackgroundDarkBrush}"
+                        FontSize="24"
+                        FontWeight="Bold"
+                        Width="40"
+                        Height="40"
+                        BorderThickness="0"
+                        BorderBrush="Transparent"
+                        Cursor="Hand"
+                        Panel.ZIndex="1000"
+                        Content="←" Margin="0,14,0,0">
+                    <Button.Style>
+                        <Style TargetType="Button">
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border x:Name="border"
+                                                Background="{TemplateBinding Background}"
+                                                BorderBrush="{TemplateBinding BorderBrush}"
+                                                BorderThickness="{TemplateBinding BorderThickness}"
+                                                CornerRadius="4">
+                                            <ContentPresenter HorizontalAlignment="Center"
+                                                              VerticalAlignment="Center"/>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter TargetName="border" Property="CornerRadius" Value="8"/>
+                                                <Setter TargetName="border" Property="Background" Value="#E6F3F3"/>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </Button.Style>
+                </Button>
+
+                <!-- Save Button (Right side) -->
+                <Button x:Name="HeaderSaveButton"
+                        Grid.Column="2"
+                        Click="SaveButton_Click"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Top"
+                        Background="{DynamicResource ThemePrimaryBrush}"
+                        Foreground="White"
+                        FontSize="14"
+                        FontWeight="Bold"
+                        Padding="16,8"
+                        BorderThickness="0"
+                        Cursor="Hand"
+                        Margin="0,14,0,0">
+                    <Button.Style>
+                        <Style TargetType="Button">
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border x:Name="border"
+                                                Background="{TemplateBinding Background}"
+                                                BorderBrush="{TemplateBinding BorderBrush}"
+                                                BorderThickness="{TemplateBinding BorderThickness}"
+                                                CornerRadius="8">
+                                            <ContentPresenter HorizontalAlignment="Center"
+                                                              VerticalAlignment="Center"
+                                                              Margin="{TemplateBinding Padding}"/>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                               <Setter TargetName="border" Property="Background" Value="{DynamicResource ThemeSecondaryBrush}"/> 
+                                            </Trigger>
+                                            <Trigger Property="IsEnabled" Value="False">
+                                                <Setter TargetName="border" Property="Background" Value="#CCCCCC"/>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </Button.Style>
+                    <TextBlock Text="{x:Static lang:DefaultLanguage.SaveChanges}"/>
+                </Button>
+            </Grid>
+        </Border>
+
+        <!-- Основная белая плашка на весь экран -->
+        <Border Background="White"
+                CornerRadius="40"
+                Margin="50,29,50,47"
+                Padding="40">
+
+            <ScrollViewer VerticalScrollBarVisibility="Hidden"
+                          HorizontalAlignment="Center"
+                          VerticalAlignment="Top">
+                <StackPanel Width="600" 
+                            HorizontalAlignment="Center">
+
+                    <!-- Group Icon Section -->
+                    <Border Background="{DynamicResource ThemeBackgroundBrush}"
+                            CornerRadius="15" 
+                            Padding="30"
+                            Margin="0,0,0,20"
+                            BorderBrush="{DynamicResource ThemeBorderLightBrush}"
+                            BorderThickness="1">
+                        <StackPanel>
+                            <TextBlock Text="{x:Static lang:DefaultLanguage.GroupIcon}" 
+                                       FontSize="18" 
+                                       FontWeight="Bold"
+                                       Foreground="{DynamicResource ThemePrimaryBrush}"
+                                       Margin="0,0,0,20"/>
+
+                            <!-- Icon Display -->
+                            <Border Width="120" 
+                                    Height="120" 
+                                    CornerRadius="60"
+                                    HorizontalAlignment="Left"
+                                    Margin="0,0,0,20"
+                                    BorderBrush="#CCCCCC"
+                                    BorderThickness="2">
+                                <Border.Background>
+                                    <ImageBrush x:Name="GroupIconImage" 
+                                                Stretch="UniformToFill"
+                                                ImageSource="pack://application:,,,/Assets/avatar.png"/>
+                                </Border.Background>
+                            </Border>
+
+                            <!-- Change Icon Button (тільки для власників) -->
+                            <Button x:Name="ChangeIconButton"
+                                    Click="ChangeIconButton_Click"
+                                    Background="{DynamicResource ThemePrimaryBrush}"
+                                    Foreground="White"
+                                    BorderThickness="0"
+                                    Padding="20,12"
+                                    FontSize="14"
+                                    FontWeight="SemiBold"
+                                    Cursor="Hand"
+                                    HorizontalAlignment="Left"
+                                    Visibility="Collapsed"
+                                    Margin="0,10,0,0">
+                                <Button.Style>
+                                    <Style TargetType="Button">
+                                        <Setter Property="Template">
+                                            <Setter.Value>
+                                                <ControlTemplate TargetType="Button">
+                                                    <Border x:Name="border"
+                                                            Background="{TemplateBinding Background}"
+                                                            CornerRadius="8"
+                                                            Padding="{TemplateBinding Padding}">
+                                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                    </Border>
+                                                    <ControlTemplate.Triggers>
+                                                        <Trigger Property="IsMouseOver" Value="True">
+                                                            <Setter TargetName="border" Property="Background" Value="{DynamicResource ThemeSecondaryBrush}"/>
+                                                        </Trigger>
+                                                    </ControlTemplate.Triggers>
+                                                </ControlTemplate>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </Style>
+                                </Button.Style>
+                                <TextBlock Text="{x:Static lang:DefaultLanguage.ChangeIcon}"/>
+                            </Button>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Group Name Section -->
+                    <Border Background="{DynamicResource ThemeBackgroundBrush}"
+                            CornerRadius="15" 
+                            Padding="30"
+                            Margin="0,0,0,20"
+                            BorderBrush="{DynamicResource ThemeBorderLightBrush}"
+                            BorderThickness="1">
+                        <StackPanel>
+                            <TextBlock Text="{x:Static lang:DefaultLanguage.GroupName}" 
+                                       FontSize="18" 
+                                       FontWeight="Bold"
+                                       Foreground="{DynamicResource ThemePrimaryBrush}"
+                                       Margin="0,0,0,15"/>
+
+                            <TextBox x:Name="GroupNameTextBox"
+                                     FontSize="14"
+                                     Padding="12"
+                                     BorderBrush="#CCCCCC"
+                                     BorderThickness="2"
+                                     Background="White"
+                                     MaxLength="50"
+                                     >
+                                <TextBox.Style>
+                                    <Style TargetType="TextBox">
+                                        <Style.Triggers>
+                                            <Trigger Property="IsFocused" Value="True">
+                                                <Setter Property="BorderBrush" Value="{DynamicResource ThemePrimaryBrush}"/>
+                                            </Trigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBox.Style>
+                            </TextBox>
+
+                            <TextBlock Text="{x:Static lang:DefaultLanguage.Characters1To50}" 
+                                       FontSize="11"
+                                       Foreground="#999999"
+                                       Margin="12,5,0,0"
+                                       HorizontalAlignment="Left"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Group Description Section -->
+                    <Border Background="{DynamicResource ThemeBackgroundBrush}"
+                            CornerRadius="15" 
+                            Padding="30"
+                            Margin="0,0,0,20"
+                            BorderBrush="{DynamicResource ThemeBorderLightBrush}"
+                            BorderThickness="1">
+                        <StackPanel>
+                            <TextBlock Text="{x:Static lang:DefaultLanguage.GroupDescription}" 
+                                       FontSize="18" 
+                                       FontWeight="Bold"
+                                       Foreground="{DynamicResource ThemePrimaryBrush}"
+                                       Margin="0,0,0,15"/>
+
+                            <TextBox x:Name="GroupDescriptionTextBox"
+                                     FontSize="14"
+                                     Padding="12"
+                                     BorderBrush="#CCCCCC"
+                                     BorderThickness="2"
+                                     Background="White"
+                                     MaxLength="200"
+                                     Height="100"
+                                     TextWrapping="Wrap"
+                                     AcceptsReturn="True"
+                                     VerticalScrollBarVisibility="Auto"
+                                     >
+                                <TextBox.Style>
+                                    <Style TargetType="TextBox">
+                                        <Style.Triggers>
+                                            <Trigger Property="IsFocused" Value="True">
+                                                <Setter Property="BorderBrush" Value="{DynamicResource ThemePrimaryBrush}"/>
+                                            </Trigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBox.Style>
+                            </TextBox>
+
+                            <TextBlock Text="{x:Static lang:DefaultLanguage.Characters0To200}" 
+                                       FontSize="11"
+                                       Foreground="#999999"
+                                       Margin="12,5,0,0"
+                                       HorizontalAlignment="Left"/>
+                        </StackPanel>
+                    </Border>
+
+
+                    <!-- Group Members Section -->
+                    <Border Background="{DynamicResource ThemeBackgroundBrush}"
+                    CornerRadius="15" 
+                    Padding="30"
+                    Margin="0,0,0,20"
+                    BorderBrush="{DynamicResource ThemeBorderLightBrush}"
+                    BorderThickness="1">    
+                        <StackPanel>
+                            <TextBlock Text="{x:Static lang:DefaultLanguage.GroupMembers}" 
+                               FontSize="18" 
+                               FontWeight="Bold"
+                               Foreground="{DynamicResource ThemePrimaryBrush}"
+                               Margin="0,0,0,15"/>
+
+                            <Border Background="White"
+                            BorderBrush="#CCCCCC"
+                            BorderThickness="1"
+                            CornerRadius="8"
+                            MaxHeight="300"
+                            Padding="10">
+                                <ScrollViewer VerticalScrollBarVisibility="Hidden">
+                                    <StackPanel x:Name="GroupMembersPanel" Orientation="Vertical">
+                                        <!-- Участники будут добавляться динамически -->
+                                        <TextBlock Text="{x:Static lang:DefaultLanguage.LoadingMembers}"
+                               FontSize="14"
+                               Foreground="#999999"
+                               HorizontalAlignment="Center"
+                               Margin="10"/>
+                                    </StackPanel>
+                                </ScrollViewer>
+                            </Border>
+
+                            
+                        </StackPanel>
+                    </Border>
+
+
+                    <!-- Save Button -->
+                    <Border Background="{DynamicResource ThemePrimaryBrush}"
+                            CornerRadius="10"
+                            Cursor="Hand"
+                            Margin="0,20,0,0">
+                        <Button x:Name="SaveButton"
+                                Click="SaveButton_Click"
+                                Background="Transparent"
+                                Foreground="White"
+                                BorderThickness="0"
+                                Padding="0,15"
+                                FontSize="16"
+                                FontWeight="Bold"
+                                Cursor="Hand"
+                                HorizontalAlignment="Stretch">
+                            <Button.Style>
+                                <Style TargetType="Button">
+                                    <Setter Property="Background" Value="Transparent"/>
+                                    <Style.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Opacity" Value="0.9"/>
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                            <TextBlock Text="{x:Static lang:DefaultLanguage.SaveChangesButton}"/>
+                        </Button>
+                    </Border>
+                </StackPanel>
+            </ScrollViewer>
+        </Border>
+    </Grid>
+</Page>
