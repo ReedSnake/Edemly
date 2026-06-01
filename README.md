@@ -1,6 +1,6 @@
 # Edemly
 
-Edemly - десктопний месенджер на .NET 8, WPF, ASP.NET Core, SignalR, Entity Framework Core та MySQL.
+Edemly - десктопний месенджер на .NET 10, WPF, ASP.NET Core, SignalR, Entity Framework Core та MySQL.
 
 Папки і solution називаються `uchat`, бо це була технічна назва завдання. Назва самого застосунку - **Edemly**.
 
@@ -16,10 +16,12 @@ Edemly - десктопний месенджер на .NET 8, WPF, ASP.NET Core,
 
 ## Про проєкт
 
-Рішення складається з двох проєктів:
+Рішення складається з основних проєктів застосунку та тестових проєктів:
 
 - `uchat_server` - backend API, SignalR hubs, EF Core міграції та робота з MySQL.
 - `uchat` - WPF desktop client.
+- `ServerTests` - серверні тести, включно з WebApplicationFactory та SQLite integration tests.
+- `ClientTests` - клієнтські тести.
 
 ## Можливості
 
@@ -32,7 +34,7 @@ Edemly - десктопний месенджер на .NET 8, WPF, ASP.NET Core,
 ## Вимоги
 
 - Windows
-- .NET 8 SDK
+- .NET 10 SDK
 - MySQL Server 8 або сумісний сервер
 - EF Core CLI:
 
@@ -71,7 +73,12 @@ CREATE DATABASE uchat CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 ```powershell
 dotnet restore uchat.sln
 dotnet build uchat.sln
-```
+``` 
+
+Тестові проєкти вже містять пакети для сучасного тестування:
+- `Moq` - для моків
+- `Microsoft.AspNetCore.Mvc.Testing` - для серверних integration tests через `WebApplicationFactory`
+- `Microsoft.EntityFrameworkCore.Sqlite` - для SQLite-backed integration tests
 
 Застосуйте міграцію основної бази:
 
