@@ -1,4 +1,4 @@
-namespace Edemly.Server.Api.DTOs
+namespace Edemly.Contracts.Companies
 {
     public class UpdateAdminDto
     {

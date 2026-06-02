@@ -1,7 +1,6 @@
 ﻿using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
-using Edemly.Server.Api.DTOs;
 using Edemly.Server.Data.Entities;
 using Microsoft.AspNetCore.Http; // Не забудь цей using
 using Edemly.Contracts.Payments;

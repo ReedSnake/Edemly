@@ -1,6 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Edemly.Server.Api.DTOs;
 using Edemly.Server.Api.Middleware;
 using Edemly.Server.Data;
 using Edemly.Server.Data.Entities;

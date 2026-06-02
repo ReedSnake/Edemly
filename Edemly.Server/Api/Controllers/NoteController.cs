@@ -1,5 +1,4 @@
 using Edemly.Contracts.Notes;
-using Edemly.Server.Api.DTOs;
 using Edemly.Server.Api.Middleware;
 using Edemly.Server.Api.Services;
 using Edemly.Server.Data;

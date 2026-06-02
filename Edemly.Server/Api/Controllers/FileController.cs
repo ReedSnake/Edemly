@@ -10,7 +10,6 @@ using System.IO;
 using System.Linq;
 using System;
 using System.Threading.Tasks;
-using Edemly.Server.Api.DTOs;
 using Microsoft.AspNetCore.StaticFiles; // ПОТРІБНО ДОДАТИ ЦЕЙ USING
 
 namespace Edemly.Server.Api.Controllers
