@@ -546,7 +546,7 @@ namespace Edemly.Client
                         {
                             var json = System.Text.Json.JsonSerializer.Serialize(statusObj);
                             var options = new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-                            var status = System.Text.Json.JsonSerializer.Deserialize<DTOs.UserStatusDto>(json, options);
+                            var status = System.Text.Json.JsonSerializer.Deserialize<UserStatusDto>(json, options);
                             if (status != null)
                             {
                                 UpdateStatusCache(userId, status.IsOnline, status.LastSeen);

@@ -66,7 +66,7 @@ namespace Edemly.Server.Api.Controllers
                 if (!result.Success)
                     return BadRequest(new { message = result.Error });
 
-                var updateResult = await _userService.UpdateUser(userIdClaim, new UserUpdateDto
+                var updateResult = await _userService.UpdateUser(userIdClaim, new UpdateUserDto
                 {
                     PfpUrl = result.Url
                 });

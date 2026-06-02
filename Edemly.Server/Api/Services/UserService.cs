@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Edemly.Server.Api.DTOs;
+using Edemly.Contracts.Users;
 using Edemly.Server.Data;
 using Edemly.Server.Data.Entities;
 using Edemly.Server.Api.Middleware;
@@ -22,7 +22,7 @@ namespace Edemly.Server.Api.Services
             _isTenant = isTenant;
         }
 
-        public async Task<(bool Success, string? Error)> CreateUser(UserCreateDto model)
+        public async Task<(bool Success, string? Error)> CreateUser(CreateUserDto model)
         {
             try
             {
@@ -101,7 +101,7 @@ namespace Edemly.Server.Api.Services
             }
         }
 
-        public async Task<(bool Success, string? Error, UserGetSelfDto? User)> GetFullInfo(int id)
+        public async Task<(bool Success, string? Error, UserInfoDto? User)> GetFullInfo(int id)
         {
             try
             {
@@ -112,7 +112,7 @@ namespace Edemly.Server.Api.Services
                 if (user == null)
                     return (false, "User not found", null);
 
-                var dto = new UserGetSelfDto
+                var dto = new UserInfoDto
                 {
                     Id = user.Id,
                     Username = user.Username,
@@ -142,7 +142,7 @@ namespace Edemly.Server.Api.Services
             }
         }
 
-        public async Task<(bool Success, string? Error, UserGetDto? User)> GetById(int id)
+        public async Task<(bool Success, string? Error, UserDto? User)> GetById(int id)
         {
             try
             {
@@ -153,12 +153,12 @@ namespace Edemly.Server.Api.Services
                 if (user == null)
                     return (false, "User not found", null);
 
-                var dto = new UserGetDto
+                var dto = new UserDto
                 {
                     Id = user.Id,
                     Username = user.Username,
                     Email = user.LoginInfo.Email,
-                    PhoneNumber = user.PhoneNumber,
+                    PhoneNumber = user.PhoneNumber ?? string.Empty,
                     PfpUrl = user.PfpUrl ?? string.Empty,
                     Description = user.Description ?? string.Empty
                 };
@@ -176,12 +176,12 @@ namespace Edemly.Server.Api.Services
             }
         }
 
-        public async Task<(bool Success, string? Error, List<UserGetDto> Users)> SearchUsers(string searchQuery)
+        public async Task<(bool Success, string? Error, List<UserDto> Users)> SearchUsers(string searchQuery)
         {
             try
             {
                 if (string.IsNullOrWhiteSpace(searchQuery))
-                    return (false, "Search query cannot be empty", new List<UserGetDto>());
+                    return (false, "Search query cannot be empty", new List<UserDto>());
 
                 var query = searchQuery.Trim().ToLower();
 
@@ -190,12 +190,12 @@ namespace Edemly.Server.Api.Services
                     .Where(u => u.Username.ToLower().Contains(query) ||
                                 u.LoginInfo.Email.ToLower().Contains(query))
                     .Take(5)
-                    .Select(u => new UserGetDto
+                    .Select(u => new UserDto
                     {
                         Id = u.Id,
                         Username = u.Username,
                         Email = u.LoginInfo.Email,
-                        PhoneNumber = u.PhoneNumber,
+                        PhoneNumber = u.PhoneNumber ?? string.Empty,
                         PfpUrl = u.PfpUrl ?? string.Empty,
                         Description = u.Description ?? string.Empty
                     })
@@ -207,7 +207,7 @@ namespace Edemly.Server.Api.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to search users with query: {Query}", searchQuery);
-                return (false, ex.Message, new List<UserGetDto>());
+                return (false, ex.Message, new List<UserDto>());
             }
             finally
             {
@@ -215,16 +215,16 @@ namespace Edemly.Server.Api.Services
             }
         }
 
-        public async Task<(bool Success, string? Error, List<UserGetDto> Users)> GetUsersBatch(List<int> userIds)
+        public async Task<(bool Success, string? Error, List<UserDto> Users)> GetUsersBatch(List<int> userIds)
         {
             try
             {
                 if (userIds == null || userIds.Count == 0)
-                    return (false, "User IDs list is required", new List<UserGetDto>());
+                    return (false, "User IDs list is required", new List<UserDto>());
 
                 var users = await _ctx.Set<User>()
                     .Where(u => userIds.Contains(u.Id))
-                    .Select(u => new UserGetDto
+                    .Select(u => new UserDto
                     {
                         Id = u.Id,
                         Username = u.Username,
@@ -241,7 +241,7 @@ namespace Edemly.Server.Api.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to get users batch");
-                return (false, ex.Message, new List<UserGetDto>());
+                return (false, ex.Message, new List<UserDto>());
             }
             finally
             {
@@ -249,7 +249,7 @@ namespace Edemly.Server.Api.Services
             }
         }
 
-        public async Task<(bool Success, string? Error)> UpdateUser(int id, UserUpdateDto model)
+        public async Task<(bool Success, string? Error)> UpdateUser(int id, UpdateUserDto model)
         {
             try
             {
