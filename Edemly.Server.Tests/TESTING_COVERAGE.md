@@ -13,7 +13,7 @@ This file records what server behavior is covered, what remains uncovered, and w
 
 - Branch: `test/server-test-coverage`
 - Test command: `dotnet test Edemly.Server.Tests\Edemly.Server.Tests.csproj`
-- Current result: `25 passed`
+- Current result: `34 passed`
 - Last verified: `2026-06-03`
 
 ## Test Infrastructure
@@ -82,6 +82,20 @@ Covered tests:
 - `GetMessages_Should_Return_Messages_In_Correct_Order`
 - `DeleteMessage_Should_Return_Forbidden_When_User_Is_Not_Author`
 
+## User Integration
+
+Covered tests:
+
+- `GetMe_Should_Return_Current_User_When_Token_Is_Valid`
+- `GetMe_Should_Return_Unauthorized_Without_Token`
+- `SearchUsers_Should_Return_Matching_Users`
+- `SearchUsers_Should_Return_Unauthorized_Without_Token`
+- `UpdateProfile_Should_Update_User_Data_When_Request_Is_Valid`
+- `UpdateProfile_Should_Return_Unauthorized_Without_Token`
+- `DeleteUser_Should_Remove_Current_User`
+- `DeleteUser_Should_Return_Forbidden_When_Deleting_Another_User`
+- `DeleteUser_Should_Return_Unauthorized_Without_Token`
+
 ## Red Specifications
 
 None currently.
@@ -111,7 +125,6 @@ Server integration tests:
 - Tenant register/login/session-login flows.
 - Tenant isolation for chats, messages, files, and users.
 - Group chat creation and membership notifications.
-- User search, profile update, and delete workflows.
 - File upload, download, delete, missing file, unauthorized access.
 - Notes and remindings authorization.
 - Payments initiate/history/status authorization.
