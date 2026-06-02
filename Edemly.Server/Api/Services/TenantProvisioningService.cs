@@ -157,15 +157,25 @@ namespace Edemly.Server.Api.Services
         }
 
         // Add email into tenant database
-        public async Task AddEmailToTenantAsync(int companyId, string email, CancellationToken cancellationToken = default)
+        public async Task AddEmailsToTenantAsync(int companyId, List<string> emails, CancellationToken cancellationToken = default)
         {
-            var company = await _serverDb.Companies.FindAsync(new object[] { companyId }, cancellationToken);
-            if (company == null) throw new InvalidOperationException("Company not found");
+            if (emails == null || emails.Count == 0)
+                throw new ArgumentException("At least one email is required", nameof(emails));
+
+            var company = await _serverDb.Companies.FindAsync(
+                new object[] { companyId },
+                cancellationToken);
+
+            if (company == null)
+                throw new InvalidOperationException("Company not found");
 
             var defaultConn = _configuration.GetConnectionString("DefaultConnection")
                 ?? throw new InvalidOperationException("DefaultConnection missing");
 
-            var tenantConn = new MySqlConnector.MySqlConnectionStringBuilder(defaultConn) { Database = company.DbName }.ToString();
+            var tenantConn = new MySqlConnector.MySqlConnectionStringBuilder(defaultConn)
+            {
+                Database = company.DbName
+            }.ToString();
 
             var optionsBuilder = new DbContextOptionsBuilder<CompanyDbContext>();
             optionsBuilder.UseMySql(tenantConn, ServerVersion.AutoDetect(tenantConn), mysqlOptions =>
@@ -175,8 +185,18 @@ namespace Edemly.Server.Api.Services
 
             using var tenantCtx = new CompanyDbContext(optionsBuilder.Options);
 
-            var e = new Data.Entities.Email { EmailAddress = email };
-            tenantCtx.Emails.Add(e);
+            var emailEntities = emails
+                .Where(e => !string.IsNullOrWhiteSpace(e))
+                .Select(e => new Data.Entities.Email
+                {
+                    EmailAddress = e.Trim()
+                })
+                .ToList();
+
+            if (emailEntities.Count == 0)
+                throw new ArgumentException("At least one valid email is required", nameof(emails));
+
+            tenantCtx.Emails.AddRange(emailEntities);
             await tenantCtx.SaveChangesAsync(cancellationToken);
         }
 
