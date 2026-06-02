@@ -4,6 +4,7 @@ using System.Text.Json;
 using Edemly.Server.Api.DTOs;
 using Edemly.Server.Data.Entities;
 using Microsoft.AspNetCore.Http; // Не забудь цей using
+using Edemly.Contracts.Payments;
 
 namespace Edemly.Server.Api.Services
 {
@@ -156,10 +157,10 @@ namespace Edemly.Server.Api.Services
 
         private Task<(bool Success, string? Error)> _payment_service_create_wrapper(int userId, decimal amount, string orderId)
         {
-            return _paymentService.Create(userId, new PaymentDtos.PaymentCreateDto
+            return _paymentService.Create(userId, new CreatePaymentDto
             {
                 Amount = amount,
-                Status = PaymentStatus.Pending,
+                Status = PaymentStatus.Pending.ToString(),
                 Date = DateTime.UtcNow,
                 TransactionId = orderId
             });

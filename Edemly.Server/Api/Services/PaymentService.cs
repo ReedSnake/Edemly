@@ -6,7 +6,7 @@ using Edemly.Server.Data;
 using Edemly.Server.Data.Entities;
 using Edemly.Server.Services;
 using Edemly.Server.Utils;
-
+using Edemly.Contracts.Payments;
 namespace Edemly.Server.Api.Services
 {
     public class PaymentService : IPaymentService
@@ -23,7 +23,7 @@ namespace Edemly.Server.Api.Services
         }
 
 
-        public async Task<(bool Success, string? Error)> Create(int userId, PaymentDtos.PaymentCreateDto model)
+        public async Task<(bool Success, string? Error)> Create(int userId, CreatePaymentDto model)
         {
             try
             {
@@ -35,7 +35,7 @@ namespace Edemly.Server.Api.Services
                 {
                     UserId = userId,
                     Amount = model.Amount,
-                    Status = model.Status,
+                    Status = Enum.Parse<PaymentStatus>(model.Status),
                     Date = model.Date,
                     UpdatedAt = DateTime.UtcNow,
                     TransactionId = model.TransactionId
@@ -58,7 +58,7 @@ namespace Edemly.Server.Api.Services
             }
         }
 
-        public async Task<(bool Success, string? Error, PaymentDtos.PaymentGetDto? Payment)> GetById(int id)
+        public async Task<(bool Success, string? Error, PaymentDto Payment)> GetById(int id)
         {
             try
             {
@@ -66,12 +66,12 @@ namespace Edemly.Server.Api.Services
                 if (payment == null)
                     return (false, "Payment not found", null);
 
-                var dto = new PaymentDtos.PaymentGetDto
+                var dto = new PaymentDto
                 {
                     Id = payment.Id,
                     UserId = payment.UserId,
                     Amount = payment.Amount,
-                    Status = payment.Status,
+                    Status = payment.Status.ToString(),
                     Date = payment.Date,
                     UpdatedAt = payment.UpdatedAt,
                     TransactionId = payment.TransactionId
@@ -90,19 +90,19 @@ namespace Edemly.Server.Api.Services
             }
         }
 
-        public async Task<(bool Success, string? Error, List<PaymentDtos.PaymentGetDto> Payments)> GetByUser(int userId)
+        public async Task<(bool Success, string? Error, List<PaymentDto> Payments)> GetByUser(int userId)
         {
             try
             {
                 var payments = await _ctx.Set<Payment>()
                     .Where(p => p.UserId == userId)
                     .OrderByDescending(p => p.Date)
-                    .Select(p => new PaymentDtos.PaymentGetDto
+                    .Select(p => new PaymentDto
                     {
                         Id = p.Id,
                         UserId = p.UserId,
                         Amount = p.Amount,
-                        Status = p.Status,
+                        Status = p.Status.ToString(),
                         Date = p.Date,
                         UpdatedAt = p.UpdatedAt,
                         TransactionId = p.TransactionId
@@ -114,7 +114,7 @@ namespace Edemly.Server.Api.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to get payments for user {UserId}", userId);
-                return (false, ex.Message, new List<PaymentDtos.PaymentGetDto>());
+                return (false, ex.Message, new List<PaymentDto>());
             }
             finally
             {

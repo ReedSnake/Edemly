@@ -1,6 +1,10 @@
-﻿namespace Edemly.Server.Api.DTOs
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace Edemly.Contracts.Payments
 {
-    public class WayForPayCheckResponse
+    public class WayForPayCheckResponseDto
     {
         public string? merchantAccount { get; set; }
         public string? orderReference { get; set; }

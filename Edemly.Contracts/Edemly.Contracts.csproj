@@ -11,9 +11,7 @@
     <Folder Include="Chats\" />
     <Folder Include="ChatMember\" />
     <Folder Include="Messages\" />
-    <Folder Include="Companies\" />
     <Folder Include="Common\" />
-    <Folder Include="Payments\" />
     <Folder Include="Users\" />
   </ItemGroup>
 

@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Edemly.Client.DTOs;
 using Edemly.Contracts.Calls;
 using Edemly.Contracts.Remindings;
+using Edemly.Contracts.Payments;
 namespace Edemly.Client.Services.Api
 {
     public interface IApiService

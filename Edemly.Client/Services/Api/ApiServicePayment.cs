@@ -4,6 +4,7 @@ using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Edemly.Client.DTOs;
+using Edemly.Contracts.Payments;
 
 namespace Edemly.Client.Services.Api
 {

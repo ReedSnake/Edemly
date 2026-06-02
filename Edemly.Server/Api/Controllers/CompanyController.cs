@@ -5,6 +5,7 @@ using Edemly.Server.Api.DTOs;
 using Edemly.Server.Data;
 using Edemly.Server.Data.Entities;
 using Microsoft.Extensions.Configuration;
+using Edemly.Contracts.Companies;
 using Microsoft.EntityFrameworkCore;
 
 namespace Edemly.Server.Api.Controllers
