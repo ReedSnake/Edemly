@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 using Edemly.Client.Api;
 using Edemly.Contracts.Files;
 
-namespace Edemly.Client.Services.Api
+namespace Edemly.Client.Api
 {
     public partial class ApiService : IApiService, IDisposable
     {

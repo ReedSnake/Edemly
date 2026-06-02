@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 using Edemly.Contracts.Payments;
 
-namespace Edemly.Client.Services.Api
+namespace Edemly.Client.Api
 {
     public partial class ApiService
     {

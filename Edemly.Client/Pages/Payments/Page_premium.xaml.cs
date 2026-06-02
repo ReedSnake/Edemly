@@ -130,7 +130,7 @@ namespace Edemly.Client
         {
             try
             {
-                var apiConcrete = App.ApiService as Edemly.Client.Services.Api.ApiService;
+                var apiConcrete = App.ApiService as Edemly.Client.Api.ApiService;
                 if (apiConcrete == null)
                 {
                     MessageBox.ShowError(DefaultLanguage.PremiumApiError, DefaultLanguage.PremiumPaymentError);

@@ -12,7 +12,7 @@ using Edemly.Client.Api;
 
 using Edemly.Contracts.Users;
 
-namespace Edemly.Client.Services.Api
+namespace Edemly.Client.Api
 {
     public partial class ApiService : IApiService, IDisposable
     {

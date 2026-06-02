@@ -3,14 +3,10 @@ using System.Linq;
 using System.Windows;
 using Edemly.Client.Services;
 using CommunityToolkit.WinUI.Notifications;
-
-using System.Threading.Tasks;
-using System.Collections.Generic;
 using System.Diagnostics;
-using Edemly.Client.Services.Api;
+using Edemly.Client.Api;
 using System.Globalization;
 using System.Windows.Media.Imaging;
-using Edemly.Client.Api;
 using Edemly.Client.Realtime;
 using Edemly.Client.Caching;
 using Edemly.Client.Pages.Settings;

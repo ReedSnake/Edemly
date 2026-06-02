@@ -10,7 +10,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Edemly.Client.Api;
 using Edemly.Contracts.Calls;
-namespace Edemly.Client.Services.Api
+namespace Edemly.Client.Api
 {
     public partial class ApiService : IApiService, IDisposable
     {

@@ -10,7 +10,7 @@ using Edemly.Client.Api;
 
 using Edemly.Contracts.Remindings;
 
-namespace Edemly.Client.Services.Api
+namespace Edemly.Client.Api
 {
     public partial class ApiService : IApiService, IDisposable
     {

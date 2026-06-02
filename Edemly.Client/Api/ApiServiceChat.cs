@@ -10,7 +10,7 @@ using Edemly.Contracts.Chats;
 using Edemly.Contracts.ChatMembers;
 using Edemly.Client.Api;
 
-namespace Edemly.Client.Services.Api
+namespace Edemly.Client.Api
 {
     public partial class ApiService : IApiService, IDisposable
     {
