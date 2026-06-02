@@ -12,9 +12,9 @@ namespace Edemly.Server
     /// Фоновий сервіс для виконання періодичних завдань.
     /// Виконується незалежно від HTTP запитів.
     /// </summary>
-    public class Worker : BackgroundService
+    public class ServerMaintenanceWorker : BackgroundService
     {
-        private readonly ILogger<Worker> _logger;
+        private readonly ILogger<ServerMaintenanceWorker> _logger;
         private readonly IServiceProvider _serviceProvider;
         private readonly WorkerSettings _settings;
         private readonly IHubContext<MainHub> _hub;
@@ -24,8 +24,8 @@ namespace Edemly.Server
         private DateTime _lastReminderCheck = DateTime.MinValue;
         private DateTime _lastPaymentCheck = DateTime.MinValue;
 
-        public Worker(
-            ILogger<Worker> logger,
+        public ServerMaintenanceWorker(
+            ILogger<ServerMaintenanceWorker> logger,
             IServiceProvider serviceProvider,
             IOptions<WorkerSettings> settings,
             IHubContext<MainHub> hub)
