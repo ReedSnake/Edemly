@@ -1,4 +1,4 @@
-namespace uchat.Services
+namespace Edemly.Client.Services
 {
     public interface ILanguageService
     {

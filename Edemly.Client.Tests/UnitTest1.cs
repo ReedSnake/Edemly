@@ -1,4 +1,4 @@
-﻿namespace ClientTests
+﻿namespace Edemly.Client.Tests
 {
     public class Tests
     {

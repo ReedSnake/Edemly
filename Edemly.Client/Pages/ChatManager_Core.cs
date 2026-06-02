@@ -11,14 +11,14 @@ using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
-using uchat.DTOs;
-using uchat.Helpers;
-using uchat.Models;
-using uchat.Pages;
-using uchat.Services;
-using uchat.Services.Api;
+using Edemly.Client.DTOs;
+using Edemly.Client.Helpers;
+using Edemly.Client.Models;
+using Edemly.Client.Pages;
+using Edemly.Client.Services;
+using Edemly.Client.Services.Api;
 
-namespace uchat
+namespace Edemly.Client
 {
     public partial class ChatManager : IDisposable
     {
@@ -477,7 +477,7 @@ namespace uchat
 
                 if (!success)
                 {
-                    uchat.Pages.MessageBox.Show("Failed to send message", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    Edemly.Client.Pages.MessageBox.Show("Failed to send message", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
 
                 // play sound (robust)
@@ -485,7 +485,7 @@ namespace uchat
             }
             catch (Exception ex)
             {
-                uchat.Pages.MessageBox.Show($"Failed to send message: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                Edemly.Client.Pages.MessageBox.Show($"Failed to send message: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -1013,7 +1013,7 @@ namespace uchat
 
                 if (chat == null)
                 {
-                    uchat.Pages.MessageBox.Show("Failed to create chat", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    Edemly.Client.Pages.MessageBox.Show("Failed to create chat", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                     return;
                 }
 
@@ -1036,7 +1036,7 @@ namespace uchat
             }
             catch (Exception ex)
             {
-                uchat.Pages.MessageBox.Show($"Failed to create chat: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                Edemly.Client.Pages.MessageBox.Show($"Failed to create chat: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 

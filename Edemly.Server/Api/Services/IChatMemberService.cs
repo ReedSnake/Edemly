@@ -1,7 +1,7 @@
-﻿using static uchat_server.Api.DTOs.ChatMemberDtos;
-using uchat_server.Data.Entities;
+﻿using static Edemly.Server.Api.DTOs.ChatMemberDtos;
+using Edemly.Server.Data.Entities;
 
-namespace uchat_server.Api.Services
+namespace Edemly.Server.Api.Services
 {
     public interface IChatMemberService
     {

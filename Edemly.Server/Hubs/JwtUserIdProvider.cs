@@ -2,7 +2,7 @@ using System.Linq;
 using System.Security.Claims;
 using Microsoft.AspNetCore.SignalR;
 
-namespace uchat_server.Hubs
+namespace Edemly.Server.Hubs
 {
     /// <summary>
     /// Maps SignalR user identifier to JWT claim. Prefers standard NameIdentifier, then custom 'userId', then 'sub'.

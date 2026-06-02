@@ -7,16 +7,16 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
-using uchat_server.Api.DTOs;
-using uchat_server.Api.Services;
-using uchat_server.Data;
-using uchat_server.Data.Entities;
-using uchat_server.Services;
-using uchat_server.Utils;
-using static uchat_server.Api.DTOs.MessageDtos;
-using uchat_server.Api.Middleware; // ITenantProvider
+using Edemly.Server.Api.DTOs;
+using Edemly.Server.Api.Services;
+using Edemly.Server.Data;
+using Edemly.Server.Data.Entities;
+using Edemly.Server.Services;
+using Edemly.Server.Utils;
+using static Edemly.Server.Api.DTOs.MessageDtos;
+using Edemly.Server.Api.Middleware; // ITenantProvider
 
-namespace uchat_server.Hubs
+namespace Edemly.Server.Hubs
 {
     [Authorize]
     public class MainHub : Hub

@@ -1,4 +1,4 @@
-namespace uchat_server.Services
+namespace Edemly.Server.Services
 {
     /// <summary>
     /// Інтерфейс для відправки email та роботи з verification кодами

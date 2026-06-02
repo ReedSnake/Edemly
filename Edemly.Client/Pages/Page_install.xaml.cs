@@ -9,12 +9,12 @@ using System.Windows.Controls;
 using System.Windows.Navigation;
 using System.Net.Http;
 using System.Text.Json;
-using uchat.Services;
+using Edemly.Client.Services;
 using System.Threading.Tasks;
 using System.Collections.Generic;
-using uchat.Lang;
+using Edemly.Client.Lang;
 
-namespace uchat.Pages
+namespace Edemly.Client.Pages
 {
     public partial class Page_install : Page
     {
@@ -143,7 +143,7 @@ namespace uchat.Pages
         {
             try
             {
-                NavigationService?.Navigate(new uchat.Page_login());
+                NavigationService?.Navigate(new Edemly.Client.Page_login());
             }
             catch (Exception ex)
             {
@@ -202,7 +202,7 @@ namespace uchat.Pages
                 }
 
                 await Task.Delay(80);
-                NavigationService?.Navigate(new uchat.Page_login());
+                NavigationService?.Navigate(new Edemly.Client.Page_login());
             }
             catch (Exception ex)
             {

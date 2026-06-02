@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace uchat_server.Services
+namespace Edemly.Server.Services
 {
     /// <summary>
     /// Сутність для зберігання verification кодів для email

@@ -1,8 +1,8 @@
 ﻿using Microsoft.Extensions.Logging;
 using System.Collections.Concurrent;
-using uchat_server.Configuration;
+using Edemly.Server.Configuration;
 
-namespace uchat_server.Services
+namespace Edemly.Server.Services
 {
     /// <summary>
     /// Заглушка сервісу імейлів для локальної розробки та тестування.

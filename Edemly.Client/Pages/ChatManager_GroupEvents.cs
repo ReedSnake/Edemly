@@ -5,13 +5,13 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using uchat.DTOs;
-using uchat.Models;
-using uchat.Services;
+using Edemly.Client.DTOs;
+using Edemly.Client.Models;
+using Edemly.Client.Services;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 
-namespace uchat
+namespace Edemly.Client
 {
     public partial class ChatManager
     {

@@ -1,6 +1,6 @@
 using System;
 
-namespace uchat.Services
+namespace Edemly.Client.Services
 {
     // DTOs used by HubService event handlers
     public class IncomingCallData

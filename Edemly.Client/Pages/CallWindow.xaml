@@ -1,4 +1,4 @@
-<Window x:Class="uchat.Pages.CallWindow"
+<Window x:Class="Edemly.Client.Pages.CallWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Calls" Height="420" Width="480" ResizeMode="NoResize" WindowStartupLocation="CenterOwner"

@@ -9,15 +9,15 @@ using System.Windows.Shapes;
 using System.Windows.Controls.Primitives;
 using System.Globalization;
 using System.Text.RegularExpressions;
-using uchat.DTOs;
-using uchat.Services.Api;
-using uchat.Services;
-using uchat.Lang;
-using uchat.Helpers;
+using Edemly.Client.DTOs;
+using Edemly.Client.Services.Api;
+using Edemly.Client.Services;
+using Edemly.Client.Lang;
+using Edemly.Client.Helpers;
 
 
 
-namespace uchat
+namespace Edemly.Client
 {
     public partial class Page_calendar : Page
     {

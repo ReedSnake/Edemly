@@ -5,9 +5,9 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Media.Effects;
-using uchat.Lang;
+using Edemly.Client.Lang;
 
-namespace uchat.Helpers
+namespace Edemly.Client.Helpers
 {
     /// <summary>
     /// Створює красиві стилізовані контекстні меню та діалоги у стилі додатку

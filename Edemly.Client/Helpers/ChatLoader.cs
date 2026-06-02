@@ -5,13 +5,13 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using uchat;
-using uchat.Models;
-using uchat.DTOs;
+using Edemly.Client;
+using Edemly.Client.Models;
+using Edemly.Client.DTOs;
 using System.Reflection;
-using uchat.Services.Api;
+using Edemly.Client.Services.Api;
 
-namespace uchat.Helpers
+namespace Edemly.Client.Helpers
 {
     public class ChatLoader
     {

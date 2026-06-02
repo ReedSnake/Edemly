@@ -7,6 +7,8 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<UseWPF>true</UseWPF>
 		<EnableWindowsTargeting>true</EnableWindowsTargeting>
+		<RootNamespace>Edemly.Client</RootNamespace>
+		<AssemblyName>Edemly.Client</AssemblyName>
 		<ApplicationIcon>favicon.ico</ApplicationIcon>
 	</PropertyGroup>
 

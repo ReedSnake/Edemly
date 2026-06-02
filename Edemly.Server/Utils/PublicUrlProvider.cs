@@ -1,4 +1,4 @@
-namespace uchat_server
+namespace Edemly.Server
 {
     public class PublicUrlProvider : IPublicUrlProvider
     {

@@ -5,16 +5,16 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
-using uchat.DTOs;
-using uchat.Helpers;
-using uchat.Models;
-using uchat.Pages;
-using uchat.Services;
+using Edemly.Client.DTOs;
+using Edemly.Client.Helpers;
+using Edemly.Client.Models;
+using Edemly.Client.Pages;
+using Edemly.Client.Services;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Windows.Documents;
 
-namespace uchat
+namespace Edemly.Client
 {
     public partial class ChatManager
     {

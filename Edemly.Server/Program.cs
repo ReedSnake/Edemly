@@ -2,15 +2,15 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using uchat_server.Api.Services;
-using uchat_server.Configuration;
-using uchat_server.Data;
-using uchat_server.Hubs;
-using uchat_server.Services;
-using uchat_server.Utils;
-using uchat_server.Api.Middleware;
+using Edemly.Server.Api.Services;
+using Edemly.Server.Configuration;
+using Edemly.Server.Data;
+using Edemly.Server.Hubs;
+using Edemly.Server.Services;
+using Edemly.Server.Utils;
+using Edemly.Server.Api.Middleware;
 
-namespace uchat_server
+namespace Edemly.Server
 {
     public class Program
     {
@@ -108,7 +108,7 @@ namespace uchat_server
                             maxRetryDelay: TimeSpan.FromSeconds(30),
                             errorNumbersToAdd: null
                         );
-                        mysqlOptions.MigrationsAssembly("uchat_server");
+                        mysqlOptions.MigrationsAssembly("Edemly.Server");
                     }
                 )
             );
@@ -309,7 +309,7 @@ namespace uchat_server
                                 var optionsBuilder = new DbContextOptionsBuilder<CompanyDbContext>();
                                 optionsBuilder.UseMySql(tenantConn, ServerVersion.AutoDetect(tenantConn), mysqlOptions =>
                                 {
-                                    mysqlOptions.MigrationsAssembly("uchat_server");
+                                    mysqlOptions.MigrationsAssembly("Edemly.Server");
                                 });
 
                                 using var tenantCtx = new CompanyDbContext(optionsBuilder.Options);
@@ -376,14 +376,14 @@ namespace uchat_server
         /// </summary>
         private static void ShowUsage()
         {
-            Console.WriteLine("Usage: uchat_server <port>");
+            Console.WriteLine("Usage: Edemly.Server <port>");
             Console.WriteLine();
             Console.WriteLine("Arguments:");
             Console.WriteLine("  <port>    Port number to listen on (1-65535)");
             Console.WriteLine();
             Console.WriteLine("Example:");
-            Console.WriteLine("  uchat_server 8100");
-            Console.WriteLine("  uchat_server 9735");
+            Console.WriteLine("  Edemly.Server 8100");
+            Console.WriteLine("  Edemly.Server 9735");
         }
     }
 }

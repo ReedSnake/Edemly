@@ -1,6 +1,6 @@
-using static uchat_server.Api.DTOs.MessageDtos;
+using static Edemly.Server.Api.DTOs.MessageDtos;
 
-namespace uchat_server.Api.Services
+namespace Edemly.Server.Api.Services
 {
     public interface IMessageService
     {

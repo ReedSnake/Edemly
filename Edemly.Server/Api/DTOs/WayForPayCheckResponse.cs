@@ -1,4 +1,4 @@
-﻿namespace uchat_server.Api.DTOs
+﻿namespace Edemly.Server.Api.DTOs
 {
     public class WayForPayCheckResponse
     {

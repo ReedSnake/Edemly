@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Http;
 using System.Threading.Tasks;
 
-namespace uchat_server.Api.Middleware
+namespace Edemly.Server.Api.Middleware
 {
     public class EnsureUploadsAuthMiddleware
     {

@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Windows;
-using uchat.Controls;
-using uchat.Services;
-using uchat.DTOs;
+using Edemly.Client.Controls;
+using Edemly.Client.Services;
+using Edemly.Client.DTOs;
 using System.Runtime.InteropServices;
 using System.Windows.Interop;
 using System.Threading.Tasks;
 
-namespace uchat
+namespace Edemly.Client
 {
     public partial class MainWindow : Window
     {
@@ -44,7 +44,7 @@ namespace uchat
                         bool isReconnecting = false;
                         try
                         {
-                            var concrete = App.HubService as uchat.Services.HubService;
+                            var concrete = App.HubService as Edemly.Client.Services.HubService;
                             if (concrete != null) isReconnecting = concrete.IsReconnecting;
                         }
                         catch (Exception ex)
@@ -346,7 +346,7 @@ namespace uchat
                         bool isReconnecting = false;
                         try
                         {
-                            var concrete = App.HubService as uchat.Services.HubService;
+                            var concrete = App.HubService as Edemly.Client.Services.HubService;
                             if (concrete != null) isReconnecting = concrete.IsReconnecting;
                         }
                         catch (Exception ex)

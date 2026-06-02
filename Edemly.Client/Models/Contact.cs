@@ -1,7 +1,7 @@
 #nullable disable
 using System.Collections.Generic;
 
-namespace uchat.Models
+namespace Edemly.Client.Models
 {
     public class Contact
     {

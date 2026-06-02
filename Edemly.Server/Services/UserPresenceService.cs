@@ -1,7 +1,7 @@
 using System.Collections.Concurrent;
-using uchat_server.Models;
+using Edemly.Server.Models;
 
-namespace uchat_server.Services
+namespace Edemly.Server.Services
 {
     /// <summary>
     /// Сервіс для управління онлайн-статусом користувачів

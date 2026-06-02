@@ -2,10 +2,10 @@ using sib_api_v3_sdk.Api;
 using sib_api_v3_sdk.Client;
 using sib_api_v3_sdk.Model;
 using System.Collections.Concurrent;
-using uchat_server.Configuration;
+using Edemly.Server.Configuration;
 using BrevoConfig = sib_api_v3_sdk.Client.Configuration;
 
-namespace uchat_server.Services
+namespace Edemly.Server.Services
 {
     /// <summary>
     /// ������ ��� ��������� verification ���� � ���'��

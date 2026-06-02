@@ -5,10 +5,10 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using System.Diagnostics;
-using uchat.Models;
-using uchat.DTOs;
+using Edemly.Client.Models;
+using Edemly.Client.DTOs;
 
-namespace uchat.Services
+namespace Edemly.Client.Services
 {
     public class AuthService : IAuthService
     {

@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
-using uchat.DTOs;
+using Edemly.Client.DTOs;
 
-namespace uchat.Services.Api
+namespace Edemly.Client.Services.Api
 {
     public partial class ApiService
     {

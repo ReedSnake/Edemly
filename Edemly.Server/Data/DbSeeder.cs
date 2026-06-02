@@ -1,8 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using uchat_server.Data.Entities;
-using uchat_server.Services;
+using Edemly.Server.Data.Entities;
+using Edemly.Server.Services;
 
-namespace uchat_server.Data
+namespace Edemly.Server.Data
 {
     /// <summary>
     /// Сервіс для ініціалізації бази даних тестовими даними

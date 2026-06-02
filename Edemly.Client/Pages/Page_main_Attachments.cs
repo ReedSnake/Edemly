@@ -10,10 +10,10 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using MessageBox = uchat.Pages.MessageBox;
-using uchat.DTOs;
+using MessageBox = Edemly.Client.Pages.MessageBox;
+using Edemly.Client.DTOs;
 
-namespace uchat
+namespace Edemly.Client
 {
     public partial class Page_main : Page
     {

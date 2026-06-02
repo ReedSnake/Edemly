@@ -12,13 +12,13 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
-using uchat.Lang;
-using uchat.Pages;
-using uchat.Services;
-using uchat.Services.Api;
-using MessageBox = uchat.Pages.MessageBox;
+using Edemly.Client.Lang;
+using Edemly.Client.Pages;
+using Edemly.Client.Services;
+using Edemly.Client.Services.Api;
+using MessageBox = Edemly.Client.Pages.MessageBox;
 
-namespace uchat
+namespace Edemly.Client
 {
     public partial class Page_settings : Page
     {

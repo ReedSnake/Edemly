@@ -1,9 +1,9 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using uchat.Services;
+using Edemly.Client.Services;
 
-namespace uchat.Pages
+namespace Edemly.Client.Pages
 {
     public partial class MessageBox : Window
     {

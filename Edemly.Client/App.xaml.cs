@@ -1,18 +1,18 @@
 ﻿using System;
 using System.Linq;
 using System.Windows;
-using uchat.Services;
-using uchat.Helpers;
+using Edemly.Client.Services;
+using Edemly.Client.Helpers;
 using CommunityToolkit.WinUI.Notifications;
-using uchat.DTOs;
+using Edemly.Client.DTOs;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Diagnostics;
-using uchat.Services.Api;
+using Edemly.Client.Services.Api;
 using System.Globalization;
 using System.Windows.Media.Imaging;
 
-namespace uchat
+namespace Edemly.Client
 {
     public partial class App : Application
     {
@@ -32,7 +32,7 @@ namespace uchat
         public static ChatManager? GlobalChatManager { get; set; }
 
         // ConnectionStatusBar reference
-        public static uchat.Controls.ConnectionStatusBar? StatusBar { get; set; }
+        public static Edemly.Client.Controls.ConnectionStatusBar? StatusBar { get; set; }
 
         // Дані користувача
         public static int? CurrentUserId { get; set; }
@@ -342,7 +342,7 @@ namespace uchat
             // Subscribe to incoming call events from concrete HubService and forward to UI
             try
             {
-                var concreteHub = HubService as uchat.Services.HubService;
+                var concreteHub = HubService as Edemly.Client.Services.HubService;
                 if (concreteHub != null)
                 {
                     concreteHub.IncomingCallReceived += GlobalIncomingCallHandler;
@@ -422,7 +422,7 @@ namespace uchat
                         bool isReconnecting = false;
                         try
                         {
-                            var concrete = HubService as uchat.Services.HubService;
+                            var concrete = HubService as Edemly.Client.Services.HubService;
                             if (concrete != null) isReconnecting = concrete.IsReconnecting;
                         }
                         catch (Exception ex) { Debug.WriteLine($"[APP] Failed to read hub reconnecting state: {ex.Message}"); }

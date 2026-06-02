@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using uchat_server.Configuration;
+using Edemly.Server.Configuration;
 
-namespace uchat_server.Data.Entities
+namespace Edemly.Server.Data.Entities
 {
     [Table("session_info")]
     public class Session

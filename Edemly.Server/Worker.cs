@@ -1,12 +1,12 @@
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using uchat_server.Configuration;
-using uchat_server.Data;
-using uchat_server.Data.Entities;
-using uchat_server.Hubs;
+using Edemly.Server.Configuration;
+using Edemly.Server.Data;
+using Edemly.Server.Data.Entities;
+using Edemly.Server.Hubs;
 
-namespace uchat_server
+namespace Edemly.Server
 {
     /// <summary>
     /// Фоновий сервіс для виконання періодичних завдань.

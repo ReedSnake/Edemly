@@ -4,11 +4,11 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Navigation;
-using MessageBox = uchat.Pages.MessageBox;
-using uchat.Lang;
-using uchat.Services;
+using MessageBox = Edemly.Client.Pages.MessageBox;
+using Edemly.Client.Lang;
+using Edemly.Client.Services;
 
-namespace uchat
+namespace Edemly.Client
 {
     public partial class Page_login : Page
     {

@@ -1,4 +1,4 @@
-namespace uchat_server.Configuration
+namespace Edemly.Server.Configuration
 {
     public class SignalRSettings
     {

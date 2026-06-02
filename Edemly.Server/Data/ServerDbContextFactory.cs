@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
 using System.IO;
 
-namespace uchat_server.Data
+namespace Edemly.Server.Data
 {
     internal class ServerDbContextFactory : IDesignTimeDbContextFactory<ServerDbContext>
     {

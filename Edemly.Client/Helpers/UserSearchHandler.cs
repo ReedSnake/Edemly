@@ -5,10 +5,10 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using uchat.DTOs;
-using uchat.Services.Api;
+using Edemly.Client.DTOs;
+using Edemly.Client.Services.Api;
 
-namespace uchat.Helpers
+namespace Edemly.Client.Helpers
 {
     public class UserSearchHandler
     {

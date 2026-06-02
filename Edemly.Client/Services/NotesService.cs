@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using uchat.Services.Api;
+using Edemly.Client.Services.Api;
 
-namespace uchat.Services
+namespace Edemly.Client.Services
 {
     /// <summary>
     /// Local notes per creator stored in AppData and cached in memory

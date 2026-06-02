@@ -1,4 +1,4 @@
-namespace uchat_server.Configuration
+namespace Edemly.Server.Configuration
 {
     /// <summary>
     /// Налаштування для локального файлового сховища

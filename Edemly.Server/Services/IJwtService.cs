@@ -1,6 +1,6 @@
 using System.Security.Claims;
 
-namespace uchat_server.Services
+namespace Edemly.Server.Services
 {
     /// <summary>
     /// Інтерфейс для роботи з JWT токенами

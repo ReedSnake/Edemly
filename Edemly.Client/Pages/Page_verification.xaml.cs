@@ -4,12 +4,12 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Navigation;
-using uchat.DTOs;
-using MessageBox = uchat.Pages.MessageBox;
-using uchat.Lang;
-using uchat.Services;
+using Edemly.Client.DTOs;
+using MessageBox = Edemly.Client.Pages.MessageBox;
+using Edemly.Client.Lang;
+using Edemly.Client.Services;
 
-namespace uchat
+namespace Edemly.Client
 {
     /// <summary>
     /// Логика взаємодії для Page_verification.xaml

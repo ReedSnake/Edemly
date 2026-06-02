@@ -7,11 +7,11 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
-using uchat.DTOs;
-using uchat.Pages;
-using uchat.Services;
+using Edemly.Client.DTOs;
+using Edemly.Client.Pages;
+using Edemly.Client.Services;
 
-namespace uchat.Services
+namespace Edemly.Client.Services
 {
     public class HubService : IHubService
     {
@@ -1145,7 +1145,7 @@ namespace uchat.Services
         {
             Application.Current.Dispatcher.Invoke(() =>
             {
-                uchat.Pages.MessageBox.Show(message, title, MessageBoxButton.OK, MessageBoxImage.Error);
+                Edemly.Client.Pages.MessageBox.Show(message, title, MessageBoxButton.OK, MessageBoxImage.Error);
             });
         }
 

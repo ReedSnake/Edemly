@@ -1,6 +1,6 @@
 #nullable disable
 
-namespace uchat.DTOs
+namespace Edemly.Client.DTOs
 {
     public class UserInfoDto
     {

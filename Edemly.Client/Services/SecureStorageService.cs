@@ -3,7 +3,7 @@ using System.IO;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace uchat.Services
+namespace Edemly.Client.Services
 {
     /// <summary>
     /// Безпечне зберігання токенів з шифруванням DPAPI (Data Protection API)

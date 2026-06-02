@@ -14,14 +14,14 @@ using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Xml.Serialization;
-using MessageBox = uchat.Pages.MessageBox;
-using uchat.DTOs;
-using uchat.Helpers;
-using uchat.Pages;
-using uchat.Lang;
-using uchat.Services;
+using MessageBox = Edemly.Client.Pages.MessageBox;
+using Edemly.Client.DTOs;
+using Edemly.Client.Helpers;
+using Edemly.Client.Pages;
+using Edemly.Client.Lang;
+using Edemly.Client.Services;
 
-namespace uchat
+namespace Edemly.Client
 {
     public partial class Page_main : Page
     {

@@ -33,7 +33,7 @@ public static class DaemonHelper
         close(1);
         close(2);
 
-        var logStream = new FileStream("/var/log/uchat_server.log", FileMode.Append, FileAccess.Write);
+        var logStream = new FileStream("/var/log/Edemly.Server.log", FileMode.Append, FileAccess.Write);
         var writer = new StreamWriter(logStream) { AutoFlush = true };
         Console.SetOut(writer);
         Console.SetError(writer);

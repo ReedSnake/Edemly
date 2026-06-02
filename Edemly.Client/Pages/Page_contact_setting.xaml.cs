@@ -4,11 +4,11 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using uchat.Models;
-using uchat.Lang;
-using uchat.Services;
+using Edemly.Client.Models;
+using Edemly.Client.Lang;
+using Edemly.Client.Services;
 
-namespace uchat
+namespace Edemly.Client
 {
     public partial class Page_contact_setting : Page
     {

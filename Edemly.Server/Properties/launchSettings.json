@@ -1,6 +1,6 @@
 {
   "profiles": {
-    "uchat_server": {
+    "Edemly.Server": {
       "commandName": "Project",
       "commandLineArgs": "8100",
       "environmentVariables": {

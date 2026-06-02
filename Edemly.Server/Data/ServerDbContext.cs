@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
-using uchat_server.Data.Entities;
+using Edemly.Server.Data.Entities;
 
-namespace uchat_server.Data
+namespace Edemly.Server.Data
 {
     public class ServerDbContext : DbContext
     {

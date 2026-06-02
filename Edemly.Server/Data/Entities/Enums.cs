@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace uchat_server.Data.Entities
+namespace Edemly.Server.Data.Entities
 {
     public enum SubscriptionStatus
     {

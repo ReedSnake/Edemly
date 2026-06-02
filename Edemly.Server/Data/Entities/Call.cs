@@ -2,7 +2,7 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace uchat_server.Data.Entities
+namespace Edemly.Server.Data.Entities
 {
     public enum CallStatus
     {

@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
 using System.IO;
 
-namespace uchat_server.Data
+namespace Edemly.Server.Data
 {
     // Design-time factory so EF tools can create CompanyDbContext for migrations
     internal class CompanyDbContextFactory : IDesignTimeDbContextFactory<CompanyDbContext>
@@ -26,7 +26,7 @@ namespace uchat_server.Data
                 connectionString,
                 ServerVersion.AutoDetect(connectionString),
                 options => options.EnableRetryOnFailure()
-                    .MigrationsAssembly("uchat_server")
+                    .MigrationsAssembly("Edemly.Server")
             );
 
             return new CompanyDbContext(optionsBuilder.Options);

@@ -4,11 +4,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using uchat_server.Data;
+using Edemly.Server.Data;
 
 #nullable disable
 
-namespace uchat_server.Migrations
+namespace Edemly.Server.Migrations
 {
     [DbContext(typeof(ServerDbContext))]
     partial class ServerDbContextModelSnapshot : ModelSnapshot
@@ -22,7 +22,7 @@ namespace uchat_server.Migrations
 
             MySqlModelBuilderExtensions.AutoIncrementColumns(modelBuilder);
 
-            modelBuilder.Entity("uchat_server.Data.Entities.Call", b =>
+            modelBuilder.Entity("Edemly.Server.Data.Entities.Call", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -71,7 +71,7 @@ namespace uchat_server.Migrations
                     b.ToTable("call", (string)null);
                 });
 
-            modelBuilder.Entity("uchat_server.Data.Entities.Chat", b =>
+            modelBuilder.Entity("Edemly.Server.Data.Entities.Chat", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -115,7 +115,7 @@ namespace uchat_server.Migrations
                     b.ToTable("chat");
                 });
 
-            modelBuilder.Entity("uchat_server.Data.Entities.ChatMember", b =>
+            modelBuilder.Entity("Edemly.Server.Data.Entities.ChatMember", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -151,7 +151,7 @@ namespace uchat_server.Migrations
                     b.ToTable("chat_member");
                 });
 
-            modelBuilder.Entity("uchat_server.Data.Entities.Company", b =>
+            modelBuilder.Entity("Edemly.Server.Data.Entities.Company", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -175,7 +175,7 @@ namespace uchat_server.Migrations
                     b.ToTable("Companies");
                 });
 
-            modelBuilder.Entity("uchat_server.Data.Entities.Email", b =>
+            modelBuilder.Entity("Edemly.Server.Data.Entities.Email", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -192,7 +192,7 @@ namespace uchat_server.Migrations
                     b.ToTable("email", (string)null);
                 });
 
-            modelBuilder.Entity("uchat_server.Data.Entities.LoginInfo", b =>
+            modelBuilder.Entity("Edemly.Server.Data.Entities.LoginInfo", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -219,7 +219,7 @@ namespace uchat_server.Migrations
                     b.ToTable("login_info");
                 });
 
-            modelBuilder.Entity("uchat_server.Data.Entities.Message", b =>
+            modelBuilder.Entity("Edemly.Server.Data.Entities.Message", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -270,7 +270,7 @@ namespace uchat_server.Migrations
                     b.ToTable("message");
                 });
 
-            modelBuilder.Entity("uchat_server.Data.Entities.Note", b =>
+            modelBuilder.Entity("Edemly.Server.Data.Entities.Note", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -301,7 +301,7 @@ namespace uchat_server.Migrations
                     b.ToTable("notes");
                 });
 
-            modelBuilder.Entity("uchat_server.Data.Entities.Payment", b =>
+            modelBuilder.Entity("Edemly.Server.Data.Entities.Payment", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -345,7 +345,7 @@ namespace uchat_server.Migrations
                     b.ToTable("payment");
                 });
 
-            modelBuilder.Entity("uchat_server.Data.Entities.Reminding", b =>
+            modelBuilder.Entity("Edemly.Server.Data.Entities.Reminding", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -400,7 +400,7 @@ namespace uchat_server.Migrations
                     b.ToTable("reminding");
                 });
 
-            modelBuilder.Entity("uchat_server.Data.Entities.Session", b =>
+            modelBuilder.Entity("Edemly.Server.Data.Entities.Session", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -431,7 +431,7 @@ namespace uchat_server.Migrations
                     b.ToTable("session_info");
                 });
 
-            modelBuilder.Entity("uchat_server.Data.Entities.User", b =>
+            modelBuilder.Entity("Edemly.Server.Data.Entities.User", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -512,15 +512,15 @@ namespace uchat_server.Migrations
                     b.ToTable("user");
                 });
 
-            modelBuilder.Entity("uchat_server.Data.Entities.Call", b =>
+            modelBuilder.Entity("Edemly.Server.Data.Entities.Call", b =>
                 {
-                    b.HasOne("uchat_server.Data.Entities.Chat", "Chat")
+                    b.HasOne("Edemly.Server.Data.Entities.Chat", "Chat")
                         .WithMany()
                         .HasForeignKey("ChatId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("uchat_server.Data.Entities.User", "Initiator")
+                    b.HasOne("Edemly.Server.Data.Entities.User", "Initiator")
                         .WithMany()
                         .HasForeignKey("InitiatorId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -531,15 +531,15 @@ namespace uchat_server.Migrations
                     b.Navigation("Initiator");
                 });
 
-            modelBuilder.Entity("uchat_server.Data.Entities.ChatMember", b =>
+            modelBuilder.Entity("Edemly.Server.Data.Entities.ChatMember", b =>
                 {
-                    b.HasOne("uchat_server.Data.Entities.Chat", "Chat")
+                    b.HasOne("Edemly.Server.Data.Entities.Chat", "Chat")
                         .WithMany("ChatMembers")
                         .HasForeignKey("ChatId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("uchat_server.Data.Entities.User", "User")
+                    b.HasOne("Edemly.Server.Data.Entities.User", "User")
                         .WithMany("ChatMembers")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -550,15 +550,15 @@ namespace uchat_server.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("uchat_server.Data.Entities.Message", b =>
+            modelBuilder.Entity("Edemly.Server.Data.Entities.Message", b =>
                 {
-                    b.HasOne("uchat_server.Data.Entities.Chat", "Chat")
+                    b.HasOne("Edemly.Server.Data.Entities.Chat", "Chat")
                         .WithMany("Messages")
                         .HasForeignKey("ChatId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("uchat_server.Data.Entities.User", "Sender")
+                    b.HasOne("Edemly.Server.Data.Entities.User", "Sender")
                         .WithMany("Messages")
                         .HasForeignKey("SenderId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -569,15 +569,15 @@ namespace uchat_server.Migrations
                     b.Navigation("Sender");
                 });
 
-            modelBuilder.Entity("uchat_server.Data.Entities.Note", b =>
+            modelBuilder.Entity("Edemly.Server.Data.Entities.Note", b =>
                 {
-                    b.HasOne("uchat_server.Data.Entities.User", "Creator")
+                    b.HasOne("Edemly.Server.Data.Entities.User", "Creator")
                         .WithMany("NotesCreatedByUser")
                         .HasForeignKey("CreatorId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("uchat_server.Data.Entities.User", "User")
+                    b.HasOne("Edemly.Server.Data.Entities.User", "User")
                         .WithMany("NotesAboutUser")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -588,9 +588,9 @@ namespace uchat_server.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("uchat_server.Data.Entities.Payment", b =>
+            modelBuilder.Entity("Edemly.Server.Data.Entities.Payment", b =>
                 {
-                    b.HasOne("uchat_server.Data.Entities.User", "User")
+                    b.HasOne("Edemly.Server.Data.Entities.User", "User")
                         .WithMany("Payments")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -599,9 +599,9 @@ namespace uchat_server.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("uchat_server.Data.Entities.Reminding", b =>
+            modelBuilder.Entity("Edemly.Server.Data.Entities.Reminding", b =>
                 {
-                    b.HasOne("uchat_server.Data.Entities.User", "User")
+                    b.HasOne("Edemly.Server.Data.Entities.User", "User")
                         .WithMany("Remindings")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -610,41 +610,41 @@ namespace uchat_server.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("uchat_server.Data.Entities.Session", b =>
+            modelBuilder.Entity("Edemly.Server.Data.Entities.Session", b =>
                 {
-                    b.HasOne("uchat_server.Data.Entities.User", "User")
+                    b.HasOne("Edemly.Server.Data.Entities.User", "User")
                         .WithOne("Session")
-                        .HasForeignKey("uchat_server.Data.Entities.Session", "UserId")
+                        .HasForeignKey("Edemly.Server.Data.Entities.Session", "UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("uchat_server.Data.Entities.User", b =>
+            modelBuilder.Entity("Edemly.Server.Data.Entities.User", b =>
                 {
-                    b.HasOne("uchat_server.Data.Entities.LoginInfo", "LoginInfo")
+                    b.HasOne("Edemly.Server.Data.Entities.LoginInfo", "LoginInfo")
                         .WithOne("User")
-                        .HasForeignKey("uchat_server.Data.Entities.User", "LoginInfoId")
+                        .HasForeignKey("Edemly.Server.Data.Entities.User", "LoginInfoId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("LoginInfo");
                 });
 
-            modelBuilder.Entity("uchat_server.Data.Entities.Chat", b =>
+            modelBuilder.Entity("Edemly.Server.Data.Entities.Chat", b =>
                 {
                     b.Navigation("ChatMembers");
 
                     b.Navigation("Messages");
                 });
 
-            modelBuilder.Entity("uchat_server.Data.Entities.LoginInfo", b =>
+            modelBuilder.Entity("Edemly.Server.Data.Entities.LoginInfo", b =>
                 {
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("uchat_server.Data.Entities.User", b =>
+            modelBuilder.Entity("Edemly.Server.Data.Entities.User", b =>
                 {
                     b.Navigation("ChatMembers");
 

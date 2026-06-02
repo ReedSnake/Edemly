@@ -1,6 +1,6 @@
-using static uchat_server.Api.DTOs.RemindingDtos;
+using static Edemly.Server.Api.DTOs.RemindingDtos;
 
-namespace uchat_server.Api.Services
+namespace Edemly.Server.Api.Services
 {
     public interface IRemindingService
     {

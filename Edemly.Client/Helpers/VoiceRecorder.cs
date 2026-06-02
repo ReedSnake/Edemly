@@ -4,7 +4,7 @@ using System.IO;
 using System.Threading.Tasks;
 using NAudio.Wave;
 
-namespace uchat.Helpers
+namespace Edemly.Client.Helpers
 {
     /// <summary>
     /// Клас для запису голосових повідомлень

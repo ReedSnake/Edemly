@@ -3,12 +3,12 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.IO;
 using System.Threading.Tasks;
-using uchat_server.Api.Middleware;
-using uchat_server.Data;
+using Edemly.Server.Api.Middleware;
+using Edemly.Server.Data;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
 
-namespace uchat_server.Api.Services
+namespace Edemly.Server.Api.Services
 {
     public class FileStorageService : IFileStorageService
     {

@@ -7,11 +7,11 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
-using uchat.DTOs;
-using uchat.Pages;
-using uchat.Lang;
+using Edemly.Client.DTOs;
+using Edemly.Client.Pages;
+using Edemly.Client.Lang;
 
-namespace uchat
+namespace Edemly.Client
 {
     public partial class Page_main : Page
     {

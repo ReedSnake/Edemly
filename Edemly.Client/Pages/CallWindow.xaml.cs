@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using uchat.Services;
+using Edemly.Client.Services;
 using NAudio.Wave;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
@@ -13,9 +13,9 @@ using Concentus.Structs;
 using Concentus.Enums;
 using System.ComponentModel;
 using System.Diagnostics;
-using uchat.Lang; // ? днаюбкемн
+using Edemly.Client.Lang; // ? днаюбкемн
 
-namespace uchat.Pages
+namespace Edemly.Client.Pages
 {
     // small helper to loop a WaveStream
     internal class LoopStream : WaveStream

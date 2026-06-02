@@ -1,6 +1,6 @@
-﻿using uchat_server.Api.DTOs;
+﻿using Edemly.Server.Api.DTOs;
 
-namespace uchat_server.Api.Services
+namespace Edemly.Server.Api.Services
 {
     public interface IUserService
     {

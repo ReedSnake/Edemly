@@ -5,6 +5,8 @@
     <LangVersion>latest</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <RootNamespace>Edemly.Client.Tests</RootNamespace>
+    <AssemblyName>Edemly.Client.Tests</AssemblyName>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 

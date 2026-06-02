@@ -1,14 +1,14 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using uchat_server.Api.DTOs;
-using uchat_server.Data;
-using uchat_server.Data.Entities;
-using uchat_server.Utils;
-using static uchat_server.Api.DTOs.NoteDtos;
-using uchat_server.Api.Middleware;
-using uchat_server.Services;
+using Edemly.Server.Api.DTOs;
+using Edemly.Server.Data;
+using Edemly.Server.Data.Entities;
+using Edemly.Server.Utils;
+using static Edemly.Server.Api.DTOs.NoteDtos;
+using Edemly.Server.Api.Middleware;
+using Edemly.Server.Services;
 
-namespace uchat_server.Api.Services
+namespace Edemly.Server.Api.Services
 {
     public class NoteService : INoteService
     {

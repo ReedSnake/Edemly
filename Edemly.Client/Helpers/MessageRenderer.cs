@@ -7,11 +7,11 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
-using uchat.DTOs;
-using uchat.Lang;
-using uchat.Services;
+using Edemly.Client.DTOs;
+using Edemly.Client.Lang;
+using Edemly.Client.Services;
 
-namespace uchat.Helpers
+namespace Edemly.Client.Helpers
 {
     public class MessageRenderer
     {
@@ -875,7 +875,7 @@ namespace uchat.Helpers
 
                     if (string.IsNullOrEmpty(newText))
                     {
-                        uchat.Pages.MessageBox.ShowWarning(DefaultLanguage.MessageCannotBeEmpty, DefaultLanguage.Validation); // ✅ ЛОКАЛІЗОВАНО
+                        Edemly.Client.Pages.MessageBox.ShowWarning(DefaultLanguage.MessageCannotBeEmpty, DefaultLanguage.Validation); // ✅ ЛОКАЛІЗОВАНО
                         return;
                     }
 
@@ -909,14 +909,14 @@ namespace uchat.Helpers
                     }
                     else
                     {
-                        uchat.Pages.MessageBox.ShowError(DefaultLanguage.FailedUpdateMessage, DefaultLanguage.ErrorTitle); // ✅ ЛОКАЛІЗОВАНО
+                        Edemly.Client.Pages.MessageBox.ShowError(DefaultLanguage.FailedUpdateMessage, DefaultLanguage.ErrorTitle); // ✅ ЛОКАЛІЗОВАНО
                     }
                 }
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"Error editing message: {ex.Message}");
-                uchat.Pages.MessageBox.ShowError($"{DefaultLanguage.Error}: {ex.Message}", DefaultLanguage.ErrorTitle); // ✅ ЛОКАЛІЗОВАНО
+                Edemly.Client.Pages.MessageBox.ShowError($"{DefaultLanguage.Error}: {ex.Message}", DefaultLanguage.ErrorTitle); // ✅ ЛОКАЛІЗОВАНО
             }
         }
 
@@ -927,7 +927,7 @@ namespace uchat.Helpers
         {
             try
             {
-                var result = uchat.Pages.MessageBox.ShowQuestion(
+                var result = Edemly.Client.Pages.MessageBox.ShowQuestion(
                     DefaultLanguage.ConfirmDeleteMessage, // ✅ ЛОКАЛІЗОВАНО
                     DefaultLanguage.ContactDeleteConfirmTitle); // ✅ ЛОКАЛІЗОВАНО
 
@@ -948,14 +948,14 @@ namespace uchat.Helpers
                     }
                     else
                     {
-                        uchat.Pages.MessageBox.ShowError(DefaultLanguage.FailedDeleteMessage, DefaultLanguage.ErrorTitle); // ✅ ЛОКАЛІЗОВАНО
+                        Edemly.Client.Pages.MessageBox.ShowError(DefaultLanguage.FailedDeleteMessage, DefaultLanguage.ErrorTitle); // ✅ ЛОКАЛІЗОВАНО
                     }
                 }
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"Error deleting message: {ex.Message}");
-                uchat.Pages.MessageBox.ShowError($"{DefaultLanguage.Error}: {ex.Message}", DefaultLanguage.ErrorTitle); // ✅ ЛОКАЛІЗОВАНО
+                Edemly.Client.Pages.MessageBox.ShowError($"{DefaultLanguage.Error}: {ex.Message}", DefaultLanguage.ErrorTitle); // ✅ ЛОКАЛІЗОВАНО
             }
         }
 

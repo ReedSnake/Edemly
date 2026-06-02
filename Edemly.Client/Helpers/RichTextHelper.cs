@@ -8,7 +8,7 @@ using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 
-namespace uchat.Helpers
+namespace Edemly.Client.Helpers
 {
     /// <summary>
     /// Допоміжний клас для створення TextBlock з підтримкою посилань, email, телефонів

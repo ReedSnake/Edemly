@@ -2,10 +2,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
-using uchat_server.Data;
-using uchat_server.Data.Entities;
+using Edemly.Server.Data;
+using Edemly.Server.Data.Entities;
 
-namespace uchat_server.Api.Services
+namespace Edemly.Server.Api.Services
 {
     public class TenantProvisioningService
     {
@@ -120,7 +120,7 @@ namespace uchat_server.Api.Services
 
                 optionsBuilder.UseMySql(tenantConn, ServerVersion.AutoDetect(tenantConn), mysqlOptions =>
                 {
-                    mysqlOptions.MigrationsAssembly("uchat_server");
+                    mysqlOptions.MigrationsAssembly("Edemly.Server");
                 });
 
                 using (var tenantCtx = new CompanyDbContext(optionsBuilder.Options))
@@ -170,7 +170,7 @@ namespace uchat_server.Api.Services
             var optionsBuilder = new DbContextOptionsBuilder<CompanyDbContext>();
             optionsBuilder.UseMySql(tenantConn, ServerVersion.AutoDetect(tenantConn), mysqlOptions =>
             {
-                mysqlOptions.MigrationsAssembly("uchat_server");
+                mysqlOptions.MigrationsAssembly("Edemly.Server");
             });
 
             using var tenantCtx = new CompanyDbContext(optionsBuilder.Options);
@@ -236,7 +236,7 @@ namespace uchat_server.Api.Services
 
                 optionsBuilder.UseMySql(tenantConn, ServerVersion.AutoDetect(tenantConn), mysqlOptions =>
                 {
-                    mysqlOptions.MigrationsAssembly("uchat_server");
+                    mysqlOptions.MigrationsAssembly("Edemly.Server");
                 });
 
                 using var tenantCtx = new CompanyDbContext(optionsBuilder.Options);

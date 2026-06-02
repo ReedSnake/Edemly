@@ -10,13 +10,13 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Shapes;
-using MessageBox = uchat.Pages.MessageBox;
-using uchat.DTOs;
-using uchat.Helpers;
-using uchat.Pages;
-using uchat.Lang; 
+using MessageBox = Edemly.Client.Pages.MessageBox;
+using Edemly.Client.DTOs;
+using Edemly.Client.Helpers;
+using Edemly.Client.Pages;
+using Edemly.Client.Lang; 
 
-namespace uchat
+namespace Edemly.Client
 {
     public partial class Page_main : Page
     {

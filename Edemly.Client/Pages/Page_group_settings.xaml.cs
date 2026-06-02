@@ -6,16 +6,16 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Microsoft.Win32;
-using uchat.Models;
-using uchat.Services.Api;
-using uchat.DTOs;
+using Edemly.Client.Models;
+using Edemly.Client.Services.Api;
+using Edemly.Client.DTOs;
 using System.Linq;
 using System.Threading.Tasks;
 using System.IO;
-using uchat.Lang;
-using uchat.Services;
+using Edemly.Client.Lang;
+using Edemly.Client.Services;
 
-namespace uchat.Pages
+namespace Edemly.Client.Pages
 {
     public partial class Page_group_settings : Page
     {

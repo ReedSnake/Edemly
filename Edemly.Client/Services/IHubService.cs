@@ -1,8 +1,8 @@
 using System;
 using System.Threading.Tasks;
-using uchat.DTOs;
+using Edemly.Client.DTOs;
 
-namespace uchat.Services
+namespace Edemly.Client.Services
 {
     public interface IHubService : IDisposable
     {

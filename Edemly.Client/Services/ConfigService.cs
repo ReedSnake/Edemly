@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
 
-namespace uchat.Services
+namespace Edemly.Client.Services
 {
     public class ConfigService : IConfigService
     {

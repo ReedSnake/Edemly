@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using uchat.DTOs;
+using Edemly.Client.DTOs;
 
-namespace uchat.Services.Api
+namespace Edemly.Client.Services.Api
 {
     public interface IApiService
     {

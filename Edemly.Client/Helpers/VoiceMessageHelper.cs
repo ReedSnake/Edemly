@@ -7,15 +7,15 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
-using uchat.DTOs;
+using Edemly.Client.DTOs;
 using NAudio.Wave;
 using System.Windows.Threading;
 using System.Windows.Data;
 using System.Windows.Markup;
-using uchat.Lang;
-using uchat.Services;
+using Edemly.Client.Lang;
+using Edemly.Client.Services;
 
-namespace uchat.Helpers
+namespace Edemly.Client.Helpers
 {
     /// <summary>
     /// Допоміжний клас для рендерингу голосових повідомлень
@@ -540,7 +540,7 @@ if (_cachedSliderTemplate == null)
         {
             try
             {
-                var result = uchat.Pages.MessageBox.ShowQuestion(
+                var result = Edemly.Client.Pages.MessageBox.ShowQuestion(
                     DefaultLanguage.ConfirmDeleteMessage, 
                     DefaultLanguage.ContactDeleteConfirmTitle); 
 
@@ -550,14 +550,14 @@ if (_cachedSliderTemplate == null)
 
                     if (!success)
                     {
-                        uchat.Pages.MessageBox.ShowError(DefaultLanguage.FailedDeleteMessage, DefaultLanguage.ErrorTitle); 
+                        Edemly.Client.Pages.MessageBox.ShowError(DefaultLanguage.FailedDeleteMessage, DefaultLanguage.ErrorTitle); 
                     }
                 }
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"Error deleting voice message: {ex.Message}");
-                uchat.Pages.MessageBox.ShowError($"{DefaultLanguage.Error}: {ex.Message}", DefaultLanguage.ErrorTitle); 
+                Edemly.Client.Pages.MessageBox.ShowError($"{DefaultLanguage.Error}: {ex.Message}", DefaultLanguage.ErrorTitle); 
             }
         }
 

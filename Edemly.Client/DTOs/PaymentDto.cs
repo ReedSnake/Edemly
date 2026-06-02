@@ -2,7 +2,7 @@
 
 using System;
 
-namespace uchat.DTOs
+namespace Edemly.Client.DTOs
 {
     public class PaymentDto
     {

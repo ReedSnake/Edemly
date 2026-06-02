@@ -2,15 +2,15 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
-using uchat_server.Api.DTOs;
-using uchat_server.Data;
-using uchat_server.Data.Entities;
-using uchat_server.Utils;
-using static uchat_server.Api.DTOs.MessageDtos;
-using uchat_server.Api.Middleware; // for ITenantProvider
-using uchat_server.Services; // for ITenantDbContextFactory
+using Edemly.Server.Api.DTOs;
+using Edemly.Server.Data;
+using Edemly.Server.Data.Entities;
+using Edemly.Server.Utils;
+using static Edemly.Server.Api.DTOs.MessageDtos;
+using Edemly.Server.Api.Middleware; // for ITenantProvider
+using Edemly.Server.Services; // for ITenantDbContextFactory
 
-namespace uchat_server.Api.Services
+namespace Edemly.Server.Api.Services
 {
     public class MessageService : IMessageService
     {

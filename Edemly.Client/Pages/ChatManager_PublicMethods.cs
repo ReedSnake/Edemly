@@ -8,12 +8,12 @@ using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
-using uchat.DTOs;
-using uchat.Helpers;
-using uchat.Models;
-using uchat.Pages;
+using Edemly.Client.DTOs;
+using Edemly.Client.Helpers;
+using Edemly.Client.Models;
+using Edemly.Client.Pages;
 
-namespace uchat
+namespace Edemly.Client
 {
     public partial class ChatManager
     {
@@ -187,7 +187,7 @@ namespace uchat
                     var newText = tb.Text.Trim();
                     if (string.IsNullOrEmpty(newText))
                     {
-                        uchat.Pages.MessageBox.ShowWarning("Message cannot be empty", "Validation");
+                        Edemly.Client.Pages.MessageBox.ShowWarning("Message cannot be empty", "Validation");
                         return;
                     }
 
@@ -195,13 +195,13 @@ namespace uchat
 
                     var updated = new DTOs.MessageUpdateDto { Id = message.Id, ChatId = message.ChatId, Text = newText };
                     bool success = await App.HubService.UpdateMessageAsync(updated);
-                    if (!success) uchat.Pages.MessageBox.ShowError("Failed to update message", "Error");
+                    if (!success) Edemly.Client.Pages.MessageBox.ShowError("Failed to update message", "Error");
                 }
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"[CHAT MANAGER] EditMessageAsync error: {ex.Message}");
-                uchat.Pages.MessageBox.ShowError($"Error: {ex.Message}", "Error");
+                Edemly.Client.Pages.MessageBox.ShowError($"Error: {ex.Message}", "Error");
             }
         }
 
@@ -209,17 +209,17 @@ namespace uchat
         {
             try
             {
-                var result = uchat.Pages.MessageBox.ShowQuestion("Are you sure you want to delete this message?", "Confirm Delete");
+                var result = Edemly.Client.Pages.MessageBox.ShowQuestion("Are you sure you want to delete this message?", "Confirm Delete");
                 if (result == MessageBoxResult.Yes)
                 {
                     bool success = await App.HubService.DeleteMessageAsync(message.Id, message.ChatId);
-                    if (!success) uchat.Pages.MessageBox.ShowError("Failed to delete message", "Error");
+                    if (!success) Edemly.Client.Pages.MessageBox.ShowError("Failed to delete message", "Error");
                 }
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"[CHAT MANAGER] DeleteMessageAsync error: {ex.Message}");
-                uchat.Pages.MessageBox.ShowError($"Error: {ex.Message}", "Error");
+                Edemly.Client.Pages.MessageBox.ShowError($"Error: {ex.Message}", "Error");
             }
         }
 

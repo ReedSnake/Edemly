@@ -1,12 +1,12 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using uchat_server.Api.Middleware;
-using uchat_server.Data;
-using uchat_server.Data.Entities;
-using uchat_server.Services;
-using uchat_server.Utils;
+using Edemly.Server.Api.Middleware;
+using Edemly.Server.Data;
+using Edemly.Server.Data.Entities;
+using Edemly.Server.Services;
+using Edemly.Server.Utils;
 
-namespace uchat_server.Api.Services
+namespace Edemly.Server.Api.Services
 {
     public class PermissionService : IPermissionService
     {
@@ -144,7 +144,7 @@ namespace uchat_server.Api.Services
         {
             try
             {
-                uchat_server.Data.Entities.Note? n = await _ctx.Set<Note>().FindAsync(noteId);
+                Edemly.Server.Data.Entities.Note? n = await _ctx.Set<Note>().FindAsync(noteId);
                 if (n == null) return false;
                 return n.CreatorId == userId;
             }

@@ -1,6 +1,6 @@
-using static uchat_server.Api.DTOs.NoteDtos;
+using static Edemly.Server.Api.DTOs.NoteDtos;
 
-namespace uchat_server.Api.Services
+namespace Edemly.Server.Api.Services
 {
     public interface INoteService
     {

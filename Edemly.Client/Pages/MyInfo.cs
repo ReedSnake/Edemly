@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Threading.Tasks;
-using uchat.Models;
-using uchat.Services.Api;
+using Edemly.Client.Models;
+using Edemly.Client.Services.Api;
 
-namespace uchat.Pages
+namespace Edemly.Client.Pages
 {
     internal class MyInfo
     {

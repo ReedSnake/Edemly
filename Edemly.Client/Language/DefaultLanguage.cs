@@ -1,6 +1,6 @@
-using uchat.Services;
+using Edemly.Client.Services;
 
-namespace uchat.Lang
+namespace Edemly.Client.Lang
 {
     internal class DefaultLanguage
     {

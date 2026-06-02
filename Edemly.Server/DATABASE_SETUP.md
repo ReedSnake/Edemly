@@ -21,8 +21,8 @@
 Міграції знаходяться тут:
 
 ```text
-uchat_server/Migrations
-uchat_server/Migrations/CompanyDbMigrations
+Edemly.Server/Migrations
+Edemly.Server/Migrations/CompanyDbMigrations
 ```
 
 ## Початкове налаштування
@@ -35,7 +35,7 @@ uchat_server/Migrations/CompanyDbMigrations
 CREATE DATABASE uchat CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 ```
 
-3. Перевірте `ConnectionStrings:DefaultConnection` у `uchat_server/appsettings.json`:
+3. Перевірте `ConnectionStrings:DefaultConnection` у `Edemly.Server/appsettings.json`:
 
 ```json
 {
@@ -50,21 +50,21 @@ CREATE DATABASE uchat CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 Застосувати міграції основної бази:
 
 ```powershell
-cd uchat_server
+cd Edemly.Server
 dotnet ef database update --context ServerDbContext
 ```
 
 Створити нову міграцію для основної бази:
 
 ```powershell
-cd uchat_server
+cd Edemly.Server
 dotnet ef migrations add MigrationName --context ServerDbContext
 ```
 
 Створити нову міграцію для tenant-баз:
 
 ```powershell
-cd uchat_server
+cd Edemly.Server
 dotnet ef migrations add MigrationName --context CompanyDbContext -o Migrations/CompanyDbMigrations
 ```
 

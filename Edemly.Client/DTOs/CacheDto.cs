@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace uchat.DTOs
+namespace Edemly.Client.DTOs
 {
     public class CachedChatDto
     {

@@ -1,6 +1,6 @@
-using uchat_server.Data.Entities;
+using Edemly.Server.Data.Entities;
 
-namespace uchat_server.Api.Middleware
+namespace Edemly.Server.Api.Middleware
 {
     public interface ITenantProvider
     {

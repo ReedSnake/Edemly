@@ -1,11 +1,11 @@
 ﻿using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
-using uchat_server.Api.DTOs;
-using uchat_server.Data.Entities;
+using Edemly.Server.Api.DTOs;
+using Edemly.Server.Data.Entities;
 using Microsoft.AspNetCore.Http; // Не забудь цей using
 
-namespace uchat_server.Api.Services
+namespace Edemly.Server.Api.Services
 {
     public class WayForPayService
     {

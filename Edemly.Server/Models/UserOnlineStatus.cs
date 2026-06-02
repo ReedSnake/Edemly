@@ -1,4 +1,4 @@
-namespace uchat_server.Models
+namespace Edemly.Server.Models
 {
     /// <summary>
     /// Кеш онлайн-статусу користувачів

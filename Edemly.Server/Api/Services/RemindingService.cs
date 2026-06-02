@@ -1,14 +1,14 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
-using uchat_server.Api.Middleware;
-using uchat_server.Data;
-using uchat_server.Data.Entities;
-using uchat_server.Services;
-using uchat_server.Utils;
-using static uchat_server.Api.DTOs.RemindingDtos;
+using Edemly.Server.Api.Middleware;
+using Edemly.Server.Data;
+using Edemly.Server.Data.Entities;
+using Edemly.Server.Services;
+using Edemly.Server.Utils;
+using static Edemly.Server.Api.DTOs.RemindingDtos;
 
-namespace uchat_server.Api.Services
+namespace Edemly.Server.Api.Services
 {
     public class RemindingService : IRemindingService
     {

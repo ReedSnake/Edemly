@@ -8,9 +8,9 @@ using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
-using uchat.DTOs;
+using Edemly.Client.DTOs;
 
-namespace uchat.Services.Api
+namespace Edemly.Client.Services.Api
 {
     public partial class ApiService : IApiService, IDisposable
     {

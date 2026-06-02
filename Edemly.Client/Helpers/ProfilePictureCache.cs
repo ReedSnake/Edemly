@@ -12,7 +12,7 @@ using System.Windows.Media.Imaging;
 using System.Diagnostics;
 using System.Linq;
 
-namespace uchat.Helpers
+namespace Edemly.Client.Helpers
 {
     /// <summary>
     /// Глобальний кеш для фото профілів

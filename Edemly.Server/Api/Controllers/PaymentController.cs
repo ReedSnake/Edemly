@@ -1,14 +1,14 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
-using uchat_server.Api.Services;
-using uchat_server.Data.Entities;
-using uchat_server.Data;
-using uchat_server.Services;
-using uchat_server.Api.Middleware;
+using Edemly.Server.Api.Services;
+using Edemly.Server.Data.Entities;
+using Edemly.Server.Data;
+using Edemly.Server.Services;
+using Edemly.Server.Api.Middleware;
 using Microsoft.Extensions.Configuration;
 
-namespace uchat_server.Api.Controllers
+namespace Edemly.Server.Api.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]

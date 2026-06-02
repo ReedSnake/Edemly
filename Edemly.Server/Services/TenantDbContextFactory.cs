@@ -1,9 +1,9 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using uchat_server.Data;
-using uchat_server.Data.Entities;
+using Edemly.Server.Data;
+using Edemly.Server.Data.Entities;
 
-namespace uchat_server.Services
+namespace Edemly.Server.Services
 {
     public class TenantDbContextFactory : ITenantDbContextFactory
     {
@@ -37,7 +37,7 @@ namespace uchat_server.Services
             var tenantConn = new MySqlConnector.MySqlConnectionStringBuilder(defaultConn!) { Database = dbName }.ToString();
 
             var optionsBuilder = new DbContextOptionsBuilder<CompanyDbContext>();
-            optionsBuilder.UseMySql(tenantConn, ServerVersion.AutoDetect(tenantConn), mysqlOptions => { mysqlOptions.MigrationsAssembly("uchat_server"); });
+            optionsBuilder.UseMySql(tenantConn, ServerVersion.AutoDetect(tenantConn), mysqlOptions => { mysqlOptions.MigrationsAssembly("Edemly.Server"); });
 
             return new CompanyDbContext(optionsBuilder.Options);
         }

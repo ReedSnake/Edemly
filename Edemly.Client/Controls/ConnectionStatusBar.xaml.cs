@@ -2,10 +2,10 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using uchat.Lang;
-using uchat.Services;
+using Edemly.Client.Lang;
+using Edemly.Client.Services;
 
-namespace uchat.Controls
+namespace Edemly.Client.Controls
 {
     public partial class ConnectionStatusBar : UserControl
     {

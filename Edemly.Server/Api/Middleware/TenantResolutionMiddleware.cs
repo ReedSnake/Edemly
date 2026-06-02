@@ -1,12 +1,12 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
-using uchat_server.Data;
-using uchat_server.Api.Middleware;
+using Edemly.Server.Data;
+using Edemly.Server.Api.Middleware;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace uchat_server.Api.Middleware
+namespace Edemly.Server.Api.Middleware
 {
     public class TenantResolutionMiddleware
     {

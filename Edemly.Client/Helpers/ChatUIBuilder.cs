@@ -7,11 +7,11 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
-using uchat.DTOs;
-using uchat.Lang;
-using uchat.Services;
+using Edemly.Client.DTOs;
+using Edemly.Client.Lang;
+using Edemly.Client.Services;
 
-namespace uchat.Helpers
+namespace Edemly.Client.Helpers
 {
     public class ChatUIBuilder
     {

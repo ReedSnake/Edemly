@@ -1,4 +1,4 @@
-namespace uchat.Services
+namespace Edemly.Client.Services
 {
     /// <summary>
     /// Сервіс для безпечного зберігання чутливих даних (токени, паролі)

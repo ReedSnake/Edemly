@@ -3,7 +3,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace uchat.Services
+namespace Edemly.Client.Services
 {
     /// <summary>
     /// Сервіс для перевірки доступності сервера

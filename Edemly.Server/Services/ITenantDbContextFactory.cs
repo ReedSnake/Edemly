@@ -1,8 +1,8 @@
-using uchat_server.Data.Entities;
-using uchat_server.Data;
+using Edemly.Server.Data.Entities;
+using Edemly.Server.Data;
 using Microsoft.EntityFrameworkCore;
 
-namespace uchat_server.Services
+namespace Edemly.Server.Services
 {
     public interface ITenantDbContextFactory
     {

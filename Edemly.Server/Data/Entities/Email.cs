@@ -1,4 +1,4 @@
-﻿namespace uchat_server.Data.Entities
+﻿namespace Edemly.Server.Data.Entities
 {
     public class Email
     {

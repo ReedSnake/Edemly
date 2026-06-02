@@ -1,14 +1,14 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using uchat_server.Data;
-using uchat_server.Data.Entities;
-using uchat_server.Services;
-using uchat_server.Api.Middleware;
+using Edemly.Server.Data;
+using Edemly.Server.Data.Entities;
+using Edemly.Server.Services;
+using Edemly.Server.Api.Middleware;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace uchat_server.Api.Controllers
+namespace Edemly.Server.Api.Controllers
 {
     [ApiController]
     public abstract class ApiControllerBase : ControllerBase

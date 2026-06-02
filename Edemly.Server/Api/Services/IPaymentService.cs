@@ -1,7 +1,7 @@
-using uchat_server.Api.DTOs;
-using uchat_server.Data.Entities;
+using Edemly.Server.Api.DTOs;
+using Edemly.Server.Data.Entities;
 
-namespace uchat_server.Api.Services
+namespace Edemly.Server.Api.Services
 {
     public interface IPaymentService
     {

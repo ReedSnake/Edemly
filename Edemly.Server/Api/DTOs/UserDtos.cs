@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using uchat_server.Data.Entities;
+using Edemly.Server.Data.Entities;
 
-namespace uchat_server.Api.DTOs
+namespace Edemly.Server.Api.DTOs
 {
     public class UserCreateDto
     {

@@ -6,11 +6,11 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using uchat.Lang;
-using uchat.Services;
-using MessageBox = uchat.Pages.MessageBox;
+using Edemly.Client.Lang;
+using Edemly.Client.Services;
+using MessageBox = Edemly.Client.Pages.MessageBox;
 
-namespace uchat
+namespace Edemly.Client
 {
     public partial class Page_premium : Page
     {
@@ -130,7 +130,7 @@ namespace uchat
         {
             try
             {
-                var apiConcrete = App.ApiService as uchat.Services.Api.ApiService;
+                var apiConcrete = App.ApiService as Edemly.Client.Services.Api.ApiService;
                 if (apiConcrete == null)
                 {
                     MessageBox.ShowError(DefaultLanguage.PremiumApiError, DefaultLanguage.PremiumPaymentError);

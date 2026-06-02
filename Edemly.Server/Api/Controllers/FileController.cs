@@ -1,19 +1,19 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using uchat_server.Api.Services;
-using uchat_server.Data;
-using uchat_server.Services;
-using uchat_server.Api.Middleware;
+using Edemly.Server.Api.Services;
+using Edemly.Server.Data;
+using Edemly.Server.Services;
+using Edemly.Server.Api.Middleware;
 using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.Http;
 using System.IO;
 using System.Linq;
 using System;
 using System.Threading.Tasks;
-using uchat_server.Api.DTOs;
+using Edemly.Server.Api.DTOs;
 using Microsoft.AspNetCore.StaticFiles; // ПОТРІБНО ДОДАТИ ЦЕЙ USING
 
-namespace uchat_server.Api.Controllers
+namespace Edemly.Server.Api.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]

@@ -1,4 +1,4 @@
-﻿namespace uchat_server.Api.Services
+﻿namespace Edemly.Server.Api.Services
 {
     public interface IPermissionService
     {

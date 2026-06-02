@@ -8,7 +8,7 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
-namespace uchat
+namespace Edemly.Client
 {
     public class StickerModel
     {

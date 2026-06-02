@@ -1,12 +1,12 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using uchat_server.Api.DTOs;
-using uchat_server.Data;
-using uchat_server.Data.Entities;
-using uchat_server.Api.Middleware;
-using uchat_server.Services;
+using Edemly.Server.Api.DTOs;
+using Edemly.Server.Data;
+using Edemly.Server.Data.Entities;
+using Edemly.Server.Api.Middleware;
+using Edemly.Server.Services;
 
-namespace uchat_server.Utils
+namespace Edemly.Server.Utils
 {
     public class DbContextResolver
     {

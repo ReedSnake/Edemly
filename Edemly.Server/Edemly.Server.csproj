@@ -5,8 +5,8 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId>dotnet-uchat_server-305c3c13-a9df-4776-81eb-acbaaaa3df39</UserSecretsId>
-    <RootNamespace>uchat_server</RootNamespace>
-    <AssemblyName>uchat_server</AssemblyName>
+    <RootNamespace>Edemly.Server</RootNamespace>
+    <AssemblyName>Edemly.Server</AssemblyName>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
@@ -63,4 +63,3 @@
   </ItemGroup>
 
 </Project>
-

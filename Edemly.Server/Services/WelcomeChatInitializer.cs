@@ -1,10 +1,10 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using uchat_server.Data;
-using uchat_server.Data.Entities;
+using Edemly.Server.Data;
+using Edemly.Server.Data.Entities;
 
-namespace uchat_server.Services
+namespace Edemly.Server.Services
 {
     /// <summary>
     /// Сервіс для створення привітального чату при старті сервера
