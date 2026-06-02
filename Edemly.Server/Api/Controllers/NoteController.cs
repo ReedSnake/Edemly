@@ -1,10 +1,11 @@
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+using Edemly.Contracts.Notes;
 using Edemly.Server.Api.DTOs;
+using Edemly.Server.Api.Middleware;
 using Edemly.Server.Api.Services;
 using Edemly.Server.Data;
 using Edemly.Server.Services;
-using Edemly.Server.Api.Middleware;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 
 namespace Edemly.Server.Api.Controllers
@@ -62,7 +63,7 @@ namespace Edemly.Server.Api.Controllers
 
         [Authorize]
         [HttpPost("create")]
-        public async Task<IActionResult> Create([FromBody] NoteDtos.NoteCreateDto model)
+        public async Task<IActionResult> Create([FromBody] CreateNoteDto model)
         {
             var userIdClaim = int.Parse(User.Claims.FirstOrDefault(c => c.Type == "userId")?.Value ?? "0");
 
@@ -73,7 +74,7 @@ namespace Edemly.Server.Api.Controllers
 
         [Authorize]
         [HttpPut("update")]
-        public async Task<IActionResult> Update([FromBody] NoteDtos.NoteUpdateDto model)
+        public async Task<IActionResult> Update([FromBody] UpdateNoteDto model)
         {
             var userIdClaim = int.Parse(User.Claims.FirstOrDefault(c => c.Type == "userId")?.Value ?? "0");
 

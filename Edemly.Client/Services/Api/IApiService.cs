@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Edemly.Client.DTOs;
+using Edemly.Contracts.Calls;
 using Edemly.Contracts.Remindings;
 namespace Edemly.Client.Services.Api
 {

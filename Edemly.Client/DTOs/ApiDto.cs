@@ -28,11 +28,6 @@ namespace Edemly.Client.DTOs
         public UserInfoDto User { get; set; } = new();
     }
 
-    public class NoteResponseDto
-    {
-        public string Note { get; set; } = string.Empty;
-    }
-
     public class CreateGroupChatResponseDto
     {
         public ChatDto? Chat { get; set; }
