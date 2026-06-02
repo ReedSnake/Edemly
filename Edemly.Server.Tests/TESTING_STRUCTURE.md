@@ -1,4 +1,4 @@
-# ServerTests Structure
+# Server Tests Structure
 
 This project is reserved for server-side testing of the Edemly solution.
 
@@ -10,36 +10,40 @@ This project is reserved for server-side testing of the Edemly solution.
 - Validate tenant-aware behavior and isolation.
 - Keep unit and integration tests separated by purpose.
 
-## Planned layout
+## Current layout
 
 ```text
-ServerTests/
+Edemly.Server.Tests/
   Infrastructure/
-	Database/
-	Tenant/
+    CustomWebApplicationFactory.cs
   Integration/
-	Auth/
-	Files/
-	Health/
-	Tenants/
+    Auth/
+    Chats/
+    Health/
+    Messages/
   Unit/
-	Helpers/
-	Middleware/
-	Services/
+    Helpers/
+    Middleware/
+    Services/
   Fixtures/
   TestData/
+    AuthTestData.cs
   Utilities/
+    TestAuthHelper.cs
+    TestChatHelper.cs
+    TestHttpClientExtensions.cs
 ```
 
 ## Notes
 
-- The project currently contains no real tests yet.
+- See `TESTING_COVERAGE.md` for covered behavior, red specifications, and backlog.
 - `Infrastructure` is for host setup, database setup, and tenant setup.
 - `Integration` is for controller, middleware, and full request pipeline tests.
 - `Unit` is for isolated service logic without a full host.
 - `Fixtures` should manage shared lifecycle objects for the test host and database.
 - `TestData` should store reusable seed data and builders.
 - `Utilities` should contain helper assertions and random data builders.
+- Failing tests are allowed when they describe desired behavior. Record them in `TESTING_COVERAGE.md` under `Red Specifications`.
 
 ## Recommended test approach
 
@@ -47,3 +51,4 @@ ServerTests/
 - Use one shared test host per test collection when practical.
 - Keep tenant context and database state isolated between tests.
 - Add tests incrementally, starting with tenant resolution, permissions, and authentication.
+- Keep tests at HTTP level for endpoint behavior unless the behavior is clearly service-only.

@@ -1,5 +1,11 @@
 # Edemly Testing Roadmap
 
+## Current Coverage Tracker
+
+The current server test coverage, red specifications, and backlog are tracked in `Edemly.Server.Tests/TESTING_COVERAGE.md`.
+
+Update that file whenever tests are added, changed, or intentionally left red as desired behavior.
+
 ## Phase 1. Add Test Projects
 
 ### Goal
