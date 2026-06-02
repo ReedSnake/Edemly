@@ -9,6 +9,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Edemly.Client.DTOs;
+using Edemly.Contracts.Users;
 
 namespace Edemly.Client.Services.Api
 {
@@ -96,7 +97,7 @@ namespace Edemly.Client.Services.Api
         {
             try
             {
-                var updateData = new UserUpdateDto();
+                var updateData = new UpdateUserDto();
                 bool hasChanges = false;
 
                 if (name != null)

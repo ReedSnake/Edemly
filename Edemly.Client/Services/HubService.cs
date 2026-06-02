@@ -482,7 +482,7 @@ namespace Edemly.Client.Services
             return Task.CompletedTask;
         }
 
-        public async Task<bool> SendMessageAsync(MessageCreateDto message)
+        public async Task<bool> SendMessageAsync(CreateMessageDto message)
         {
             if (!IsConnected)
             {
@@ -519,7 +519,7 @@ namespace Edemly.Client.Services
             }
         }
 
-        public async Task<bool> UpdateMessageAsync(MessageUpdateDto message)
+        public async Task<bool> UpdateMessageAsync(UpdateMessageDto message)
         {
             if (!IsConnected)
             {

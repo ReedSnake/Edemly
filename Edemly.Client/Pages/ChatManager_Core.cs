@@ -465,7 +465,7 @@ namespace Edemly.Client
 
             try
             {
-                var message = new MessageCreateDto
+                var message = new CreateMessageDto
                 {
                     ChatId = CurrentChatId,
                     Text = messageText,

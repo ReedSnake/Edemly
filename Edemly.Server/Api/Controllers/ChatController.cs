@@ -1,13 +1,12 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
-using Edemly.Server.Api.DTOs;
+using Edemly.Contracts.Chats;
+using Edemly.Server.Api.Middleware;
 using Edemly.Server.Api.Services;
+using Edemly.Server.Data;
 using Edemly.Server.Hubs;
 using Edemly.Server.Services;
-using Edemly.Server.Data;
-using Edemly.Server.Api.Middleware;
-using Microsoft.Extensions.Configuration;
 
 namespace Edemly.Server.Api.Controllers
 {
@@ -18,7 +17,13 @@ namespace Edemly.Server.Api.Controllers
         private readonly IChatService _chatService;
         private readonly IHubContext<MainHub> _hubContext;
 
-        public ChatController(IChatService chatService, IHubContext<MainHub> hubContext, ServerDbContext serverDb, ITenantProvider tenantProvider, ITenantDbContextFactory tenantDbFactory, IConfiguration configuration)
+        public ChatController(
+            IChatService chatService,
+            IHubContext<MainHub> hubContext,
+            ServerDbContext serverDb,
+            ITenantProvider tenantProvider,
+            ITenantDbContextFactory tenantDbFactory,
+            IConfiguration configuration)
             : base(serverDb, tenantProvider, tenantDbFactory, configuration)
         {
             _chatService = chatService;
@@ -27,7 +32,7 @@ namespace Edemly.Server.Api.Controllers
 
         [Authorize]
         [HttpPost("create-private")]
-        public async Task<IActionResult> CreatePrivateChat([FromBody] CreatePrivateChatRequest request)
+        public async Task<IActionResult> CreatePrivateChat([FromBody] CreatePrivateChatDto request)
         {
             var userIdClaim = int.Parse(User.Claims.FirstOrDefault(c => c.Type == "userId")?.Value ?? "0");
 
@@ -48,7 +53,7 @@ namespace Edemly.Server.Api.Controllers
 
         [Authorize]
         [HttpPost("create-group")]
-        public async Task<IActionResult> CreateGroupChat([FromBody] CreateGroupChatRequest request)
+        public async Task<IActionResult> CreateGroupChat([FromBody] CreateGroupChatDto request)
         {
             var userIdClaim = int.Parse(User.Claims.FirstOrDefault(c => c.Type == "userId")?.Value ?? "0");
 
@@ -74,16 +79,15 @@ namespace Edemly.Server.Api.Controllers
                 return BadRequest(new { message = result.Error });
             }
 
-            // ? ДОДАНО: Сповіщаємо всіх учасників про нову групу через SignalR
             if (result.Chat != null)
             {
                 var allMemberIds = new List<int> { userIdClaim };
                 allMemberIds.AddRange(request.ParticipantIds);
-                
+
                 var memberIdStrings = allMemberIds.Distinct().Select(id => id.ToString()).ToList();
-                
-                await _hubContext.Clients.Users(memberIdStrings).SendAsync("GroupCreated", new 
-                { 
+
+                await _hubContext.Clients.Users(memberIdStrings).SendAsync("GroupCreated", new
+                {
                     ChatId = result.Chat.Id,
                     ChatName = result.Chat.Name,
                     ChatType = result.Chat.Type,
@@ -126,7 +130,6 @@ namespace Edemly.Server.Api.Controllers
                 return Unauthorized(new { message = "User not authenticated" });
             }
 
-            // ? ВИПРАВЛЕНО: Використовуємо перегрузку з userId для правильного відображення імені
             var result = await _chatService.GetById(id, userIdClaim);
 
             if (!result.Success)
@@ -139,7 +142,7 @@ namespace Edemly.Server.Api.Controllers
 
         [Authorize]
         [HttpPut("update")]
-        public async Task<IActionResult> UpdateChat([FromBody] UpdateChatRequest request)
+        public async Task<IActionResult> UpdateChat([FromBody] UpdateChatDto request)
         {
             var userIdClaim = int.Parse(User.Claims.FirstOrDefault(c => c.Type == "userId")?.Value ?? "0");
 
@@ -147,8 +150,6 @@ namespace Edemly.Server.Api.Controllers
             {
                 return Unauthorized(new { message = "User not authenticated" });
             }
-
-            // TODO: Додати перевірку прав (чи користувач є адміном чату)
 
             var result = await _chatService.UpdateChat(request.Id, request.Name, request.Description, request.IconUrl);
 
@@ -185,12 +186,11 @@ namespace Edemly.Server.Api.Controllers
 
             try
             {
-                // Используем FileStorageService для загрузки файла
                 using var stream = file.OpenReadStream();
                 var result = await fileStorageService.UploadFileAsync(
-                    userIdClaim, 
-                    stream, 
-                    $"group_{chatId}_{DateTime.UtcNow.Ticks}{Path.GetExtension(file.FileName)}", 
+                    userIdClaim,
+                    stream,
+                    $"group_{chatId}_{DateTime.UtcNow.Ticks}{Path.GetExtension(file.FileName)}",
                     file.ContentType ?? "image/jpeg");
 
                 if (!result.Success)
@@ -198,7 +198,6 @@ namespace Edemly.Server.Api.Controllers
                     return BadRequest(new { message = result.Error ?? "Failed to upload file" });
                 }
 
-                // Обновляем иконку чата в БД
                 var updateResult = await _chatService.UpdateChat(chatId, name: null, description: null, iconUrl: result.Url);
                 if (!updateResult.Success)
                 {
@@ -212,24 +211,5 @@ namespace Edemly.Server.Api.Controllers
                 return BadRequest(new { message = $"Error uploading file: {ex.Message}" });
             }
         }
-    }
-
-    public class CreatePrivateChatRequest
-    {
-        public int UserId { get; set; }
-    }
-
-    public class CreateGroupChatRequest
-    {
-        public string GroupName { get; set; } = string.Empty;
-        public List<int> ParticipantIds { get; set; } = new List<int>();
-    }
-
-    public class UpdateChatRequest
-    {
-        public int Id { get; set; }
-        public string? Name { get; set; }
-        public string? Description { get; set; }
-        public string? IconUrl { get; set; }
     }
 }

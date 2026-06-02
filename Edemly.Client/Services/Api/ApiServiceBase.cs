@@ -9,7 +9,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Edemly.Client.DTOs;
-
+using Edemly.Contracts.Calls;
 namespace Edemly.Client.Services.Api
 {
     public partial class ApiService : IApiService, IDisposable

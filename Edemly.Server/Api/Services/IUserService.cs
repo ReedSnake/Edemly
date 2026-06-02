@@ -1,17 +1,15 @@
-﻿using Edemly.Server.Api.DTOs;
+using Edemly.Contracts.Users;
 
 namespace Edemly.Server.Api.Services
 {
     public interface IUserService
     {
-        Task<(bool Success, string? Error)> CreateUser(UserCreateDto model);
-        Task<(bool Success, string? Error, UserGetSelfDto? User)> GetFullInfo(int id);
-        Task<(bool Success, string? Error, UserGetDto? User)> GetById(int id);
-        Task<(bool Success, string? Error, List<UserGetDto>? Users)> SearchUsers(string searchQuery);
-        Task<(bool Success, string? Error)> UpdateUser(int id, UserUpdateDto model);
+        Task<(bool Success, string? Error)> CreateUser(CreateUserDto model);
+        Task<(bool Success, string? Error, UserInfoDto? User)> GetFullInfo(int id);
+        Task<(bool Success, string? Error, UserDto? User)> GetById(int id);
+        Task<(bool Success, string? Error, List<UserDto>? Users)> SearchUsers(string searchQuery);
+        Task<(bool Success, string? Error)> UpdateUser(int id, UpdateUserDto model);
         Task<(bool Success, string? Error)> DeleteUser(int id);
-        
-        // ДОДАНО: Batch отримання користувачів
-        Task<(bool Success, string? Error, List<UserGetDto>? Users)> GetUsersBatch(List<int> userIds);
+        Task<(bool Success, string? Error, List<UserDto>? Users)> GetUsersBatch(List<int> userIds);
     }
 }

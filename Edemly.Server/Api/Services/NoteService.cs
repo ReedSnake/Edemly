@@ -1,10 +1,9 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Edemly.Server.Api.DTOs;
 using Edemly.Server.Data;
 using Edemly.Server.Data.Entities;
 using Edemly.Server.Utils;
-using static Edemly.Server.Api.DTOs.NoteDtos;
+using Edemly.Contracts.Notes;
 using Edemly.Server.Api.Middleware;
 using Edemly.Server.Services;
 
@@ -25,7 +24,7 @@ namespace Edemly.Server.Api.Services
         }
 
         // Get a note by id
-        public async Task<(bool Success, string? Error, NoteGetDto Note)> GetById(int id)
+        public async Task<(bool Success, string? Error, NoteDto Note)> GetById(int id)
         {
             try
             {
@@ -33,7 +32,7 @@ namespace Edemly.Server.Api.Services
                 if (note == null)
                     return (false, "Note not found", null!);
 
-                var dto = new NoteGetDto
+                var dto = new NoteDto
                 {
                     Id = note.Id,
                     UserId = note.UserId,
@@ -55,13 +54,13 @@ namespace Edemly.Server.Api.Services
         }
 
         // Get all notes created by a user
-        public async Task<(bool Success, string? Error, List<NoteGetDto> Notes)> GetAll(int creatorId)
+        public async Task<(bool Success, string? Error, List<NoteDto> Notes)> GetAll(int creatorId)
         {
             try
             {
                 var notes = await _ctx.Set<Note>()
                     .Where(n => n.CreatorId == creatorId)
-                    .Select(n => new NoteGetDto
+                    .Select(n => new NoteDto
                     {
                         Id = n.Id,
                         UserId = n.UserId,
@@ -75,7 +74,7 @@ namespace Edemly.Server.Api.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to get notes");
-                return (false, ex.Message, new List<NoteGetDto>());
+                return (false, ex.Message, new List<NoteDto>());
             }
             finally
             {
@@ -84,7 +83,7 @@ namespace Edemly.Server.Api.Services
         }
 
         // Create a new note
-        public async Task<(bool Success, string? Error)> Create(int creatorId, NoteCreateDto model)
+        public async Task<(bool Success, string? Error)> Create(int creatorId, CreateNoteDto model)
         {
             try
             {
@@ -143,7 +142,7 @@ namespace Edemly.Server.Api.Services
         }
 
         // Update a note
-        public async Task<(bool Success, string? Error)> Update(NoteUpdateDto model)
+        public async Task<(bool Success, string? Error)> Update(UpdateNoteDto model)
         {
             try
             {

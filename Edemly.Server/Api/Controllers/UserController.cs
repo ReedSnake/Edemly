@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Edemly.Server.Api.DTOs;
+using Edemly.Contracts.Users;
 using Edemly.Server.Api.Services;
 using Edemly.Server.Data;
 using Edemly.Server.Services;
@@ -77,7 +77,7 @@ namespace Edemly.Server.Controllers
 
         [Authorize]
         [HttpPut("update")]
-        public async Task<IActionResult> UpdateUser([FromBody] UserUpdateDto model)
+        public async Task<IActionResult> UpdateUser([FromBody] UpdateUserDto model)
         {
             var userIdClaim = int.Parse(User.Claims.FirstOrDefault(c => c.Type == "userId")?.Value ?? "0");
 

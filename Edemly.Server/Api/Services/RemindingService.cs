@@ -6,8 +6,7 @@ using Edemly.Server.Data;
 using Edemly.Server.Data.Entities;
 using Edemly.Server.Services;
 using Edemly.Server.Utils;
-using static Edemly.Server.Api.DTOs.RemindingDtos;
-
+using Edemly.Contracts.Remindings;
 namespace Edemly.Server.Api.Services
 {
     public class RemindingService : IRemindingService
@@ -24,7 +23,7 @@ namespace Edemly.Server.Api.Services
         }
 
         // Create a new reminding
-        public async Task<(bool Success, string? Error)> Create(int creatorId, RemindingCreateDto model)
+        public async Task<(bool Success, string? Error)> Create(int creatorId, CreateRemindingDto model)
         {
             _logger.LogWarning(model.Name);
             _logger.LogWarning(model.Type.ToString());
@@ -59,7 +58,7 @@ namespace Edemly.Server.Api.Services
         }
 
         // Update an existing reminding
-        public async Task<(bool Success, string? Error)> Update(RemindingUpdateDto model)
+        public async Task<(bool Success, string? Error)> Update(UpdateRemindingDto model)
         {
             try
             {
@@ -108,7 +107,7 @@ namespace Edemly.Server.Api.Services
             try
             {
                 var reminding = await _ctx.Set<Reminding>().FindAsync(id);
-                RemindingUpdateDto model = new RemindingUpdateDto { Id = id, IsCompleted = !reminding.IsCompleted };
+                UpdateRemindingDto model = new UpdateRemindingDto { Id = id, IsCompleted = !reminding.IsCompleted };
                 await Update(model);
                 return (true, null);
             }
@@ -144,7 +143,7 @@ namespace Edemly.Server.Api.Services
         }
 
         // Get a single reminding by id
-        public async Task<(bool Success, string? Error, RemindingGetDto Reminding)> GetById(int id)
+        public async Task<(bool Success, string? Error, RemindingDto Reminding)> GetById(int id)
         {
             try
             {
@@ -152,7 +151,7 @@ namespace Edemly.Server.Api.Services
                 if (reminding == null)
                     return (false, "Reminding not found", null!);
 
-                var dto = new RemindingGetDto
+                var dto = new RemindingDto
                 {
                     Id = reminding.Id,
                     UserId = reminding.UserId,
@@ -180,14 +179,14 @@ namespace Edemly.Server.Api.Services
         }
 
         // Get all remindings for a user
-        public async Task<(bool Success, string? Error, List<RemindingGetDto> Remindings)> GetByUser(int userId)
+        public async Task<(bool Success, string? Error, List<RemindingDto> Remindings)> GetByUser(int userId)
         {
             try
             {
                 var remindings = await _ctx.Set<Reminding>()
                     .Where(r => r.UserId == userId)
                     .OrderBy(r => r.LastTime)
-                    .Select(r => new RemindingGetDto
+                    .Select(r => new RemindingDto
                     {
                         Id = r.Id,
                         UserId = r.UserId,
@@ -208,7 +207,7 @@ namespace Edemly.Server.Api.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to get remindings for user");
-                return (false, ex.Message, new List<RemindingGetDto>());
+                return (false, ex.Message, new List<RemindingDto>());
             }
             finally
             {

@@ -1,7 +1,12 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Edemly.Client.DTOs;
-
+using Edemly.Contracts.Calls;
+using Edemly.Contracts.Remindings;
+using Edemly.Contracts.Payments;
+using Edemly.Contracts.Users;
+using Edemly.Contracts.Chats;
+using Edemly.Contracts.ChatMembers;
 namespace Edemly.Client.Services.Api
 {
     public interface IApiService
@@ -41,7 +46,7 @@ namespace Edemly.Client.Services.Api
         Task<List<CallDto>> GetActiveCallsAsync();
 
         
-        Task<RemindingDto?> CreateRemindingAsync(RemindingCreateDto model);
+        Task<RemindingDto?> CreateRemindingAsync(CreateRemindingDto model);
 
         Task<List<RemindingDto>> GetMyRemindingsAsync();
 
@@ -50,7 +55,7 @@ namespace Edemly.Client.Services.Api
         Task<List<PaymentDto>> GetPaymentHistoryAsync();
         Task<(bool Success, bool IsPaid, string? Error)> CheckPaymentStatusAsync(string orderId);
         Task<bool> DeleteRemindingAsync(int id);
-        Task<bool> UpdateRemindingAsync(RemindingUpdateDto model);
+        Task<bool> UpdateRemindingAsync(UpdateRemindingDto model);
         Task<bool> ToggleRemindingAsync(int id);
     }
 }

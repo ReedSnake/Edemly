@@ -9,6 +9,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Edemly.Client.DTOs;
+using Edemly.Contracts.Files;
 
 namespace Edemly.Client.Services.Api
 {
@@ -38,7 +39,7 @@ namespace Edemly.Client.Services.Api
                 }
 
                 var json = await response.Content.ReadAsStringAsync();
-                var result = TryDeserialize<UploadResponseDto>(json);
+                var result = TryDeserialize<UploadProfilePictureResponseDto>(json);
 
                 return (true, result?.Url, null);
             }
@@ -122,7 +123,7 @@ namespace Edemly.Client.Services.Api
                     var json = await response.Content.ReadAsStringAsync();
                     System.Diagnostics.Debug.WriteLine($"[API] UploadGroupIconAsync response: {json}");
                     
-                    var result = TryDeserialize<UploadResponseDto>(json);
+                    var result = TryDeserialize<UploadProfilePictureResponseDto>(json);
 
                     if (result != null && !string.IsNullOrEmpty(result.Url))
                     {

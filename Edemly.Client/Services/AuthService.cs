@@ -6,7 +6,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using System.Diagnostics;
 using Edemly.Client.Models;
-using Edemly.Client.DTOs;
+using Edemly.Contracts.Auth;
 
 namespace Edemly.Client.Services
 {
@@ -66,7 +66,7 @@ namespace Edemly.Client.Services
         {
             try
             {
-                var request = new LoginWithCodeRequestDto { Email = email, Code = code };
+                var request = new LoginWithCodeDto { Email = email, Code = code };
                 var json = JsonSerializer.Serialize(request);
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
 
@@ -104,7 +104,7 @@ namespace Edemly.Client.Services
         {
             try
             {
-                var request = new RegisterRequestDto { Email = email, Code = code, Username = username };
+                var request = new RegistrationWithCodeDto { Email = email, Code = code, Username = username };
                 var json = JsonSerializer.Serialize(request);
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
 
@@ -144,7 +144,7 @@ namespace Edemly.Client.Services
         {
             try
             {
-                var request = new SessionLoginRequestDto { SessionToken = sessionToken };
+                var request = new SessionLoginDto { SessionToken = sessionToken };
                 var json = JsonSerializer.Serialize(request);
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
 

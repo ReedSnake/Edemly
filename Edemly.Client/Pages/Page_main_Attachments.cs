@@ -497,7 +497,7 @@ namespace Edemly.Client
                     messageType = 4;
                 }
 
-                var message = new MessageCreateDto
+                var message = new CreateMessageDto
                 {
                     ChatId = chatManager.CurrentChatId,
                     Text = string.IsNullOrWhiteSpace(caption) ? string.Empty : caption,

@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Edemly.Server.Api.DTOs;
+using Edemly.Contracts.Chats;
 using Edemly.Server.Api.Middleware;
 using Edemly.Server.Data;
 using Edemly.Server.Data.Entities;
@@ -29,7 +29,7 @@ namespace Edemly.Server.Api.Services
             _isTenant = isTenant;
         }
 
-        public async Task<(bool Success, string? Error, ChatDtos.ChatGetDto? Chat)> CreateOrGetPrivateChat(int currentUserId, int otherUserId)
+        public async Task<(bool Success, string? Error, ChatDto? Chat)> CreateOrGetPrivateChat(int currentUserId, int otherUserId)
         {
             try
             {
@@ -49,7 +49,7 @@ namespace Edemly.Server.Api.Services
                 {
                     _logger.LogInformation($"Found existing private chat {existingChat.Id} between users {currentUserId} and {otherUserId}");
 
-                    var dto = new ChatDtos.ChatGetDto
+                    var dto = new ChatDto
                     {
                         Id = existingChat.Id,
                         Name = existingChat.Name,
@@ -85,7 +85,7 @@ namespace Edemly.Server.Api.Services
 
                 _logger.LogInformation($"Created new private chat {newChat.Id} between users {currentUserId} and {otherUserId}");
 
-                var newDto = new ChatDtos.ChatGetDto
+                var newDto = new ChatDto
                 {
                     Id = newChat.Id,
                     Name = newChat.Name,
@@ -110,7 +110,7 @@ namespace Edemly.Server.Api.Services
         }
 
         // ✅ ДОДАНО: Метод для створення групового чату
-        public async Task<(bool Success, string? Error, ChatDtos.ChatGetDto? Chat)> CreateGroupChat(
+        public async Task<(bool Success, string? Error, ChatDto? Chat)> CreateGroupChat(
             int creatorId,
             string groupName,
             List<int> participantIds)
@@ -187,7 +187,7 @@ namespace Edemly.Server.Api.Services
                 _logger.LogInformation($"[CREATE GROUP] Successfully created group chat {newChat.Id} '{groupName}' with {participantIds.Count + 1} members");
 
                 // ✅ ВИПРАВЛЕННЯ: Перевіряємо що повертаємо
-                var dto = new ChatDtos.ChatGetDto
+                var dto = new ChatDto
                 {
                     Id = newChat.Id,
                     Name = newChat.Name,
@@ -213,7 +213,7 @@ namespace Edemly.Server.Api.Services
             }
         }
 
-        public async Task<(bool Success, string? Error, List<ChatDtos.ChatGetDto> Chats)> GetMyChats(int userId)
+        public async Task<(bool Success, string? Error, List<ChatDto> Chats)> GetMyChats(int userId)
         {
             try
             {
@@ -223,7 +223,7 @@ namespace Edemly.Server.Api.Services
                     .Where(c => c.ChatMembers.Any(cm => cm.UserId == userId))
                     .ToListAsync(); // ✅ ВИПРАВЛЕНО: Спочатку завантажуємо всі дані
 
-                var result = new List<ChatDtos.ChatGetDto>();
+                var result = new List<ChatDto>();
 
                 foreach (var chat in chats)
                 {
@@ -251,7 +251,7 @@ namespace Edemly.Server.Api.Services
                         .OrderByDescending(m => m.SentAt)
                         .FirstOrDefaultAsync();
 
-                    var dto = new ChatDtos.ChatGetDto
+                    var dto = new ChatDto
                     {
                         Id = chat.Id,
                         Name = displayName,  // ← Правильне ім'я
@@ -278,7 +278,7 @@ namespace Edemly.Server.Api.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error getting user chats");
-                return (false, ex.Message, new List<ChatDtos.ChatGetDto>());
+                return (false, ex.Message, new List<ChatDto>());
             }
             finally
             {
@@ -286,7 +286,7 @@ namespace Edemly.Server.Api.Services
             }
         }
 
-        public async Task<(bool Success, string? Error, ChatDtos.ChatGetDto? Chat)> GetById(int chatId)
+        public async Task<(bool Success, string? Error, ChatDto? Chat)> GetById(int chatId)
         {
             try
             {
@@ -299,7 +299,7 @@ namespace Edemly.Server.Api.Services
                     return (false, "Chat not found", null);
                 }
 
-                var dto = new ChatDtos.ChatGetDto
+                var dto = new ChatDto
                 {
                     Id = chat.Id,
                     Name = chat.Name,  // За замовчуванням використовуємо назву з БД (для груп)
@@ -325,7 +325,7 @@ namespace Edemly.Server.Api.Services
         }
 
         // ✅ ДОДАНО: Перегрузка для отримання чату з правильним іменем для конкретного користувача
-        public async Task<(bool Success, string? Error, ChatDtos.ChatGetDto? Chat)> GetById(int chatId, int requestingUserId)
+        public async Task<(bool Success, string? Error, ChatDto? Chat)> GetById(int chatId, int requestingUserId)
         {
             try
             {
@@ -357,7 +357,7 @@ namespace Edemly.Server.Api.Services
                     _logger.LogInformation($"[GET BY ID] Group chat {chatId}: displaying as '{displayName}'");
                 }
 
-                var dto = new ChatDtos.ChatGetDto
+                var dto = new ChatDto
                 {
                     Id = chat.Id,
                     Name = displayName,

@@ -7,13 +7,11 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
-using Edemly.Server.Api.DTOs;
 using Edemly.Server.Api.Services;
 using Edemly.Server.Data;
 using Edemly.Server.Data.Entities;
 using Edemly.Server.Services;
 using Edemly.Server.Utils;
-using static Edemly.Server.Api.DTOs.MessageDtos;
 using Edemly.Server.Api.Middleware; // ITenantProvider
 
 namespace Edemly.Server.Hubs
@@ -146,7 +144,7 @@ namespace Edemly.Server.Hubs
             return _serverDb;
         }
 
-        public async Task SendMessage(MessageCreateDto messageDto)
+        public async Task SendMessage(CreateMessageDto messageDto)
         {
             var userId = GetUserId();
 
@@ -190,7 +188,7 @@ namespace Edemly.Server.Hubs
                     SenderId = userId,
                     Text = messageDto.Text,
                     SentAt = DateTime.UtcNow,
-                    Type = messageDto.Type,
+                    Type = (MessageType)messageDto.Type,
                     ContentUrl = messageDto.ContentUrl,
                     FileName = messageDto.FileName
                 };
@@ -211,14 +209,14 @@ namespace Edemly.Server.Hubs
                     _logger.LogWarning(ex, "Failed to update LastMessageTime for chat {ChatId}", chat.Id);
                 }
 
-                var messageToSend = new MessageGetDto
+                var messageToSend = new MessageDto
                 {
                     Id = msg.Id,
                     ChatId = msg.ChatId,
                     SenderId = msg.SenderId,
                     Text = msg.Text,
                     SentAt = msg.SentAt,
-                    Type = msg.Type,
+                    Type = (int)msg.Type,
                     ContentUrl = msg.ContentUrl,
                     FileName = msg.FileName
                 };
@@ -246,13 +244,13 @@ namespace Edemly.Server.Hubs
         }
 
         // helper wrapper to keep original behavior and simplify edits
-        private async Task<bool> _message_service_Create(MessageCreateDto messageDto, int userId)
+        private async Task<bool> _message_service_Create(CreateMessageDto messageDto, int userId)
         {
             var result = await _messageService.Create(userId, messageDto);
             return result.Success;
         }
 
-        public async Task UpdateMessage(MessageUpdateDto messageDto)
+        public async Task UpdateMessage(UpdateMessageDto messageDto)
         {
             var userId = GetUserId();
 
@@ -268,50 +266,23 @@ namespace Edemly.Server.Hubs
                     throw new HubException("Message not found");
                 }
 
-                // Update fields if provided
                 if (!string.IsNullOrEmpty(messageDto.Text)) message.Text = messageDto.Text;
-                // Some DTO variants may contain Type, ContentUrl, FileName
-                try
-                {
-                    // attempt dynamic updates for optional properties
-                    var typeProp = messageDto.GetType().GetProperty("Type");
-                    if (typeProp != null)
-                    {
-                        var val = typeProp.GetValue(messageDto);
-                        if (val != null) message.Type = (MessageType)val;
-                    }
-
-                    var contentUrlProp = messageDto.GetType().GetProperty("ContentUrl");
-                    if (contentUrlProp != null)
-                    {
-                        var val = (string?)contentUrlProp.GetValue(messageDto);
-                        if (val != null) message.ContentUrl = val;
-                    }
-
-                    var fileNameProp = messageDto.GetType().GetProperty("FileName");
-                    if (fileNameProp != null)
-                    {
-                        var val = (string?)fileNameProp.GetValue(messageDto);
-                        if (val != null) message.FileName = val;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogDebug(ex, "UpdateMessage: reflection optional property copy failed for messageId={MessageId}", messageDto.Id);
-                }
+                if (messageDto.Type.HasValue) message.Type = (MessageType)messageDto.Type.Value;
+                if (messageDto.ContentUrl != null) message.ContentUrl = messageDto.ContentUrl;
+                if (messageDto.FileName != null) message.FileName = messageDto.FileName;
 
                 ctx.Update(message);
                 await ctx.SaveChangesAsync();
                 _cacheRegistry.ClearChat(message.ChatId, _cache);
 
-                var updatedMessageDto = new MessageGetDto
+                var updatedMessageDto = new MessageDto
                 {
                     Id = message.Id,
                     ChatId = message.ChatId,
                     SenderId = message.SenderId,
                     Text = message.Text,
                     SentAt = message.SentAt,
-                    Type = message.Type,
+                    Type = (int)message.Type,
                     ContentUrl = message.ContentUrl,
                     FileName = message.FileName
                 };

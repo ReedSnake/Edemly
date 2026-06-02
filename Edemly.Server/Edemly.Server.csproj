@@ -62,4 +62,8 @@
     <Folder Include="wwwroot\\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Edemly.Contracts\Edemly.Contracts.csproj" />
+  </ItemGroup>
+
 </Project>

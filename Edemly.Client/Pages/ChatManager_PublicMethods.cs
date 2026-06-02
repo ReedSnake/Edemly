@@ -193,7 +193,7 @@ namespace Edemly.Client
 
                     if (newText == message.Text) return;
 
-                    var updated = new DTOs.MessageUpdateDto { Id = message.Id, ChatId = message.ChatId, Text = newText };
+                    var updated = new UpdateMessageDto { Id = message.Id, ChatId = message.ChatId, Text = newText };
                     bool success = await App.HubService.UpdateMessageAsync(updated);
                     if (!success) Edemly.Client.Pages.MessageBox.ShowError("Failed to update message", "Error");
                 }

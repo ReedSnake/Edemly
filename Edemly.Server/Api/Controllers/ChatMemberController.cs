@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Edemly.Server.Api.Services;
-using static Edemly.Server.Api.DTOs.ChatMemberDtos;
+using Edemly.Contracts.ChatMembers;
 using Edemly.Server.Data;
 using Edemly.Server.Services;
 using Edemly.Server.Api.Middleware;
@@ -60,7 +60,7 @@ namespace Edemly.Server.Api.Controllers
 
         [Authorize]
         [HttpPost("add")]
-        public async Task<IActionResult> AddMember([FromBody] ChatMemberCreateDto model)
+        public async Task<IActionResult> AddMember([FromBody] CreateChatMemberDto model)
         {
             var userIdClaim = int.Parse(User.Claims.FirstOrDefault(c => c.Type == "userId")?.Value ?? "0");
 
@@ -76,7 +76,7 @@ namespace Edemly.Server.Api.Controllers
 
         [Authorize]
         [HttpPut("update")]
-        public async Task<IActionResult> UpdateMember([FromBody] ChatMemberUpdateDto model)
+        public async Task<IActionResult> UpdateMember([FromBody] UpdateChatMemberDto model)
         {
             var userIdClaim = int.Parse(User.Claims.FirstOrDefault(c => c.Type == "userId")?.Value ?? "0");
 

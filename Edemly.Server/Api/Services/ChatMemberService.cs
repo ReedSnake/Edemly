@@ -5,7 +5,7 @@ using Edemly.Server.Data;
 using Edemly.Server.Data.Entities;
 using Edemly.Server.Services;
 using Edemly.Server.Utils;
-using static Edemly.Server.Api.DTOs.ChatMemberDtos;
+using Edemly.Contracts.ChatMembers;
 
 namespace Edemly.Server.Api.Services
 {
@@ -23,7 +23,7 @@ namespace Edemly.Server.Api.Services
         }
 
         // Add a member to a chat (DTO version)
-        public async Task<(bool Success, string? Error)> AddMember(ChatMemberCreateDto model)
+        public async Task<(bool Success, string? Error)> AddMember(CreateChatMemberDto model)
         {
             try
             {
@@ -31,7 +31,7 @@ namespace Edemly.Server.Api.Services
                 {
                     UserId = model.UserId,
                     ChatId = model.ChatId,
-                    Role = model.Role,
+                    Role = (ChatMemberRole)model.Role,
                     JoinedAt = DateTime.UtcNow
                 };
 
@@ -91,7 +91,7 @@ namespace Edemly.Server.Api.Services
         }
 
         // Update a member's role
-        public async Task<(bool Success, string? Error)> UpdateMember(ChatMemberUpdateDto model)
+        public async Task<(bool Success, string? Error)> UpdateMember(UpdateChatMemberDto model)
         {
             try
             {
@@ -100,7 +100,7 @@ namespace Edemly.Server.Api.Services
                     return (false, "Member not found");
 
                 if (model.Role.HasValue)
-                    member.Role = model.Role.Value;
+                    member.Role = (ChatMemberRole)model.Role.Value;
 
                 await _ctx.SaveChangesAsync();
                 return (true, null);
@@ -141,7 +141,7 @@ namespace Edemly.Server.Api.Services
         }
 
         // Get a single member
-        public async Task<(bool Success, string? Error, ChatMemberGetDto Member)> GetMember(int id)
+        public async Task<(bool Success, string? Error, ChatMemberDto Member)> GetMember(int id)
         {
             try
             {
@@ -149,12 +149,12 @@ namespace Edemly.Server.Api.Services
                 if (member == null)
                     return (false, "Member not found", null!);
 
-                var dto = new ChatMemberGetDto
+                var dto = new ChatMemberDto
                 {
                     Id = member.Id,
                     UserId = member.UserId,
                     ChatId = member.ChatId,
-                    Role = member.Role,
+                    Role = (int)member.Role,
                     JoinedAt = member.JoinedAt
                 };
 
@@ -172,18 +172,18 @@ namespace Edemly.Server.Api.Services
         }
 
         // Get all members of a chat
-        public async Task<(bool Success, string? Error, List<ChatMemberGetDto> Members)> GetMembers(int chatId)
+        public async Task<(bool Success, string? Error, List<ChatMemberDto> Members)> GetMembers(int chatId)
         {
             try
             {
                 var members = await _ctx.Set<ChatMember>()
                     .Where(m => m.ChatId == chatId)
-                    .Select(m => new ChatMemberGetDto
+                    .Select(m => new ChatMemberDto
                     {
                         Id = m.Id,
                         UserId = m.UserId,
                         ChatId = m.ChatId,
-                        Role = m.Role,
+                        Role = (int)m.Role,
                         JoinedAt = m.JoinedAt
                     })
                     .ToListAsync();
@@ -193,7 +193,7 @@ namespace Edemly.Server.Api.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to get chat members");
-                return (false, ex.Message, new List<ChatMemberGetDto>());
+                return (false, ex.Message, new List<ChatMemberDto>());
             }
             finally
             {
@@ -202,18 +202,18 @@ namespace Edemly.Server.Api.Services
         }
 
         // Get all chats a user is in
-        public async Task<(bool Success, string? Error, List<ChatMemberGetDto> Memberships)> GetMemberships(int userId)
+        public async Task<(bool Success, string? Error, List<ChatMemberDto> Memberships)> GetMemberships(int userId)
         {
             try
             {
                 var memberships = await _ctx.Set<ChatMember>()
                     .Where(m => m.UserId == userId)
-                    .Select(m => new ChatMemberGetDto
+                    .Select(m => new ChatMemberDto
                     {
                         Id = m.Id,
                         UserId = m.UserId,
                         ChatId = m.ChatId,
-                        Role = m.Role,
+                        Role = (int)m.Role,
                         JoinedAt = m.JoinedAt
                     })
                     .ToListAsync();
@@ -223,7 +223,7 @@ namespace Edemly.Server.Api.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to get user memberships");
-                return (false, ex.Message, new List<ChatMemberGetDto>());
+                return (false, ex.Message, new List<ChatMemberDto>());
             }
             finally
             {

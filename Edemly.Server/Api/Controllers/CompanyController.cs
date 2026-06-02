@@ -1,10 +1,10 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Edemly.Server.Api.Services;
-using Edemly.Server.Api.DTOs;
 using Edemly.Server.Data;
 using Edemly.Server.Data.Entities;
 using Microsoft.Extensions.Configuration;
+using Edemly.Contracts.Companies;
 using Microsoft.EntityFrameworkCore;
 
 namespace Edemly.Server.Api.Controllers
@@ -45,11 +45,16 @@ namespace Edemly.Server.Api.Controllers
 
         [HttpPost("{companyId}/emails")]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> AddEmail(int companyId, [FromBody] AddEmailDto dto)
+        public async Task<IActionResult> AddEmails(int companyId, [FromBody] List<string>? emails)
         {
-            if (string.IsNullOrWhiteSpace(dto?.Email)) return BadRequest("Email required");
+            var validEmails = emails?
+                .Where(email => !string.IsNullOrWhiteSpace(email))
+                .Select(email => email.Trim())
+                .ToList();
 
-            await _provisioningService.AddEmailToTenantAsync(companyId, dto.Email);
+            if (validEmails == null || validEmails.Count == 0) return BadRequest("At least one email is required");
+
+            await _provisioningService.AddEmailsToTenantAsync(companyId, validEmails);
             return Ok();
         }
 

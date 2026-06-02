@@ -10,7 +10,6 @@ using System.IO;
 using System.Linq;
 using System;
 using System.Threading.Tasks;
-using Edemly.Server.Api.DTOs;
 using Microsoft.AspNetCore.StaticFiles; // ПОТРІБНО ДОДАТИ ЦЕЙ USING
 
 namespace Edemly.Server.Api.Controllers
@@ -66,7 +65,7 @@ namespace Edemly.Server.Api.Controllers
                 if (!result.Success)
                     return BadRequest(new { message = result.Error });
 
-                var updateResult = await _userService.UpdateUser(userIdClaim, new UserUpdateDto
+                var updateResult = await _userService.UpdateUser(userIdClaim, new UpdateUserDto
                 {
                     PfpUrl = result.Url
                 });
