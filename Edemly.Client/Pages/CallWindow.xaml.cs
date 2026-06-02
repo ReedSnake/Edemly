@@ -13,7 +13,7 @@ using Concentus.Structs;
 using Concentus.Enums;
 using System.ComponentModel;
 using System.Diagnostics;
-using Edemly.Client.Lang; // ? ÄÎÁÀÂËÅÍÎ
+using Edemly.Client.Lang; // ? ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 
 namespace Edemly.Client.Pages
 {
@@ -121,7 +121,7 @@ namespace Edemly.Client.Pages
             // start load (fire-and-forget ok here)
             try
             {
-                _ringTonePath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "ring.wav");
+                _ringTonePath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Audio", "call-ringtone.wav");
                 if (!System.IO.File.Exists(_ringTonePath)) _ringTonePath = null;
             }
             catch (Exception ex) { Debug.WriteLine($"[CALLWINDOW] Failed to determine ringTonePath: {ex}"); _ringTonePath = null; }
@@ -129,7 +129,7 @@ namespace Edemly.Client.Pages
             // end-call sound
             try
             {
-                _endCallSoundPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "endcall.wav");
+                _endCallSoundPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Audio", "call-ended.wav");
                 if (!System.IO.File.Exists(_endCallSoundPath)) _endCallSoundPath = null;
             }
             catch (Exception ex) { Debug.WriteLine($"[CALLWINDOW] Failed to determine endCallSoundPath: {ex}"); _endCallSoundPath = null;
@@ -277,7 +277,7 @@ namespace Edemly.Client.Pages
                 var calls = await api.GetActiveCallsAsync();
                 if (calls == null || calls.Count == 0)
                 {
-                    CallsListPanel.Children.Add(new TextBlock { Text = DefaultLanguage.NoActiveCall, Margin = new Thickness(6) }); // ? ËÎÊÀËÈÇÎÂÀÍÎ
+                    CallsListPanel.Children.Add(new TextBlock { Text = DefaultLanguage.NoActiveCall, Margin = new Thickness(6) }); // ? ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
                     return;
                 }
 
@@ -338,7 +338,7 @@ namespace Edemly.Client.Pages
             }
             catch (Exception ex)
             {
-                CallsListPanel.Children.Add(new TextBlock { Text = $"{DefaultLanguage.Loading} {ex.Message}", Margin = new Thickness(6) }); // ? ËÎÊÀËÈÇÎÂÀÍÎ
+                CallsListPanel.Children.Add(new TextBlock { Text = $"{DefaultLanguage.Loading} {ex.Message}", Margin = new Thickness(6) }); // ? ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
             }
         }
 
@@ -369,8 +369,8 @@ namespace Edemly.Client.Pages
 
             ListViewGrid.Visibility = Visibility.Collapsed;
             CallViewGrid.Visibility = Visibility.Visible;
-            CallTitle.Text = DefaultLanguage.IncomingCall; // ? ËÎÊÀËÈÇÎÂÀÍÎ - "In call"
-            CallInfoText.Text = string.Format(DefaultLanguage.Connecting, callId); // ? ËÎÊÀËÈÇÎÂÀÍÎ
+            CallTitle.Text = DefaultLanguage.IncomingCall; // ? ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ - "In call"
+            CallInfoText.Text = string.Format(DefaultLanguage.Connecting, callId); // ? ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 
             StopRingtone();
             await _hub.AcceptCallAsync(callId);
@@ -452,7 +452,7 @@ namespace Edemly.Client.Pages
             }
             catch (Exception ex)
             {
-                ShowInlineNotification($"{DefaultLanguage.CallFailed}: {ex.Message}"); // ? ËÎÊÀËÈÇÎÂÀÍÎ
+                ShowInlineNotification($"{DefaultLanguage.CallFailed}: {ex.Message}"); // ? ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
             }
         }
 
@@ -542,8 +542,8 @@ namespace Edemly.Client.Pages
                     }
 
                     // Minimal immediate UI update (do not await network calls before showing window)
-                    IncomingText.Text = DefaultLanguage.IncomingCall; // ? ËÎÊÀË²ÇÎÂÀÍÎ
-                     IncomingFromText.Text = $"{DefaultLanguage.IncomingCall}: {data.InitiatorId}"; // ? ËÎÊÀË²ÇÎÂÀÍÎ
+                    IncomingText.Text = DefaultLanguage.IncomingCall; // ? ï¿½ï¿½ï¿½ï¿½Ë²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+                     IncomingFromText.Text = $"{DefaultLanguage.IncomingCall}: {data.InitiatorId}"; // ? ï¿½ï¿½ï¿½ï¿½Ë²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 
                      // Ensure incoming prompt is visually on top
                      try { Panel.SetZIndex(IncomingPrompt, 9999); } catch (Exception ex) { Debug.WriteLine($"[CALLWINDOW] SetZIndex failed: {ex}"); }
@@ -667,7 +667,7 @@ namespace Edemly.Client.Pages
             Application.Current.Dispatcher.Invoke(() =>
             {
                 DialingPanel.Visibility = Visibility.Visible; 
-                DialingText.Text = DefaultLanguage.Calling; // ? ËÎÊÀË²ÇÎÂÀÍÎ
+                DialingText.Text = DefaultLanguage.Calling; // ? ï¿½ï¿½ï¿½ï¿½Ë²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
                 _dialSecondsLeft = 30; 
                 DialingCountdown.Text = _dialSecondsLeft + "s"; 
                 _dialCallId = callId;
@@ -757,7 +757,7 @@ namespace Edemly.Client.Pages
                 if (_currentCallId == callId)
                 {
                     StopRingtone();
-                    ShowInlineNotification(DefaultLanguage.CallFailed); // ? ËÎÊÀË²ÇÎÂÀÍÎ
+                    ShowInlineNotification(DefaultLanguage.CallFailed); // ? ï¿½ï¿½ï¿½ï¿½Ë²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
                     try { _ = _hub.EndCallAsync(callId); } catch (Exception ex) { Debug.WriteLine($"[CALLWINDOW] OnCallRejected EndCall failed: {ex}"); }
                     StopAudio();
                     PlayEndSound();
@@ -768,7 +768,7 @@ namespace Edemly.Client.Pages
                 if (_dialCallId == callId)
                 {
                     StopRingtone();
-                    ShowInlineNotification(DefaultLanguage.CallFailed); // ? ËÎÊÀË²ÇÎÂÀÍÎ
+                    ShowInlineNotification(DefaultLanguage.CallFailed); // ? ï¿½ï¿½ï¿½ï¿½Ë²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
                     _dialCountdownTimer?.Dispose(); _dialCountdownTimer = null; _dialCallId = null; DialingPanel.Visibility = Visibility.Collapsed;
                 }
             });
@@ -782,7 +782,7 @@ namespace Edemly.Client.Pages
                 {
                     StopAudio();
                     PlayEndSound();
-                    ShowInlineNotification(DefaultLanguage.CallEnded); // ? ËÎÊÀË²ÇÎÂÀÍÎ
+                    ShowInlineNotification(DefaultLanguage.CallEnded); // ? ï¿½ï¿½ï¿½ï¿½Ë²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
                     Close();
                 }
             });
@@ -794,7 +794,7 @@ namespace Edemly.Client.Pages
         private void MuteButton_Click(object sender, RoutedEventArgs e) 
         { 
             _muted = !_muted; 
-            MuteButton.Content = _muted ? DefaultLanguage.Unmute : DefaultLanguage.Mute; // ? ËÎÊÀË²ÇÎÂÀÍÎ
+            MuteButton.Content = _muted ? DefaultLanguage.Unmute : DefaultLanguage.Mute; // ? ï¿½ï¿½ï¿½ï¿½Ë²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
         }
 
         private async void CancelCallButton_Click(object sender, RoutedEventArgs e)

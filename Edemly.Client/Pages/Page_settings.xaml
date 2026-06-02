@@ -294,42 +294,42 @@
                                         <StackPanel Orientation="Horizontal" x:Name="WallpapersPanel" HorizontalAlignment="Left" Margin="0,0,0,8">
                                             <Border x:Name="Wallpaper1" Width="164" Height="110" BorderBrush="{DynamicResource ThemeBorderBrush}" BorderThickness="1" Margin="0,0,12,0" CornerRadius="6" Cursor="Hand" MouseDown="Wallpaper1_MouseDown">
                                                 <Border.Background>
-                                                    <ImageBrush ImageSource="pack://application:,,,/Assets/No_background.png" Stretch="UniformToFill" />
+                                                    <ImageBrush ImageSource="pack://application:,,,/Assets/Backgrounds/background-none.png" Stretch="UniformToFill" />
                                                 </Border.Background>
                                             </Border>
                                             <Border x:Name="Wallpaper2" Width="164" Height="110" BorderBrush="{DynamicResource ThemeBorderBrush}" BorderThickness="1" Margin="0,0,12,0" CornerRadius="6" Cursor="Hand" MouseDown="Wallpaper2_MouseDown">
                                                 <Border.Background>
-                                                    <ImageBrush ImageSource="pack://application:,,,/Assets/blue_photo_background.png" Stretch="UniformToFill" />
+                                                    <ImageBrush ImageSource="pack://application:,,,/Assets/Backgrounds/profile-blue.png" Stretch="UniformToFill" />
                                                 </Border.Background>
                                             </Border>
                                             <Border x:Name="Wallpaper3" Width="164" Height="110" BorderBrush="{DynamicResource ThemeBorderBrush}" BorderThickness="1" Margin="0,0,12,0" CornerRadius="6" Cursor="Hand" MouseDown="Wallpaper3_MouseDown">
                                                 <Border.Background>
-                                                    <ImageBrush ImageSource="pack://application:,,,/Assets/pink_photo_background.png" Stretch="UniformToFill" />
+                                                    <ImageBrush ImageSource="pack://application:,,,/Assets/Backgrounds/profile-pink.png" Stretch="UniformToFill" />
                                                 </Border.Background>
                                             </Border>
                                             <Border x:Name="Wallpaper4" Width="164" Height="110" BorderBrush="{DynamicResource ThemeBorderBrush}" BorderThickness="1" Margin="0,0,12,0" CornerRadius="6" Cursor="Hand" MouseDown="Wallpaper4_MouseDown">
                                                 <Border.Background>
-                                                    <ImageBrush ImageSource="pack://application:,,,/Assets/orange_photo_background.png" Stretch="UniformToFill" />
+                                                    <ImageBrush ImageSource="pack://application:,,,/Assets/Backgrounds/profile-orange.png" Stretch="UniformToFill" />
                                                 </Border.Background>
                                             </Border>
                                             <Border x:Name="Wallpaper5" Width="164" Height="110" BorderBrush="{DynamicResource ThemeBorderBrush}" BorderThickness="1" Margin="0,0,12,0" CornerRadius="6" Cursor="Hand" MouseDown="Wallpaper5_MouseDown">
                                                 <Border.Background>
-                                                    <ImageBrush ImageSource="pack://application:,,,/Assets/green_photo_background.png" Stretch="UniformToFill" />
+                                                    <ImageBrush ImageSource="pack://application:,,,/Assets/Backgrounds/profile-green.png" Stretch="UniformToFill" />
                                                 </Border.Background>
                                             </Border>
                                             <Border x:Name="Wallpaper6" Width="164" Height="110" BorderBrush="{DynamicResource ThemeBorderBrush}" BorderThickness="1" Margin="0,0,12,0" CornerRadius="6" Cursor="Hand" MouseDown="Wallpaper6_MouseDown">
                                                 <Border.Background>
-                                                    <ImageBrush ImageSource="pack://application:,,,/Assets/black_photo_background.png" Stretch="UniformToFill" />
+                                                    <ImageBrush ImageSource="pack://application:,,,/Assets/Backgrounds/profile-black.png" Stretch="UniformToFill" />
                                                 </Border.Background>
                                             </Border>
                                             <Border x:Name="Wallpaper7" Width="164" Height="110" BorderBrush="{DynamicResource ThemeBorderBrush}" BorderThickness="1" Margin="0,0,12,0" CornerRadius="6" Cursor="Hand" MouseDown="Wallpaper7_MouseDown">
                                                 <Border.Background>
-                                                    <ImageBrush ImageSource="pack://application:,,,/Assets/violet_photo_background.png" Stretch="UniformToFill" />
+                                                    <ImageBrush ImageSource="pack://application:,,,/Assets/Backgrounds/profile-violet.png" Stretch="UniformToFill" />
                                                 </Border.Background>
                                             </Border>
                                             <Border x:Name="Wallpaper8" Width="164" Height="110" BorderBrush="{DynamicResource ThemeBorderBrush}" BorderThickness="1" Margin="0,0,0,0" CornerRadius="6" Cursor="Hand" MouseDown="Wallpaper8_MouseDown">
                                                 <Border.Background>
-                                                    <ImageBrush ImageSource="pack://application:,,,/Assets/red_photo_background.png" Stretch="UniformToFill" />
+                                                    <ImageBrush ImageSource="pack://application:,,,/Assets/Backgrounds/profile-red.png" Stretch="UniformToFill" />
                                                 </Border.Background>
                                             </Border>
                                         </StackPanel>
@@ -449,7 +449,7 @@
                         HorizontalAlignment="Stretch" 
                         VerticalAlignment="Stretch">
                     <Border.Background>
-                        <ImageBrush ImageSource="/Assets/image_setting (2).png" 
+                        <ImageBrush ImageSource="/Assets/PageIllustrations/settings-panel.png" 
                                     Stretch="UniformToFill" 
                                     AlignmentX="Center"/>
                     </Border.Background>

@@ -17,7 +17,7 @@ namespace Edemly.Client.Helpers
     {
         private readonly ChatCache _cache;
         private readonly IApiService _apiService;
-        private const string DEFAULT_AVATAR_PATH = "pack://application:,,,/Assets/avatar.png";
+        private const string DEFAULT_AVATAR_PATH = "pack://application:,,,/Assets/Avatars/default-avatar.png";
 
         // Existing constructor (kept for compatibility)
         public ChatLoader(IApiService apiService, ChatCache cache)
@@ -34,17 +34,17 @@ namespace Edemly.Client.Helpers
         }
 
         /// <summary>
-        /// Завантажує користувача з кешем
+        /// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅ
         /// </summary>
         public async Task<UserDto?> GetUserWithCacheAsync(int userId)
         {
-            // Спочатку перевіряємо кеш
+            // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ
             if (_cache.TryGetUser(userId, out var cachedUser))
             {
                 return cachedUser;
             }
 
-            // Якщо немає в кеші, завантажуємо з API
+            // пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ API
             var user = await _apiService.GetUserByIdAsync(userId);
             if (user != null)
             {
@@ -79,26 +79,26 @@ namespace Edemly.Client.Helpers
         }
 
         /// <summary>
-        /// Завантажує повідомлення чату з кешем
+        /// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅ
         /// </summary>
         public async Task<List<MessageDto>> LoadChatMessagesAsync(int chatId, int page = 1, int pageSize = 50)
         {
             try
             {
-                // Якщо це перша сторінка, перевіряємо кеш
+                // пїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ
                 if (page == 1 && _cache.TryGetMessages(chatId, out var cachedMessages))
                 {
                     return cachedMessages;
                 }
 
-                // Завантажуємо з API
+                // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ API
                 var messages = await _apiService.GetChatMessagesAsync(chatId, page, pageSize);
 
                 if (messages.Count > 0)
                 {
                     messages = messages.OrderBy(m => m.SentAt).ToList();
                     
-                    // Кешуємо тільки першу сторінку
+                    // пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
                     if (page == 1)
                     {
                         _cache.AddMessages(chatId, messages);
@@ -116,7 +116,7 @@ namespace Edemly.Client.Helpers
         }
 
         /// <summary>
-        /// Завантажує один чат з оптимізацією
+        /// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
         /// </summary>
         public async Task<(Models.Contact contact, int chatId)?> LoadSingleChatAsync(ChatDto chat, int currentUserId)
         {
@@ -178,13 +178,13 @@ namespace Edemly.Client.Helpers
         }
 
         /// <summary>
-        /// Пакетне завантаження учасників для кількох чатів одночасно
+        /// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
         /// </summary>
         public async Task<Dictionary<int, List<ChatMemberDto>>> LoadChatMembersBatchAsync(List<int> chatIds)
         {
             var result = new Dictionary<int, List<ChatMemberDto>>();
 
-            // Паралельно завантажуємо учасників для всіх чатів
+            // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
             var tasks = chatIds.Select(chatId => GetMembersForChatAsync(chatId)).ToArray();
 
             var results = await Task.WhenAll(tasks);
@@ -211,14 +211,14 @@ namespace Edemly.Client.Helpers
         }
 
         /// <summary>
-        /// Пакетне завантаження користувачів з кешем
+        /// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅ
         /// </summary>
         public async Task<Dictionary<int, UserDto>> LoadUsersBatchAsync(List<int> userIds)
         {
             var result = new Dictionary<int, UserDto>();
             var uniqueUserIds = userIds.Distinct().ToList();
 
-            // Спочатку перевіряємо кеш
+            // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ
             var uncachedUserIds = new List<int>();
             foreach (var userId in uniqueUserIds)
             {
@@ -232,14 +232,14 @@ namespace Edemly.Client.Helpers
                 }
             }
 
-            // Завантажуємо тільки тих користувачів, яких немає в кеші
+            // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅ
             if (uncachedUserIds.Count > 0)
             {
                 var tasks = uncachedUserIds.Select(userId => GetUserAsync(userId)).ToArray();
 
                 var results = await Task.WhenAll(tasks);
 
-                // Додаємо нових користувачів до кешу та результату
+                // пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
                 var newUsers = results.Where(r => r.Item2 != null).Select(r => r.Item2!).ToList();
                 if (newUsers.Count > 0)
                 {

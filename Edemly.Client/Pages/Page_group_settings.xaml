@@ -152,7 +152,7 @@
                                 <Border.Background>
                                     <ImageBrush x:Name="GroupIconImage" 
                                                 Stretch="UniformToFill"
-                                                ImageSource="pack://application:,,,/Assets/avatar.png"/>
+                                                ImageSource="pack://application:,,,/Assets/Avatars/default-avatar.png"/>
                                 </Border.Background>
                             </Border>
 

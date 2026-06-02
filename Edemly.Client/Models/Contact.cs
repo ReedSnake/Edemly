@@ -5,7 +5,7 @@ namespace Edemly.Client.Models
 {
     public class Contact
     {
-        private const string DEFAULT_AVATAR_PATH = "pack://application:,,,/Assets/avatar.png";
+        private const string DEFAULT_AVATAR_PATH = "pack://application:,,,/Assets/Avatars/default-avatar.png";
 
         public int UserId { get; set; }
         public string Name { get; set; }

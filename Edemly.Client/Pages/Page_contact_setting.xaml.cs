@@ -125,7 +125,7 @@ namespace Edemly.Client
             try
             {
                 if (!string.IsNullOrEmpty(_contact.PhotoPath) &&
-                    _contact.PhotoPath != "pack://application:,,,/Assets/avatar.png")
+                    _contact.PhotoPath != "pack://application:,,,/Assets/Avatars/default-avatar.png")
                 {
                     var bitmap = await App.GlobalProfilePictureCache.GetOrDownloadAsync(_contact.PhotoPath);
 
@@ -136,20 +136,20 @@ namespace Edemly.Client
                     else
                     {
                         ContactPhotoBackground.ImageSource = new BitmapImage(
-                            new Uri("pack://application:,,,/Assets/avatar.png", UriKind.RelativeOrAbsolute));
+                            new Uri("pack://application:,,,/Assets/Avatars/default-avatar.png", UriKind.RelativeOrAbsolute));
                     }
                 }
                 else
                 {
                     ContactPhotoBackground.ImageSource = new BitmapImage(
-                        new Uri("pack://application:,,,/Assets/avatar.png", UriKind.RelativeOrAbsolute));
+                        new Uri("pack://application:,,,/Assets/Avatars/default-avatar.png", UriKind.RelativeOrAbsolute));
                 }
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine(string.Format(DefaultLanguage.ContactPhotoLoadError, ex.Message));
                 ContactPhotoBackground.ImageSource = new BitmapImage(
-                    new Uri("pack://application:,,,/Assets/avatar.png", UriKind.RelativeOrAbsolute));
+                    new Uri("pack://application:,,,/Assets/Avatars/default-avatar.png", UriKind.RelativeOrAbsolute));
             }
         }
 

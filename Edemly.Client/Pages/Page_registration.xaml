@@ -28,14 +28,14 @@
 
         <Image Grid.Column="0" Grid.ColumnSpan="2"
                HorizontalAlignment="Left"
-               Source="/Assets/7.png" 
+               Source="/Assets/PageIllustrations/auth-register.png" 
                Stretch="UniformToFill"
                RenderTransformOrigin="0.5,0.5" Margin="80,0,0,0"/>
 
         <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="300,0,100,0">
 
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,0,0,20">
-                <Image Source="/Assets/logo.png" 
+                <Image Source="/Assets/Branding/logo.png" 
                        Width="64" 
                        Height="53" 
                        VerticalAlignment="Center"/>

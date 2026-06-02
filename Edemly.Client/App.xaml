@@ -5,7 +5,7 @@
     <Application.Resources>
         <!-- Embedded app font resource (change in one place to update everywhere) -->
         <!-- The URI points to the TTF placed in Assets and included as Resource by the project file -->
-        <FontFamily x:Key="AppFont">pack://application:,,,/Assets/segoe-ui-emoji_0.ttf#segoe-ui-emoji_0</FontFamily>
+        <FontFamily x:Key="AppFont">pack://application:,,,/Assets/Fonts/segoe-ui-emoji.ttf#segoe-ui-emoji_0</FontFamily>
 
         <!-- Background image resource (may be set at runtime). Provide default keys so XAML DynamicResource lookups succeed. -->
         <x:Null x:Key="BackgroundImage" />

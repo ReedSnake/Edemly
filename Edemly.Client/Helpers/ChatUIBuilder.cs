@@ -15,7 +15,7 @@ namespace Edemly.Client.Helpers
 {
     public class ChatUIBuilder
     {
-        private const string DEFAULT_AVATAR_PATH = "pack://application:,,,/Assets/avatar.png";
+        private const string DEFAULT_AVATAR_PATH = "pack://application:,,,/Assets/Avatars/default-avatar.png";
 
         /// <summary>
         /// Отримати палітру поточної теми

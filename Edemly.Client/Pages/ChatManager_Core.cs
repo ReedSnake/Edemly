@@ -68,7 +68,7 @@ namespace Edemly.Client
         private readonly object _sortLock = new object();
         private readonly TimeSpan _sortDebouncePeriod = TimeSpan.FromMilliseconds(250);
 
-        private const string DEFAULT_AVATAR_PATH = "pack://application:,,,/Assets/avatar.png";
+        private const string DEFAULT_AVATAR_PATH = "pack://application:,,,/Assets/Avatars/default-avatar.png";
         private const int MAX_PARALLEL_LOADS = 5;
         private const int INITIAL_MESSAGE_COUNT = 10;
 
@@ -1435,7 +1435,7 @@ namespace Edemly.Client
         {
             try
             {
-                const string relativePath = "Assets\\msg_spawn.wav";
+                const string relativePath = "Assets\\Audio\\message-notification.wav";
 
                 string outPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory ?? string.Empty, relativePath);
                 if (File.Exists(outPath))
@@ -1454,7 +1454,7 @@ namespace Edemly.Client
 
                 try
                 {
-                    var packUri = new Uri("pack://application:,,,/Assets/msg_spawn.wav", UriKind.Absolute);
+                    var packUri = new Uri("pack://application:,,,/Assets/Audio/message-notification.wav", UriKind.Absolute);
                     var resInfo = Application.GetResourceStream(packUri);
                     if (resInfo?.Stream != null)
                     {
@@ -1496,7 +1496,7 @@ namespace Edemly.Client
                 {
                     var asm = Assembly.GetExecutingAssembly();
                     var resourceName = asm.GetManifestResourceNames()
-                                      .FirstOrDefault(n => n.EndsWith("msg_spawn.wav", StringComparison.OrdinalIgnoreCase));
+                                      .FirstOrDefault(n => n.EndsWith("message-notification.wav", StringComparison.OrdinalIgnoreCase));
                     if (resourceName != null)
                     {
                         using (var s = asm.GetManifestResourceStream(resourceName))

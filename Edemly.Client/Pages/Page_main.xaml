@@ -640,7 +640,7 @@
                         </Style>
                     </Button.Style>
                 </Button>
-                <Image Source="/Assets/image_menu.png" Stretch="Fill" RenderTransformOrigin="0.494,0.023" Height="451" Width="282" Margin="0,-48,0,0" IsHitTestVisible="False"/>
+                <Image Source="/Assets/PageIllustrations/menu-panel.png" Stretch="Fill" RenderTransformOrigin="0.494,0.023" Height="451" Width="282" Margin="0,-48,0,0" IsHitTestVisible="False"/>
             </StackPanel>
         </Border>
 

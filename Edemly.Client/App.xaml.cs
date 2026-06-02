@@ -716,7 +716,7 @@ namespace Edemly.Client
                         if (user != null)
                         {
                             var photoPath = string.IsNullOrEmpty(user.PfpUrl)
-                                ? "pack://application:,,,/Assets/avatar.png"
+                                ? "pack://application:,,,/Assets/Avatars/default-avatar.png"
                                 : user.PfpUrl;
 
                             contact = new Models.Contact(
@@ -732,7 +732,7 @@ namespace Edemly.Client
                 else // Груповий чат
                 {
                     var photoPath = string.IsNullOrEmpty(chat.IconUrl)
-                        ? "pack://application:,,,/Assets/avatar.png"
+                        ? "pack://application:,,,/Assets/Avatars/default-avatar.png"
                         : chat.IconUrl;
 
                     string groupName = string.IsNullOrWhiteSpace(chat.Name)

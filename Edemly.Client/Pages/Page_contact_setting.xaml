@@ -250,7 +250,7 @@
                 Background="Transparent"
                 Margin="0,27,10,23">
             <Grid>
-                <Image Source="/Assets/image_1.png" 
+                <Image Source="/Assets/PageIllustrations/contact-panel.png" 
                        Stretch="Fill" Margin="-9,-4,6,0"/>
             </Grid>
         </Border>
