@@ -20,7 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\uchat_server\server.csproj" />
+    <ProjectReference Include="..\Edemly.Server\Edemly.Server.csproj" />
   </ItemGroup>
 
   <ItemGroup>
