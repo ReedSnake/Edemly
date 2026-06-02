@@ -2,10 +2,11 @@
 using System.Windows;
 using Edemly.Client.Controls;
 using Edemly.Client.Services;
-using Edemly.Client.DTOs;
+
 using System.Runtime.InteropServices;
 using System.Windows.Interop;
 using System.Threading.Tasks;
+using Edemly.Client.Realtime;
 
 namespace Edemly.Client
 {
@@ -44,7 +45,7 @@ namespace Edemly.Client
                         bool isReconnecting = false;
                         try
                         {
-                            var concrete = App.HubService as Edemly.Client.Services.HubService;
+                            var concrete = (((App.HubService as HubService)));
                             if (concrete != null) isReconnecting = concrete.IsReconnecting;
                         }
                         catch (Exception ex)
@@ -346,7 +347,7 @@ namespace Edemly.Client
                         bool isReconnecting = false;
                         try
                         {
-                            var concrete = App.HubService as Edemly.Client.Services.HubService;
+                            var concrete = (((App.HubService as HubService)));
                             if (concrete != null) isReconnecting = concrete.IsReconnecting;
                         }
                         catch (Exception ex)

@@ -252,7 +252,7 @@ namespace Edemly.Server
             });
 
             // Worker Service для фонових завдань
-            builder.Services.AddHostedService<Worker>();
+            builder.Services.AddHostedService<ServerMaintenanceWorker>();
 
             var app = builder.Build();
 

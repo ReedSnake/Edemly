@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Edemly.Client.Services.Api;
+using Edemly.Client.Api;
 
 namespace Edemly.Client.Services
 {

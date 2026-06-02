@@ -17,11 +17,11 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<None Remove="Language\*.json" />
+		<None Remove="Localization\*.json" />
 	</ItemGroup>
 
 	<ItemGroup>
-		<Content Include="Language\*.json">
+		<Content Include="Localization\*.json">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
 	</ItemGroup>
@@ -71,6 +71,7 @@
 
 	<ItemGroup>
 	  <Folder Include="Themes\" />
+	  <Folder Include="UI\Behaviors\" />
 	</ItemGroup>
 
 	<ItemGroup>
