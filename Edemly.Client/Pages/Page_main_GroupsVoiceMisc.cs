@@ -496,7 +496,7 @@ namespace Edemly.Client
 
                 System.Diagnostics.Debug.WriteLine($"[VOICE] File uploaded successfully: {uploadResult.Url}");
 
-                var message = new MessageCreateDto
+                var message = new CreateMessageDto
                 {
                     ChatId = chatManager.CurrentChatId,
                     Text = string.Empty,

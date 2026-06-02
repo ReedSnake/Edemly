@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Edemly.Server.Api.DTOs;
 using Edemly.Server.Api.Services;
 using Edemly.Server.Services;
 using Edemly.Server.Data;
@@ -65,7 +64,7 @@ namespace Edemly.Server.Api.Controllers
 
         [Authorize]
         [HttpPost("create")]
-        public async Task<IActionResult> Create([FromBody] MessageDtos.MessageCreateDto model)
+        public async Task<IActionResult> Create([FromBody] CreateMessageDto model)
         {
             var userIdClaim = int.Parse(User.Claims.FirstOrDefault(c => c.Type == "userId")?.Value ?? "0");
 
@@ -81,7 +80,7 @@ namespace Edemly.Server.Api.Controllers
 
         [Authorize]
         [HttpPut("update")]
-        public async Task<IActionResult> Update([FromBody] MessageDtos.MessageUpdateDto model)
+        public async Task<IActionResult> Update([FromBody] UpdateMessageDto model)
         {
             var userIdClaim = int.Parse(User.Claims.FirstOrDefault(c => c.Type == "userId")?.Value ?? "0");
 

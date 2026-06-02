@@ -2,11 +2,9 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
-using Edemly.Server.Api.DTOs;
 using Edemly.Server.Data;
 using Edemly.Server.Data.Entities;
 using Edemly.Server.Utils;
-using static Edemly.Server.Api.DTOs.MessageDtos;
 using Edemly.Server.Api.Middleware; // for ITenantProvider
 using Edemly.Server.Services; // for ITenantDbContextFactory
 
@@ -31,7 +29,7 @@ namespace Edemly.Server.Api.Services
 
 
         // Get a single message by Id
-        public async Task<(bool Success, string? Error, MessageGetDto Message)> GetById(int id)
+        public async Task<(bool Success, string? Error, MessageDto Message)> GetById(int id)
         {
             try
             {
@@ -39,13 +37,13 @@ namespace Edemly.Server.Api.Services
                 if (msg == null)
                     return (false, "Message not found", null!);
 
-                var dto = new MessageGetDto
+                var dto = new MessageDto
                 {
                     Id = msg.Id,
                     ChatId = msg.ChatId,
                     SenderId = msg.SenderId,
                     Text = msg.Text,
-                    Type = msg.Type,
+                    Type = (int)msg.Type,
                     SentAt = msg.SentAt,
                     ContentUrl = msg.ContentUrl,
                     FileName = msg.FileName
@@ -64,12 +62,12 @@ namespace Edemly.Server.Api.Services
             }
         }
 
-        public async Task<(bool Success, string? Error, List<MessageGetDto> Messages)> GetByChat(int chatId, int page, int pageSize)
+        public async Task<(bool Success, string? Error, List<MessageDto> Messages)> GetByChat(int chatId, int page, int pageSize)
         {
             string cacheKey = ChatCacheRegistry.GetCacheKey(chatId, page, pageSize);
 
-            if (_cache.TryGetValue(cacheKey, out List<MessageGetDto>? cached))
-                return (true, null, cached ?? new List<MessageGetDto>());
+            if (_cache.TryGetValue(cacheKey, out List<MessageDto>? cached))
+                return (true, null, cached ?? new List<MessageDto>());
 
             try
             {
@@ -78,13 +76,13 @@ namespace Edemly.Server.Api.Services
                     .OrderByDescending(m => m.SentAt)
                     .Skip((page - 1) * pageSize)
                     .Take(pageSize)
-                    .Select(m => new MessageGetDto
+                    .Select(m => new MessageDto
                     {
                         Id = m.Id,
                         ChatId = m.ChatId,
                         SenderId = m.SenderId,
                         Text = m.Text,
-                        Type = m.Type,
+                        Type = (int)m.Type,
                         SentAt = m.SentAt,
                         ContentUrl = m.ContentUrl,
                         FileName = m.FileName
@@ -99,7 +97,7 @@ namespace Edemly.Server.Api.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to get messages for chat");
-                return (false, ex.Message, new List<MessageGetDto>());
+                return (false, ex.Message, new List<MessageDto>());
             }
             finally
             {
@@ -108,26 +106,26 @@ namespace Edemly.Server.Api.Services
         }
 
         //Get last message in chat 
-        public async Task<(bool Success, string? Error, MessageGetDto Message)> GetLastByChat(int chatId)
+        public async Task<(bool Success, string? Error, MessageDto Message)> GetLastByChat(int chatId)
         {
             string cacheKey = ChatCacheRegistry.GetLastMessageCacheKey(chatId);
 
-            if (_cache.TryGetValue(cacheKey, out MessageGetDto? cached) && cached != null)
+            if (_cache.TryGetValue(cacheKey, out MessageDto? cached) && cached != null)
                 return (true, null, cached);
 
             try
             {
-                MessageGetDto? message = await _ctx.Set<Message>()
+                MessageDto? message = await _ctx.Set<Message>()
                     .Where(m => m.ChatId == chatId)
                     .OrderByDescending(m => m.SentAt)
                     .Take(1)
-                    .Select(m => new MessageGetDto
+                    .Select(m => new MessageDto
                     {
                         Id = m.Id,
                         ChatId = m.ChatId,
                         SenderId = m.SenderId,
                         Text = m.Text,
-                        Type = m.Type,
+                        Type = (int)m.Type,
                         SentAt = m.SentAt,
                         ContentUrl = m.ContentUrl,
                         FileName = m.FileName
@@ -139,12 +137,12 @@ namespace Edemly.Server.Api.Services
                     _registry.RegisterKey(chatId, 1, 1);
                 }
 
-                return (true, null, message ?? new MessageGetDto());
+                return (true, null, message ?? new MessageDto());
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to get last message for chat");
-                return (false, ex.Message, new MessageGetDto());
+                return (false, ex.Message, new MessageDto());
             }
             finally
             {
@@ -152,7 +150,7 @@ namespace Edemly.Server.Api.Services
             }
         }
         // Create a new message
-        public async Task<(bool Success, string? Error)> Create(int senderId, MessageCreateDto model)
+        public async Task<(bool Success, string? Error)> Create(int senderId, CreateMessageDto model)
         {
             try
             {
@@ -161,7 +159,7 @@ namespace Edemly.Server.Api.Services
                     ChatId = model.ChatId,
                     SenderId = senderId,
                     Text = model.Text,
-                    Type = model.Type,
+                    Type = (MessageType)model.Type,
                     ContentUrl = model.ContentUrl,
                     FileName = model.FileName,
                     SentAt = DateTime.UtcNow
@@ -186,7 +184,7 @@ namespace Edemly.Server.Api.Services
         }
 
         // Update an existing message
-        public async Task<(bool Success, string? Error)> Update(MessageUpdateDto model)
+        public async Task<(bool Success, string? Error)> Update(UpdateMessageDto model)
         {
             try
             {
@@ -198,7 +196,7 @@ namespace Edemly.Server.Api.Services
                     msg.Text = model.Text;
 
                 if (model.Type.HasValue)
-                    msg.Type = model.Type.Value;
+                    msg.Type = (MessageType)model.Type.Value;
 
                 if (model.ContentUrl != null)
                     msg.ContentUrl = model.ContentUrl;

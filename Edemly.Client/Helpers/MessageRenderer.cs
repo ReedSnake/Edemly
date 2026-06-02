@@ -884,7 +884,7 @@ namespace Edemly.Client.Helpers
                         return; // нічого не змінилося
                     }
 
-                    var updatedMessage = new DTOs.MessageUpdateDto
+                    var updatedMessage = new UpdateMessageDto
                     {
                         Id = message.Id,
                         ChatId = message.ChatId,

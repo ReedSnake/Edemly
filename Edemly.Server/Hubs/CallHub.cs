@@ -7,12 +7,10 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Edemly.Server.Api.DTOs;
 using Edemly.Server.Api.Services;
 using Edemly.Server.Data;
 using Edemly.Server.Data.Entities;
 using Edemly.Server.Services;
-using static Edemly.Server.Api.DTOs.MessageDtos;
 using Edemly.Server.Api.Middleware; // ITenantProvider
 using System.Text.Json;
 
