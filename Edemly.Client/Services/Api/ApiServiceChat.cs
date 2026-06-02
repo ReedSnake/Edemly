@@ -7,6 +7,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Edemly.Client.DTOs;
+using Edemly.Contracts.Chats;
 
 namespace Edemly.Client.Services.Api
 {
@@ -68,7 +69,7 @@ namespace Edemly.Client.Services.Api
         {
             try
             {
-                var requestBody = new { UserId = userId };
+                var requestBody = new CreatePrivateChatDto { UserId = userId };
                 var json = JsonSerializer.Serialize(requestBody);
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
 
@@ -98,7 +99,7 @@ namespace Edemly.Client.Services.Api
         {
             try
             {
-                var request = new
+                var request = new CreateGroupChatDto
                 {
                     GroupName = groupName,
                     ParticipantIds = participantIds
@@ -193,7 +194,7 @@ namespace Edemly.Client.Services.Api
         {
             try
             {
-                var updateDto = new
+                var updateDto = new UpdateChatDto
                 {
                     Id = chatId,
                     Name = name,
