@@ -42,7 +42,7 @@ namespace Edemly.Client
         public static string? AuthToken { get; set; }
 
         // Кеш для швидкого доступу до чатів (для Toast notifications)
-        private static readonly Dictionary<int, (ChatDto chat, List<DTOs.ChatMemberDto> members)> _chatDataCache = new();
+        private static readonly Dictionary<int, (ChatDto chat, List<ChatMemberDto> members)> _chatDataCache = new();
         private static readonly object _chatCacheLock = new object();
 
         // Store base server url (without tenant) to allow switching company at runtime
@@ -666,7 +666,7 @@ namespace Edemly.Client
                 }
 
                 ChatDto? chat;
-                List<DTOs.ChatMemberDto>? members = null;
+                List<ChatMemberDto>? members = null;
 
                 lock (_chatCacheLock)
                 {

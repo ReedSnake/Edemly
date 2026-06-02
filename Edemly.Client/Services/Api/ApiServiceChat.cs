@@ -8,6 +8,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Edemly.Client.DTOs;
 using Edemly.Contracts.Chats;
+using Edemly.Contracts.ChatMembers;
 
 namespace Edemly.Client.Services.Api
 {
