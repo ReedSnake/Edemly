@@ -12,7 +12,7 @@ using Edemly.Server.Api.Middleware;
 
 namespace Edemly.Server
 {
-    public class Program
+    public partial class Program
     {
         public static async Task Main(string[] args)
         {
@@ -31,27 +31,18 @@ namespace Edemly.Server
                 return;
             }
 
-            if (args.Length == 0)
-            {
-                Console.WriteLine("Error: Port number is required.");
-                ShowUsage();
-                Environment.Exit(1);
-                return;
-            }
-            // Determine port: prefer first CLI arg, then environment PORT/ASPNETCORE_PORT, otherwise default 8100
-            string portStr = args[0];
-            if (!int.TryParse(portStr, out int port) || port < 1 || port > 65535)
-            {
-                Console.WriteLine($"Error: Invalid port number '{portStr}'. Port must be between 1 and 65535.");
-                ShowUsage();
-                Environment.Exit(1);
-                return;
-            }
-
             var builder = WebApplication.CreateBuilder(args);
 
+            if (!TryGetPort(args, builder.Configuration, out int port, out string? invalidPort))
+            {
+                Console.WriteLine($"Error: Invalid port number '{invalidPort}'. Port must be between 1 and 65535.");
+                ShowUsage();
+                Environment.Exit(1);
+                return;
+            }
+
             // Allow overriding public base URL via config or environment
-            string publicBaseUrl = builder.Configuration["PublicBaseUrl"]
+            string? publicBaseUrl = builder.Configuration["PublicBaseUrl"]
                 ?? Environment.GetEnvironmentVariable("EDEMLY_PUBLIC_URL");
 
             if (!string.IsNullOrWhiteSpace(publicBaseUrl))
@@ -100,7 +91,7 @@ namespace Edemly.Server
             builder.Services.AddDbContext<ServerDbContext>(options =>
                 options.UseMySql(
                     connectionString,
-                    ServerVersion.AutoDetect(connectionString),
+                    ServerVersion.Create(new Version(8, 0, 36), Pomelo.EntityFrameworkCore.MySql.Infrastructure.ServerType.MySql),
                     mysqlOptions =>
                     {
                         mysqlOptions.EnableRetryOnFailure(
@@ -261,71 +252,88 @@ namespace Edemly.Server
             {
                 var dbContext = scope.ServiceProvider.GetRequiredService<ServerDbContext>();
                 var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+                var useDatabaseMigrations = builder.Configuration.GetValue("Startup:UseDatabaseMigrations", true)
+                    && !app.Environment.IsEnvironment("Testing");
+                var seedDatabase = builder.Configuration.GetValue("Startup:SeedDatabase", true);
 
                 try
                 {
-                    // Перевіряємо чи можна підключитися до бази даних
-                    var canConnect = await dbContext.Database.CanConnectAsync();
-
-                    if (canConnect)
+                    if (useDatabaseMigrations)
                     {
-                        // Застосовуємо міграції якщо є незастосовані
-                        var pendingMigrations = await dbContext.Database.GetPendingMigrationsAsync();
+                        // Перевіряємо чи можна підключитися до бази даних
+                        var canConnect = await dbContext.Database.CanConnectAsync();
 
-                        if (pendingMigrations.Any())
+                        if (canConnect)
                         {
-                            await dbContext.Database.MigrateAsync();
+                            // Застосовуємо міграції якщо є незастосовані
+                            var pendingMigrations = await dbContext.Database.GetPendingMigrationsAsync();
+
+                            if (pendingMigrations.Any())
+                            {
+                                await dbContext.Database.MigrateAsync();
+                            }
+                        }
+                        else
+                        {
+                            throw new InvalidOperationException("Cannot connect to database");
                         }
                     }
                     else
                     {
-                        throw new InvalidOperationException("Cannot connect to database");
+                        await dbContext.Database.EnsureCreatedAsync();
                     }
 
-                    // Seed admin користувача
-                    await DbSeeder.SeedAdminAsync(scope.ServiceProvider);
-
-                    // Ініціалізація привітального чату
-                    var welcomeChatLogger = scope.ServiceProvider.GetRequiredService<ILogger<WelcomeChatInitializer>>();
-                    var configuration = scope.ServiceProvider.GetRequiredService<IConfiguration>();
-                    var welcomeChatInitializer = new WelcomeChatInitializer(dbContext, welcomeChatLogger, configuration);
-                    await welcomeChatInitializer.InitializeWelcomeChatAsync();
-
-                    // Automatic tenant migrations: iterate companies and apply migrations to each tenant DB
-                    try
+                    if (seedDatabase)
                     {
-                        var provisioning = scope.ServiceProvider.GetRequiredService<TenantProvisioningService>();
-                        var companies = await provisioning.ListCompaniesAsync();
+                        // Seed admin користувача
+                        await DbSeeder.SeedAdminAsync(scope.ServiceProvider);
 
-                        foreach (var company in companies)
+                        // Ініціалізація привітального чату
+                        var welcomeChatLogger = scope.ServiceProvider.GetRequiredService<ILogger<WelcomeChatInitializer>>();
+                        var configuration = scope.ServiceProvider.GetRequiredService<IConfiguration>();
+                        var welcomeChatInitializer = new WelcomeChatInitializer(dbContext, welcomeChatLogger, configuration);
+                        await welcomeChatInitializer.InitializeWelcomeChatAsync();
+                    }
+
+                    if (useDatabaseMigrations)
+                    {
+                        // Automatic tenant migrations: iterate companies and apply migrations to each tenant DB
+                        try
                         {
-                            try
+                            var provisioning = scope.ServiceProvider.GetRequiredService<TenantProvisioningService>();
+                            var companies = await provisioning.ListCompaniesAsync();
+
+                            foreach (var company in companies)
                             {
-                                logger.LogInformation("Applying migrations to tenant DB for company {Company} -> {DbName}", company.Name, company.DbName);
-
-                                var defaultConn = builder.Configuration.GetConnectionString("DefaultConnection");
-                                var tenantConn = new MySqlConnector.MySqlConnectionStringBuilder(defaultConn) { Database = company.DbName }.ToString();
-
-                                var optionsBuilder = new DbContextOptionsBuilder<CompanyDbContext>();
-                                optionsBuilder.UseMySql(tenantConn, ServerVersion.AutoDetect(tenantConn), mysqlOptions =>
+                                try
                                 {
-                                    mysqlOptions.MigrationsAssembly("Edemly.Server");
-                                });
+                                    logger.LogInformation("Applying migrations to tenant DB for company {Company} -> {DbName}", company.Name, company.DbName);
 
-                                using var tenantCtx = new CompanyDbContext(optionsBuilder.Options);
-                                await tenantCtx.Database.MigrateAsync();
+                                    var defaultConn = builder.Configuration.GetConnectionString("DefaultConnection")
+                                        ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found");
+                                    var tenantConn = new MySqlConnector.MySqlConnectionStringBuilder(defaultConn) { Database = company.DbName }.ToString();
 
-                                logger.LogInformation("Applied migrations to tenant DB {DbName}", company.DbName);
-                            }
-                            catch (Exception exTenant)
-                            {
-                                logger.LogError(exTenant, "Failed to apply migrations for tenant {Company}", company.Name);
+                                    var optionsBuilder = new DbContextOptionsBuilder<CompanyDbContext>();
+                                    optionsBuilder.UseMySql(tenantConn, ServerVersion.AutoDetect(tenantConn), mysqlOptions =>
+                                    {
+                                        mysqlOptions.MigrationsAssembly("Edemly.Server");
+                                    });
+
+                                    using var tenantCtx = new CompanyDbContext(optionsBuilder.Options);
+                                    await tenantCtx.Database.MigrateAsync();
+
+                                    logger.LogInformation("Applied migrations to tenant DB {DbName}", company.DbName);
+                                }
+                                catch (Exception exTenant)
+                                {
+                                    logger.LogError(exTenant, "Failed to apply migrations for tenant {Company}", company.Name);
+                                }
                             }
                         }
-                    }
-                    catch (Exception exAllTenants)
-                    {
-                        logger.LogWarning(exAllTenants, "Automatic tenant migrations failed");
+                        catch (Exception exAllTenants)
+                        {
+                            logger.LogWarning(exAllTenants, "Automatic tenant migrations failed");
+                        }
                     }
                 }
                 catch
@@ -376,14 +384,35 @@ namespace Edemly.Server
         /// </summary>
         private static void ShowUsage()
         {
-            Console.WriteLine("Usage: Edemly.Server <port>");
+            Console.WriteLine("Usage: Edemly.Server [port]");
             Console.WriteLine();
             Console.WriteLine("Arguments:");
-            Console.WriteLine("  <port>    Port number to listen on (1-65535)");
+            Console.WriteLine("  [port]    Port number to listen on (1-65535). Defaults to PORT, ASPNETCORE_PORT, or 8100.");
             Console.WriteLine();
             Console.WriteLine("Example:");
             Console.WriteLine("  Edemly.Server 8100");
             Console.WriteLine("  Edemly.Server 9735");
+        }
+
+        private static bool TryGetPort(string[] args, IConfiguration configuration, out int port, out string? invalidPort)
+        {
+            var portStr = args.FirstOrDefault(arg => !arg.StartsWith("-", StringComparison.Ordinal));
+            portStr ??= configuration["PORT"];
+            portStr ??= configuration["ASPNETCORE_PORT"];
+            portStr ??= Environment.GetEnvironmentVariable("PORT");
+            portStr ??= Environment.GetEnvironmentVariable("ASPNETCORE_PORT");
+            portStr ??= "8100";
+
+            invalidPort = null;
+
+            if (int.TryParse(portStr, out port) && port is >= 1 and <= 65535)
+            {
+                return true;
+            }
+
+            invalidPort = portStr;
+            port = 0;
+            return false;
         }
     }
 }
