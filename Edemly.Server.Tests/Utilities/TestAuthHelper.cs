@@ -27,24 +27,26 @@ public static class TestAuthHelper
         HttpClient client,
         IServiceProvider services,
         AuthTestUser? user = null,
+        string? routePrefix = null,
         CancellationToken cancellationToken = default)
     {
-        return RegisterAsync(client, services, user, cancellationToken);
+        return RegisterAsync(client, services, user, routePrefix, cancellationToken);
     }
 
     public static async Task<TestAuthSession> RegisterAsync(
         HttpClient client,
         IServiceProvider services,
         AuthTestUser? user = null,
+        string? routePrefix = null,
         CancellationToken cancellationToken = default)
     {
         user ??= AuthTestData.CreateUser();
 
-        await RequestVerificationCodeAsync(client, user.Email, cancellationToken);
+        await RequestVerificationCodeAsync(client, user.Email, routePrefix, cancellationToken);
         var code = GetTestEmailService(services).GetCode(user.Email);
 
         using var response = await client.PostAsJsonAsync(
-            "/api/auth/register",
+            BuildRoute(routePrefix, "/api/auth/register"),
             new RegistrationWithCodeDto
             {
                 Email = user.Email,
@@ -63,13 +65,14 @@ public static class TestAuthHelper
         HttpClient client,
         IServiceProvider services,
         AuthTestUser user,
+        string? routePrefix = null,
         CancellationToken cancellationToken = default)
     {
-        await RequestVerificationCodeAsync(client, user.Email, cancellationToken);
+        await RequestVerificationCodeAsync(client, user.Email, routePrefix, cancellationToken);
         var code = GetTestEmailService(services).GetCode(user.Email);
 
         using var response = await client.PostAsJsonAsync(
-            "/api/auth/login",
+            BuildRoute(routePrefix, "/api/auth/login"),
             new LoginWithCodeDto
             {
                 Email = user.Email,
@@ -87,9 +90,10 @@ public static class TestAuthHelper
         HttpClient client,
         IServiceProvider services,
         AuthTestUser? user = null,
+        string? routePrefix = null,
         CancellationToken cancellationToken = default)
     {
-        var session = await RegisterAsync(client, services, user, cancellationToken);
+        var session = await RegisterAsync(client, services, user, routePrefix, cancellationToken);
         return session.JwtToken;
     }
 
@@ -97,19 +101,21 @@ public static class TestAuthHelper
         HttpClient client,
         IServiceProvider services,
         AuthTestUser user,
+        string? routePrefix = null,
         CancellationToken cancellationToken = default)
     {
-        var session = await LoginAsync(client, services, user, cancellationToken);
+        var session = await LoginAsync(client, services, user, routePrefix, cancellationToken);
         return session.JwtToken;
     }
 
     public static async Task<AuthorizedTestClient> CreateAuthorizedClientAsync(
         CustomWebApplicationFactory factory,
         AuthTestUser? user = null,
+        string? routePrefix = null,
         CancellationToken cancellationToken = default)
     {
         var client = factory.CreateClient();
-        var session = await RegisterAsync(client, factory.Services, user, cancellationToken);
+        var session = await RegisterAsync(client, factory.Services, user, routePrefix, cancellationToken);
         client.AddBearerToken(session.JwtToken);
 
         return new AuthorizedTestClient(client, session);
@@ -118,10 +124,11 @@ public static class TestAuthHelper
     private static async Task RequestVerificationCodeAsync(
         HttpClient client,
         string email,
+        string? routePrefix,
         CancellationToken cancellationToken)
     {
         using var response = await client.PostAsJsonAsync(
-            "/api/auth/get-code",
+            BuildRoute(routePrefix, "/api/auth/get-code"),
             new LoginRequestDto { Email = email },
             cancellationToken);
 
@@ -131,6 +138,17 @@ public static class TestAuthHelper
     private static TestEmailService GetTestEmailService(IServiceProvider services)
     {
         return services.GetRequiredService<TestEmailService>();
+    }
+
+    private static string BuildRoute(string? routePrefix, string route)
+    {
+        if (string.IsNullOrWhiteSpace(routePrefix))
+        {
+            return route;
+        }
+
+        var normalizedPrefix = routePrefix.Trim('/');
+        return $"/{normalizedPrefix}{route}";
     }
 
     private static async Task<AuthResponseDto> ReadAuthResponseAsync(

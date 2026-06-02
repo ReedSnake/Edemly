@@ -13,7 +13,7 @@ This file records what server behavior is covered, what remains uncovered, and w
 
 - Branch: `test/server-test-coverage`
 - Test command: `dotnet test Edemly.Server.Tests\Edemly.Server.Tests.csproj`
-- Current result: `34 passed`
+- Current result: `37 passed`
 - Last verified: `2026-06-03`
 
 ## Test Infrastructure
@@ -96,6 +96,14 @@ Covered tests:
 - `DeleteUser_Should_Return_Forbidden_When_Deleting_Another_User`
 - `DeleteUser_Should_Return_Unauthorized_Without_Token`
 
+## Tenant Resolution Integration
+
+Covered tests:
+
+- `TenantPath_Should_Rewrite_To_Protected_Endpoint_When_Company_Exists`
+- `TenantPath_Should_Not_Rewrite_When_First_Segment_Does_Not_Match_Company`
+- `TenantPath_Should_Resolve_Company_Case_Insensitively_When_Request_Uses_Tenant_Prefix`
+
 ## Red Specifications
 
 None currently.
@@ -121,7 +129,6 @@ Server unit tests:
 
 Server integration tests:
 
-- Tenant path resolution and path rewrite.
 - Tenant register/login/session-login flows.
 - Tenant isolation for chats, messages, files, and users.
 - Group chat creation and membership notifications.

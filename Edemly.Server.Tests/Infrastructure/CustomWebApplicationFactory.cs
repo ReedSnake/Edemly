@@ -9,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Edemly.Server;
 using Edemly.Server.Data;
+using Edemly.Server.Data.Entities;
 using Edemly.Server.Services;
 using Edemly.Server.Tests.Utilities;
 
@@ -40,6 +41,7 @@ public sealed class CustomWebApplicationFactory : WebApplicationFactory<Program>
             services.RemoveAll<DbContextOptions<ServerDbContext>>();
             services.RemoveAll<IDbContextOptionsConfiguration<ServerDbContext>>();
             services.RemoveAll<IEmailService>();
+            services.RemoveAll<ITenantDbContextFactory>();
 
             var maintenanceWorker = services.FirstOrDefault(descriptor =>
                 descriptor.ServiceType == typeof(IHostedService)
@@ -62,12 +64,36 @@ public sealed class CustomWebApplicationFactory : WebApplicationFactory<Program>
 
             services.AddSingleton<TestEmailService>();
             services.AddSingleton<IEmailService>(provider => provider.GetRequiredService<TestEmailService>());
+            services.AddSingleton<ITenantDbContextFactory, TestTenantDbContextFactory>();
 
             using var serviceProvider = services.BuildServiceProvider();
             using var scope = serviceProvider.CreateScope();
             var dbContext = scope.ServiceProvider.GetRequiredService<ServerDbContext>();
             dbContext.Database.EnsureCreated();
         });
+    }
+
+    public async Task<Company> CreateCompanyAsync(string name, string? dbName = null)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(name);
+
+        using var scope = Services.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<ServerDbContext>();
+
+        var company = new Company
+        {
+            Name = name,
+            DbName = dbName ?? $"tenant_{name}"
+        };
+
+        dbContext.Companies.Add(company);
+        await dbContext.SaveChangesAsync();
+
+        var tenantFactory = (TestTenantDbContextFactory)scope.ServiceProvider.GetRequiredService<ITenantDbContextFactory>();
+        await using var tenantContext = tenantFactory.CreateCompanyDbContext(company);
+        await tenantContext.Database.EnsureCreatedAsync();
+
+        return company;
     }
 
     protected override void Dispose(bool disposing)

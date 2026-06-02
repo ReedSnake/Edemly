@@ -21,6 +21,7 @@ Edemly.Server.Tests/
     Chats/
     Health/
     Messages/
+    Tenancy/
     Users/
   Unit/
     Helpers/
