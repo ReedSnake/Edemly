@@ -47,6 +47,7 @@ bld/
 
 # Runtime uploads
 uchat_server/wwwroot/uploads/
+Edemly.Server/wwwroot/uploads/
 
 # Visual Studio 2017 auto generated files
 Generated\ Files/

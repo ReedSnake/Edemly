@@ -1,0 +1,58 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<OutputType>WinExe</OutputType>
+		<TargetFramework>net10.0-windows10.0.18362.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<UseWPF>true</UseWPF>
+		<EnableWindowsTargeting>true</EnableWindowsTargeting>
+		<RootNamespace>Edemly.Client</RootNamespace>
+		<AssemblyName>Edemly.Client</AssemblyName>
+		<ApplicationIcon>favicon.ico</ApplicationIcon>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<Resource Include="Assets\**" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Remove="Language\*.json" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Content Include="Language\*.json">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Resource Remove="Assets\msg_spawn.wav" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Content Include="Assets\msg_spawn.wav">
+		<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Assets\Stickers\**">
+		<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="favicon.ico" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Concentus" Version="2.2.2" />
+		<PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="10.0.8" />
+
+		<PackageReference Include="CommunityToolkit.WinUI.Notifications" Version="7.1.2" />
+
+		<PackageReference Include="Microsoft.Web.WebView2" Version="1.0.1587.40" />
+
+		<PackageReference Include="NAudio" Version="2.2.1" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="Themes\" />
+	</ItemGroup>
+
+</Project>

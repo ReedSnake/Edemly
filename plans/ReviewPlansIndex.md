@@ -69,7 +69,7 @@ Use these categories when adding new work:
 Last checked command:
 
 ```text
-dotnet build uchat.sln --no-restore
+dotnet build Edemly.sln --no-restore
 ```
 
 Build passed with existing client package warnings for `Concentus` and `Microsoft.Web.WebView2`.

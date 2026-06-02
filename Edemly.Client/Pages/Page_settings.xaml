@@ -1,0 +1,460 @@
+﻿ <Page x:Class="Edemly.Client.Page_settings"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:Edemly.Client"
+      xmlns:lang="clr-namespace:Edemly.Client.Lang"
+      mc:Ignorable="d" 
+      d:DesignHeight="720" d:DesignWidth="1280"
+      Title="Page_settings">
+
+    <Page.Resources>
+        <Style x:Key="RoundedActionButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="{DynamicResource ThemePrimaryBrush}" />
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="Padding" Value="10,6" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="FontFamily" Value="Century Gothic" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" 
+                                CornerRadius="8"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Page.Resources>
+
+    <Grid x:Name="MainPageGrid">
+        <Grid.Background>
+            <LinearGradientBrush StartPoint="1,1" EndPoint="0,0">
+                <GradientStop Color="#004040" Offset="0.7"/>
+                <GradientStop Color="#057272" Offset="0.0"/>
+            </LinearGradientBrush>
+        </Grid.Background>
+
+        <Grid x:Name="ContentContainer" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" MinWidth="960" MinHeight="650" Margin="20">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="2*" />
+                    <ColumnDefinition Width="1*" />
+                </Grid.ColumnDefinitions>
+
+                <Border Grid.Column="0" Background="{DynamicResource ThemeBackgroundBrush}" CornerRadius="40" Margin="0,0,5,0" Padding="10">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <Grid Grid.Row="0" Margin="4,0,-4,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <Button 
+                                x:Name="BackButton" 
+                                Content="←" 
+                                Height="39" 
+                                Width="39"
+                                Background="Transparent" 
+                                Foreground="{DynamicResource ThemePrimaryBrush}" 
+                                FontSize="24" 
+                                FontFamily="Century Gothic" 
+                                FontWeight="Bold"
+                                BorderThickness="0" 
+                                BorderBrush="Transparent"
+                                Click="BackButton_Click"
+                                Cursor="Hand"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Panel.ZIndex="1000">
+                                <Button.Style>
+                                    <Style TargetType="Button">
+                                        <Setter Property="Template">
+                                            <Setter.Value>
+                                                <ControlTemplate TargetType="Button">
+                                                    <Border x:Name="border"
+                                                            Background="{TemplateBinding Background}"
+                                                            BorderBrush="{TemplateBinding BorderBrush}"
+                                                            BorderThickness="{TemplateBinding BorderThickness}"
+                                                            CornerRadius="4">
+                                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                    </Border>
+                                                    <ControlTemplate.Triggers>
+                                                        <Trigger Property="IsMouseOver" Value="True">
+                                                            <Setter TargetName="border" Property="CornerRadius" Value="8"/>
+                                                            <Setter TargetName="border" Property="Background" Value="{DynamicResource ThemeBorderLightBrush}"/>
+                                                        </Trigger>
+                                                    </ControlTemplate.Triggers>
+                                                </ControlTemplate>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
+
+                            <TextBlock Grid.Column="1" Text="{x:Static lang:DefaultLanguage.SettingsTitle}" 
+                                       HorizontalAlignment="Left" 
+                                       VerticalAlignment="Center" 
+                                       Margin="16,0,0,0"
+                                       FontSize="24" 
+                                       FontFamily="Century Gothic" 
+                                       FontWeight="Bold" 
+                                       Foreground="{DynamicResource ThemeTextPrimaryBrush}"/>
+
+                            <Button Grid.Column="2" x:Name="SaveButton"
+                                    Content="{x:Static lang:DefaultLanguage.SaveButton}"
+                                    Width="100"
+                                    Height="35"
+                                    Background="{DynamicResource ThemePrimaryBrush}"
+                                    Foreground="White"
+                                    BorderThickness="0"
+                                    FontSize="16"
+                                    FontFamily="Century Gothic"
+                                    FontWeight="SemiBold"
+                                    Click="SaveButton_Click"
+                                    HorizontalAlignment="Right"
+                                    VerticalAlignment="Center"
+                                    Margin="0,0,10,0"
+                                    Visibility="Collapsed"
+                                    Cursor="Hand">
+                                <Button.Template>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border Background="{TemplateBinding Background}" 
+                                                CornerRadius="10"
+                                                BorderBrush="{TemplateBinding BorderBrush}"
+                                                BorderThickness="{TemplateBinding BorderThickness}">
+                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                    </ControlTemplate>
+                                </Button.Template>
+                            </Button>
+                        </Grid>
+
+                        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Hidden" HorizontalScrollBarVisibility="Disabled" Margin="10,20,0,0">
+                            <StackPanel x:Name="SettingsPanel" Width="Auto">
+
+                                <Grid Margin="0,0,0,20">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <StackPanel Grid.Column="0" Margin="0,0,40,0">
+                                        <Border x:Name="AvatarBorder" 
+                                                Width="120" 
+                                                Height="120" 
+                                                Background="{DynamicResource ThemePrimaryBrush}" 
+                                                CornerRadius="60"
+                                                Margin="0,0,0,15"
+                                                Cursor="Hand"
+                                                MouseDown="AvatarBorder_MouseDown">
+                                            <Border.Effect>
+                                                <DropShadowEffect ShadowDepth="4" Opacity="0.3"/>
+                                            </Border.Effect>
+                                            <Grid>
+                                                <Grid.Clip>
+                                                    <EllipseGeometry Center="60,60" RadiusX="60" RadiusY="60"/>
+                                                </Grid.Clip>
+                                                <Image x:Name="AvatarImage" Stretch="UniformToFill" Opacity="0"/>
+                                                <TextBlock x:Name="AvatarInitials" 
+                                                           Text="ВА" 
+                                                           Foreground="White" 
+                                                           FontSize="32" 
+                                                           FontWeight="Bold"
+                                                           HorizontalAlignment="Center" 
+                                                           VerticalAlignment="Center"/>
+                                            </Grid>
+                                        </Border>
+                                        <Button x:Name="ChangePhotoButton" 
+                                                Content="{x:Static lang:DefaultLanguage.ChangePhoto}" 
+                                                Width="140" 
+                                                Height="35" 
+                                                Style="{StaticResource RoundedActionButtonStyle}"
+                                                Click="ChangePhotoButton_Click"/>
+                                    </StackPanel>
+
+                                    <Grid Grid.Column="1">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                        </Grid.RowDefinitions>
+
+                                        <StackPanel Grid.Column="0" Grid.Row="0" Orientation="Horizontal" Margin="0,0,15,15" VerticalAlignment="Center">
+                                            <TextBlock Text="📞" FontSize="16" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                            <Border CornerRadius="8" Background="White" BorderBrush="{DynamicResource ThemeBorderBrush}" BorderThickness="1" Padding="6" Width="220">
+                                                <TextBox x:Name="PhoneNumberTextBox" 
+                                                         FontSize="13" 
+                                                         FontFamily="Century Gothic" 
+                                                         Foreground="{DynamicResource ThemeTextPrimaryBrush}"
+                                                         Background="Transparent"
+                                                         BorderThickness="0"
+                                                         Height="24"
+                                                         VerticalAlignment="Center"
+                                                         VerticalContentAlignment="Center"
+                                                         PreviewTextInput="PhoneNumberTextBox_PreviewTextInput"
+                                                         PreviewKeyDown="PhoneNumberTextBox_PreviewKeyDown"
+                                                         TextChanged="PhoneNumberTextBox_TextChanged"/>
+                                            </Border>
+                                        </StackPanel>
+
+                                        <StackPanel Grid.Column="1" Grid.Row="0" Orientation="Horizontal" Margin="15,0,0,15" VerticalAlignment="Center">
+                                            <TextBlock Text="👤" FontSize="16" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                            <Border CornerRadius="8" Background="White" BorderBrush="{DynamicResource ThemeBorderBrush}" BorderThickness="1" Padding="6" Width="220">
+                                                <TextBox x:Name="NameTextBox" 
+                                                         FontSize="13" 
+                                                         FontFamily="Century Gothic" 
+                                                         Foreground="{DynamicResource ThemeTextPrimaryBrush}"
+                                                         Background="Transparent"
+                                                         BorderThickness="0"
+                                                         Height="24"
+                                                         TextChanged="NameTextBox_TextChanged"/>
+                                            </Border>
+                                        </StackPanel>
+
+                                        <StackPanel Grid.Column="0" Grid.Row="1" Orientation="Horizontal" Margin="0,0,15,0" VerticalAlignment="Center">
+                                            <TextBlock Text="@" FontSize="16" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                            <Border CornerRadius="8" Background="#F0F0F0" BorderBrush="{DynamicResource ThemeBorderBrush}" BorderThickness="1" Padding="6" Width="220">
+                                                <TextBox x:Name="UsernameTextBox"
+                                                         FontSize="13" 
+                                                         FontFamily="Century Gothic" 
+                                                         Foreground="{DynamicResource ThemeTextSecondaryBrush}"
+                                                         Background="Transparent"
+                                                         BorderThickness="0"
+                                                         IsReadOnly="True"
+                                                         Height="24"/>
+                                            </Border>
+                                        </StackPanel>
+
+                                        <StackPanel Grid.Column="1" Grid.Row="1" Orientation="Horizontal" Margin="15,0,0,0" VerticalAlignment="Center">
+                                            <TextBlock Text="✉️" FontSize="16" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                            <Border CornerRadius="8" Background="#F0F0F0" BorderBrush="{DynamicResource ThemeBorderBrush}" BorderThickness="1" Padding="6" Width="220">
+                                                <TextBox x:Name="EmailTextBox"
+                                                         FontSize="13" 
+                                                         FontFamily="Century Gothic" 
+                                                         Foreground="{DynamicResource ThemeTextSecondaryBrush}"
+                                                         Background="Transparent"
+                                                         BorderThickness="0"
+                                                         IsReadOnly="True"
+                                                         Height="24"/>
+                                            </Border>
+                                        </StackPanel>
+                                    </Grid>
+                                </Grid>
+
+                                <StackPanel Margin="0,0,0,20">
+                                    <TextBlock x:Name="SelectLanguageLabel" Text="{x:Static lang:DefaultLanguage.SelectLanguageLabel}" 
+                                               FontSize="16" 
+                                               FontFamily="Century Gothic" 
+                                               FontWeight="SemiBold"
+                                               Foreground="{DynamicResource ThemeTextPrimaryBrush}"
+                                               Margin="0,0,0,8"/>
+                                    <StackPanel Orientation="Horizontal">
+                                        <RadioButton x:Name="EnglishRadioButton"
+                                                     Content="{x:Static lang:DefaultLanguage.LanguageEnglishName}" 
+                                                     FontSize="14" 
+                                                     FontFamily="Century Gothic" 
+                                                     Foreground="{DynamicResource ThemeTextPrimaryBrush}"
+                                                     Margin="0,0,20,0"
+                                                     Checked="EnglishRadioButton_Checked"/>
+                                        <RadioButton x:Name="UkrainianRadioButton"
+                                                     Content="{x:Static lang:DefaultLanguage.LanguageUkrainianName}" 
+                                                     FontSize="14" 
+                                                     FontFamily="Century Gothic" 
+                                                     Foreground="{DynamicResource ThemeTextPrimaryBrush}"
+                                                     Checked="UkrainianRadioButton_Checked"/>
+                                    </StackPanel>
+                                </StackPanel>
+
+                                <StackPanel Margin="0,0,0,20">
+                                    <TextBlock x:Name="ThemeSettingsLabel" Text="{x:Static lang:DefaultLanguage.ThemeSettings}" 
+                                               FontSize="16" FontFamily="Century Gothic" FontWeight="SemiBold" 
+                                               Foreground="{DynamicResource ThemeTextPrimaryBrush}" Margin="0,0,0,8"/>
+
+                                    <ScrollViewer x:Name="WallpapersScrollViewer"
+                                                  HorizontalScrollBarVisibility="Hidden"
+                                                  VerticalScrollBarVisibility="Disabled"
+                                                  CanContentScroll="False"
+                                                  PanningMode="HorizontalOnly"
+                                                  PreviewMouseWheel="WallpapersScrollViewer_PreviewMouseWheel" Height="137">
+                                        <StackPanel Orientation="Horizontal" x:Name="WallpapersPanel" HorizontalAlignment="Left" Margin="0,0,0,8">
+                                            <Border x:Name="Wallpaper1" Width="164" Height="110" BorderBrush="{DynamicResource ThemeBorderBrush}" BorderThickness="1" Margin="0,0,12,0" CornerRadius="6" Cursor="Hand" MouseDown="Wallpaper1_MouseDown">
+                                                <Border.Background>
+                                                    <ImageBrush ImageSource="pack://application:,,,/Assets/No_background.png" Stretch="UniformToFill" />
+                                                </Border.Background>
+                                            </Border>
+                                            <Border x:Name="Wallpaper2" Width="164" Height="110" BorderBrush="{DynamicResource ThemeBorderBrush}" BorderThickness="1" Margin="0,0,12,0" CornerRadius="6" Cursor="Hand" MouseDown="Wallpaper2_MouseDown">
+                                                <Border.Background>
+                                                    <ImageBrush ImageSource="pack://application:,,,/Assets/blue_photo_background.png" Stretch="UniformToFill" />
+                                                </Border.Background>
+                                            </Border>
+                                            <Border x:Name="Wallpaper3" Width="164" Height="110" BorderBrush="{DynamicResource ThemeBorderBrush}" BorderThickness="1" Margin="0,0,12,0" CornerRadius="6" Cursor="Hand" MouseDown="Wallpaper3_MouseDown">
+                                                <Border.Background>
+                                                    <ImageBrush ImageSource="pack://application:,,,/Assets/pink_photo_background.png" Stretch="UniformToFill" />
+                                                </Border.Background>
+                                            </Border>
+                                            <Border x:Name="Wallpaper4" Width="164" Height="110" BorderBrush="{DynamicResource ThemeBorderBrush}" BorderThickness="1" Margin="0,0,12,0" CornerRadius="6" Cursor="Hand" MouseDown="Wallpaper4_MouseDown">
+                                                <Border.Background>
+                                                    <ImageBrush ImageSource="pack://application:,,,/Assets/orange_photo_background.png" Stretch="UniformToFill" />
+                                                </Border.Background>
+                                            </Border>
+                                            <Border x:Name="Wallpaper5" Width="164" Height="110" BorderBrush="{DynamicResource ThemeBorderBrush}" BorderThickness="1" Margin="0,0,12,0" CornerRadius="6" Cursor="Hand" MouseDown="Wallpaper5_MouseDown">
+                                                <Border.Background>
+                                                    <ImageBrush ImageSource="pack://application:,,,/Assets/green_photo_background.png" Stretch="UniformToFill" />
+                                                </Border.Background>
+                                            </Border>
+                                            <Border x:Name="Wallpaper6" Width="164" Height="110" BorderBrush="{DynamicResource ThemeBorderBrush}" BorderThickness="1" Margin="0,0,12,0" CornerRadius="6" Cursor="Hand" MouseDown="Wallpaper6_MouseDown">
+                                                <Border.Background>
+                                                    <ImageBrush ImageSource="pack://application:,,,/Assets/black_photo_background.png" Stretch="UniformToFill" />
+                                                </Border.Background>
+                                            </Border>
+                                            <Border x:Name="Wallpaper7" Width="164" Height="110" BorderBrush="{DynamicResource ThemeBorderBrush}" BorderThickness="1" Margin="0,0,12,0" CornerRadius="6" Cursor="Hand" MouseDown="Wallpaper7_MouseDown">
+                                                <Border.Background>
+                                                    <ImageBrush ImageSource="pack://application:,,,/Assets/violet_photo_background.png" Stretch="UniformToFill" />
+                                                </Border.Background>
+                                            </Border>
+                                            <Border x:Name="Wallpaper8" Width="164" Height="110" BorderBrush="{DynamicResource ThemeBorderBrush}" BorderThickness="1" Margin="0,0,0,0" CornerRadius="6" Cursor="Hand" MouseDown="Wallpaper8_MouseDown">
+                                                <Border.Background>
+                                                    <ImageBrush ImageSource="pack://application:,,,/Assets/red_photo_background.png" Stretch="UniformToFill" />
+                                                </Border.Background>
+                                            </Border>
+                                        </StackPanel>
+                                    </ScrollViewer>
+                                </StackPanel>
+
+                                <StackPanel Margin="0,0,0,15">
+                                    <TextBlock x:Name="ThemeColorLabel" Text="Колір теми" 
+                                               FontSize="16" FontFamily="Century Gothic" FontWeight="SemiBold" 
+                                               Foreground="{DynamicResource ThemeTextPrimaryBrush}" Margin="0,0,0,8"/>
+                                    <WrapPanel Orientation="Horizontal" Height="53">
+                                        <Border x:Name="DefaultThemeColor" 
+                                                Width="46" Height="46" 
+                                                BorderBrush="{DynamicResource ThemeBorderBrush}" 
+                                                BorderThickness="1" 
+                                                Margin="0,0,15,0" 
+                                                CornerRadius="5" 
+                                                Cursor="Hand" 
+                                                MouseDown="DefaultThemeColor_MouseDown">
+                                            <Border.Background>
+                                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                                    <GradientStop Color="#031C1C" Offset="0"/>
+                                                    <GradientStop Color="#057272" Offset="1"/>
+                                                </LinearGradientBrush>
+                                            </Border.Background>
+                                        </Border>
+
+                                        <Border x:Name="BlueThemeColor" 
+                                                Width="45" Height="46" 
+                                                BorderBrush="{DynamicResource ThemeBorderBrush}" 
+                                                BorderThickness="1" 
+                                                Margin="0,0,15,0" 
+                                                CornerRadius="5" 
+                                                Cursor="Hand" 
+                                                MouseDown="BlueThemeColor_MouseDown">
+                                            <Border.Background>
+                                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                                    <GradientStop Color="#000E2E" Offset="0"/>
+                                                    <GradientStop Color="#0D489D" Offset="1"/>
+                                                </LinearGradientBrush>
+                                            </Border.Background>
+                                        </Border>
+
+                                        <Border x:Name="PinkThemeColor" 
+                                                Width="46" Height="46" 
+                                                BorderBrush="{DynamicResource ThemeBorderBrush}" 
+                                                BorderThickness="1" 
+                                                Margin="0,0,15,0" 
+                                                CornerRadius="5" 
+                                                Cursor="Hand" 
+                                                MouseDown="PinkThemeColor_MouseDown">
+                                            <Border.Background>
+                                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                                    <GradientStop Color="#6F0027" Offset="0"/>
+                                                    <GradientStop Color="#FF88B1" Offset="1"/>
+                                                </LinearGradientBrush>
+                                            </Border.Background>
+                                        </Border>
+
+                                        <Border x:Name="OrangeThemeColor" 
+                                                Width="46" Height="46" 
+                                                BorderBrush="{DynamicResource ThemeBorderBrush}" 
+                                                BorderThickness="1" 
+                                                Margin="0,0,15,0" 
+                                                CornerRadius="5" 
+                                                Cursor="Hand" 
+                                                MouseDown="OrangeThemeColor_MouseDown">
+                                            <Border.Background>
+                                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                                    <GradientStop Color="#733106" Offset="0"/>
+                                                    <GradientStop Color="#FF6600" Offset="1"/>
+                                                </LinearGradientBrush>
+                                            </Border.Background>
+                                        </Border>
+
+                                        <Border x:Name="PurpleThemeColor" 
+                                                Width="46" Height="46" 
+                                                BorderBrush="{DynamicResource ThemeBorderBrush}" 
+                                                BorderThickness="1" 
+                                                Margin="0,0,15,0" 
+                                                CornerRadius="5" 
+                                                Cursor="Hand" 
+                                                MouseDown="PurpleThemeColor_MouseDown">
+                                            <Border.Background>
+                                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                                    <GradientStop Color="#550091" Offset="0"/>
+                                                    <GradientStop Color="#D291FF" Offset="1"/>
+                                                </LinearGradientBrush>
+                                            </Border.Background>
+                                        </Border>
+
+                                        <Border x:Name="RedThemeColor" 
+                                                Width="45" Height="45" 
+                                                BorderBrush="{DynamicResource ThemeBorderBrush}" 
+                                                BorderThickness="1" 
+                                                Margin="0,0,15,0" 
+                                                CornerRadius="5" 
+                                                Cursor="Hand" 
+                                                MouseDown="RedThemeColor_MouseDown">
+                                            <Border.Background>
+                                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                                    <GradientStop Color="#540901" Offset="0"/>
+                                                    <GradientStop Color="#E43926" Offset="1"/>
+                                                </LinearGradientBrush>
+                                            </Border.Background>
+                                        </Border>
+                                    </WrapPanel>
+                                </StackPanel>
+                            </StackPanel>
+                        </ScrollViewer>
+                    </Grid>
+                </Border>
+
+                <Border Grid.Column="1" 
+                        CornerRadius="40" 
+                        Margin="5,0,0,0" 
+                        HorizontalAlignment="Stretch" 
+                        VerticalAlignment="Stretch">
+                    <Border.Background>
+                        <ImageBrush ImageSource="/Assets/image_setting (2).png" 
+                                    Stretch="UniformToFill" 
+                                    AlignmentX="Center"/>
+                    </Border.Background>
+                </Border>
+            </Grid>
+        </Grid>
+    </Grid>
+</Page>

@@ -11,8 +11,8 @@ Create a test foundation before risky refactoring begins.
 The solution currently contains only the application projects:
 
 ```text
-uchat_server/server.csproj
-uchat/client.csproj
+Edemly.Server/Edemly.Server.csproj
+Edemly.Client/Edemly.Client.csproj
 ```
 
 ### Proposed Projects
@@ -26,7 +26,7 @@ tests/Edemly.Client.Tests
 
 * Add a server test project for API, services, permissions, tenant behavior, and file storage.
 * Add a client test project for non-UI logic such as API clients, caches, DTO mapping, and helper services.
-* Add both test projects to `uchat.sln`.
+* Add both test projects to `Edemly.sln`.
 * Use one test framework consistently, preferably xUnit.
 * Add test naming conventions and folder structure.
 
@@ -183,7 +183,7 @@ Make checks repeatable before merging or continuing large refactors.
 ### Tasks
 
 * Add a CI workflow for build and tests.
-* Run `dotnet build uchat.sln --no-restore`.
+* Run `dotnet build Edemly.sln --no-restore`.
 * Run all test projects.
 * Keep package restore warnings visible.
 * Add a short checklist for manual verification where automated coverage is not ready.

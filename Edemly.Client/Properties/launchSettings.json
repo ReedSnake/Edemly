@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Edemly.Client": {
+      "commandName": "Project",
+      "commandLineArgs": "www.edemly.me\r\n"
+    }
+  }
+}

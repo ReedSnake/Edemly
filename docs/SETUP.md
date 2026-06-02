@@ -1,67 +1,60 @@
-# Налаштування проєкту
+# Edemly Setup
 
-Цей файл містить додаткові деталі для запуску Edemly. Назви папок `uchat` і `uchat_server` залишені як технічні назви проєктів.
+This file contains additional local setup details for Edemly.
 
-## Зміст
+## Projects
 
-- [Проєкти](#проєкти)
-- [Конфігурація](#конфігурація)
-- [База даних](#база-даних)
-- [Логування](#логування)
-- [Локальні файли](#локальні-файли)
-- [Режим компанії](#режим-компанії)
+- `Edemly.Server/Edemly.Server.csproj` - ASP.NET Core backend.
+- `Edemly.Client/Edemly.Client.csproj` - WPF client.
 
-## Проєкти
+## Configuration
 
-- `uchat_server/server.csproj` - ASP.NET Core backend.
-- `uchat/client.csproj` - WPF client.
+Main server settings live in `Edemly.Server/appsettings.json`.
 
-## Конфігурація
+Review at least these values before running locally:
 
-Основні налаштування сервера знаходяться у `uchat_server/appsettings.json`.
+- `ConnectionStrings:DefaultConnection` - MySQL connection string.
+- `Jwt:Key` - JWT signing secret.
+- `Jwt:Issuer` - expected value: `edemly-server`.
+- `Jwt:Audience` - expected value: `edemly-client`.
+- `AdminEmail` - administrator email.
+- `Brevo:ApiKey` - `MOCK_MODE` for local testing or a real Brevo key.
 
-Мінімально потрібно перевірити:
+## Database
 
-- `ConnectionStrings:DefaultConnection` - підключення до MySQL.
-- `Jwt:Key` - секрет для JWT.
-- `AdminEmail` - email адміністратора.
-- `Brevo:ApiKey` - `MOCK_MODE` для локальної перевірки або реальний ключ Brevo.
+The backend uses two EF Core contexts:
 
-## База даних
+- `ServerDbContext` - the main `edemly` database.
+- `CompanyDbContext` - tenant databases for companies.
 
-Backend використовує два EF Core контексти:
-
-- `ServerDbContext` - основна база `uchat`.
-- `CompanyDbContext` - tenant-бази компаній.
-
-Створіть основну базу вручну:
+Create the main database manually:
 
 ```sql
-CREATE DATABASE uchat CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE DATABASE edemly CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 ```
 
-Застосуйте міграції:
+Apply migrations:
 
 ```powershell
-cd uchat_server
+cd Edemly.Server
 dotnet ef database update --context ServerDbContext
 ```
 
-Створення нових міграцій після зміни моделей:
+Create new migrations after model changes:
 
 ```powershell
-cd uchat_server
+cd Edemly.Server
 dotnet ef migrations add MigrationName --context ServerDbContext
 dotnet ef migrations add MigrationName --context CompanyDbContext -o Migrations/CompanyDbMigrations
 ```
 
-Tenant-міграції застосовуються автоматично під час створення компаній і під час запуску сервера для вже наявних компаній.
+Tenant migrations are applied automatically when companies are created and when the server starts for existing companies.
 
-Детальніше: [../uchat_server/DATABASE_SETUP.md](../uchat_server/DATABASE_SETUP.md).
+More details: [../Edemly.Server/DATABASE_SETUP.md](../Edemly.Server/DATABASE_SETUP.md).
 
-## Логування
+## Logging
 
-Щоб зменшити вивід у консоль, змініть рівні логування в `uchat_server/appsettings.json`:
+To reduce console output, update logging levels in `Edemly.Server/appsettings.json`:
 
 ```json
 "Logging": {
@@ -74,44 +67,44 @@ Tenant-міграції застосовуються автоматично пі
 }
 ```
 
-Для локальної перевірки можна залишити `Information`, бо в mock-режимі email-коди виводяться в консоль сервера.
+For local email-code testing, keep `Brevo:ApiKey` set to `MOCK_MODE`; verification codes are printed to the server console.
 
-## Локальні файли
+## Local Files
 
-Конфіг клієнта:
-
-```text
-%APPDATA%\uchat\config.json
-```
-
-Кеш клієнта:
+Client config:
 
 ```text
-%APPDATA%\uchat\cache\profile_pictures\<company-or-personal>
-%APPDATA%\uchat\cache\files\<company-or-personal>
+%APPDATA%\Edemly\config.json
 ```
 
-Необов'язковий ярлик на робочому столі:
+Client cache:
+
+```text
+%APPDATA%\Edemly\cache\profile_pictures\<company-or-personal>
+%APPDATA%\Edemly\cache\files\<company-or-personal>
+```
+
+Optional desktop shortcut:
 
 ```text
 %USERPROFILE%\Desktop\Edemly.lnk
 ```
 
-Завантажені файли сервера:
+Server uploads:
 
 ```text
-uchat_server/wwwroot/uploads
+Edemly.Server/wwwroot/uploads
 ```
 
-## Режим компанії
+## Company Mode
 
-Запуск клієнта для tenant-компанії:
+Run the client for a tenant company:
 
 ```powershell
 dotnet run -- http://localhost:8100/company_name
 ```
 
-або:
+or:
 
 ```powershell
 dotnet run -- http://localhost:8100 --tenant company_name
