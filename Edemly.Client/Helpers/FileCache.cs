@@ -43,7 +43,7 @@ namespace Edemly.Client.Helpers
             var safeScope = MakeSafeFolderName(cacheScope);
             _diskCachePath = Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                "uchat",
+                "Edemly",
                 "cache",
                 "files",
                 safeScope);

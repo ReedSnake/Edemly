@@ -60,7 +60,7 @@ namespace Edemly.Server.Api.Controllers
             if (string.IsNullOrWhiteSpace(dto?.Email)) return BadRequest("Email required");
 
             // find existing admin logininfo by configured AdminEmail or default
-            var adminEmail = HttpContext.RequestServices.GetRequiredService<IConfiguration>().GetValue<string>("AdminEmail") ?? "admin@uchat.com";
+            var adminEmail = HttpContext.RequestServices.GetRequiredService<IConfiguration>().GetValue<string>("AdminEmail") ?? "admin@edemly.com";
 
             var existing = await _serverDb.LoginInfos.FirstOrDefaultAsync(l => l.Email == adminEmail);
 

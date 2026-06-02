@@ -148,7 +148,7 @@ namespace Edemly.Server.Api.Services
 
         private static string GetTenantDbName(string safeName)
         {
-            return $"uchat_company_{safeName}";
+            return $"edemly_company_{safeName}";
         }
 
         public async Task<List<Company>> ListCompaniesAsync(CancellationToken cancellationToken = default)

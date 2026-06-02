@@ -56,7 +56,7 @@ namespace Edemly.Client.Helpers
             var safeScope = CacheScope;
             _diskCachePath = Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                "uchat",
+                "Edemly",
                 "cache",
                 "profile_pictures",
                 safeScope);

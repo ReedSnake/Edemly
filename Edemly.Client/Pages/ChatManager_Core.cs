@@ -1458,7 +1458,7 @@ namespace Edemly.Client
                     var resInfo = Application.GetResourceStream(packUri);
                     if (resInfo?.Stream != null)
                     {
-                        string tmp = Path.Combine(Path.GetTempPath(), $"uchat_msg_spawn_{Guid.NewGuid():N}.wav");
+                        string tmp = Path.Combine(Path.GetTempPath(), $"edemly_msg_spawn_{Guid.NewGuid():N}.wav");
                         using (var fs = File.Create(tmp))
                         {
                             resInfo.Stream.CopyTo(fs);
@@ -1503,7 +1503,7 @@ namespace Edemly.Client
                         {
                             if (s != null)
                             {
-                                string tmp2 = Path.Combine(Path.GetTempPath(), $"uchat_msg_spawn_{Guid.NewGuid():N}.wav");
+                                string tmp2 = Path.Combine(Path.GetTempPath(), $"edemly_msg_spawn_{Guid.NewGuid():N}.wav");
                                 using (var fs = File.Create(tmp2))
                                 {
                                     s.CopyTo(fs);

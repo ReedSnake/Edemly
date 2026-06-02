@@ -7,7 +7,7 @@ namespace Edemly.Client.Lang
         private static LanguageService Lang => LanguageService.Instance;
 
         // Headings / buttons
-        public static string AppTitle => Lang.GetText("app", "title", "UChat");
+        public static string AppTitle => Lang.GetText("app", "title", "Edemly");
         public static string LoginButton => Lang.GetText("page_login", "login_button", "Login");
         public static string RegisterButton => Lang.GetText("page_login", "register_button", "Register");
         public static string LogoutButton => Lang.GetText("app", "logout_button", "Logout");

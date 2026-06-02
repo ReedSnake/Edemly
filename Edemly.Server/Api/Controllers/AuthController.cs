@@ -657,7 +657,7 @@ namespace Edemly.Server.Controllers
             await ctx.SaveChangesAsync();
 
             var adminEmail = _configuration["AdminEmail"];
-            if (string.IsNullOrWhiteSpace(adminEmail)) adminEmail = "admin@uchat.com";
+            if (string.IsNullOrWhiteSpace(adminEmail)) adminEmail = "admin@edemly.com";
 
             bool isAdmin = string.Equals(loginInfo.Email, adminEmail, StringComparison.OrdinalIgnoreCase);
 

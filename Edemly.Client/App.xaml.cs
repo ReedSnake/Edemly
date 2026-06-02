@@ -16,7 +16,7 @@ namespace Edemly.Client
 {
     public partial class App : Application
     {
-        private const string AppId = "UChat.MainApp";
+        private const string AppId = "Edemly.MainApp";
         // Глобальні сервіси
         public static IApiService ApiService { get; private set; } = null!;
         public static IAuthService AuthService { get; private set; } = null!;

@@ -369,7 +369,7 @@ namespace Edemly.Client.Pages
                 catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[PAGE_INSTALL] Get process main module failed: {ex}"); }
 
                 var baseDir = AppDomain.CurrentDomain.BaseDirectory ?? Directory.GetCurrentDirectory();
-                var candidates = new List<string> { "Edemly.exe", "uchat.exe" };
+                var candidates = new List<string> { "Edemly.exe", "Edemly.Client.exe" };
 
                 var asmName = Assembly.GetExecutingAssembly().GetName().Name;
                 try
@@ -396,10 +396,13 @@ namespace Edemly.Client.Pages
                 {
                     foreach (var pf in new[] { prog, progX86 }.Where(p => !string.IsNullOrWhiteSpace(p)))
                     {
-                        foreach (var folder in new[] { "Edemly", "uchat" })
+                        foreach (var folder in new[] { "Edemly" })
                         {
-                            var p = Path.Combine(pf, folder, folder + ".exe");
-                            if (File.Exists(p)) return p;
+                            foreach (var candidate in candidates)
+                            {
+                                var p = Path.Combine(pf, folder, candidate);
+                                if (File.Exists(p)) return p;
+                            }
                         }
                     }
                 }

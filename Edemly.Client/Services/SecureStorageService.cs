@@ -19,7 +19,7 @@ namespace Edemly.Client.Services
         private SecureStorageService()
         {
             var appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-            var appFolder = Path.Combine(appDataPath, "uchat");
+            var appFolder = Path.Combine(appDataPath, "Edemly");
 
             if (!Directory.Exists(appFolder))
                 Directory.CreateDirectory(appFolder);

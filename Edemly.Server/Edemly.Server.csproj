@@ -4,7 +4,7 @@
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <UserSecretsId>dotnet-uchat_server-305c3c13-a9df-4776-81eb-acbaaaa3df39</UserSecretsId>
+    <UserSecretsId>dotnet-edemly-server-305c3c13-a9df-4776-81eb-acbaaaa3df39</UserSecretsId>
     <RootNamespace>Edemly.Server</RootNamespace>
     <AssemblyName>Edemly.Server</AssemblyName>
   </PropertyGroup>

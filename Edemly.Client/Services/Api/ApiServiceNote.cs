@@ -208,7 +208,7 @@ namespace Edemly.Client.Services.Api
         private string GetLocalNotesPath()
         {
             var appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-            return Path.Combine(appData, "uchat", "notes", "contact_notes.json");
+            return Path.Combine(appData, "Edemly", "notes", "contact_notes.json");
         }
     }
 }

@@ -31,7 +31,7 @@ namespace Edemly.Server.Services
                 }
                 var sanitized = sb.ToString().Trim('_');
                 if (string.IsNullOrWhiteSpace(sanitized)) sanitized = "company";
-                dbName = $"uchat_company_{sanitized}";
+                dbName = $"edemly_company_{sanitized}";
             }
 
             var tenantConn = new MySqlConnector.MySqlConnectionStringBuilder(defaultConn!) { Database = dbName }.ToString();

@@ -244,7 +244,7 @@ namespace Edemly.Client
         {
             try
             {
-                string tempFile = Path.Combine(Path.GetTempPath(), $"uchat_clip_{Guid.NewGuid():N}.png");
+                string tempFile = Path.Combine(Path.GetTempPath(), $"edemly_clip_{Guid.NewGuid():N}.png");
 
                 var encoder = new PngBitmapEncoder();
 

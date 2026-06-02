@@ -146,7 +146,7 @@ namespace Edemly.Client
                 }
 
                 // Save HTML to temp file and open
-                var tmp = Path.Combine(Path.GetTempPath(), $"uchat_payment_{Guid.NewGuid():N}.html");
+                var tmp = Path.Combine(Path.GetTempPath(), $"edemly_payment_{Guid.NewGuid():N}.html");
                 await File.WriteAllTextAsync(tmp, res.Html, Encoding.UTF8);
 
                 try
