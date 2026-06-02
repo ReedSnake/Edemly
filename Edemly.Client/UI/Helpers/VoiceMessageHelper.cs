@@ -7,7 +7,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
-using Edemly.Client.DTOs;
+
 using NAudio.Wave;
 using System.Windows.Threading;
 using System.Windows.Data;

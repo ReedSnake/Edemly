@@ -8,7 +8,7 @@ using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
-using Edemly.Client.DTOs;
+
 using Edemly.Client.Models;
 using Edemly.Client.Pages;
 using Edemly.Client.UI.Helpers;

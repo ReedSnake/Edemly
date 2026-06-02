@@ -8,8 +8,6 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using MessageBox = Edemly.Client.Pages.MessageBox;
-using Edemly.Client.DTOs;
-using Edemly.Client.Helpers;
 using Edemly.Client.Lang;
 
 namespace Edemly.Client

@@ -3,7 +3,7 @@ using System.Linq;
 using System.Windows;
 using Edemly.Client.Services;
 using CommunityToolkit.WinUI.Notifications;
-using Edemly.Client.DTOs;
+
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Diagnostics;

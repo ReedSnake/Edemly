@@ -9,7 +9,6 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Edemly.Client.Api;
-using Edemly.Client.DTOs;
 using Edemly.Contracts.Calls;
 namespace Edemly.Client.Services.Api
 {

@@ -2,7 +2,7 @@
 using System.Windows;
 using Edemly.Client.Controls;
 using Edemly.Client.Services;
-using Edemly.Client.DTOs;
+
 using System.Runtime.InteropServices;
 using System.Windows.Interop;
 using System.Threading.Tasks;

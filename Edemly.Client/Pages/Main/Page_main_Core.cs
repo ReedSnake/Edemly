@@ -15,7 +15,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Xml.Serialization;
 using MessageBox = Edemly.Client.Pages.MessageBox;
-using Edemly.Client.DTOs;
+
 using Edemly.Client.Pages;
 using Edemly.Client.Lang;
 using Edemly.Client.Services;

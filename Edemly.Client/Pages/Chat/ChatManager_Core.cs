@@ -13,7 +13,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using Edemly.Client.Api;
 using Edemly.Client.Caching;
-using Edemly.Client.DTOs;
+
 using Edemly.Client.Models;
 using Edemly.Client.Pages;
 using Edemly.Client.Realtime;

@@ -70,10 +70,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Folder Include="Pages\Auth\" />
-	  <Folder Include="Pages\Main\" />
-	  <Folder Include="Pages\Payments\" />
-	  <Folder Include="Pages\Settings\" />
 	  <Folder Include="Themes\" />
 	  <Folder Include="UI\Behaviors\" />
 	</ItemGroup>

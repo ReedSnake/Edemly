@@ -7,7 +7,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
-using Edemly.Client.DTOs;
+
 using Edemly.Client.Lang;
 using Edemly.Client.Services;
 

@@ -4,18 +4,14 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Shapes;
 using MessageBox = Edemly.Client.Pages.MessageBox;
-using Edemly.Client.DTOs;
-using Edemly.Client.Helpers;
 using Edemly.Client.Pages;
 using Edemly.Client.Lang; 
-
+using Edemly.Client.UI.Helpers;
 namespace Edemly.Client
 {
     public partial class Page_main : Page
