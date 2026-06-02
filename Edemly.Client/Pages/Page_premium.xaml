@@ -224,7 +224,7 @@
                     </Grid>
                 </StackPanel>
             </ScrollViewer>
-            <Image Source="/Assets/image-premium.png" Margin="8,68,3,-4" Grid.Column="1" />
+            <Image Source="/Assets/PageIllustrations/premium-panel.png" Margin="8,68,3,-4" Grid.Column="1" />
         </Grid>
     </Grid>
 </Page>

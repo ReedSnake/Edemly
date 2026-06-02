@@ -110,7 +110,7 @@ namespace Edemly.Client
                 CloseCreateGroupDialog();
 
                 var photoPath = string.IsNullOrEmpty(groupChat.IconUrl)
-                    ? "pack://application:,,,/Assets/avatar.png"
+                    ? "pack://application:,,,/Assets/Avatars/default-avatar.png"
                     : groupChat.IconUrl;
 
                 var groupContact = new Models.Contact(

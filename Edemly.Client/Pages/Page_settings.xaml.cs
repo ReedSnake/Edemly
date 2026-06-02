@@ -675,31 +675,31 @@ namespace Edemly.Client
         }
         private void Wallpaper2_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            SetAppBackgroundImage("pack://application:,,,/Assets/blue_photo_background.png");
+            SetAppBackgroundImage("pack://application:,,,/Assets/Backgrounds/profile-blue.png");
         }
         private void Wallpaper3_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            SetAppBackgroundImage("pack://application:,,,/Assets/pink_photo_background.png");
+            SetAppBackgroundImage("pack://application:,,,/Assets/Backgrounds/profile-pink.png");
         }
         private void Wallpaper4_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            SetAppBackgroundImage("pack://application:,,,/Assets/orange_photo_background.png");
+            SetAppBackgroundImage("pack://application:,,,/Assets/Backgrounds/profile-orange.png");
         }
         private void Wallpaper5_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            SetAppBackgroundImage("pack://application:,,,/Assets/green_photo_background.png");
+            SetAppBackgroundImage("pack://application:,,,/Assets/Backgrounds/profile-green.png");
         }
         private void Wallpaper6_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            SetAppBackgroundImage("pack://application:,,,/Assets/black_photo_background.png");
+            SetAppBackgroundImage("pack://application:,,,/Assets/Backgrounds/profile-black.png");
         }
         private void Wallpaper7_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            SetAppBackgroundImage("pack://application:,,,/Assets/violet_photo_background.png");
+            SetAppBackgroundImage("pack://application:,,,/Assets/Backgrounds/profile-violet.png");
         }
         private void Wallpaper8_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            SetAppBackgroundImage("pack://application:,,,/Assets/red_photo_background.png");
+            SetAppBackgroundImage("pack://application:,,,/Assets/Backgrounds/profile-red.png");
         }
 
         private void Color1_MouseDown(object sender, MouseButtonEventArgs e) { }

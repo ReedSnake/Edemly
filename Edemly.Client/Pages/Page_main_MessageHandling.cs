@@ -301,11 +301,11 @@ namespace Edemly.Client
             try
             {
                 if (string.IsNullOrEmpty(contact.PhotoPath) ||
-                    contact.PhotoPath == "pack://application:,,,/Assets/avatar.png")
+                    contact.PhotoPath == "pack://application:,,,/Assets/Avatars/default-avatar.png")
                 {
                     System.Diagnostics.Debug.WriteLine($"[CHAT HEADER] Using default avatar");
                     ChatHeaderAvatarBackground.ImageSource = new BitmapImage(
-                        new Uri("pack://application:,,,/Assets/avatar.png", UriKind.RelativeOrAbsolute));
+                        new Uri("pack://application:,,,/Assets/Avatars/default-avatar.png", UriKind.RelativeOrAbsolute));
                 }
                 else
                 {
@@ -321,7 +321,7 @@ namespace Edemly.Client
                     {
                         System.Diagnostics.Debug.WriteLine($"[CHAT HEADER] Failed to load, using default");
                         ChatHeaderAvatarBackground.ImageSource = new BitmapImage(
-                            new Uri("pack://application:,,,/Assets/avatar.png", UriKind.RelativeOrAbsolute));
+                            new Uri("pack://application:,,,/Assets/Avatars/default-avatar.png", UriKind.RelativeOrAbsolute));
                     }
                 }
             }
@@ -329,7 +329,7 @@ namespace Edemly.Client
             {
                 System.Diagnostics.Debug.WriteLine($"[CHAT HEADER] Error loading avatar: {ex.Message}");
                 ChatHeaderAvatarBackground.ImageSource = new BitmapImage(
-                    new Uri("pack://application:,,,/Assets/avatar.png", UriKind.RelativeOrAbsolute));
+                    new Uri("pack://application:,,,/Assets/Avatars/default-avatar.png", UriKind.RelativeOrAbsolute));
             }
         }
     }

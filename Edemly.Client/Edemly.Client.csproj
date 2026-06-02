@@ -9,7 +9,7 @@
 		<EnableWindowsTargeting>true</EnableWindowsTargeting>
 		<RootNamespace>Edemly.Client</RootNamespace>
 		<AssemblyName>Edemly.Client</AssemblyName>
-		<ApplicationIcon>favicon.ico</ApplicationIcon>
+		<ApplicationIcon>Assets\Branding\app-icon.ico</ApplicationIcon>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -27,17 +27,35 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Resource Remove="Assets\msg_spawn.wav" />
+	  <Resource Remove="Assets\Audio\message-notification.wav" />
+	  <Resource Remove="Assets\Audio\call-ringtone.wav" />
+	  <Resource Remove="Assets\Audio\call-ended.wav" />
+	  <Resource Remove="Assets\Audio\call-dialing.wav" />
+	  <Resource Remove="Assets\Audio\call-countdown.wav" />
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Content Include="Assets\msg_spawn.wav">
+	  <Content Include="Assets\Audio\message-notification.wav">
+		<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Assets\Audio\call-ringtone.wav">
+		<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Assets\Audio\call-ended.wav">
+		<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Assets\Audio\call-dialing.wav">
+		<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Assets\Audio\call-countdown.wav">
+		<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Assets\Branding\app-icon.ico">
 		<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </Content>
 	  <Content Include="Assets\Stickers\**">
 		<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	  </Content>
-	  <Content Include="favicon.ico" />
 	</ItemGroup>
 
 	<ItemGroup>

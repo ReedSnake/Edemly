@@ -4,7 +4,7 @@
         xmlns:controls="clr-namespace:Edemly.Client.Controls"
         Title="Edemly" Height="768" Width="1300"
         WindowStartupLocation="CenterScreen"
-        Icon="/Assets/favicon.ico"
+        Icon="/Assets/Branding/app-icon.ico"
         Background="#F5F5F5">
     <Grid>
         <Grid.RowDefinitions>

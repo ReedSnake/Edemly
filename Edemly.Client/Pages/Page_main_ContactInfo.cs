@@ -57,7 +57,7 @@ namespace Edemly.Client
             try
             {
                 if (!string.IsNullOrEmpty(contact.PhotoPath) &&
-                    contact.PhotoPath != "pack://application:,,,/Assets/avatar.png")
+                    contact.PhotoPath != "pack://application:,,,/Assets/Avatars/default-avatar.png")
                 {
                     System.Diagnostics.Debug.WriteLine($"[CONTACT INFO] Loading photo from: {contact.PhotoPath}");
 
@@ -72,21 +72,21 @@ namespace Edemly.Client
                     {
                         System.Diagnostics.Debug.WriteLine($"[CONTACT INFO] Failed to load photo, using default");
                         ContactPhotoBackground.ImageSource = new BitmapImage(
-                            new Uri("pack://application:,,,/Assets/avatar.png", UriKind.RelativeOrAbsolute));
+                            new Uri("pack://application:,,,/Assets/Avatars/default-avatar.png", UriKind.RelativeOrAbsolute));
                     }
                 }
                 else
                 {
                     System.Diagnostics.Debug.WriteLine($"[CONTACT INFO] Using default avatar");
                     ContactPhotoBackground.ImageSource = new BitmapImage(
-                        new Uri("pack://application:,,,/Assets/avatar.png", UriKind.RelativeOrAbsolute));
+                        new Uri("pack://application:,,,/Assets/Avatars/default-avatar.png", UriKind.RelativeOrAbsolute));
                 }
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"[CONTACT INFO] Error loading photo: {ex.Message}");
                 ContactPhotoBackground.ImageSource = new BitmapImage(
-                    new Uri("pack://application:,,,/Assets/avatar.png", UriKind.RelativeOrAbsolute));
+                    new Uri("pack://application:,,,/Assets/Avatars/default-avatar.png", UriKind.RelativeOrAbsolute));
             }
 
             await LoadContactNotes();
@@ -289,7 +289,7 @@ namespace Edemly.Client
                 var groupContact = chatManager.CurrentChatContact;
 
                 if (!string.IsNullOrEmpty(groupContact.PhotoPath) &&
-                    groupContact.PhotoPath != "pack://application:,,,/Assets/avatar.png")
+                    groupContact.PhotoPath != "pack://application:,,,/Assets/Avatars/default-avatar.png")
                 {
                     System.Diagnostics.Debug.WriteLine($"[GROUP INFO] Loading group photo from: {groupContact.PhotoPath}");
 
@@ -303,21 +303,21 @@ namespace Edemly.Client
                     {
                         System.Diagnostics.Debug.WriteLine($"[GROUP INFO] Failed to load photo, using default");
                         GroupPhotoBackground.ImageSource = new BitmapImage(
-                            new Uri("pack://application:,,,/Assets/avatar.png", UriKind.RelativeOrAbsolute));
+                            new Uri("pack://application:,,,/Assets/Avatars/default-avatar.png", UriKind.RelativeOrAbsolute));
                     }
                 }
                 else
                 {
                     System.Diagnostics.Debug.WriteLine($"[GROUP INFO] No photo path, using default avatar");
                     GroupPhotoBackground.ImageSource = new BitmapImage(
-                        new Uri("pack://application:,,,/Assets/avatar.png", UriKind.RelativeOrAbsolute));
+                        new Uri("pack://application:,,,/Assets/Avatars/default-avatar.png", UriKind.RelativeOrAbsolute));
                 }
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"[GROUP INFO] Error loading group photo: {ex.Message}");
                 GroupPhotoBackground.ImageSource = new BitmapImage(
-                    new Uri("pack://application:,,,/Assets/avatar.png", UriKind.RelativeOrAbsolute));
+                    new Uri("pack://application:,,,/Assets/Avatars/default-avatar.png", UriKind.RelativeOrAbsolute));
             }
         }
 
@@ -536,7 +536,7 @@ namespace Edemly.Client
                     user?.Username ?? string.Format(DefaultLanguage.UserIdText, userId),
                     user?.Email ?? "",
                     user?.PhoneNumber ?? "",
-                    user?.PfpUrl ?? "pack://application:,,,/Assets/avatar.png"
+                    user?.PfpUrl ?? "pack://application:,,,/Assets/Avatars/default-avatar.png"
                 );
 
                 var chatResult = await App.ApiService.CreateOrGetPrivateChatAsync(userId);
@@ -567,7 +567,7 @@ namespace Edemly.Client
                     user?.Username ?? string.Format(DefaultLanguage.UserIdText, userId),
                     user?.Email ?? "",
                     user?.PhoneNumber ?? "",
-                    user?.PfpUrl ?? "pack://application:,,,/Assets/avatar.png"
+                    user?.PfpUrl ?? "pack://application:,,,/Assets/Avatars/default-avatar.png"
                 );
 
                 NavigationService.Navigate(new Page_contact_setting(contact));

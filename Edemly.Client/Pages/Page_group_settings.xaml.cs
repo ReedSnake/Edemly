@@ -251,7 +251,7 @@ namespace Edemly.Client.Pages
             try
             {
                 if (!string.IsNullOrEmpty(_groupContact.PhotoPath) &&
-                    _groupContact.PhotoPath != "pack://application:,,,/Assets/avatar.png")
+                    _groupContact.PhotoPath != "pack://application:,,,/Assets/Avatars/default-avatar.png")
                 {
                     var bitmap = await App.GlobalProfilePictureCache.GetOrDownloadAsync(_groupContact.PhotoPath);
                     if (bitmap != null)
