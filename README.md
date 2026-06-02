@@ -6,8 +6,21 @@ Edemly is a Windows desktop messenger built with .NET 10, WPF, ASP.NET Core, Sig
 
 - `Edemly.Server` - backend API, SignalR hubs, EF Core migrations, file storage, and MySQL access.
 - `Edemly.Client` - WPF desktop client.
+- `Edemly.Contracts` - shared DTO contracts used by the server and client.
 - `Edemly.Server.Tests` - server test project.
 - `Edemly.Client.Tests` - client test project.
+
+## Project Structure
+
+```text
+Edemly.Contracts/      Shared DTOs grouped by feature area.
+Edemly.Server/         ASP.NET Core API, SignalR hubs, EF Core data, migrations, tenant services.
+Edemly.Client/         WPF desktop app, pages, helpers, API services, local cache models, assets.
+Edemly.Server.Tests/   Server-focused tests.
+Edemly.Client.Tests/   Client-focused tests.
+docs/                  Setup and operational documentation.
+plans/                 Planning notes and review checklists.
+```
 
 ## Features
 
@@ -97,6 +110,67 @@ http://localhost:8100/swagger
 - Client config and cache files are stored under `%APPDATA%\Edemly`.
 
 Additional setup details: [docs/SETUP.md](docs/SETUP.md).
+
+## Git Workflow
+
+Use typed commit messages so every commit and branch says what area it touches.
+
+Commit format:
+
+```text
+<type>(<scope>): <summary>
+```
+
+Examples:
+
+```text
+feat(auth): add email code verification
+fix(chat): prevent duplicate message rendering
+refactor(contracts): move message DTOs to shared project
+docs(readme): document git workflow
+```
+
+Branch format:
+
+```text
+<type>/<scope>-<short-description>
+```
+
+Examples:
+
+```text
+feat/auth-email-verification
+fix/chat-message-duplicates
+refactor/contracts-message-dtos
+docs/readme-git-workflow
+```
+
+Common types:
+
+| Type | Use for |
+|---|---|
+| `feat` | New feature or user-facing capability |
+| `fix` | Bug fix |
+| `hotfix` | Urgent production fix |
+| `bugfix` | Bug-fix branch name alternative |
+| `docs` | Documentation |
+| `refactor` | Code restructuring without behavior change |
+| `perf` | Performance improvement |
+| `test` | Tests and test infrastructure |
+| `build` | Project files, build config, package references |
+| `ci` | CI/CD workflow changes |
+| `chore` | Maintenance work that does not fit another type |
+| `security` | Security-related change |
+| `release` | Release preparation or versioning |
+| `deps` | Dependency updates |
+| `infra` | Infrastructure or deployment support |
+| `config` | Configuration changes |
+| `migration` | Database/schema migrations |
+| `wip` | Temporary work-in-progress branch only |
+| `spike` | Short investigation or prototype branch |
+| `revert` | Reverting a previous change |
+
+Prefer scopes like `client`, `server`, `contracts`, `auth`, `chat`, `messages`, `companies`, `payments`, `notes`, `remindings`, `files`, `assets`, `docs`, and `tests`.
 
 ## Developers
 
