@@ -8,7 +8,7 @@ using Edemly.Server.Data;
 using Edemly.Server.Hubs;
 using Edemly.Server.Services;
 
-namespace Edemly.Server.Api.Controllers
+namespace Edemly.Server.Api.Controllers.Chats
 {
     [ApiController]
     [Route("api/[controller]")]

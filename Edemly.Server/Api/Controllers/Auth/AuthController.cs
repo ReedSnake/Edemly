@@ -11,7 +11,7 @@ using Edemly.Server.Data.Entities;
 using Edemly.Server.Services;
 using Edemly.Server.Api.Middleware;
 
-namespace Edemly.Server.Controllers
+namespace Edemly.Server.Api.Controllers.Auth
 {
     [ApiController]
     [Route("api/[controller]")]

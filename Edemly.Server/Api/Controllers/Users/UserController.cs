@@ -7,11 +7,11 @@ using Edemly.Server.Services;
 using Edemly.Server.Api.Middleware;
 using Microsoft.Extensions.Configuration;
 
-namespace Edemly.Server.Controllers
+namespace Edemly.Server.Api.Controllers.Users
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class UserController : Edemly.Server.Api.Controllers.ApiControllerBase
+    public class UserController : ApiControllerBase
     {
         private readonly IUserService _service;
         private readonly IPermissionService _permissionService;

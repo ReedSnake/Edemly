@@ -8,7 +8,7 @@ using Edemly.Server.Services;
 using Edemly.Server.Api.Middleware;
 using Microsoft.Extensions.Configuration;
 
-namespace Edemly.Server.Api.Controllers
+namespace Edemly.Server.Api.Controllers.Payments
 {
     [ApiController]
     [Route("api/[controller]")]

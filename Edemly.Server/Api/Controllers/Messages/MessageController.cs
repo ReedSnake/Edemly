@@ -1,22 +1,21 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Edemly.Server.Api.Services;
-using Edemly.Contracts.ChatMembers;
-using Edemly.Server.Data;
 using Edemly.Server.Services;
+using Edemly.Server.Data;
 using Edemly.Server.Api.Middleware;
 using Microsoft.Extensions.Configuration;
 
-namespace Edemly.Server.Api.Controllers
+namespace Edemly.Server.Api.Controllers.Messages
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class ChatMemberController : ApiControllerBase
+    public class MessageController : ApiControllerBase
     {
-        private readonly IChatMemberService _service;
+        private readonly IMessageService _service;
         private readonly IPermissionService _permissionService;
 
-        public ChatMemberController(IChatMemberService service, IPermissionService permissionService, ServerDbContext serverDb, ITenantProvider tenantProvider, ITenantDbContextFactory tenantDbFactory, IConfiguration configuration)
+        public MessageController(IMessageService service, IPermissionService permissionService, ServerDbContext serverDb, ITenantProvider tenantProvider, ITenantDbContextFactory tenantDbFactory, IConfiguration configuration)
             : base(serverDb, tenantProvider, tenantDbFactory, configuration)
         {
             _service = service;
@@ -24,16 +23,16 @@ namespace Edemly.Server.Api.Controllers
         }
 
         [HttpGet("id/{id}")]
-        public async Task<IActionResult> GetMember(int id)
+        public async Task<IActionResult> GetById(int id)
         {
-            var result = await _service.GetMember(id);
+            var result = await _service.GetById(id);
             if (!result.Success) return NotFound(new { message = result.Error });
-            return Ok(result.Member);
+            return Ok(result.Message);
         }
 
         [Authorize]
-        [HttpGet("list/{chatId}")]
-        public async Task<IActionResult> GetMembers(int chatId)
+        [HttpGet("chat/last/{chatId}")]
+        public async Task<IActionResult> GetLastByChat(int chatId)
         {
             var userIdClaim = int.Parse(User.Claims.FirstOrDefault(c => c.Type == "userId")?.Value ?? "0");
 
@@ -42,69 +41,73 @@ namespace Edemly.Server.Api.Controllers
                 return Forbid();
             }
 
-            var result = await _service.GetMembers(chatId);
+            var result = await _service.GetLastByChat(chatId);
             if (!result.Success) return NotFound(new { message = result.Error });
-            return Ok(result.Members);
+            return Ok(result.Message);
         }
 
         [Authorize]
-        [HttpGet("my-memberships")]
-        public async Task<IActionResult> GetMemberships()
+        [HttpGet("chat/{chatId}")]
+        public async Task<IActionResult> GetByChat(int chatId, [FromQuery] int page = 1, [FromQuery] int pageSize = 20)
         {
             var userIdClaim = int.Parse(User.Claims.FirstOrDefault(c => c.Type == "userId")?.Value ?? "0");
 
-            var result = await _service.GetMemberships(userIdClaim);
-            if (!result.Success) return NotFound(new { message = result.Error });
-            return Ok(result.Memberships);
-        }
-
-        [Authorize]
-        [HttpPost("add")]
-        public async Task<IActionResult> AddMember([FromBody] CreateChatMemberDto model)
-        {
-            var userIdClaim = int.Parse(User.Claims.FirstOrDefault(c => c.Type == "userId")?.Value ?? "0");
-
-            if (!await _permissionService.CanAddChatMember(userIdClaim, model.ChatId))
+            if (!await _permissionService.IsInChat(userIdClaim, chatId))
             {
                 return Forbid();
             }
 
-            var result = await _service.AddMember(model);
+            var result = await _service.GetByChat(chatId, page, pageSize);
+            if (!result.Success) return NotFound(new { message = result.Error });
+            return Ok(result.Messages);
+        }
+
+        [Authorize]
+        [HttpPost("create")]
+        public async Task<IActionResult> Create([FromBody] CreateMessageDto model)
+        {
+            var userIdClaim = int.Parse(User.Claims.FirstOrDefault(c => c.Type == "userId")?.Value ?? "0");
+
+            if (!await _permissionService.IsInChat(userIdClaim, model.ChatId))
+            {
+                return Forbid();
+            }
+
+            var result = await _service.Create(userIdClaim, model);
             if (!result.Success) return BadRequest(new { message = result.Error });
-            return Ok(new { message = "Chat member added" });
+            return Ok(new { message = "Message created" });
         }
 
         [Authorize]
         [HttpPut("update")]
-        public async Task<IActionResult> UpdateMember([FromBody] UpdateChatMemberDto model)
+        public async Task<IActionResult> Update([FromBody] UpdateMessageDto model)
         {
             var userIdClaim = int.Parse(User.Claims.FirstOrDefault(c => c.Type == "userId")?.Value ?? "0");
 
-            if (!await _permissionService.CanUpdateChatMember(userIdClaim, model.Id))
+            if (!await _permissionService.CanUpdateMessage(userIdClaim, model.Id))
             {
                 return Forbid();
             }
 
-            var result = await _service.UpdateMember(model);
+            var result = await _service.Update(model);
             if (!result.Success) return BadRequest(new { message = result.Error });
-            return Ok(new { message = "Chat member updated" });
+            return Ok(new { message = "Message updated" });
         }
 
         [Authorize]
         [HttpDelete("delete/{id}")]
-        public async Task<IActionResult> DeleteMember(int id)
+        public async Task<IActionResult> Delete(int id)
         {
             var userIdClaim = int.Parse(User.Claims.FirstOrDefault(c => c.Type == "userId")?.Value ?? "0");
 
-            if (!await _permissionService.CanDeleteChatMember(userIdClaim, id))
+            if (!await _permissionService.CanDeleteMessage(userIdClaim, id))
             {
                 return Forbid();
             }
 
-            var result = await _service.DeleteMember(id);
+            var result = await _service.Delete(id);
             if (!result.Success) return BadRequest(new { message = result.Error });
-            return Ok(new { message = "Chat member removed" });
+            return Ok(new { message = "Message deleted" });
         }
-
     }
 }

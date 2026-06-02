@@ -1,22 +1,22 @@
-using Edemly.Contracts.Notes;
-using Edemly.Server.Api.Middleware;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Edemly.Server.Api.Services;
 using Edemly.Server.Data;
 using Edemly.Server.Services;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+using Edemly.Server.Api.Middleware;
+using Edemly.Contracts.Remindings;
 using Microsoft.Extensions.Configuration;
 
-namespace Edemly.Server.Api.Controllers
+namespace Edemly.Server.Api.Controllers.Remindings
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class NoteController : ApiControllerBase
+    public class RemindingController : ApiControllerBase
     {
-        private readonly INoteService _service;
+        private readonly IRemindingService _service;
         private readonly IPermissionService _permissionService;
 
-        public NoteController(INoteService service, IPermissionService permissionService, ServerDbContext serverDb, ITenantProvider tenantProvider, ITenantDbContextFactory tenantDbFactory, IConfiguration configuration)
+        public RemindingController(IRemindingService service, IPermissionService permissionService, ServerDbContext serverDb, ITenantProvider tenantProvider, ITenantDbContextFactory tenantDbFactory, IConfiguration configuration)
             : base(serverDb, tenantProvider, tenantDbFactory, configuration)
         {
             _service = service;
@@ -29,62 +29,68 @@ namespace Edemly.Server.Api.Controllers
         {
             var userIdClaim = int.Parse(User.Claims.FirstOrDefault(c => c.Type == "userId")?.Value ?? "0");
 
-            if (!await _permissionService.IsNoteAuthor(userIdClaim, id))
+            if (!await _permissionService.IsRemindingAuthor(userIdClaim, id))
             {
                 return Forbid();
             }
 
             var result = await _service.GetById(id);
             if (!result.Success) return NotFound(new { message = result.Error });
-            return Ok(result.Note);
+            return Ok(result.Reminding);
         }
 
         [Authorize]
-        [HttpGet("my-notes")]
-        public async Task<IActionResult> GetByCreator()
+        [HttpGet("my-remindings")]
+        public async Task<IActionResult> GetByUser()
         {
             var userIdClaim = int.Parse(User.Claims.FirstOrDefault(c => c.Type == "userId")?.Value ?? "0");
 
-            var result = await _service.GetAll(userIdClaim);
+            var result = await _service.GetByUser(userIdClaim);
             if (!result.Success) return NotFound(new { message = result.Error });
-            return Ok(result.Notes);
-        }
-
-        [Authorize]
-        [HttpGet("count")]
-        public async Task<IActionResult> GetCount()
-        {
-            var userIdClaim = int.Parse(User.Claims.FirstOrDefault(c => c.Type == "userId")?.Value ?? "0");
-            var result = await _service.GetCount(userIdClaim);
-            if (!result.Success) return BadRequest(new { message = result.Error });
-            return Ok(new { count = result.Count });
+            return Ok(result.Remindings);
         }
 
         [Authorize]
         [HttpPost("create")]
-        public async Task<IActionResult> Create([FromBody] CreateNoteDto model)
+        public async Task<IActionResult> Create([FromBody] CreateRemindingDto model)
         {
             var userIdClaim = int.Parse(User.Claims.FirstOrDefault(c => c.Type == "userId")?.Value ?? "0");
 
             var result = await _service.Create(userIdClaim, model);
             if (!result.Success) return BadRequest(new { message = result.Error });
-            return Ok(new { message = "Note created" });
+            return Ok(new { message = "Reminding created" });
         }
 
         [Authorize]
         [HttpPut("update")]
-        public async Task<IActionResult> Update([FromBody] UpdateNoteDto model)
+        public async Task<IActionResult> Update([FromBody] UpdateRemindingDto model)
         {
             var userIdClaim = int.Parse(User.Claims.FirstOrDefault(c => c.Type == "userId")?.Value ?? "0");
 
-            if (!await _permissionService.IsNoteAuthor(userIdClaim, model.Id))
+            if (!await _permissionService.IsRemindingAuthor(userIdClaim, model.Id))
             {
                 return Forbid();
             }
 
             var result = await _service.Update(model);
             if (!result.Success) return BadRequest(new { message = result.Error });
-            return Ok(new { message = "Note updated" });
+            return Ok(new { message = "Reminding updated" });
+        }
+
+        [Authorize]
+        [HttpPut("toggle-completion/{id}")]
+        public async Task<IActionResult> Toggle(int id)
+        {
+            var userIdClaim = int.Parse(User.Claims.FirstOrDefault(c => c.Type == "userId")?.Value ?? "0");
+
+            if (!await _permissionService.IsRemindingAuthor(userIdClaim, id))
+            {
+                return Forbid();
+            }
+
+            var result = await _service.ToggleCompletion(id);
+            if (!result.Success) return BadRequest(new { message = result.Error });
+            return Ok(new { message = "Reminding updated" });
         }
 
         [Authorize]
@@ -93,14 +99,14 @@ namespace Edemly.Server.Api.Controllers
         {
             var userIdClaim = int.Parse(User.Claims.FirstOrDefault(c => c.Type == "userId")?.Value ?? "0");
 
-            if (!await _permissionService.IsNoteAuthor(userIdClaim, id))
+            if (!await _permissionService.IsRemindingAuthor(userIdClaim, id))
             {
                 return Forbid();
             }
 
             var result = await _service.Delete(id);
             if (!result.Success) return BadRequest(new { message = result.Error });
-            return Ok(new { message = "Note deleted" });
+            return Ok(new { message = "Reminding deleted" });
         }
     }
 }

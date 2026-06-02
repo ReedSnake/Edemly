@@ -10,9 +10,9 @@ using System.IO;
 using System.Linq;
 using System;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.StaticFiles; // ПОТРІБНО ДОДАТИ ЦЕЙ USING
+using Microsoft.AspNetCore.StaticFiles;
 
-namespace Edemly.Server.Api.Controllers
+namespace Edemly.Server.Api.Controllers.Files
 {
     [ApiController]
     [Route("api/[controller]")]

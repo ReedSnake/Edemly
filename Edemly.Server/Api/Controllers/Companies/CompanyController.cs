@@ -7,7 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Edemly.Contracts.Companies;
 using Microsoft.EntityFrameworkCore;
 
-namespace Edemly.Server.Api.Controllers
+namespace Edemly.Server.Api.Controllers.Companies
 {
     [ApiController]
     [Route("api/admin/companies")]
