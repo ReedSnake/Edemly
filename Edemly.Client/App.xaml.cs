@@ -2,7 +2,6 @@
 using System.Linq;
 using System.Windows;
 using Edemly.Client.Services;
-using Edemly.Client.Helpers;
 using CommunityToolkit.WinUI.Notifications;
 using Edemly.Client.DTOs;
 using System.Threading.Tasks;
@@ -11,6 +10,10 @@ using System.Diagnostics;
 using Edemly.Client.Services.Api;
 using System.Globalization;
 using System.Windows.Media.Imaging;
+using Edemly.Client.Api;
+using Edemly.Client.Realtime;
+using Edemly.Client.Caching;
+using Edemly.Client.Pages.Settings;
 
 namespace Edemly.Client
 {
@@ -342,7 +345,7 @@ namespace Edemly.Client
             // Subscribe to incoming call events from concrete HubService and forward to UI
             try
             {
-                var concreteHub = HubService as Edemly.Client.Services.HubService;
+                var concreteHub = (((HubService as HubService)));
                 if (concreteHub != null)
                 {
                     concreteHub.IncomingCallReceived += GlobalIncomingCallHandler;
@@ -422,7 +425,7 @@ namespace Edemly.Client
                         bool isReconnecting = false;
                         try
                         {
-                            var concrete = HubService as Edemly.Client.Services.HubService;
+                            var concrete = (((HubService as HubService)));
                             if (concrete != null) isReconnecting = concrete.IsReconnecting;
                         }
                         catch (Exception ex) { Debug.WriteLine($"[APP] Failed to read hub reconnecting state: {ex.Message}"); }
@@ -476,17 +479,17 @@ namespace Edemly.Client
                 }
 
                 CurrentUserPhotoUrl = userInfo.PfpUrl;
-                Pages.MyInfo.UserName = userInfo.Username ?? string.Empty;
-                Pages.MyInfo.Email = userInfo.Email ?? string.Empty;
-                Pages.MyInfo.PhoneNumber = userInfo.PhoneNumber ?? string.Empty;
-                Pages.MyInfo.PfpUrl = userInfo.PfpUrl ?? string.Empty;
-                Pages.MyInfo.Description = userInfo.Description ?? string.Empty;
-                Pages.MyInfo.FirstName = userInfo.FirstName ?? string.Empty;
-                Pages.MyInfo.LastName = userInfo.LastName ?? string.Empty;
-                Pages.MyInfo.Name = $"{Pages.MyInfo.FirstName} {Pages.MyInfo.LastName}".Trim();
-                if (string.IsNullOrEmpty(Pages.MyInfo.Name))
+                MyInfo.UserName = userInfo.Username ?? string.Empty;
+                MyInfo.Email = userInfo.Email ?? string.Empty;
+                MyInfo.PhoneNumber = userInfo.PhoneNumber ?? string.Empty;
+                MyInfo.PfpUrl = userInfo.PfpUrl ?? string.Empty;
+                MyInfo.Description = userInfo.Description ?? string.Empty;
+                MyInfo.FirstName = userInfo.FirstName ?? string.Empty;
+                MyInfo.LastName = userInfo.LastName ?? string.Empty;
+                MyInfo.Name = $"{MyInfo.FirstName} {MyInfo.LastName}".Trim();
+                if (string.IsNullOrEmpty(MyInfo.Name))
                 {
-                    Pages.MyInfo.Name = Pages.MyInfo.UserName;
+                    MyInfo.Name = MyInfo.UserName;
                 }
 
                 if (!string.IsNullOrWhiteSpace(userInfo.PfpUrl))

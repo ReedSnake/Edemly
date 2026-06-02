@@ -17,11 +17,11 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<None Remove="Language\*.json" />
+		<None Remove="Localization\*.json" />
 	</ItemGroup>
 
 	<ItemGroup>
-		<Content Include="Language\*.json">
+		<Content Include="Localization\*.json">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
 	</ItemGroup>
@@ -70,7 +70,12 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <Folder Include="Pages\Auth\" />
+	  <Folder Include="Pages\Main\" />
+	  <Folder Include="Pages\Payments\" />
+	  <Folder Include="Pages\Settings\" />
 	  <Folder Include="Themes\" />
+	  <Folder Include="UI\Behaviors\" />
 	</ItemGroup>
 
 	<ItemGroup>

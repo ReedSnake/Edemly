@@ -58,6 +58,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Api\Controllers\Admin\" />
     <Folder Include="Migrations\\" />
     <Folder Include="wwwroot\\" />
   </ItemGroup>
