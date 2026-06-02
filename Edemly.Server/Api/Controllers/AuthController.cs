@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using Edemly.Server.Api.DTOs;
+using Edemly.Contracts.Auth;
 using Edemly.Server.Api.Services;
 using Edemly.Server.Configuration;
 using Edemly.Server.Data;

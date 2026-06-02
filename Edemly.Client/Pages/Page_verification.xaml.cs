@@ -4,7 +4,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Navigation;
-using Edemly.Client.DTOs;
+using Edemly.Contracts.Auth;
 using MessageBox = Edemly.Client.Pages.MessageBox;
 using Edemly.Client.Lang;
 using Edemly.Client.Services;
