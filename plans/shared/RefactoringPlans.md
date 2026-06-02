@@ -9,13 +9,13 @@ Reduce risk in large UI and helper files.
 ### Largest Files Found
 
 ```text
-uchat/Services/HubService.cs                  1376 lines
-uchat/Pages/ChatManager_Core.cs               1335 lines
-uchat/Pages/Page_calendar.xaml.cs             1303 lines
-uchat/Pages/Page_main.xaml                    1231 lines
-uchat/Pages/Page_calendar.xaml                1160 lines
-uchat/Helpers/MessageRenderer.cs               958 lines
-uchat/App.xaml.cs                              794 lines
+Edemly.Client/Services/HubService.cs                  1376 lines
+Edemly.Client/Pages/ChatManager_Core.cs               1335 lines
+Edemly.Client/Pages/Page_calendar.xaml.cs             1303 lines
+Edemly.Client/Pages/Page_main.xaml                    1231 lines
+Edemly.Client/Pages/Page_calendar.xaml                1160 lines
+Edemly.Client/Helpers/MessageRenderer.cs               958 lines
+Edemly.Client/App.xaml.cs                              794 lines
 ```
 
 ### Tasks
@@ -41,10 +41,10 @@ Make server behavior easier to reason about.
 ### Main Server Files
 
 ```text
-uchat_server/Api/Controllers/AuthController.cs  593 lines
-uchat_server/Hubs/MainHub.cs                    508 lines
-uchat_server/Program.cs                         large startup pipeline
-uchat_server/Api/Services/TenantProvisioningService.cs
+Edemly.Server/Api/Controllers/AuthController.cs  593 lines
+Edemly.Server/Hubs/MainHub.cs                    508 lines
+Edemly.Server/Program.cs                         large startup pipeline
+Edemly.Server/Api/Services/TenantProvisioningService.cs
 ```
 
 ### Tasks
@@ -70,11 +70,11 @@ Make file names predictable and easy to search.
 ### Rename Candidates
 
 ```text
-uchat/Pages/Page_main_Core..cs       -> Page_main_Core.cs or PageMain.Core.cs
-uchat_server/DeamonHelper.cs         -> DaemonHelper.cs
-uchat/Assets/7 - Копировать.png      -> meaningful English asset name
-uchat/Assets/image_setting (2).png   -> meaningful English asset name
-uchat/Assets/Rectangle 460.png       -> meaningful English asset name
+Edemly.Client/Pages/Page_main_Core..cs       -> Page_main_Core.cs or PageMain.Core.cs
+Edemly.Server/DeamonHelper.cs                -> DaemonHelper.cs
+Edemly.Client/Assets/7 - Copy.png            -> meaningful English asset name
+Edemly.Client/Assets/image_setting (2).png   -> meaningful English asset name
+Edemly.Client/Assets/Rectangle 460.png       -> meaningful English asset name
 ```
 
 ### Tasks
@@ -99,11 +99,11 @@ Make namespaces match folder structure.
 
 ### Current Issue
 
-Some controllers use `uchat_server.Controllers`, while others use `uchat_server.Api.Controllers`.
+Some controllers used inconsistent server namespaces before the Edemly naming pass.
 
 ### Tasks
 
-* Move all API controllers to `uchat_server.Api.Controllers`.
+* Move all API controllers to `Edemly.Server.Api.Controllers`.
 * Remove fully qualified base class references caused by namespace mismatch.
 * Ensure DTOs, services, middleware, and hubs follow the same convention.
 * Keep namespaces consistent with folders.
@@ -142,7 +142,7 @@ Catch regressions during refactoring.
 
 ### Tasks
 
-* Keep `dotnet build uchat.sln --no-restore` green.
+* Keep `dotnet build Edemly.sln --no-restore` green.
 * Add server tests for tenant context lifetime, auth, permissions, and file path validation.
 * Add migration checks before database refactors.
 * Add lightweight client tests around extracted logic where possible.
@@ -151,4 +151,3 @@ Catch regressions during refactoring.
 ### Result
 
 Refactoring can proceed in small, verifiable steps.
-

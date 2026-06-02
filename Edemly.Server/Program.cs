@@ -52,7 +52,7 @@ namespace Edemly.Server
 
             // Allow overriding public base URL via config or environment
             string publicBaseUrl = builder.Configuration["PublicBaseUrl"]
-                ?? Environment.GetEnvironmentVariable("UCHAT_PUBLIC_URL");
+                ?? Environment.GetEnvironmentVariable("EDEMLY_PUBLIC_URL");
 
             if (!string.IsNullOrWhiteSpace(publicBaseUrl))
             {
@@ -223,7 +223,7 @@ namespace Edemly.Server
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new() { Title = "Uchat API", Version = "v1" });
+                c.SwaggerDoc("v1", new() { Title = "Edemly API", Version = "v1" });
 
                 // Додаємо JWT в Swagger для тестування API
                 c.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme

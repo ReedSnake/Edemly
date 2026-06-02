@@ -1,55 +1,41 @@
 # Edemly
 
-Edemly - десктопний месенджер на .NET 10, WPF, ASP.NET Core, SignalR, Entity Framework Core та MySQL.
+Edemly is a Windows desktop messenger built with .NET 10, WPF, ASP.NET Core, SignalR, Entity Framework Core, and MySQL.
 
-Папки і solution називаються `uchat`, бо це була технічна назва завдання. Назва самого застосунку - **Edemly**.
+## Projects
 
-## Зміст
+- `Edemly.Server` - backend API, SignalR hubs, EF Core migrations, file storage, and MySQL access.
+- `Edemly.Client` - WPF desktop client.
+- `Edemly.Server.Tests` - server test project.
+- `Edemly.Client.Tests` - client test project.
 
-- [Про проєкт](#про-проєкт)
-- [Можливості](#можливості)
-- [Вимоги](#вимоги)
-- [Налаштування](#налаштування)
-- [Порядок запуску](#порядок-запуску)
-- [Примітки](#примітки)
-- [Розробники](#розробники)
+## Features
 
-## Про проєкт
+- Email-code login with JWT sessions.
+- Real-time chats, file attachments, avatars, and voice calls.
+- Company tenant mode with separate tenant databases.
+- Notes, reminders, payments, and premium subscription flow.
+- Swagger/OpenAPI in development mode.
 
-Рішення складається з основних проєктів застосунку та тестових проєктів:
+## Requirements
 
-- `uchat_server` - backend API, SignalR hubs, EF Core міграції та робота з MySQL.
-- `uchat` - WPF desktop client.
-- `ServerTests` - серверні тести, включно з WebApplicationFactory та SQLite integration tests.
-- `ClientTests` - клієнтські тести.
-
-## Можливості
-
-- Вхід через email-код та JWT-сесії
-- Real-time чати, файли, аватари та голосові дзвінки
-- Multi-tenant режим компаній з окремими базами даних
-- Нотатки, нагадування та платежі
-- Swagger/OpenAPI для перевірки backend API
-
-## Вимоги
-
-- Windows
-- .NET 10 SDK
-- MySQL Server 8 або сумісний сервер
+- Windows.
+- .NET 10 SDK.
+- MySQL Server 8 or a compatible MySQL server.
 - EF Core CLI:
 
 ```powershell
 dotnet tool install --global dotnet-ef
 ```
 
-## Налаштування
+## Configuration
 
-Перед запуском сервера змініть `uchat_server/appsettings.json`:
+Before starting the server, review `Edemly.Server/appsettings.json`:
 
 ```json
 {
   "ConnectionStrings": {
-    "DefaultConnection": "Server=localhost;Port=3306;Database=uchat;User Id=root;Password=securepass;"
+    "DefaultConnection": "Server=localhost;Port=3306;Database=edemly;User Id=root;Password=securepass;"
   },
   "AdminEmail": "admin@edemly.local",
   "Brevo": {
@@ -58,70 +44,65 @@ dotnet tool install --global dotnet-ef
 }
 ```
 
-Створіть основну базу даних:
+Create the main database:
 
 ```sql
-CREATE DATABASE uchat CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE DATABASE edemly CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 ```
 
-Деталі по базі даних: [uchat_server/DATABASE_SETUP.md](uchat_server/DATABASE_SETUP.md).
+Database details: [Edemly.Server/DATABASE_SETUP.md](Edemly.Server/DATABASE_SETUP.md).
 
-## Порядок запуску
+## Build And Run
 
-З кореня репозиторію:
-
-```powershell
-dotnet restore uchat.sln
-dotnet build uchat.sln
-``` 
-
-Тестові проєкти вже містять пакети для сучасного тестування:
-- `Moq` - для моків
-- `Microsoft.AspNetCore.Mvc.Testing` - для серверних integration tests через `WebApplicationFactory`
-- `Microsoft.EntityFrameworkCore.Sqlite` - для SQLite-backed integration tests
-
-Застосуйте міграцію основної бази:
+From the repository root:
 
 ```powershell
-cd uchat_server
+dotnet restore Edemly.sln
+dotnet build Edemly.sln
+```
+
+Apply the main database migration:
+
+```powershell
+cd Edemly.Server
 dotnet ef database update --context ServerDbContext
 ```
 
-Запустіть сервер:
+Start the server:
 
 ```powershell
 dotnet run -- 8100
 ```
 
-У другому терміналі запустіть клієнт:
+Start the client in another terminal:
 
 ```powershell
-cd uchat
+cd Edemly.Client
 dotnet run -- http://localhost:8100
 ```
 
-Swagger у development-режимі:
+Swagger is available in development mode:
 
 ```text
 http://localhost:8100/swagger
 ```
 
-## Примітки
+## Notes
 
-- Порт сервера обов'язковий: `dotnet run -- 8100`.
-- URL сервера для клієнта обов'язковий: `dotnet run -- http://localhost:8100`.
-- Якщо `Brevo:ApiKey` має значення `MOCK_MODE`, коди входу виводяться в консоль сервера.
-- Під час запуску сервер також застосовує pending migrations і tenant-міграції для вже створених компаній.
-- Ярлик на робочому столі необов'язковий і вимкнений за замовчуванням.
-- Кеш і конфіг клієнта зберігаються в `%APPDATA%\uchat`.
+- The server port argument is required: `dotnet run -- 8100`.
+- The client server URL argument is required: `dotnet run -- http://localhost:8100`.
+- When `Brevo:ApiKey` is `MOCK_MODE`, login codes are printed to the server console.
+- Server startup applies pending master migrations and tenant migrations for existing companies.
+- The desktop shortcut is optional and disabled by default.
+- Client config and cache files are stored under `%APPDATA%\Edemly`.
 
-Додаткові деталі: [docs/SETUP.md](docs/SETUP.md).
+Additional setup details: [docs/SETUP.md](docs/SETUP.md).
 
-## Розробники
+## Developers
 
-| Учасник | Роль і внесок |
+| Contributor | Role |
 |---|---|
-| [Руслан Зуб](https://github.com/ReedSnake) | Team Lead & Full-Stack Developer. Забезпечив повний цикл розробки продукту: спроєктував архітектуру системи, реалізував ключові компоненти клієнтської та серверної частин, а також заклав основу бази даних. Окрім технічного лідерства, відповідав за управління проєктом: розподіляв завдання, координував процеси розробки та налаштовував інтеграцію сторонніх сервісів. |
-| [Анастасія Лошакова](https://github.com/darkkfairy1) | Розробила візуальну концепцію застосунку та створила базові макети інтерфейсу. Відповідала за впровадження графічних рішень у клієнтську частину та оптимізацію UI на основі користувацького досвіду. |
-| [Ростислав Ніколенко](https://github.com/NikolenkoRostislav) | Backend developer. Спільно працював над розробкою серверної логіки та REST API для взаємодії з клієнтом. Брав участь у проєктуванні структури бази даних, забезпеченні обробки запитів та оптимізації серверних процесів. |
-| [Анастасія Власюк](https://github.com/AnastasiiaVlasiuk) | UI/UX designer. Зосередилася на проєктуванні взаємодії (UX) та підтримці єдиного візуального стилю. Забезпечувала узгодження дизайну з технічними можливостями реалізації та розробляла логіку інтерактивних елемент. |
+| [Ruslan Zub](https://github.com/ReedSnake) | Team Lead and Full-Stack Developer |
+| [Anastasiia Loshakova](https://github.com/darkkfairy1) | UI concept and client interface work |
+| [Rostislav Nikolenko](https://github.com/NikolenkoRostislav) | Backend developer |
+| [Anastasiia Vlasiuk](https://github.com/AnastasiiaVlasiuk) | UI/UX designer |

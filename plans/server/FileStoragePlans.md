@@ -109,7 +109,7 @@ Store production files outside the application directory.
 
 ```text
 Local development:
-uchat_server/wwwroot/uploads
+Edemly.Server/wwwroot/uploads
 
 Production:
 MinIO or another S3-compatible object storage
@@ -141,7 +141,7 @@ Keep local uploaded files out of source control.
 
 ### Tasks
 
-* Add `uchat_server/wwwroot/uploads/` to `.gitignore`.
+* Add `Edemly.Server/wwwroot/uploads/` to `.gitignore`.
 * Keep placeholder directories only if needed, using `.gitkeep`.
 * Avoid committing generated user files.
 * Document local storage behavior in setup docs.

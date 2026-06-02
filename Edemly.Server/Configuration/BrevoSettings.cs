@@ -18,7 +18,7 @@ namespace Edemly.Server.Configuration
         /// <summary>
         /// Ім'я відправника
         /// </summary>
-        public string SenderName { get; set; } = "Uchat Team";
+        public string SenderName { get; set; } = "Edemly Team";
 
         /// <summary>
         /// URL логотипу для email
@@ -28,7 +28,7 @@ namespace Edemly.Server.Configuration
         /// <summary>
         /// Назва сервісу для відображення в email
         /// </summary>
-        public string ServiceName { get; set; } = "Uchat";
+        public string ServiceName { get; set; } = "Edemly";
 
         /// <summary>
         /// Час життя коду в хвилинах
