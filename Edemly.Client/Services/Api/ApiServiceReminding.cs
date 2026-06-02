@@ -7,12 +7,13 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Edemly.Client.DTOs;
+using Edemly.Contracts.Remindings;
 
 namespace Edemly.Client.Services.Api
 {
     public partial class ApiService : IApiService, IDisposable
     {
-        public async Task<RemindingDto?> CreateRemindingAsync(RemindingCreateDto model)
+        public async Task<RemindingDto?> CreateRemindingAsync(CreateRemindingDto model)
         {
             try
             {
@@ -47,7 +48,7 @@ namespace Edemly.Client.Services.Api
             }
         }
 
-        public async Task<bool> UpdateRemindingAsync(RemindingUpdateDto model)
+        public async Task<bool> UpdateRemindingAsync(UpdateRemindingDto model)
         {
             try
             {

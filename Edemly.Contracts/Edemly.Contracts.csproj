@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Folder Include="Auth\" />
+    <Folder Include="Chats\" />
+    <Folder Include="ChatMember\" />
+    <Folder Include="Messages\" />
+    <Folder Include="Calls\" />
+    <Folder Include="Companies\" />
+    <Folder Include="Common\" />
+    <Folder Include="Notes\" />
+    <Folder Include="Payments\" />
+    <Folder Include="Users\" />
+  </ItemGroup>
+
+</Project>

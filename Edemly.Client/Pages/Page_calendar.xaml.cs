@@ -1,19 +1,14 @@
 ﻿#nullable disable
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Shapes;
 using System.Windows.Controls.Primitives;
 using System.Globalization;
-using System.Text.RegularExpressions;
-using Edemly.Client.DTOs;
 using Edemly.Client.Services.Api;
 using Edemly.Client.Services;
 using Edemly.Client.Lang;
-using Edemly.Client.Helpers;
+using Edemly.Contracts.Remindings;
 
 
 
@@ -804,7 +799,7 @@ namespace Edemly.Client
                     return;
                 }
 
-                var dup = new RemindingCreateDto
+                var dup = new CreateRemindingDto
                 {
                     Type = task.Type,
                     Name = task.Name,
@@ -812,7 +807,6 @@ namespace Edemly.Client
                     LastTime = targetDate,
                     ShouldNotify = task.ShouldNotify,
                     ShowTime = task.ShowTime,
-                    IsCompleted = false
                 };
                 await _apiService.CreateRemindingAsync(dup);
 
@@ -820,7 +814,7 @@ namespace Edemly.Client
                 {
                     for (int i = 1; i <= 6; i++)
                     {
-                        var d = new RemindingCreateDto
+                        var d = new CreateRemindingDto
                         {
                             Type = task.Type,
                             Name = task.Name,
@@ -828,7 +822,6 @@ namespace Edemly.Client
                             LastTime = dup.LastTime.AddDays(i),
                             ShouldNotify = task.ShouldNotify,
                             ShowTime = task.ShowTime,
-                            IsCompleted = false
                         };
                         await _apiService.CreateRemindingAsync(d);
                     }
@@ -837,7 +830,7 @@ namespace Edemly.Client
                 {
                     for (int i = 1; i <= 4; i++)
                     {
-                        var d = new RemindingCreateDto
+                        var d = new CreateRemindingDto
                         {
                             Type = task.Type,
                             Name = task.Name,
@@ -854,7 +847,7 @@ namespace Edemly.Client
                 {
                     for (int i = 1; i <= 3; i++)
                     {
-                        var d = new RemindingCreateDto
+                        var d = new CreateRemindingDto
                         {
                             Type = task.Type,
                             Name = task.Name,
@@ -1203,7 +1196,7 @@ namespace Edemly.Client
         private async void ConfirmAddTaskBtn_Click(object sender, RoutedEventArgs e)
         {
             var panel = Get<Border>("AddTaskPanel");
-            var editingTask = panel?.Tag as RemindingCreateDto;
+            var editingTask = panel?.Tag as CreateRemindingDto;
 
             var title = Get<TextBox>("AddTaskTitle");
             var desc = Get<TextBox>("AddTaskDescription");
@@ -1282,7 +1275,7 @@ namespace Edemly.Client
             }
             else
             {
-                var newTask = new RemindingCreateDto
+                var newTask = new CreateRemindingDto
                 {
                     Name = title.Text.Trim(),
                     Content = desc?.Text.Trim(),
@@ -1386,7 +1379,7 @@ namespace Edemly.Client
             if (Get<RadioButton>("EditColorPurple")?.IsChecked == true) selectedType = 4;
             if (Get<RadioButton>("EditColorPink")?.IsChecked == true) selectedType = 5;
 
-            var model = new RemindingUpdateDto
+            var model = new UpdateRemindingDto
             {
                 Id = originalTask.Id,
                 Name = title.Text.Trim(),

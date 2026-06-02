@@ -5,6 +5,7 @@ using Edemly.Server.Api.Services;
 using Edemly.Server.Data;
 using Edemly.Server.Services;
 using Edemly.Server.Api.Middleware;
+using Edemly.Contracts.Remindings;
 using Microsoft.Extensions.Configuration;
 
 namespace Edemly.Server.Api.Controllers
@@ -52,7 +53,7 @@ namespace Edemly.Server.Api.Controllers
 
         [Authorize]
         [HttpPost("create")]
-        public async Task<IActionResult> Create([FromBody] RemindingDtos.RemindingCreateDto model)
+        public async Task<IActionResult> Create([FromBody] CreateRemindingDto model)
         {
             var userIdClaim = int.Parse(User.Claims.FirstOrDefault(c => c.Type == "userId")?.Value ?? "0");
 
@@ -63,7 +64,7 @@ namespace Edemly.Server.Api.Controllers
 
         [Authorize]
         [HttpPut("update")]
-        public async Task<IActionResult> Update([FromBody] RemindingDtos.RemindingUpdateDto model)
+        public async Task<IActionResult> Update([FromBody] UpdateRemindingDto model)
         {
             var userIdClaim = int.Parse(User.Claims.FirstOrDefault(c => c.Type == "userId")?.Value ?? "0");
 
