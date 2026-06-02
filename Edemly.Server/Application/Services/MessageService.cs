@@ -73,7 +73,7 @@ namespace Edemly.Server.Api.Services
             {
                 var messages = await _ctx.Set<Message>()
                     .Where(m => m.ChatId == chatId)
-                    .OrderByDescending(m => m.SentAt)
+                    .OrderBy(m => m.SentAt)
                     .Skip((page - 1) * pageSize)
                     .Take(pageSize)
                     .Select(m => new MessageDto

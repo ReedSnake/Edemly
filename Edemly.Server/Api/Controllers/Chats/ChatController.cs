@@ -15,10 +15,12 @@ namespace Edemly.Server.Api.Controllers.Chats
     public class ChatController : ApiControllerBase
     {
         private readonly IChatService _chatService;
+        private readonly IPermissionService _permissionService;
         private readonly IHubContext<MainHub> _hubContext;
 
         public ChatController(
             IChatService chatService,
+            IPermissionService permissionService,
             IHubContext<MainHub> hubContext,
             ServerDbContext serverDb,
             ITenantProvider tenantProvider,
@@ -27,6 +29,7 @@ namespace Edemly.Server.Api.Controllers.Chats
             : base(serverDb, tenantProvider, tenantDbFactory, configuration)
         {
             _chatService = chatService;
+            _permissionService = permissionService;
             _hubContext = hubContext;
         }
 
@@ -135,6 +138,11 @@ namespace Edemly.Server.Api.Controllers.Chats
             if (!result.Success)
             {
                 return NotFound(new { message = result.Error });
+            }
+
+            if (!await _permissionService.IsInChat(userIdClaim, id))
+            {
+                return Forbid();
             }
 
             return Ok(result.Chat);
