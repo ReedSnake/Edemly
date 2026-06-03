@@ -12,16 +12,13 @@ namespace Edemly.Server.Api.Controllers.Chats
     public class ChatController : ApiControllerBase
     {
         private readonly IChatService _chatService;
-        private readonly IPermissionService _permissionService;
         private readonly IHubContext<MainHub> _hubContext;
 
         public ChatController(
             IChatService chatService,
-            IPermissionService permissionService,
             IHubContext<MainHub> hubContext)
         {
             _chatService = chatService;
-            _permissionService = permissionService;
             _hubContext = hubContext;
         }
 
@@ -36,8 +33,9 @@ namespace Edemly.Server.Api.Controllers.Chats
                 return UnauthorizedMessage("User not authenticated");
             }
 
-            var result = await _chatService.CreateOrGetPrivateChat(userId, request.UserId);
-            return OkOrBadRequest(result.Success, result.Error, new { Chat = result.Chat });
+            return ToServiceDataResult(
+                await _chatService.CreateOrGetPrivateChat(userId, request.UserId),
+                chat => new { Chat = chat });
         }
 
         [Authorize]
@@ -62,13 +60,12 @@ namespace Edemly.Server.Api.Controllers.Chats
             }
 
             var result = await _chatService.CreateGroupChat(userId, request.GroupName, request.ParticipantIds);
-
             if (!result.Success)
             {
-                return BadRequestMessage(result.Error);
+                return MessageResult(result.StatusCode, result.Message ?? "Failed to create group chat");
             }
 
-            if (result.Chat != null)
+            if (result.Data != null)
             {
                 var allMemberIds = new List<int> { userId };
                 allMemberIds.AddRange(request.ParticipantIds);
@@ -77,14 +74,14 @@ namespace Edemly.Server.Api.Controllers.Chats
 
                 await _hubContext.Clients.Users(memberIdStrings).SendAsync("GroupCreated", new
                 {
-                    ChatId = result.Chat.Id,
-                    ChatName = result.Chat.Name,
-                    ChatType = result.Chat.Type,
+                    ChatId = result.Data.Id,
+                    ChatName = result.Data.Name,
+                    ChatType = result.Data.Type,
                     CreatorId = userId
                 });
             }
 
-            return Ok(new { Chat = result.Chat });
+            return Ok(new { Chat = result.Data });
         }
 
         [Authorize]
@@ -98,8 +95,7 @@ namespace Edemly.Server.Api.Controllers.Chats
                 return UnauthorizedMessage("User not authenticated");
             }
 
-            var result = await _chatService.GetMyChats(userId);
-            return OkOrBadRequest(result.Success, result.Error, result.Chats);
+            return ToServiceDataResult(await _chatService.GetMyChats(userId));
         }
 
         [Authorize]
@@ -113,19 +109,7 @@ namespace Edemly.Server.Api.Controllers.Chats
                 return UnauthorizedMessage("User not authenticated");
             }
 
-            var result = await _chatService.GetById(id, userId);
-
-            if (!result.Success)
-            {
-                return NotFoundMessage(result.Error);
-            }
-
-            if (!await _permissionService.IsInChat(userId, id))
-            {
-                return Forbid();
-            }
-
-            return Ok(result.Chat);
+            return ToServiceDataResult(await _chatService.GetById(userId, id));
         }
 
         [Authorize]
@@ -139,8 +123,7 @@ namespace Edemly.Server.Api.Controllers.Chats
                 return UnauthorizedMessage("User not authenticated");
             }
 
-            var result = await _chatService.UpdateChat(request.Id, request.Name, request.Description, request.IconUrl);
-            return OkMessageOrBadRequest(result.Success, result.Error, "Chat updated successfully");
+            return ToServiceMessageResult(await _chatService.UpdateChat(request.Id, request.Name, request.Description, request.IconUrl));
         }
 
         [Authorize]
@@ -183,14 +166,14 @@ namespace Edemly.Server.Api.Controllers.Chats
                 var updateResult = await _chatService.UpdateChat(chatId, name: null, description: null, iconUrl: result.Url);
                 if (!updateResult.Success)
                 {
-                    return BadRequestMessage(updateResult.Error ?? "Failed to update chat icon");
+                    return MessageResult(updateResult.StatusCode, updateResult.Message);
                 }
 
                 return Ok(new { url = result.Url });
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                return BadRequestMessage($"Error uploading file: {ex.Message}");
+                return BadRequestMessage("Error uploading file");
             }
         }
     }

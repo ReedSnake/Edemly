@@ -4,11 +4,10 @@ namespace Edemly.Server.Api.Services
 {
     public interface IChatService
     {
-        Task<(bool Success, string? Error, ChatDto? Chat)> CreateOrGetPrivateChat(int currentUserId, int otherUserId);
-        Task<(bool Success, string? Error, List<ChatDto> Chats)> GetMyChats(int userId);
-        Task<(bool Success, string? Error, ChatDto? Chat)> GetById(int chatId);
-        Task<(bool Success, string? Error, ChatDto? Chat)> GetById(int chatId, int requestingUserId);
-        Task<(bool Success, string? Error, ChatDto? Chat)> CreateGroupChat(int creatorId, string groupName, List<int> participantIds);
-        Task<(bool Success, string? Error)> UpdateChat(int chatId, string? name, string? description, string? iconUrl);
+        Task<ServiceDataResult<ChatDto>> CreateOrGetPrivateChat(int currentUserId, int otherUserId);
+        Task<ServiceDataResult<List<ChatDto>>> GetMyChats(int userId);
+        Task<ServiceDataResult<ChatDto>> GetById(int currentUserId, int chatId);
+        Task<ServiceDataResult<ChatDto>> CreateGroupChat(int creatorId, string groupName, List<int> participantIds);
+        Task<ServiceMessageResult> UpdateChat(int chatId, string? name, string? description, string? iconUrl);
     }
 }
