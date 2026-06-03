@@ -45,27 +45,27 @@ namespace Edemly.Server.Api.Controllers.Files
         [RequestSizeLimit(52428800)]
         public async Task<IActionResult> UploadProfilePicture(IFormFile file)
         {
-            var userIdClaim = int.Parse(User.Claims.FirstOrDefault(c => c.Type == "userId")?.Value ?? "0");
+            var userId = GetCurrentUserIdOrDefault();
 
             if (file == null || file.Length == 0)
-                return BadRequest(new { message = "No file uploaded" });
+                return BadRequestMessage("No file uploaded");
 
             var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif" };
             var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
 
             if (!allowedExtensions.Contains(extension))
-                return BadRequest(new { message = "Only image files (jpg, jpeg, png, gif) are allowed" });
+                return BadRequestMessage("Only image files (jpg, jpeg, png, gif) are allowed");
 
             try
             {
                 using var stream = file.OpenReadStream();
                 var result = await _fileStorageService.UploadProfilePictureAsync(
-                    userIdClaim, stream, file.FileName);
+                    userId, stream, file.FileName);
 
                 if (!result.Success)
-                    return BadRequest(new { message = result.Error });
+                    return BadRequestMessage(result.Error);
 
-                var updateResult = await _userService.UpdateUser(userIdClaim, new UpdateUserDto
+                var updateResult = await _userService.UpdateUser(userId, new UpdateUserDto
                 {
                     PfpUrl = result.Url
                 });
@@ -87,10 +87,10 @@ namespace Edemly.Server.Api.Controllers.Files
         [RequestSizeLimit(52428800)]
         public async Task<IActionResult> UploadFile(IFormFile file)
         {
-            var userIdClaim = int.Parse(User.Claims.FirstOrDefault(c => c.Type == "userId")?.Value ?? "0");
+            var userId = GetCurrentUserIdOrDefault();
 
             if (file == null || file.Length == 0)
-                return BadRequest(new { message = "No file uploaded" });
+                return BadRequestMessage("No file uploaded");
 
             try
             {
@@ -98,10 +98,10 @@ namespace Edemly.Server.Api.Controllers.Files
 
                 using var stream = file.OpenReadStream();
                 var result = await _fileStorageService.UploadFileAsync(
-                    userIdClaim, stream, file.FileName, contentType);
+                    userId, stream, file.FileName, contentType);
 
                 if (!result.Success)
-                    return BadRequest(new { message = result.Error });
+                    return BadRequestMessage(result.Error);
 
                 return Ok(new
                 {
@@ -124,15 +124,15 @@ namespace Edemly.Server.Api.Controllers.Files
         public async Task<IActionResult> DeleteFile([FromQuery] string fileUrl)
         {
             if (string.IsNullOrWhiteSpace(fileUrl))
-                return BadRequest(new { message = "File URL is required" });
+                return BadRequestMessage("File URL is required");
 
             try
             {
                 var result = await _fileStorageService.DeleteFileAsync(fileUrl);
                 if (!result.Success)
-                    return BadRequest(new { message = result.Error });
+                    return BadRequestMessage(result.Error);
 
-                return Ok(new { message = "File deleted successfully" });
+                return OkMessage("File deleted successfully");
             }
             catch (Exception ex)
             {
@@ -147,13 +147,13 @@ namespace Edemly.Server.Api.Controllers.Files
         public async Task<IActionResult> DownloadFile([FromQuery] string fileUrl)
         {
             if (string.IsNullOrWhiteSpace(fileUrl))
-                return BadRequest(new { message = "File URL is required" });
+                return BadRequestMessage("File URL is required");
 
             try
             {
                 var stream = await _fileStorageService.GetFileAsync(fileUrl);
                 if (stream == null)
-                    return NotFound(new { message = "File not found" });
+                    return NotFoundMessage("File not found");
 
                 var fileName = Path.GetFileName(fileUrl);
 

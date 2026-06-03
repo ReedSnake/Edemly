@@ -29,13 +29,13 @@ namespace Edemly.Server.Api.Controllers.Users
         [HttpGet("me")]
         public async Task<IActionResult> GetSelf()
         {
-            var userIdClaim = int.Parse(User.Claims.FirstOrDefault(c => c.Type == "userId")?.Value ?? "0"); //get the authenticated users id 
+            var userId = GetCurrentUserIdOrDefault();
 
-            var result = await _service.GetFullInfo(userIdClaim);
+            var result = await _service.GetFullInfo(userId);
             if (!result.Success)
             {
                 _logger.LogWarning($"Failed to fetch user: {result.Error}");
-                return BadRequest(new { message = result.Error });
+                return BadRequestMessage(result.Error);
             }
 
             return Ok(new { result.User });
@@ -49,7 +49,7 @@ namespace Edemly.Server.Api.Controllers.Users
             if (!result.Success || result.User == null)
             {
                 _logger.LogWarning($"Failed to fetch user by ID {id}: {result.Error}");
-                return NotFound(new { message = result.Error ?? "User not found" });
+                return NotFoundMessage(result.Error ?? "User not found");
             }
 
             return Ok(new { result.User });
@@ -61,7 +61,7 @@ namespace Edemly.Server.Api.Controllers.Users
         {
             if (string.IsNullOrWhiteSpace(query))
             {
-                return BadRequest(new { message = "Search query is required" });
+                return BadRequestMessage("Search query is required");
             }
 
             var result = await _service.SearchUsers(query);
@@ -69,7 +69,7 @@ namespace Edemly.Server.Api.Controllers.Users
             if (!result.Success)
             {
                 _logger.LogWarning($"Failed to search users with query '{query}': {result.Error}");
-                return BadRequest(new { message = result.Error });
+                return BadRequestMessage(result.Error);
             }
 
             return Ok(new { users = result.Users, count = result.Users.Count });
@@ -79,25 +79,25 @@ namespace Edemly.Server.Api.Controllers.Users
         [HttpPut("update")]
         public async Task<IActionResult> UpdateUser([FromBody] UpdateUserDto model)
         {
-            var userIdClaim = int.Parse(User.Claims.FirstOrDefault(c => c.Type == "userId")?.Value ?? "0");
+            var userId = GetCurrentUserIdOrDefault();
 
-            var result = await _service.UpdateUser(userIdClaim, model);
+            var result = await _service.UpdateUser(userId, model);
             if (!result.Success)
             {
-                _logger.LogWarning($"Failed to update user {userIdClaim}: {result.Error}");
-                return BadRequest(new { message = result.Error });
+                _logger.LogWarning($"Failed to update user {userId}: {result.Error}");
+                return BadRequestMessage(result.Error);
             }
 
-            return Ok(new { message = "User updated successfully" });
+            return OkMessage("User updated successfully");
         }
 
         [Authorize]
         [HttpDelete("delete")]
         public async Task<IActionResult> DeleteUser(int id)
         {
-            var userIdClaim = int.Parse(User.Claims.FirstOrDefault(c => c.Type == "userId")?.Value ?? "0");
+            var userId = GetCurrentUserIdOrDefault();
 
-            if (!_permissionService.CanDeleteUser(userIdClaim, id))
+            if (!_permissionService.CanDeleteUser(userId, id))
             {
                 return Forbid();
             }
@@ -106,10 +106,10 @@ namespace Edemly.Server.Api.Controllers.Users
             if (!result.Success)
             {
                 _logger.LogWarning($"Failed to delete user {id}: {result.Error}");
-                return BadRequest(new { message = result.Error });
+                return BadRequestMessage(result.Error);
             }
 
-            return Ok(new { message = "User deleted successfully" });
+            return OkMessage("User deleted successfully");
         }
 
         [Authorize]
@@ -118,7 +118,7 @@ namespace Edemly.Server.Api.Controllers.Users
         {
             if (userIds == null || userIds.Count == 0)
             {
-                return BadRequest(new { message = "User IDs list is required" });
+                return BadRequestMessage("User IDs list is required");
             }
 
             try
@@ -137,7 +137,7 @@ namespace Edemly.Server.Api.Controllers.Users
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to get users batch");
-                return BadRequest(new { message = ex.Message });
+                return BadRequestMessage(ex.Message);
             }
         }
 

@@ -37,9 +37,7 @@ namespace Edemly.Server.Api.Controllers.Payments
         [Authorize]
         public async Task<IActionResult> InitiatePayment([FromQuery] decimal amount = 100.00m)
         {
-            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
-            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int userId))
+            if (!TryGetCurrentUserId(out var userId, ClaimTypes.NameIdentifier))
             {
                 return Unauthorized(new { error = "User not authenticated" });
             }
@@ -126,9 +124,7 @@ namespace Edemly.Server.Api.Controllers.Payments
         [Authorize]
         public async Task<IActionResult> GetPaymentHistory()
         {
-            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
-            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int userId))
+            if (!TryGetCurrentUserId(out var userId, ClaimTypes.NameIdentifier))
             {
                 return Unauthorized(new { error = "User not authenticated" });
             }
