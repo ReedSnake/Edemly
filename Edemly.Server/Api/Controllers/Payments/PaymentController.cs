@@ -119,10 +119,10 @@ namespace Edemly.Server.Api.Controllers.Payments
 
             if (!result.Success)
             {
-                return BadRequest(new { error = result.Error });
+                return StatusCode(result.StatusCode, new { error = result.Message });
             }
 
-            return Ok(new { payments = result.Payments });
+            return Ok(new { payments = result.Data });
         }
 
         [HttpGet("status/{orderId}")]

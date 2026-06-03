@@ -150,19 +150,21 @@ namespace Edemly.Server.Api.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to generate payment form for user {UserId}", userId);
-                return (false, ex.Message, null);
+                return (false, "Failed to generate payment form", null);
             }
         }
 
-        private Task<(bool Success, string? Error)> _payment_service_create_wrapper(int userId, decimal amount, string orderId)
+        private async Task<(bool Success, string? Error)> _payment_service_create_wrapper(int userId, decimal amount, string orderId)
         {
-            return _paymentService.Create(userId, new CreatePaymentDto
+            var result = await _paymentService.Create(userId, new CreatePaymentDto
             {
                 Amount = amount,
                 Status = PaymentStatus.Pending.ToString(),
                 Date = DateTime.UtcNow,
                 TransactionId = orderId
             });
+
+            return (result.Success, result.Success ? null : result.Message);
         }
 
         // ЗВЕРНИ УВАГУ: Додано параметр returnUrl

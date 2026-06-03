@@ -10,89 +10,51 @@ namespace Edemly.Server.Api.Controllers.Chats
     public class ChatMemberController : ApiControllerBase
     {
         private readonly IChatMemberService _service;
-        private readonly IPermissionService _permissionService;
 
-        public ChatMemberController(IChatMemberService service, IPermissionService permissionService)
+        public ChatMemberController(IChatMemberService service)
         {
             _service = service;
-            _permissionService = permissionService;
         }
 
         [HttpGet("id/{id}")]
         public async Task<IActionResult> GetMember(int id)
         {
-            var result = await _service.GetMember(id);
-            return OkOrNotFound(result.Success, result.Error, result.Member);
+            return ToServiceDataResult(await _service.GetMember(id));
         }
 
         [Authorize]
         [HttpGet("list/{chatId}")]
         public async Task<IActionResult> GetMembers(int chatId)
         {
-            var userId = GetCurrentUserIdOrDefault();
-
-            if (!await _permissionService.IsInChat(userId, chatId))
-            {
-                return Forbid();
-            }
-
-            var result = await _service.GetMembers(chatId);
-            return OkOrNotFound(result.Success, result.Error, result.Members);
+            return ToServiceDataResult(await _service.GetMembers(GetCurrentUserIdOrDefault(), chatId));
         }
 
         [Authorize]
         [HttpGet("my-memberships")]
         public async Task<IActionResult> GetMemberships()
         {
-            var userId = GetCurrentUserIdOrDefault();
-
-            var result = await _service.GetMemberships(userId);
-            return OkOrNotFound(result.Success, result.Error, result.Memberships);
+            return ToServiceDataResult(await _service.GetMemberships(GetCurrentUserIdOrDefault()));
         }
 
         [Authorize]
         [HttpPost("add")]
         public async Task<IActionResult> AddMember([FromBody] CreateChatMemberDto model)
         {
-            var userId = GetCurrentUserIdOrDefault();
-
-            if (!await _permissionService.CanAddChatMember(userId, model.ChatId))
-            {
-                return Forbid();
-            }
-
-            var result = await _service.AddMember(model);
-            return OkMessageOrBadRequest(result.Success, result.Error, "Chat member added");
+            return ToServiceMessageResult(await _service.AddMember(GetCurrentUserIdOrDefault(), model));
         }
 
         [Authorize]
         [HttpPut("update")]
         public async Task<IActionResult> UpdateMember([FromBody] UpdateChatMemberDto model)
         {
-            var userId = GetCurrentUserIdOrDefault();
-
-            if (!await _permissionService.CanUpdateChatMember(userId, model.Id))
-            {
-                return Forbid();
-            }
-
-            var result = await _service.UpdateMember(model);
-            return OkMessageOrBadRequest(result.Success, result.Error, "Chat member updated");
+            return ToServiceMessageResult(await _service.UpdateMember(GetCurrentUserIdOrDefault(), model));
         }
 
         [Authorize]
         [HttpDelete("delete/{id}")]
         public async Task<IActionResult> DeleteMember(int id)
         {
-            var userId = GetCurrentUserIdOrDefault();
-
-            if (!await _permissionService.CanDeleteChatMember(userId, id))
-            {
-                return Forbid();
-            }
-
-            var result = await _service.DeleteMember(id);
-            return OkMessageOrBadRequest(result.Success, result.Error, "Chat member removed");
+            return ToServiceMessageResult(await _service.DeleteMember(GetCurrentUserIdOrDefault(), id));
         }
     }
 }

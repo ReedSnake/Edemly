@@ -10,92 +10,52 @@ namespace Edemly.Server.Api.Controllers.Remindings
     public class RemindingController : ApiControllerBase
     {
         private readonly IRemindingService _service;
-        private readonly IPermissionService _permissionService;
 
-        public RemindingController(IRemindingService service, IPermissionService permissionService)
+        public RemindingController(IRemindingService service)
         {
             _service = service;
-            _permissionService = permissionService;
         }
 
         [Authorize]
         [HttpGet("id/{id}")]
         public async Task<IActionResult> GetById(int id)
         {
-            var userId = GetCurrentUserIdOrDefault();
-
-            if (!await _permissionService.IsRemindingAuthor(userId, id))
-            {
-                return Forbid();
-            }
-
-            var result = await _service.GetById(id);
-            return OkOrNotFound(result.Success, result.Error, result.Reminding);
+            return ToServiceDataResult(await _service.GetById(GetCurrentUserIdOrDefault(), id));
         }
 
         [Authorize]
         [HttpGet("my-remindings")]
         public async Task<IActionResult> GetByUser()
         {
-            var userId = GetCurrentUserIdOrDefault();
-
-            var result = await _service.GetByUser(userId);
-            return OkOrNotFound(result.Success, result.Error, result.Remindings);
+            return ToServiceDataResult(await _service.GetByUser(GetCurrentUserIdOrDefault()));
         }
 
         [Authorize]
         [HttpPost("create")]
         public async Task<IActionResult> Create([FromBody] CreateRemindingDto model)
         {
-            var userId = GetCurrentUserIdOrDefault();
-
-            var result = await _service.Create(userId, model);
-            return OkMessageOrBadRequest(result.Success, result.Error, "Reminding created");
+            return ToServiceMessageResult(await _service.Create(GetCurrentUserIdOrDefault(), model));
         }
 
         [Authorize]
         [HttpPut("update")]
         public async Task<IActionResult> Update([FromBody] UpdateRemindingDto model)
         {
-            var userId = GetCurrentUserIdOrDefault();
-
-            if (!await _permissionService.IsRemindingAuthor(userId, model.Id))
-            {
-                return Forbid();
-            }
-
-            var result = await _service.Update(model);
-            return OkMessageOrBadRequest(result.Success, result.Error, "Reminding updated");
+            return ToServiceMessageResult(await _service.Update(GetCurrentUserIdOrDefault(), model));
         }
 
         [Authorize]
         [HttpPut("toggle-completion/{id}")]
         public async Task<IActionResult> Toggle(int id)
         {
-            var userId = GetCurrentUserIdOrDefault();
-
-            if (!await _permissionService.IsRemindingAuthor(userId, id))
-            {
-                return Forbid();
-            }
-
-            var result = await _service.ToggleCompletion(id);
-            return OkMessageOrBadRequest(result.Success, result.Error, "Reminding updated");
+            return ToServiceMessageResult(await _service.ToggleCompletion(GetCurrentUserIdOrDefault(), id));
         }
 
         [Authorize]
         [HttpDelete("delete/{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            var userId = GetCurrentUserIdOrDefault();
-
-            if (!await _permissionService.IsRemindingAuthor(userId, id))
-            {
-                return Forbid();
-            }
-
-            var result = await _service.Delete(id);
-            return OkMessageOrBadRequest(result.Success, result.Error, "Reminding deleted");
+            return ToServiceMessageResult(await _service.Delete(GetCurrentUserIdOrDefault(), id));
         }
     }
 }

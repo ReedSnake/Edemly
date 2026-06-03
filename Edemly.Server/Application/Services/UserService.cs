@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Edemly.Contracts.Users;
 using Edemly.Server.Data;
@@ -9,47 +9,47 @@ using Edemly.Server.Utils;
 
 namespace Edemly.Server.Api.Services
 {
-    public class UserService : IUserService
+    public class UserService : TenantAwareServiceBase, IUserService
     {
         private readonly ILogger<UserService> _logger;
-        private readonly DbContext _ctx;
-        private readonly bool _isTenant;
 
         public UserService(ServerDbContext serverDb, ILogger<UserService> logger, ITenantProvider tenantProvider, ITenantDbContextFactory tenantDbFactory)
+            : base(serverDb, tenantProvider, tenantDbFactory)
         {
             _logger = logger;
-            _ctx = DbContextResolver.Resolve(out var isTenant, serverDb, tenantProvider, tenantDbFactory);
-            _isTenant = isTenant;
         }
 
-        public async Task<(bool Success, string? Error)> CreateUser(CreateUserDto model)
+        public async Task<ServiceMessageResult> CreateUser(CreateUserDto model)
         {
             try
             {
+                await using var dbContextLease = ResolveDbContext();
+                var ctx = dbContextLease.Context;
+
                 var username = UsernameRules.Normalize(model.Username);
                 var usernameValidationError = UsernameRules.Validate(username);
                 if (usernameValidationError != null)
-                    return (false, usernameValidationError);
+                    return ServiceMessageResult.BadRequest(usernameValidationError);
 
-                if (await _ctx.Set<LoginInfo>().AnyAsync(l => l.Email == model.Email))
+                if (await ctx.Set<LoginInfo>().AnyAsync(l => l.Email == model.Email))
                 {
                     _logger.LogWarning("Email already exists during registration: {Email}", model.Email);
-                    return (false, "User with this email already exists");
+                    return ServiceMessageResult.BadRequest("User with this email already exists");
                 }
 
-                if (await UsernameExistsAsync(username))
+                if (await UsernameExistsAsync(ctx, username))
                 {
                     _logger.LogWarning("Username already taken during registration: {Username}", username);
-                    return (false, "Username already taken");
+                    return ServiceMessageResult.BadRequest("Username already taken");
                 }
 
-                var strategy = _ctx.Database.CreateExecutionStrategy();
+                var strategy = ctx.Database.CreateExecutionStrategy();
 
                 User? user = null;
 
                 await strategy.ExecuteAsync(async () =>
                 {
-                    await using var transaction = await _ctx.Database.BeginTransactionAsync();
+                    await using var transaction = await ctx.Database.BeginTransactionAsync();
 
                     try
                     {
@@ -58,8 +58,8 @@ namespace Edemly.Server.Api.Services
                             Email = model.Email,
                             IsEmailVerified = true
                         };
-                        _ctx.Set<LoginInfo>().Add(loginInfo);
-                        await _ctx.SaveChangesAsync();
+                        ctx.Set<LoginInfo>().Add(loginInfo);
+                        await ctx.SaveChangesAsync();
 
                         _logger.LogInformation("LoginInfo created for {Email}, ID: {Id}", model.Email, loginInfo.Id);
 
@@ -78,8 +78,8 @@ namespace Edemly.Server.Api.Services
                             SubscriptionExpiration = null,
                             CreatedAt = DateTime.UtcNow
                         };
-                        _ctx.Set<User>().Add(user);
-                        await _ctx.SaveChangesAsync();
+                        ctx.Set<User>().Add(user);
+                        await ctx.SaveChangesAsync();
 
                         _logger.LogInformation("User created: {Username}, ID: {Id}", username ?? "(empty)", user.Id);
 
@@ -93,104 +93,82 @@ namespace Edemly.Server.Api.Services
                     }
                 });
 
-                return (true, null);
+                return ServiceMessageResult.Ok("User created successfully");
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "CreateUser failed");
-                return (false, ex.Message);
-            }
-            finally
-            {
-                if (_isTenant) _ctx.Dispose();
+                return ServiceMessageResult.Unexpected("Failed to create user");
             }
         }
 
-        public async Task<(bool Success, string? Error, UserInfoDto? User)> GetFullInfo(int id)
+        public async Task<ServiceDataResult<UserInfoDto>> GetFullInfo(int id)
         {
             try
             {
-                var user = await _ctx.Set<User>()
+                await using var dbContextLease = ResolveDbContext();
+                var ctx = dbContextLease.Context;
+
+                var user = await ctx.Set<User>()
+                    .AsNoTracking()
                     .Include(u => u.LoginInfo)
                     .FirstOrDefaultAsync(u => u.Id == id);
 
                 if (user == null)
-                    return (false, "User not found", null);
-
-                var dto = new UserInfoDto
                 {
-                    Id = user.Id,
-                    Username = user.Username ?? string.Empty,
-                    Email = user.LoginInfo.Email,
-                    FirstName = user.FirstName ?? string.Empty,
-                    LastName = user.LastName ?? string.Empty,
-                    PhoneNumber = user.PhoneNumber ?? string.Empty,
-                    Location = user.Location ?? string.Empty,
-                    Description = user.Description ?? string.Empty,
-                    PfpUrl = user.PfpUrl ?? string.Empty,
-                    CreatedAt = user.CreatedAt,
-                    // convert enum to string for client compatibility
-                    SubscriptionStatus = user.SubscriptionStatus.ToString(),
-                    SubscriptionExpiration = user.SubscriptionExpiration
-                };
+                    return ServiceDataResult<UserInfoDto>.BadRequest("User not found");
+                }
 
-                return (true, null, dto);
+                return ServiceDataResult<UserInfoDto>.Ok(ToUserInfoDto(user));
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to get full info for user {UserId}", id);
-                return (false, ex.Message, null);
-            }
-            finally
-            {
-                if (_isTenant) _ctx.Dispose();
+                return ServiceDataResult<UserInfoDto>.Unexpected("Failed to get user info");
             }
         }
 
-        public async Task<(bool Success, string? Error, UserDto? User)> GetById(int id)
+        public async Task<ServiceDataResult<UserDto>> GetById(int id)
         {
             try
             {
-                var user = await _ctx.Set<User>()
+                await using var dbContextLease = ResolveDbContext();
+                var ctx = dbContextLease.Context;
+
+                var user = await ctx.Set<User>()
+                    .AsNoTracking()
                     .Include(u => u.LoginInfo)
                     .FirstOrDefaultAsync(u => u.Id == id);
 
                 if (user == null)
-                    return (false, "User not found", null);
-
-                var dto = new UserDto
                 {
-                    Id = user.Id,
-                    Username = user.Username ?? string.Empty,
-                    Email = user.LoginInfo.Email,
-                    PhoneNumber = user.PhoneNumber ?? string.Empty,
-                    PfpUrl = user.PfpUrl ?? string.Empty,
-                    Description = user.Description ?? string.Empty
-                };
+                    return ServiceDataResult<UserDto>.NotFound("User not found");
+                }
 
-                return (true, null, dto);
+                return ServiceDataResult<UserDto>.Ok(ToUserDto(user));
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to get user by id {UserId}", id);
-                return (false, ex.Message, null);
-            }
-            finally
-            {
-                if (_isTenant) _ctx.Dispose();
+                return ServiceDataResult<UserDto>.Unexpected("Failed to get user");
             }
         }
 
-        public async Task<(bool Success, string? Error, List<UserDto> Users)> SearchUsers(string searchQuery)
+        public async Task<ServiceDataResult<List<UserDto>>> SearchUsers(string searchQuery)
         {
             try
             {
+                await using var dbContextLease = ResolveDbContext();
+                var ctx = dbContextLease.Context;
+
                 if (string.IsNullOrWhiteSpace(searchQuery))
-                    return (false, "Search query cannot be empty", new List<UserDto>());
+                {
+                    return ServiceDataResult<List<UserDto>>.BadRequest("Search query is required");
+                }
 
                 var query = searchQuery.Trim().ToLower();
 
-                var users = await _ctx.Set<User>()
+                var users = await ctx.Set<User>()
                     .Include(u => u.LoginInfo)
                     .Where(u => (u.Username != null && u.Username.ToLower().Contains(query)) ||
                                 u.LoginInfo.Email.ToLower().Contains(query))
@@ -207,27 +185,29 @@ namespace Edemly.Server.Api.Services
                     .ToListAsync();
 
                 _logger.LogInformation("Found {Count} users for search query: {Query}", users.Count, searchQuery);
-                return (true, null, users);
+                return ServiceDataResult<List<UserDto>>.Ok(users);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to search users with query: {Query}", searchQuery);
-                return (false, ex.Message, new List<UserDto>());
-            }
-            finally
-            {
-                if (_isTenant) _ctx.Dispose();
+                return ServiceDataResult<List<UserDto>>.Unexpected("Failed to search users");
             }
         }
 
-        public async Task<(bool Success, string? Error, List<UserDto> Users)> GetUsersBatch(List<int> userIds)
+        public async Task<ServiceDataResult<List<UserDto>>> GetUsersBatch(List<int> userIds)
         {
             try
             {
-                if (userIds == null || userIds.Count == 0)
-                    return (false, "User IDs list is required", new List<UserDto>());
+                await using var dbContextLease = ResolveDbContext();
+                var ctx = dbContextLease.Context;
 
-                var users = await _ctx.Set<User>()
+                if (userIds == null || userIds.Count == 0)
+                {
+                    return ServiceDataResult<List<UserDto>>.BadRequest("User IDs list is required");
+                }
+
+                var users = await ctx.Set<User>()
+                    .AsNoTracking()
                     .Where(u => userIds.Contains(u.Id))
                     .Select(u => new UserDto
                     {
@@ -238,39 +218,46 @@ namespace Edemly.Server.Api.Services
                     })
                     .ToListAsync();
 
-                _logger.LogInformation("Retrieved {Count} users from batch request of {RequestedCount} IDs", 
-                    users.Count, userIds.Count);
+                _logger.LogInformation(
+                    "Retrieved {Count} users from batch request of {RequestedCount} IDs",
+                    users.Count,
+                    userIds.Count);
 
-                return (true, null, users);
+                return ServiceDataResult<List<UserDto>>.Ok(users);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to get users batch");
-                return (false, ex.Message, new List<UserDto>());
-            }
-            finally
-            {
-                if (_isTenant) _ctx.Dispose();
+                return ServiceDataResult<List<UserDto>>.Unexpected("Failed to get users");
             }
         }
 
-        public async Task<(bool Success, string? Error)> UpdateUser(int id, UpdateUserDto model)
+        public async Task<ServiceMessageResult> UpdateUser(int id, UpdateUserDto model)
         {
             try
             {
-                var user = await _ctx.Set<User>().FindAsync(id);
+                await using var dbContextLease = ResolveDbContext();
+                var ctx = dbContextLease.Context;
+
+                var user = await ctx.Set<User>().FindAsync(id);
                 if (user == null)
-                    return (false, "User not found");
+                {
+                    return ServiceMessageResult.BadRequest("User not found");
+                }
 
                 if (model.Username != null)
                 {
                     var username = UsernameRules.Normalize(model.Username);
                     var usernameValidationError = UsernameRules.Validate(username);
                     if (usernameValidationError != null)
-                        return (false, usernameValidationError);
+                    {
+                        return ServiceMessageResult.BadRequest(usernameValidationError);
+                    }
 
-                    if (await UsernameExistsAsync(username, excludeUserId: id))
-                        return (false, "Username already taken");
+                    if (await UsernameExistsAsync(ctx, username, excludeUserId: id))
+                    {
+                        return ServiceMessageResult.BadRequest("Username already taken");
+                    }
 
                     user.Username = username;
                 }
@@ -293,45 +280,82 @@ namespace Edemly.Server.Api.Services
                 if (model.PfpUrl != null)
                     user.PfpUrl = NormalizeOptionalValue(model.PfpUrl);
 
-                await _ctx.SaveChangesAsync();
+                await ctx.SaveChangesAsync();
 
-                _logger.LogInformation("User {UserId} updated successfully. FirstName: {FirstName}, LastName: {LastName}", 
-                    id, user.FirstName, user.LastName);
+                _logger.LogInformation(
+                    "User {UserId} updated successfully. FirstName: {FirstName}, LastName: {LastName}",
+                    id,
+                    user.FirstName,
+                    user.LastName);
 
-                return (true, null);
+                return ServiceMessageResult.Ok("User updated successfully");
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to update user {UserId}", id);
-                return (false, ex.Message);
-            }
-            finally
-            {
-                if (_isTenant) _ctx.Dispose();
+                return ServiceMessageResult.Unexpected("Failed to update user");
             }
         }
 
-        public async Task<(bool Success, string? Error)> DeleteUser(int id)
+        public async Task<ServiceMessageResult> DeleteUser(int currentUserId, int id)
         {
             try
             {
-                var user = await _ctx.Set<User>().FindAsync(id);
-                if (user == null)
-                    return (false, "User not found");
+                await using var dbContextLease = ResolveDbContext();
+                var ctx = dbContextLease.Context;
 
-                _ctx.Set<User>().Remove(user);
-                await _ctx.SaveChangesAsync();
-                return (true, null);
+                if (currentUserId != id)
+                {
+                    return ServiceMessageResult.Forbidden();
+                }
+
+                var user = await ctx.Set<User>().FindAsync(id);
+                if (user == null)
+                {
+                    return ServiceMessageResult.BadRequest("User not found");
+                }
+
+                ctx.Set<User>().Remove(user);
+                await ctx.SaveChangesAsync();
+                return ServiceMessageResult.Ok("User deleted successfully");
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to delete user {UserId}", id);
-                return (false, ex.Message);
+                return ServiceMessageResult.Unexpected("Failed to delete user");
             }
-            finally
+        }
+
+        private static UserInfoDto ToUserInfoDto(User user)
+        {
+            return new UserInfoDto
             {
-                if (_isTenant) _ctx.Dispose();
-            }
+                Id = user.Id,
+                Username = user.Username ?? string.Empty,
+                Email = user.LoginInfo.Email,
+                FirstName = user.FirstName ?? string.Empty,
+                LastName = user.LastName ?? string.Empty,
+                PhoneNumber = user.PhoneNumber ?? string.Empty,
+                Location = user.Location ?? string.Empty,
+                Description = user.Description ?? string.Empty,
+                PfpUrl = user.PfpUrl ?? string.Empty,
+                CreatedAt = user.CreatedAt,
+                SubscriptionStatus = user.SubscriptionStatus.ToString(),
+                SubscriptionExpiration = user.SubscriptionExpiration
+            };
+        }
+
+        private static UserDto ToUserDto(User user)
+        {
+            return new UserDto
+            {
+                Id = user.Id,
+                Username = user.Username ?? string.Empty,
+                Email = user.LoginInfo?.Email ?? string.Empty,
+                PhoneNumber = user.PhoneNumber ?? string.Empty,
+                PfpUrl = user.PfpUrl ?? string.Empty,
+                Description = user.Description ?? string.Empty
+            };
         }
 
         private static string? NormalizeOptionalValue(string? value)
@@ -342,13 +366,13 @@ namespace Edemly.Server.Api.Services
             return value.Trim();
         }
 
-        private Task<bool> UsernameExistsAsync(string? username, int? excludeUserId = null)
+        private static Task<bool> UsernameExistsAsync(DbContext ctx, string? username, int? excludeUserId = null)
         {
             if (string.IsNullOrWhiteSpace(username))
                 return Task.FromResult(false);
 
             var normalized = username.ToLower();
-            return _ctx.Set<User>().AnyAsync(user =>
+            return ctx.Set<User>().AnyAsync(user =>
                 user.Username != null &&
                 user.Username.ToLower() == normalized &&
                 (!excludeUserId.HasValue || user.Id != excludeUserId.Value));

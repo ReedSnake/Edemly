@@ -56,7 +56,7 @@ namespace Edemly.Server.Api.Controllers.Files
                 });
 
                 if (!updateResult.Success)
-                    _logger.LogWarning("Failed to update user profile picture URL: {Error}", updateResult.Error);
+                    _logger.LogWarning("Failed to update user profile picture URL: {Error}", updateResult.Message);
 
                 return Ok(new { url = result.Url, message = "Profile picture uploaded successfully" });
             }

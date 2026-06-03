@@ -4,31 +4,32 @@ using Edemly.Server.Api.Middleware;
 using Edemly.Server.Data;
 using Edemly.Server.Data.Entities;
 using Edemly.Server.Services;
-using Edemly.Server.Utils;
 using Edemly.Contracts.Payments;
+
 namespace Edemly.Server.Api.Services
 {
-    public class PaymentService : IPaymentService
+    public class PaymentService : TenantAwareServiceBase, IPaymentService
     {
         private readonly ILogger<PaymentService> _logger;
-        private readonly DbContext _ctx;
-        private readonly bool _isTenant;
 
         public PaymentService(ServerDbContext serverDb, ILogger<PaymentService> logger, ITenantProvider tenantProvider, ITenantDbContextFactory tenantDbFactory)
+            : base(serverDb, tenantProvider, tenantDbFactory)
         {
             _logger = logger;
-            _ctx = DbContextResolver.Resolve(out var isTenant, serverDb, tenantProvider, tenantDbFactory);
-            _isTenant = isTenant;
         }
 
-
-        public async Task<(bool Success, string? Error)> Create(int userId, CreatePaymentDto model)
+        public async Task<ServiceMessageResult> Create(int userId, CreatePaymentDto model)
         {
             try
             {
-                var user = await _ctx.Set<User>().FindAsync(userId);
+                await using var dbContextLease = ResolveDbContext();
+                var ctx = dbContextLease.Context;
+
+                var user = await ctx.Set<User>().FindAsync(userId);
                 if (user == null)
-                    return (false, "User not found");
+                {
+                    return ServiceMessageResult.BadRequest("User not found");
+                }
 
                 var payment = new Payment
                 {
@@ -40,60 +41,53 @@ namespace Edemly.Server.Api.Services
                     TransactionId = model.TransactionId
                 };
 
-                _ctx.Set<Payment>().Add(payment);
-                await _ctx.SaveChangesAsync();
+                ctx.Set<Payment>().Add(payment);
+                await ctx.SaveChangesAsync();
 
                 _logger.LogInformation("Payment created for user {UserId}, Amount: {Amount}", userId, model.Amount);
-                return (true, null);
+                return ServiceMessageResult.Ok("Payment created");
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to create payment for user {UserId}", userId);
-                return (false, ex.Message);
-            }
-            finally
-            {
-                if (_isTenant) _ctx.Dispose();
+                return ServiceMessageResult.Unexpected("Failed to create payment");
             }
         }
 
-        public async Task<(bool Success, string? Error, PaymentDto Payment)> GetById(int id)
+        public async Task<ServiceDataResult<PaymentDto>> GetById(int id)
         {
             try
             {
-                var payment = await _ctx.Set<Payment>().FindAsync(id);
+                await using var dbContextLease = ResolveDbContext();
+                var ctx = dbContextLease.Context;
+
+                var payment = await ctx.Set<Payment>()
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(p => p.Id == id);
+
                 if (payment == null)
-                    return (false, "Payment not found", null);
-
-                var dto = new PaymentDto
                 {
-                    Id = payment.Id,
-                    UserId = payment.UserId,
-                    Amount = payment.Amount,
-                    Status = payment.Status.ToString(),
-                    Date = payment.Date,
-                    UpdatedAt = payment.UpdatedAt,
-                    TransactionId = payment.TransactionId
-                };
+                    return ServiceDataResult<PaymentDto>.NotFound("Payment not found");
+                }
 
-                return (true, null, dto);
+                return ServiceDataResult<PaymentDto>.Ok(ToDto(payment));
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to get payment {PaymentId}", id);
-                return (false, ex.Message, null);
-            }
-            finally
-            {
-                if (_isTenant) _ctx.Dispose();
+                return ServiceDataResult<PaymentDto>.Unexpected("Failed to get payment");
             }
         }
 
-        public async Task<(bool Success, string? Error, List<PaymentDto> Payments)> GetByUser(int userId)
+        public async Task<ServiceDataResult<List<PaymentDto>>> GetByUser(int userId)
         {
             try
             {
-                var payments = await _ctx.Set<Payment>()
+                await using var dbContextLease = ResolveDbContext();
+                var ctx = dbContextLease.Context;
+
+                var payments = await ctx.Set<Payment>()
+                    .AsNoTracking()
                     .Where(p => p.UserId == userId)
                     .OrderByDescending(p => p.Date)
                     .Select(p => new PaymentDto
@@ -108,74 +102,88 @@ namespace Edemly.Server.Api.Services
                     })
                     .ToListAsync();
 
-                return (true, null, payments);
+                return ServiceDataResult<List<PaymentDto>>.Ok(payments);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to get payments for user {UserId}", userId);
-                return (false, ex.Message, new List<PaymentDto>());
-            }
-            finally
-            {
-                if (_isTenant) _ctx.Dispose();
+                return ServiceDataResult<List<PaymentDto>>.Unexpected("Failed to get payments");
             }
         }
 
-        public async Task<(bool Success, string? Error)> UpdatePaymentStatus(string transactionId, PaymentStatus newStatus)
+        public async Task<ServiceMessageResult> UpdatePaymentStatus(string transactionId, PaymentStatus newStatus)
         {
             try
             {
-                var payment = await _ctx.Set<Payment>()
+                await using var dbContextLease = ResolveDbContext();
+                var ctx = dbContextLease.Context;
+
+                var payment = await ctx.Set<Payment>()
                     .FirstOrDefaultAsync(p => p.TransactionId == transactionId);
 
                 if (payment == null)
-                    return (false, "Payment not found");
+                {
+                    return ServiceMessageResult.BadRequest("Payment not found");
+                }
 
                 payment.Status = newStatus;
                 payment.UpdatedAt = DateTime.UtcNow;
 
-                await _ctx.SaveChangesAsync();
+                await ctx.SaveChangesAsync();
 
                 _logger.LogInformation("Payment {TransactionId} status updated to {Status}", transactionId, newStatus);
-                return (true, null);
+                return ServiceMessageResult.Ok("Payment status updated");
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to update payment status for transaction {TransactionId}", transactionId);
-                return (false, ex.Message);
-            }
-            finally
-            {
-                if (_isTenant) _ctx.Dispose();
+                return ServiceMessageResult.Unexpected("Failed to update payment status");
             }
         }
 
-        public async Task<(bool Success, string? Error)> UpgradeUserToPremium(int userId, int durationDays = 30)
+        public async Task<ServiceMessageResult> UpgradeUserToPremium(int userId, int durationDays = 30)
         {
             try
             {
-                var user = await _ctx.Set<User>().FindAsync(userId);
+                await using var dbContextLease = ResolveDbContext();
+                var ctx = dbContextLease.Context;
+
+                var user = await ctx.Set<User>().FindAsync(userId);
                 if (user == null)
-                    return (false, "User not found");
+                {
+                    return ServiceMessageResult.BadRequest("User not found");
+                }
 
                 user.SubscriptionStatus = SubscriptionStatus.Premium;
                 user.SubscriptionExpiration = DateTime.UtcNow.AddDays(durationDays);
 
-                await _ctx.SaveChangesAsync();
+                await ctx.SaveChangesAsync();
 
-                _logger.LogInformation("User {UserId} upgraded to Premium until {Expiration}",
-                    userId, user.SubscriptionExpiration);
-                return (true, null);
+                _logger.LogInformation(
+                    "User {UserId} upgraded to Premium until {Expiration}",
+                    userId,
+                    user.SubscriptionExpiration);
+                return ServiceMessageResult.Ok("User upgraded to Premium");
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to upgrade user {UserId} to Premium", userId);
-                return (false, ex.Message);
+                return ServiceMessageResult.Unexpected("Failed to upgrade subscription");
             }
-            finally
+        }
+
+        private static PaymentDto ToDto(Payment payment)
+        {
+            return new PaymentDto
             {
-                if (_isTenant) _ctx.Dispose();
-            }
+                Id = payment.Id,
+                UserId = payment.UserId,
+                Amount = payment.Amount,
+                Status = payment.Status.ToString(),
+                Date = payment.Date,
+                UpdatedAt = payment.UpdatedAt,
+                TransactionId = payment.TransactionId
+            };
         }
     }
 }

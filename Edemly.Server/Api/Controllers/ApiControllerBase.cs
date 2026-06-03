@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Edemly.Server.Api.Services;
 
 namespace Edemly.Server.Api.Controllers
 {
@@ -60,9 +61,35 @@ namespace Edemly.Server.Api.Controllers
                 StatusCodes.Status200OK => OkMessage(message),
                 StatusCodes.Status400BadRequest => BadRequestMessage(message),
                 StatusCodes.Status401Unauthorized => UnauthorizedMessage(message),
+                StatusCodes.Status403Forbidden => Forbid(),
                 StatusCodes.Status404NotFound => NotFoundMessage(message),
                 _ => StatusCode(statusCode, new { message })
             };
+        }
+
+        protected IActionResult ToServiceMessageResult(ServiceMessageResult result)
+        {
+            return MessageResult(result.StatusCode, result.Message);
+        }
+
+        protected IActionResult ToServiceDataResult<T>(ServiceDataResult<T> result)
+        {
+            if (result.Success)
+            {
+                return Ok(result.Data);
+            }
+
+            return MessageResult(result.StatusCode, result.Message ?? "Request failed");
+        }
+
+        protected IActionResult ToServiceDataResult<TInput, TOutput>(ServiceDataResult<TInput> result, Func<TInput?, TOutput> successMapper)
+        {
+            if (result.Success)
+            {
+                return Ok(successMapper(result.Data));
+            }
+
+            return MessageResult(result.StatusCode, result.Message ?? "Request failed");
         }
 
         protected IActionResult OkOrNotFound<T>(bool success, string? error, T payload)

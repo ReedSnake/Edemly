@@ -1,38 +1,34 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using System;
 using Edemly.Server.Api.Middleware;
 using Edemly.Server.Data;
 using Edemly.Server.Data.Entities;
 using Edemly.Server.Services;
 using Edemly.Server.Utils;
 using Edemly.Contracts.Remindings;
+
 namespace Edemly.Server.Api.Services
 {
-    public class RemindingService : IRemindingService
+    public class RemindingService : TenantAwareServiceBase, IRemindingService
     {
         private readonly ILogger<RemindingService> _logger;
-        private readonly DbContext _ctx;
-        private readonly bool _isTenant;
 
         public RemindingService(ServerDbContext serverDb, ILogger<RemindingService> logger, ITenantProvider tenantProvider, ITenantDbContextFactory tenantDbFactory)
+            : base(serverDb, tenantProvider, tenantDbFactory)
         {
             _logger = logger;
-            _ctx = DbContextResolver.Resolve(out var isTenant, serverDb, tenantProvider, tenantDbFactory);
-            _isTenant = isTenant;
         }
 
-        // Create a new reminding
-        public async Task<(bool Success, string? Error)> Create(int creatorId, CreateRemindingDto model)
+        public async Task<ServiceMessageResult> Create(int currentUserId, CreateRemindingDto model)
         {
-            _logger.LogWarning(model.Name);
-            _logger.LogWarning(model.Type.ToString());
-            _logger.LogWarning(model.Content);
             try
             {
+                await using var dbContextLease = ResolveDbContext();
+                var ctx = dbContextLease.Context;
+
                 var reminding = new Reminding
                 {
-                    UserId = creatorId,
+                    UserId = currentUserId,
                     Content = model.Content,
                     CreatedAt = DateTime.UtcNow,
                     LastTime = model.LastTime,
@@ -42,29 +38,29 @@ namespace Edemly.Server.Api.Services
                     ShowTime = model.ShowTime
                 };
 
-                _ctx.Set<Reminding>().Add(reminding);
-                await _ctx.SaveChangesAsync();
-                return (true, null);
+                ctx.Set<Reminding>().Add(reminding);
+                await ctx.SaveChangesAsync();
+                return ServiceMessageResult.Ok("Reminding created");
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to create reminding");
-                return (false, ex.Message);
-            }
-            finally
-            {
-                if (_isTenant) _ctx.Dispose();
+                return ServiceMessageResult.Unexpected("Failed to create reminding");
             }
         }
 
-        // Update an existing reminding
-        public async Task<(bool Success, string? Error)> Update(UpdateRemindingDto model)
+        public async Task<ServiceMessageResult> Update(int currentUserId, UpdateRemindingDto model)
         {
             try
             {
-                var reminding = await _ctx.Set<Reminding>().FindAsync(model.Id);
+                await using var dbContextLease = ResolveDbContext();
+                var ctx = dbContextLease.Context;
+
+                var reminding = await GetOwnedRemindingAsync(ctx, currentUserId, model.Id);
                 if (reminding == null)
-                    return (false, "Reminding not found");
+                {
+                    return ServiceMessageResult.Forbidden();
+                }
 
                 if (!string.IsNullOrEmpty(model.Content))
                     reminding.Content = model.Content;
@@ -82,109 +78,104 @@ namespace Edemly.Server.Api.Services
                     reminding.ShowTime = model.ShowTime.Value;
 
                 if (model.IsCompleted.HasValue)
-                    reminding.IsCompleted = model.IsCompleted.Value;    
-                
+                    reminding.IsCompleted = model.IsCompleted.Value;
+
                 if (model.Type.HasValue)
                     reminding.Type = model.Type.Value;
 
-
-                await _ctx.SaveChangesAsync();
-                return (true, null);
+                await ctx.SaveChangesAsync();
+                return ServiceMessageResult.Ok("Reminding updated");
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to update reminding");
-                return (false, ex.Message);
-            }
-            finally
-            {
-                if (_isTenant) _ctx.Dispose();
+                return ServiceMessageResult.Unexpected("Failed to update reminding");
             }
         }
 
-        public async Task<(bool Success, string? Error)> ToggleCompletion(int id)
+        public async Task<ServiceMessageResult> ToggleCompletion(int currentUserId, int id)
         {
             try
             {
-                var reminding = await _ctx.Set<Reminding>().FindAsync(id);
-                UpdateRemindingDto model = new UpdateRemindingDto { Id = id, IsCompleted = !reminding.IsCompleted };
-                await Update(model);
-                return (true, null);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to update reminding");
-                return (false, ex.Message);
-            }
-        }
+                await using var dbContextLease = ResolveDbContext();
+                var ctx = dbContextLease.Context;
 
-        // Delete a reminding
-        public async Task<(bool Success, string? Error)> Delete(int id)
-        {
-            try
-            {
-                var reminding = await _ctx.Set<Reminding>().FindAsync(id);
+                var reminding = await GetOwnedRemindingAsync(ctx, currentUserId, id);
                 if (reminding == null)
-                    return (false, "Reminding not found");
+                {
+                    return ServiceMessageResult.Forbidden();
+                }
 
-                _ctx.Set<Reminding>().Remove(reminding);
-                await _ctx.SaveChangesAsync();
-                return (true, null);
+                reminding.IsCompleted = !reminding.IsCompleted;
+                await ctx.SaveChangesAsync();
+                return ServiceMessageResult.Ok("Reminding updated");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to toggle reminding completion");
+                return ServiceMessageResult.Unexpected("Failed to update reminding");
+            }
+        }
+
+        public async Task<ServiceMessageResult> Delete(int currentUserId, int id)
+        {
+            try
+            {
+                await using var dbContextLease = ResolveDbContext();
+                var ctx = dbContextLease.Context;
+
+                var reminding = await GetOwnedRemindingAsync(ctx, currentUserId, id);
+                if (reminding == null)
+                {
+                    return ServiceMessageResult.Forbidden();
+                }
+
+                ctx.Set<Reminding>().Remove(reminding);
+                await ctx.SaveChangesAsync();
+                return ServiceMessageResult.Ok("Reminding deleted");
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to delete reminding");
-                return (false, ex.Message);
-            }
-            finally
-            {
-                if (_isTenant) _ctx.Dispose();
+                return ServiceMessageResult.Unexpected("Failed to delete reminding");
             }
         }
 
-        // Get a single reminding by id
-        public async Task<(bool Success, string? Error, RemindingDto Reminding)> GetById(int id)
+        public async Task<ServiceDataResult<RemindingDto>> GetById(int currentUserId, int id)
         {
             try
             {
-                var reminding = await _ctx.Set<Reminding>().FindAsync(id);
+                await using var dbContextLease = ResolveDbContext();
+                var ctx = dbContextLease.Context;
+
+                var reminding = await ctx.Set<Reminding>()
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(r => r.Id == id && r.UserId == currentUserId);
+
                 if (reminding == null)
-                    return (false, "Reminding not found", null!);
-
-                var dto = new RemindingDto
                 {
-                    Id = reminding.Id,
-                    UserId = reminding.UserId,
-                    Content = reminding.Content,
-                    CreatedAt = reminding.CreatedAt,
-                    LastTime = reminding.LastTime,
-                    ShouldNotify = reminding.ShouldNotify,
-                    Type = reminding.Type,
-                    Name = reminding.Name,
-                    ShowTime = reminding.ShowTime,
-                    IsCompleted = reminding.IsCompleted
-                };
+                    return ServiceDataResult<RemindingDto>.Forbidden();
+                }
 
-                return (true, null, dto);
+                return ServiceDataResult<RemindingDto>.Ok(ToDto(reminding));
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to get reminding by id");
-                return (false, ex.Message, null!);
-            }
-            finally
-            {
-                if (_isTenant) _ctx.Dispose();
+                return ServiceDataResult<RemindingDto>.Unexpected("Failed to get reminding");
             }
         }
 
-        // Get all remindings for a user
-        public async Task<(bool Success, string? Error, List<RemindingDto> Remindings)> GetByUser(int userId)
+        public async Task<ServiceDataResult<List<RemindingDto>>> GetByUser(int currentUserId)
         {
             try
             {
-                var remindings = await _ctx.Set<Reminding>()
-                    .Where(r => r.UserId == userId)
+                await using var dbContextLease = ResolveDbContext();
+                var ctx = dbContextLease.Context;
+
+                var remindings = await ctx.Set<Reminding>()
+                    .AsNoTracking()
+                    .Where(r => r.UserId == currentUserId)
                     .OrderBy(r => r.LastTime)
                     .Select(r => new RemindingDto
                     {
@@ -198,44 +189,72 @@ namespace Edemly.Server.Api.Services
                         Name = r.Name,
                         ShowTime = r.ShowTime,
                         IsCompleted = r.IsCompleted
-
                     })
                     .ToListAsync();
 
-                return (true, null, remindings);
+                return ServiceDataResult<List<RemindingDto>>.Ok(remindings);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to get remindings for user");
-                return (false, ex.Message, new List<RemindingDto>());
-            }
-            finally
-            {
-                if (_isTenant) _ctx.Dispose();
+                return ServiceDataResult<List<RemindingDto>>.Unexpected("Failed to get remindings");
             }
         }
 
-        public async Task<(bool Success, string? Error)> ConfirmReminding(int userId, int remindingId)
+        public async Task<ServiceMessageResult> ConfirmReminding(int userId, int remindingId)
         {
-            var reminding = await _ctx.Set<Reminding>()
-                .Where(r => r.Id == remindingId && r.UserId == userId)
-                .FirstOrDefaultAsync();
-
-            if (reminding == null)
+            try
             {
-                _logger.LogError("Reminding not found or doesnt belong to this user");
-                return (false, "Reminding not found or doesnt belong to this user");
+                await using var dbContextLease = ResolveDbContext();
+                var ctx = dbContextLease.Context;
+
+                var reminding = await ctx.Set<Reminding>()
+                    .FirstOrDefaultAsync(r => r.Id == remindingId && r.UserId == userId);
+
+                if (reminding == null)
+                {
+                    _logger.LogError("Reminding not found or doesnt belong to this user");
+                    return ServiceMessageResult.BadRequest("Reminding not found or doesnt belong to this user");
+                }
+
+                reminding.ShouldNotify = false;
+                await ctx.SaveChangesAsync();
+
+                _logger.LogInformation(
+                    "User {UserId} confirmed reminding {RemId}, notifications disabled",
+                    userId,
+                    remindingId);
+
+                return ServiceMessageResult.Ok("Reminding confirmed");
             }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to confirm reminding");
+                return ServiceMessageResult.Unexpected("Failed to confirm reminding");
+            }
+        }
 
-            reminding.ShouldNotify = false;
+        private static Task<Reminding?> GetOwnedRemindingAsync(DbContext ctx, int currentUserId, int remindingId)
+        {
+            return ctx.Set<Reminding>()
+                .FirstOrDefaultAsync(r => r.Id == remindingId && r.UserId == currentUserId);
+        }
 
-            await _ctx.SaveChangesAsync();
-
-            _logger.LogInformation(
-                "User {UserId} confirmed reminding {RemId}, notifications disabled",
-                userId, remindingId
-            );
-            return (true, null);
+        private static RemindingDto ToDto(Reminding reminding)
+        {
+            return new RemindingDto
+            {
+                Id = reminding.Id,
+                UserId = reminding.UserId,
+                Content = reminding.Content,
+                CreatedAt = reminding.CreatedAt,
+                LastTime = reminding.LastTime,
+                ShouldNotify = reminding.ShouldNotify,
+                Type = reminding.Type,
+                Name = reminding.Name,
+                ShowTime = reminding.ShowTime,
+                IsCompleted = reminding.IsCompleted
+            };
         }
     }
 }
