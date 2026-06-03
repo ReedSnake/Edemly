@@ -9,23 +9,23 @@ using Edemly.Contracts.Remindings;
 
 namespace Edemly.Server.Api.Services
 {
-    public class RemindingService : IRemindingService
+    public class RemindingService : TenantAwareServiceBase, IRemindingService
     {
         private readonly ILogger<RemindingService> _logger;
-        private readonly DbContext _ctx;
-        private readonly bool _isTenant;
 
         public RemindingService(ServerDbContext serverDb, ILogger<RemindingService> logger, ITenantProvider tenantProvider, ITenantDbContextFactory tenantDbFactory)
+            : base(serverDb, tenantProvider, tenantDbFactory)
         {
             _logger = logger;
-            _ctx = DbContextResolver.Resolve(out var isTenant, serverDb, tenantProvider, tenantDbFactory);
-            _isTenant = isTenant;
         }
 
         public async Task<ServiceMessageResult> Create(int currentUserId, CreateRemindingDto model)
         {
             try
             {
+                await using var dbContextLease = ResolveDbContext();
+                var ctx = dbContextLease.Context;
+
                 var reminding = new Reminding
                 {
                     UserId = currentUserId,
@@ -38,18 +38,14 @@ namespace Edemly.Server.Api.Services
                     ShowTime = model.ShowTime
                 };
 
-                _ctx.Set<Reminding>().Add(reminding);
-                await _ctx.SaveChangesAsync();
+                ctx.Set<Reminding>().Add(reminding);
+                await ctx.SaveChangesAsync();
                 return ServiceMessageResult.Ok("Reminding created");
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to create reminding");
-                return ServiceMessageResult.BadRequest(ex.Message);
-            }
-            finally
-            {
-                DisposeTenantContext();
+                return ServiceMessageResult.Unexpected("Failed to create reminding");
             }
         }
 
@@ -57,7 +53,10 @@ namespace Edemly.Server.Api.Services
         {
             try
             {
-                var reminding = await GetOwnedRemindingAsync(currentUserId, model.Id);
+                await using var dbContextLease = ResolveDbContext();
+                var ctx = dbContextLease.Context;
+
+                var reminding = await GetOwnedRemindingAsync(ctx, currentUserId, model.Id);
                 if (reminding == null)
                 {
                     return ServiceMessageResult.Forbidden();
@@ -84,17 +83,13 @@ namespace Edemly.Server.Api.Services
                 if (model.Type.HasValue)
                     reminding.Type = model.Type.Value;
 
-                await _ctx.SaveChangesAsync();
+                await ctx.SaveChangesAsync();
                 return ServiceMessageResult.Ok("Reminding updated");
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to update reminding");
-                return ServiceMessageResult.BadRequest(ex.Message);
-            }
-            finally
-            {
-                DisposeTenantContext();
+                return ServiceMessageResult.Unexpected("Failed to update reminding");
             }
         }
 
@@ -102,24 +97,23 @@ namespace Edemly.Server.Api.Services
         {
             try
             {
-                var reminding = await GetOwnedRemindingAsync(currentUserId, id);
+                await using var dbContextLease = ResolveDbContext();
+                var ctx = dbContextLease.Context;
+
+                var reminding = await GetOwnedRemindingAsync(ctx, currentUserId, id);
                 if (reminding == null)
                 {
                     return ServiceMessageResult.Forbidden();
                 }
 
                 reminding.IsCompleted = !reminding.IsCompleted;
-                await _ctx.SaveChangesAsync();
+                await ctx.SaveChangesAsync();
                 return ServiceMessageResult.Ok("Reminding updated");
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to toggle reminding completion");
-                return ServiceMessageResult.BadRequest(ex.Message);
-            }
-            finally
-            {
-                DisposeTenantContext();
+                return ServiceMessageResult.Unexpected("Failed to update reminding");
             }
         }
 
@@ -127,24 +121,23 @@ namespace Edemly.Server.Api.Services
         {
             try
             {
-                var reminding = await GetOwnedRemindingAsync(currentUserId, id);
+                await using var dbContextLease = ResolveDbContext();
+                var ctx = dbContextLease.Context;
+
+                var reminding = await GetOwnedRemindingAsync(ctx, currentUserId, id);
                 if (reminding == null)
                 {
                     return ServiceMessageResult.Forbidden();
                 }
 
-                _ctx.Set<Reminding>().Remove(reminding);
-                await _ctx.SaveChangesAsync();
+                ctx.Set<Reminding>().Remove(reminding);
+                await ctx.SaveChangesAsync();
                 return ServiceMessageResult.Ok("Reminding deleted");
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to delete reminding");
-                return ServiceMessageResult.BadRequest(ex.Message);
-            }
-            finally
-            {
-                DisposeTenantContext();
+                return ServiceMessageResult.Unexpected("Failed to delete reminding");
             }
         }
 
@@ -152,7 +145,13 @@ namespace Edemly.Server.Api.Services
         {
             try
             {
-                var reminding = await GetOwnedRemindingAsync(currentUserId, id);
+                await using var dbContextLease = ResolveDbContext();
+                var ctx = dbContextLease.Context;
+
+                var reminding = await ctx.Set<Reminding>()
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(r => r.Id == id && r.UserId == currentUserId);
+
                 if (reminding == null)
                 {
                     return ServiceDataResult<RemindingDto>.Forbidden();
@@ -163,11 +162,7 @@ namespace Edemly.Server.Api.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to get reminding by id");
-                return ServiceDataResult<RemindingDto>.NotFound(ex.Message);
-            }
-            finally
-            {
-                DisposeTenantContext();
+                return ServiceDataResult<RemindingDto>.Unexpected("Failed to get reminding");
             }
         }
 
@@ -175,7 +170,11 @@ namespace Edemly.Server.Api.Services
         {
             try
             {
-                var remindings = await _ctx.Set<Reminding>()
+                await using var dbContextLease = ResolveDbContext();
+                var ctx = dbContextLease.Context;
+
+                var remindings = await ctx.Set<Reminding>()
+                    .AsNoTracking()
                     .Where(r => r.UserId == currentUserId)
                     .OrderBy(r => r.LastTime)
                     .Select(r => new RemindingDto
@@ -198,11 +197,7 @@ namespace Edemly.Server.Api.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to get remindings for user");
-                return ServiceDataResult<List<RemindingDto>>.NotFound(ex.Message);
-            }
-            finally
-            {
-                DisposeTenantContext();
+                return ServiceDataResult<List<RemindingDto>>.Unexpected("Failed to get remindings");
             }
         }
 
@@ -210,7 +205,10 @@ namespace Edemly.Server.Api.Services
         {
             try
             {
-                var reminding = await _ctx.Set<Reminding>()
+                await using var dbContextLease = ResolveDbContext();
+                var ctx = dbContextLease.Context;
+
+                var reminding = await ctx.Set<Reminding>()
                     .FirstOrDefaultAsync(r => r.Id == remindingId && r.UserId == userId);
 
                 if (reminding == null)
@@ -220,7 +218,7 @@ namespace Edemly.Server.Api.Services
                 }
 
                 reminding.ShouldNotify = false;
-                await _ctx.SaveChangesAsync();
+                await ctx.SaveChangesAsync();
 
                 _logger.LogInformation(
                     "User {UserId} confirmed reminding {RemId}, notifications disabled",
@@ -232,17 +230,13 @@ namespace Edemly.Server.Api.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to confirm reminding");
-                return ServiceMessageResult.BadRequest(ex.Message);
-            }
-            finally
-            {
-                DisposeTenantContext();
+                return ServiceMessageResult.Unexpected("Failed to confirm reminding");
             }
         }
 
-        private async Task<Reminding?> GetOwnedRemindingAsync(int currentUserId, int remindingId)
+        private static Task<Reminding?> GetOwnedRemindingAsync(DbContext ctx, int currentUserId, int remindingId)
         {
-            return await _ctx.Set<Reminding>()
+            return ctx.Set<Reminding>()
                 .FirstOrDefaultAsync(r => r.Id == remindingId && r.UserId == currentUserId);
         }
 
@@ -261,14 +255,6 @@ namespace Edemly.Server.Api.Services
                 ShowTime = reminding.ShowTime,
                 IsCompleted = reminding.IsCompleted
             };
-        }
-
-        private void DisposeTenantContext()
-        {
-            if (_isTenant)
-            {
-                _ctx.Dispose();
-            }
         }
     }
 }

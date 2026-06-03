@@ -9,29 +9,29 @@ using Edemly.Contracts.ChatMembers;
 
 namespace Edemly.Server.Api.Services
 {
-    public class ChatMemberService : IChatMemberService
+    public class ChatMemberService : TenantAwareServiceBase, IChatMemberService
     {
         private readonly ILogger<ChatMemberService> _logger;
-        private readonly DbContext _ctx;
-        private readonly bool _isTenant;
 
         public ChatMemberService(ServerDbContext serverDb, ILogger<ChatMemberService> logger, ITenantProvider tenantProvider, ITenantDbContextFactory tenantDbFactory)
+            : base(serverDb, tenantProvider, tenantDbFactory)
         {
             _logger = logger;
-            _ctx = DbContextResolver.Resolve(out var isTenant, serverDb, tenantProvider, tenantDbFactory);
-            _isTenant = isTenant;
         }
 
         public async Task<ServiceMessageResult> AddMember(int currentUserId, CreateChatMemberDto model)
         {
             try
             {
-                if (!await CanAddChatMemberAsync(currentUserId, model.ChatId))
+                await using var dbContextLease = ResolveDbContext();
+                var ctx = dbContextLease.Context;
+
+                if (!await CanAddChatMemberAsync(ctx, currentUserId, model.ChatId))
                 {
                     return ServiceMessageResult.Forbidden();
                 }
 
-                var result = await AddMember(model.ChatId, model.UserId, (ChatMemberRole)model.Role);
+                var result = await AddMember(ctx, model.ChatId, model.UserId, (ChatMemberRole)model.Role);
                 if (!result.Success)
                 {
                     return ServiceMessageResult.BadRequest(result.Error ?? "Failed to add member");
@@ -42,54 +42,25 @@ namespace Edemly.Server.Api.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to add chat member");
-                return ServiceMessageResult.BadRequest(ex.Message);
-            }
-            finally
-            {
-                DisposeTenantContext();
+                return ServiceMessageResult.Unexpected("Failed to add chat member");
             }
         }
 
         public async Task<(bool Success, string? Error)> AddMember(int chatId, int userId, ChatMemberRole role)
         {
-            try
-            {
-                var existingMember = await _ctx.Set<ChatMember>()
-                    .FirstOrDefaultAsync(cm => cm.ChatId == chatId && cm.UserId == userId);
-
-                if (existingMember != null)
-                {
-                    _logger.LogInformation("User {UserId} is already a member of chat {ChatId}", userId, chatId);
-                    return (true, null);
-                }
-
-                var member = new ChatMember
-                {
-                    UserId = userId,
-                    ChatId = chatId,
-                    Role = role,
-                    JoinedAt = DateTime.UtcNow
-                };
-
-                _ctx.Set<ChatMember>().Add(member);
-                await _ctx.SaveChangesAsync();
-
-                _logger.LogInformation("Added user {UserId} to chat {ChatId} with role {Role}", userId, chatId, role);
-                return (true, null);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to add user {UserId} to chat {ChatId}", userId, chatId);
-                return (false, ex.Message);
-            }
+            await using var dbContextLease = ResolveDbContext();
+            return await AddMember(dbContextLease.Context, chatId, userId, role);
         }
 
         public async Task<ServiceMessageResult> UpdateMember(int currentUserId, UpdateChatMemberDto model)
         {
             try
             {
-                var member = await _ctx.Set<ChatMember>().FindAsync(model.Id);
-                if (member == null || !await CanManageMemberAsync(currentUserId, member, requireDifferentUser: true))
+                await using var dbContextLease = ResolveDbContext();
+                var ctx = dbContextLease.Context;
+
+                var member = await ctx.Set<ChatMember>().FindAsync(model.Id);
+                if (member == null || !await CanManageMemberAsync(ctx, currentUserId, member, requireDifferentUser: true))
                 {
                     return ServiceMessageResult.Forbidden();
                 }
@@ -99,17 +70,13 @@ namespace Edemly.Server.Api.Services
                     member.Role = (ChatMemberRole)model.Role.Value;
                 }
 
-                await _ctx.SaveChangesAsync();
+                await ctx.SaveChangesAsync();
                 return ServiceMessageResult.Ok("Chat member updated");
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to update chat member");
-                return ServiceMessageResult.BadRequest(ex.Message);
-            }
-            finally
-            {
-                DisposeTenantContext();
+                return ServiceMessageResult.Unexpected("Failed to update chat member");
             }
         }
 
@@ -117,24 +84,23 @@ namespace Edemly.Server.Api.Services
         {
             try
             {
-                var member = await _ctx.Set<ChatMember>().FindAsync(id);
-                if (member == null || !await CanManageMemberAsync(currentUserId, member, requireDifferentUser: true))
+                await using var dbContextLease = ResolveDbContext();
+                var ctx = dbContextLease.Context;
+
+                var member = await ctx.Set<ChatMember>().FindAsync(id);
+                if (member == null || !await CanManageMemberAsync(ctx, currentUserId, member, requireDifferentUser: true))
                 {
                     return ServiceMessageResult.Forbidden();
                 }
 
-                _ctx.Set<ChatMember>().Remove(member);
-                await _ctx.SaveChangesAsync();
+                ctx.Set<ChatMember>().Remove(member);
+                await ctx.SaveChangesAsync();
                 return ServiceMessageResult.Ok("Chat member removed");
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to delete chat member");
-                return ServiceMessageResult.BadRequest(ex.Message);
-            }
-            finally
-            {
-                DisposeTenantContext();
+                return ServiceMessageResult.Unexpected("Failed to delete chat member");
             }
         }
 
@@ -142,7 +108,13 @@ namespace Edemly.Server.Api.Services
         {
             try
             {
-                var member = await _ctx.Set<ChatMember>().FindAsync(id);
+                await using var dbContextLease = ResolveDbContext();
+                var ctx = dbContextLease.Context;
+
+                var member = await ctx.Set<ChatMember>()
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(chatMember => chatMember.Id == id);
+
                 if (member == null)
                 {
                     return ServiceDataResult<ChatMemberDto>.NotFound("Member not found");
@@ -153,11 +125,7 @@ namespace Edemly.Server.Api.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to get chat member");
-                return ServiceDataResult<ChatMemberDto>.NotFound(ex.Message);
-            }
-            finally
-            {
-                DisposeTenantContext();
+                return ServiceDataResult<ChatMemberDto>.Unexpected("Failed to get chat member");
             }
         }
 
@@ -165,12 +133,16 @@ namespace Edemly.Server.Api.Services
         {
             try
             {
-                if (!await IsInChatAsync(currentUserId, chatId))
+                await using var dbContextLease = ResolveDbContext();
+                var ctx = dbContextLease.Context;
+
+                if (!await IsInChatAsync(ctx, currentUserId, chatId))
                 {
                     return ServiceDataResult<List<ChatMemberDto>>.Forbidden();
                 }
 
-                var members = await _ctx.Set<ChatMember>()
+                var members = await ctx.Set<ChatMember>()
+                    .AsNoTracking()
                     .Where(m => m.ChatId == chatId)
                     .Select(m => new ChatMemberDto
                     {
@@ -187,11 +159,7 @@ namespace Edemly.Server.Api.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to get chat members");
-                return ServiceDataResult<List<ChatMemberDto>>.NotFound(ex.Message);
-            }
-            finally
-            {
-                DisposeTenantContext();
+                return ServiceDataResult<List<ChatMemberDto>>.Unexpected("Failed to get chat members");
             }
         }
 
@@ -199,7 +167,11 @@ namespace Edemly.Server.Api.Services
         {
             try
             {
-                var memberships = await _ctx.Set<ChatMember>()
+                await using var dbContextLease = ResolveDbContext();
+                var ctx = dbContextLease.Context;
+
+                var memberships = await ctx.Set<ChatMember>()
+                    .AsNoTracking()
                     .Where(m => m.UserId == currentUserId)
                     .Select(m => new ChatMemberDto
                     {
@@ -216,22 +188,56 @@ namespace Edemly.Server.Api.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to get user memberships");
-                return ServiceDataResult<List<ChatMemberDto>>.NotFound(ex.Message);
+                return ServiceDataResult<List<ChatMemberDto>>.Unexpected("Failed to get user memberships");
             }
-            finally
+        }
+
+        private async Task<(bool Success, string? Error)> AddMember(DbContext ctx, int chatId, int userId, ChatMemberRole role)
+        {
+            try
             {
-                DisposeTenantContext();
+                var existingMember = await ctx.Set<ChatMember>()
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(cm => cm.ChatId == chatId && cm.UserId == userId);
+
+                if (existingMember != null)
+                {
+                    _logger.LogInformation("User {UserId} is already a member of chat {ChatId}", userId, chatId);
+                    return (true, null);
+                }
+
+                var member = new ChatMember
+                {
+                    UserId = userId,
+                    ChatId = chatId,
+                    Role = role,
+                    JoinedAt = DateTime.UtcNow
+                };
+
+                ctx.Set<ChatMember>().Add(member);
+                await ctx.SaveChangesAsync();
+
+                _logger.LogInformation("Added user {UserId} to chat {ChatId} with role {Role}", userId, chatId, role);
+                return (true, null);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to add user {UserId} to chat {ChatId}", userId, chatId);
+                return (false, "Failed to add chat member");
             }
         }
 
-        private async Task<bool> IsInChatAsync(int userId, int chatId)
+        private static Task<bool> IsInChatAsync(DbContext ctx, int userId, int chatId)
         {
-            return await _ctx.Set<ChatMember>().AnyAsync(cm => cm.UserId == userId && cm.ChatId == chatId);
+            return ctx.Set<ChatMember>()
+                .AsNoTracking()
+                .AnyAsync(cm => cm.UserId == userId && cm.ChatId == chatId);
         }
 
-        private async Task<bool> CanAddChatMemberAsync(int currentUserId, int chatId)
+        private static async Task<bool> CanAddChatMemberAsync(DbContext ctx, int currentUserId, int chatId)
         {
-            var currentMember = await _ctx.Set<ChatMember>()
+            var currentMember = await ctx.Set<ChatMember>()
+                .AsNoTracking()
                 .FirstOrDefaultAsync(cm => cm.UserId == currentUserId && cm.ChatId == chatId);
 
             if (currentMember == null)
@@ -242,14 +248,15 @@ namespace Edemly.Server.Api.Services
             return currentMember.Role == ChatMemberRole.Admin || currentMember.Role == ChatMemberRole.Creator;
         }
 
-        private async Task<bool> CanManageMemberAsync(int currentUserId, ChatMember member, bool requireDifferentUser)
+        private static async Task<bool> CanManageMemberAsync(DbContext ctx, int currentUserId, ChatMember member, bool requireDifferentUser)
         {
             if (requireDifferentUser && member.UserId == currentUserId)
             {
                 return false;
             }
 
-            var currentMember = await _ctx.Set<ChatMember>()
+            var currentMember = await ctx.Set<ChatMember>()
+                .AsNoTracking()
                 .FirstOrDefaultAsync(cm => cm.UserId == currentUserId && cm.ChatId == member.ChatId);
 
             if (currentMember == null)
@@ -280,14 +287,6 @@ namespace Edemly.Server.Api.Services
                 Role = (int)member.Role,
                 JoinedAt = member.JoinedAt
             };
-        }
-
-        private void DisposeTenantContext()
-        {
-            if (_isTenant)
-            {
-                _ctx.Dispose();
-            }
         }
     }
 }

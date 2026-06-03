@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Edemly.Contracts.Users;
 using Edemly.Server.Data;
@@ -9,47 +9,47 @@ using Edemly.Server.Utils;
 
 namespace Edemly.Server.Api.Services
 {
-    public class UserService : IUserService
+    public class UserService : TenantAwareServiceBase, IUserService
     {
         private readonly ILogger<UserService> _logger;
-        private readonly DbContext _ctx;
-        private readonly bool _isTenant;
 
         public UserService(ServerDbContext serverDb, ILogger<UserService> logger, ITenantProvider tenantProvider, ITenantDbContextFactory tenantDbFactory)
+            : base(serverDb, tenantProvider, tenantDbFactory)
         {
             _logger = logger;
-            _ctx = DbContextResolver.Resolve(out var isTenant, serverDb, tenantProvider, tenantDbFactory);
-            _isTenant = isTenant;
         }
 
         public async Task<ServiceMessageResult> CreateUser(CreateUserDto model)
         {
             try
             {
+                await using var dbContextLease = ResolveDbContext();
+                var ctx = dbContextLease.Context;
+
                 var username = UsernameRules.Normalize(model.Username);
                 var usernameValidationError = UsernameRules.Validate(username);
                 if (usernameValidationError != null)
                     return ServiceMessageResult.BadRequest(usernameValidationError);
 
-                if (await _ctx.Set<LoginInfo>().AnyAsync(l => l.Email == model.Email))
+                if (await ctx.Set<LoginInfo>().AnyAsync(l => l.Email == model.Email))
                 {
                     _logger.LogWarning("Email already exists during registration: {Email}", model.Email);
                     return ServiceMessageResult.BadRequest("User with this email already exists");
                 }
 
-                if (await UsernameExistsAsync(username))
+                if (await UsernameExistsAsync(ctx, username))
                 {
                     _logger.LogWarning("Username already taken during registration: {Username}", username);
                     return ServiceMessageResult.BadRequest("Username already taken");
                 }
 
-                var strategy = _ctx.Database.CreateExecutionStrategy();
+                var strategy = ctx.Database.CreateExecutionStrategy();
 
                 User? user = null;
 
                 await strategy.ExecuteAsync(async () =>
                 {
-                    await using var transaction = await _ctx.Database.BeginTransactionAsync();
+                    await using var transaction = await ctx.Database.BeginTransactionAsync();
 
                     try
                     {
@@ -58,8 +58,8 @@ namespace Edemly.Server.Api.Services
                             Email = model.Email,
                             IsEmailVerified = true
                         };
-                        _ctx.Set<LoginInfo>().Add(loginInfo);
-                        await _ctx.SaveChangesAsync();
+                        ctx.Set<LoginInfo>().Add(loginInfo);
+                        await ctx.SaveChangesAsync();
 
                         _logger.LogInformation("LoginInfo created for {Email}, ID: {Id}", model.Email, loginInfo.Id);
 
@@ -78,8 +78,8 @@ namespace Edemly.Server.Api.Services
                             SubscriptionExpiration = null,
                             CreatedAt = DateTime.UtcNow
                         };
-                        _ctx.Set<User>().Add(user);
-                        await _ctx.SaveChangesAsync();
+                        ctx.Set<User>().Add(user);
+                        await ctx.SaveChangesAsync();
 
                         _logger.LogInformation("User created: {Username}, ID: {Id}", username ?? "(empty)", user.Id);
 
@@ -98,11 +98,7 @@ namespace Edemly.Server.Api.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "CreateUser failed");
-                return ServiceMessageResult.BadRequest(ex.Message);
-            }
-            finally
-            {
-                DisposeTenantContext();
+                return ServiceMessageResult.Unexpected("Failed to create user");
             }
         }
 
@@ -110,7 +106,11 @@ namespace Edemly.Server.Api.Services
         {
             try
             {
-                var user = await _ctx.Set<User>()
+                await using var dbContextLease = ResolveDbContext();
+                var ctx = dbContextLease.Context;
+
+                var user = await ctx.Set<User>()
+                    .AsNoTracking()
                     .Include(u => u.LoginInfo)
                     .FirstOrDefaultAsync(u => u.Id == id);
 
@@ -124,11 +124,7 @@ namespace Edemly.Server.Api.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to get full info for user {UserId}", id);
-                return ServiceDataResult<UserInfoDto>.BadRequest(ex.Message);
-            }
-            finally
-            {
-                DisposeTenantContext();
+                return ServiceDataResult<UserInfoDto>.Unexpected("Failed to get user info");
             }
         }
 
@@ -136,7 +132,11 @@ namespace Edemly.Server.Api.Services
         {
             try
             {
-                var user = await _ctx.Set<User>()
+                await using var dbContextLease = ResolveDbContext();
+                var ctx = dbContextLease.Context;
+
+                var user = await ctx.Set<User>()
+                    .AsNoTracking()
                     .Include(u => u.LoginInfo)
                     .FirstOrDefaultAsync(u => u.Id == id);
 
@@ -150,11 +150,7 @@ namespace Edemly.Server.Api.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to get user by id {UserId}", id);
-                return ServiceDataResult<UserDto>.NotFound(ex.Message);
-            }
-            finally
-            {
-                DisposeTenantContext();
+                return ServiceDataResult<UserDto>.Unexpected("Failed to get user");
             }
         }
 
@@ -162,6 +158,9 @@ namespace Edemly.Server.Api.Services
         {
             try
             {
+                await using var dbContextLease = ResolveDbContext();
+                var ctx = dbContextLease.Context;
+
                 if (string.IsNullOrWhiteSpace(searchQuery))
                 {
                     return ServiceDataResult<List<UserDto>>.BadRequest("Search query is required");
@@ -169,7 +168,7 @@ namespace Edemly.Server.Api.Services
 
                 var query = searchQuery.Trim().ToLower();
 
-                var users = await _ctx.Set<User>()
+                var users = await ctx.Set<User>()
                     .Include(u => u.LoginInfo)
                     .Where(u => (u.Username != null && u.Username.ToLower().Contains(query)) ||
                                 u.LoginInfo.Email.ToLower().Contains(query))
@@ -191,11 +190,7 @@ namespace Edemly.Server.Api.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to search users with query: {Query}", searchQuery);
-                return ServiceDataResult<List<UserDto>>.BadRequest(ex.Message);
-            }
-            finally
-            {
-                DisposeTenantContext();
+                return ServiceDataResult<List<UserDto>>.Unexpected("Failed to search users");
             }
         }
 
@@ -203,12 +198,16 @@ namespace Edemly.Server.Api.Services
         {
             try
             {
+                await using var dbContextLease = ResolveDbContext();
+                var ctx = dbContextLease.Context;
+
                 if (userIds == null || userIds.Count == 0)
                 {
                     return ServiceDataResult<List<UserDto>>.BadRequest("User IDs list is required");
                 }
 
-                var users = await _ctx.Set<User>()
+                var users = await ctx.Set<User>()
+                    .AsNoTracking()
                     .Where(u => userIds.Contains(u.Id))
                     .Select(u => new UserDto
                     {
@@ -219,19 +218,17 @@ namespace Edemly.Server.Api.Services
                     })
                     .ToListAsync();
 
-                _logger.LogInformation("Retrieved {Count} users from batch request of {RequestedCount} IDs", 
-                    users.Count, userIds.Count);
+                _logger.LogInformation(
+                    "Retrieved {Count} users from batch request of {RequestedCount} IDs",
+                    users.Count,
+                    userIds.Count);
 
                 return ServiceDataResult<List<UserDto>>.Ok(users);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to get users batch");
-                return ServiceDataResult<List<UserDto>>.BadRequest(ex.Message);
-            }
-            finally
-            {
-                DisposeTenantContext();
+                return ServiceDataResult<List<UserDto>>.Unexpected("Failed to get users");
             }
         }
 
@@ -239,7 +236,10 @@ namespace Edemly.Server.Api.Services
         {
             try
             {
-                var user = await _ctx.Set<User>().FindAsync(id);
+                await using var dbContextLease = ResolveDbContext();
+                var ctx = dbContextLease.Context;
+
+                var user = await ctx.Set<User>().FindAsync(id);
                 if (user == null)
                 {
                     return ServiceMessageResult.BadRequest("User not found");
@@ -254,7 +254,7 @@ namespace Edemly.Server.Api.Services
                         return ServiceMessageResult.BadRequest(usernameValidationError);
                     }
 
-                    if (await UsernameExistsAsync(username, excludeUserId: id))
+                    if (await UsernameExistsAsync(ctx, username, excludeUserId: id))
                     {
                         return ServiceMessageResult.BadRequest("Username already taken");
                     }
@@ -280,21 +280,20 @@ namespace Edemly.Server.Api.Services
                 if (model.PfpUrl != null)
                     user.PfpUrl = NormalizeOptionalValue(model.PfpUrl);
 
-                await _ctx.SaveChangesAsync();
+                await ctx.SaveChangesAsync();
 
-                _logger.LogInformation("User {UserId} updated successfully. FirstName: {FirstName}, LastName: {LastName}", 
-                    id, user.FirstName, user.LastName);
+                _logger.LogInformation(
+                    "User {UserId} updated successfully. FirstName: {FirstName}, LastName: {LastName}",
+                    id,
+                    user.FirstName,
+                    user.LastName);
 
                 return ServiceMessageResult.Ok("User updated successfully");
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to update user {UserId}", id);
-                return ServiceMessageResult.BadRequest(ex.Message);
-            }
-            finally
-            {
-                DisposeTenantContext();
+                return ServiceMessageResult.Unexpected("Failed to update user");
             }
         }
 
@@ -302,29 +301,28 @@ namespace Edemly.Server.Api.Services
         {
             try
             {
+                await using var dbContextLease = ResolveDbContext();
+                var ctx = dbContextLease.Context;
+
                 if (currentUserId != id)
                 {
                     return ServiceMessageResult.Forbidden();
                 }
 
-                var user = await _ctx.Set<User>().FindAsync(id);
+                var user = await ctx.Set<User>().FindAsync(id);
                 if (user == null)
                 {
                     return ServiceMessageResult.BadRequest("User not found");
                 }
 
-                _ctx.Set<User>().Remove(user);
-                await _ctx.SaveChangesAsync();
+                ctx.Set<User>().Remove(user);
+                await ctx.SaveChangesAsync();
                 return ServiceMessageResult.Ok("User deleted successfully");
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to delete user {UserId}", id);
-                return ServiceMessageResult.BadRequest(ex.Message);
-            }
-            finally
-            {
-                DisposeTenantContext();
+                return ServiceMessageResult.Unexpected("Failed to delete user");
             }
         }
 
@@ -368,24 +366,16 @@ namespace Edemly.Server.Api.Services
             return value.Trim();
         }
 
-        private Task<bool> UsernameExistsAsync(string? username, int? excludeUserId = null)
+        private static Task<bool> UsernameExistsAsync(DbContext ctx, string? username, int? excludeUserId = null)
         {
             if (string.IsNullOrWhiteSpace(username))
                 return Task.FromResult(false);
 
             var normalized = username.ToLower();
-            return _ctx.Set<User>().AnyAsync(user =>
+            return ctx.Set<User>().AnyAsync(user =>
                 user.Username != null &&
                 user.Username.ToLower() == normalized &&
                 (!excludeUserId.HasValue || user.Id != excludeUserId.Value));
-        }
-
-        private void DisposeTenantContext()
-        {
-            if (_isTenant)
-            {
-                _ctx.Dispose();
-            }
         }
     }
 }

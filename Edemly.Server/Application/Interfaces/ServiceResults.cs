@@ -11,6 +11,8 @@ namespace Edemly.Server.Api.Services
         public static ServiceMessageResult Forbidden(string message = "Forbidden") => new(false, StatusCodes.Status403Forbidden, message);
 
         public static ServiceMessageResult NotFound(string message) => new(false, StatusCodes.Status404NotFound, message);
+
+        public static ServiceMessageResult Unexpected(string message = "Unexpected server error.") => new(false, StatusCodes.Status500InternalServerError, message);
     }
 
     public sealed record ServiceDataResult<T>(bool Success, int StatusCode, T? Data, string? Message)
@@ -22,5 +24,7 @@ namespace Edemly.Server.Api.Services
         public static ServiceDataResult<T> Forbidden(string message = "Forbidden") => new(false, StatusCodes.Status403Forbidden, default, message);
 
         public static ServiceDataResult<T> NotFound(string message) => new(false, StatusCodes.Status404NotFound, default, message);
+
+        public static ServiceDataResult<T> Unexpected(string message = "Unexpected server error.") => new(false, StatusCodes.Status500InternalServerError, default, message);
     }
 }

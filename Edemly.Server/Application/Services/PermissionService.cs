@@ -1,5 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
+using Microsoft.EntityFrameworkCore;
 using Edemly.Server.Api.Middleware;
 using Edemly.Server.Data;
 using Edemly.Server.Data.Entities;
@@ -8,161 +7,161 @@ using Edemly.Server.Utils;
 
 namespace Edemly.Server.Api.Services
 {
-    public class PermissionService : IPermissionService
+    public class PermissionService : TenantAwareServiceBase, IPermissionService
     {
-        private readonly DbContext _ctx;
-        private readonly bool _isTenant;
-
         public PermissionService(ServerDbContext serverDb, ITenantProvider tenantProvider, ITenantDbContextFactory tenantDbFactory)
+            : base(serverDb, tenantProvider, tenantDbFactory)
         {
-            _ctx = DbContextResolver.Resolve(out var isTenant, serverDb, tenantProvider, tenantDbFactory);
-            _isTenant = isTenant;
         }
 
-        //use this check for chat related gets like chat info, members or messages
         public async Task<bool> IsInChat(int userId, int chatId)
         {
-            try
-            {
-                return await _ctx.Set<ChatMember>().AnyAsync(cm => cm.UserId == userId && cm.ChatId == chatId);
-            }
-            finally
-            {
-                if (_isTenant) _ctx.Dispose();
-            }
-        }
-        private async Task<string> CheckRights(int userId, int chatId)
-        {
-            try
-            {
-                ChatMember? cm = await _ctx.Set<ChatMember>().FirstOrDefaultAsync(cm => cm.UserId == userId && cm.ChatId == chatId);
-                ChatMemberRole? role = cm?.Role;
+            await using var dbContextLease = ResolveDbContext();
+            var ctx = dbContextLease.Context;
 
-                string rights = "none";
-                if (role == ChatMemberRole.Admin) rights = "admin";
-                if (role == ChatMemberRole.Creator) rights = "creator";
-
-                return rights;
-            }
-            finally
-            {
-                if (_isTenant) _ctx.Dispose();
-            }
+            return await ctx.Set<ChatMember>()
+                .AsNoTracking()
+                .AnyAsync(cm => cm.UserId == userId && cm.ChatId == chatId);
         }
-        //User
+
         public bool CanDeleteUser(int userId, int userToDeleteId)
         {
-            return userId == userToDeleteId; //dont really need this to be here but I'll keep it in case we want admins to be able to delete users or something
+            return userId == userToDeleteId;
         }
-        //Chat
+
         public async Task<bool> CanUpdateChat(int userId, int chatId)
         {
-            return await CheckRights(userId, chatId) != "none";
+            await using var dbContextLease = ResolveDbContext();
+            return await CheckRightsAsync(dbContextLease.Context, userId, chatId) != "none";
         }
+
         public async Task<bool> CanDeleteChat(int userId, int chatId)
         {
-            return await CheckRights(userId, chatId) == "creator";
+            await using var dbContextLease = ResolveDbContext();
+            return await CheckRightsAsync(dbContextLease.Context, userId, chatId) == "creator";
         }
-        //Message
+
         public async Task<bool> CanUpdateMessage(int userId, int messageId)
         {
-            try
-            {
-                Message? m = await _ctx.Set<Message>().FirstOrDefaultAsync(m => m.SenderId == userId && m.Id == messageId);
-                return m != null;
-            }
-            finally
-            {
-                if (_isTenant) _ctx.Dispose();
-            }
+            await using var dbContextLease = ResolveDbContext();
+            var ctx = dbContextLease.Context;
+
+            var message = await ctx.Set<Message>()
+                .AsNoTracking()
+                .FirstOrDefaultAsync(m => m.SenderId == userId && m.Id == messageId);
+
+            return message != null;
         }
+
         public async Task<bool> CanDeleteMessage(int userId, int messageId)
         {
-            try
-            {
-                Message? m = await _ctx.Set<Message>().FindAsync(messageId);
-                if (m == null) return false;
+            await using var dbContextLease = ResolveDbContext();
+            var ctx = dbContextLease.Context;
 
-                int chatId = m.ChatId;
-                if (await CheckRights(userId, chatId) != "none") return true;
+            var message = await ctx.Set<Message>()
+                .AsNoTracking()
+                .FirstOrDefaultAsync(m => m.Id == messageId);
 
-                return m.SenderId == userId;
-            }
-            finally
+            if (message == null)
             {
-                if (_isTenant) _ctx.Dispose();
+                return false;
             }
+
+            if (await CheckRightsAsync(ctx, userId, message.ChatId) != "none")
+            {
+                return true;
+            }
+
+            return message.SenderId == userId;
         }
-        //Chat mem
+
         public async Task<bool> CanAddChatMember(int userId, int chatId)
         {
-            return await CheckRights(userId, chatId) != "none";
+            await using var dbContextLease = ResolveDbContext();
+            return await CheckRightsAsync(dbContextLease.Context, userId, chatId) != "none";
         }
+
         public async Task<bool> CanUpdateChatMember(int userId, int chatMemberId)
         {
-            try
-            {
-                ChatMember? cm = await _ctx.Set<ChatMember>().FindAsync(chatMemberId);
-                if (cm == null) return false;
-                if (cm.UserId == userId) return false;
-
-                string userRights = await CheckRights(userId, cm.ChatId);
-
-                if (userRights == "none") return false;
-                if (userRights == "admin" && cm.Role != ChatMemberRole.Base) return false;
-                return true;
-            }
-            finally
-            {
-                if (_isTenant) _ctx.Dispose();
-            }
+            await using var dbContextLease = ResolveDbContext();
+            return await CanManageChatMemberAsync(dbContextLease.Context, userId, chatMemberId);
         }
+
         public async Task<bool> CanDeleteChatMember(int userId, int chatMemberId)
         {
-            try
-            {
-                ChatMember? cm = await _ctx.Set<ChatMember>().FindAsync(chatMemberId);
-                if (cm == null) return false;
-                if (cm.UserId == userId) return false;
-
-                string userRights = await CheckRights(userId, cm.ChatId);
-
-                if (userRights == "none") return false;
-                if (userRights == "admin" && cm.Role != ChatMemberRole.Base) return false;
-                return true;
-            }
-            finally
-            {
-                if (_isTenant) _ctx.Dispose();
-            }
+            await using var dbContextLease = ResolveDbContext();
+            return await CanManageChatMemberAsync(dbContextLease.Context, userId, chatMemberId);
         }
-        //Note
+
         public async Task<bool> IsNoteAuthor(int userId, int noteId)
         {
-            try
-            {
-                Edemly.Server.Data.Entities.Note? n = await _ctx.Set<Note>().FindAsync(noteId);
-                if (n == null) return false;
-                return n.CreatorId == userId;
-            }
-            finally
-            {
-                if (_isTenant) _ctx.Dispose();
-            }
+            await using var dbContextLease = ResolveDbContext();
+            var ctx = dbContextLease.Context;
+
+            var note = await ctx.Set<Note>()
+                .AsNoTracking()
+                .FirstOrDefaultAsync(n => n.Id == noteId);
+
+            return note != null && note.CreatorId == userId;
         }
-        //Reminding
+
         public async Task<bool> IsRemindingAuthor(int userId, int remindingId)
         {
-            try
+            await using var dbContextLease = ResolveDbContext();
+            var ctx = dbContextLease.Context;
+
+            var reminding = await ctx.Set<Reminding>()
+                .AsNoTracking()
+                .FirstOrDefaultAsync(r => r.Id == remindingId);
+
+            return reminding != null && reminding.UserId == userId;
+        }
+
+        private static async Task<string> CheckRightsAsync(DbContext ctx, int userId, int chatId)
+        {
+            var chatMember = await ctx.Set<ChatMember>()
+                .AsNoTracking()
+                .FirstOrDefaultAsync(cm => cm.UserId == userId && cm.ChatId == chatId);
+
+            var role = chatMember?.Role;
+
+            if (role == ChatMemberRole.Creator)
             {
-                Reminding? r = await _ctx.Set<Reminding>().FindAsync(remindingId);
-                if (r == null) return false;
-                return r.UserId == userId;
+                return "creator";
             }
-            finally
+
+            if (role == ChatMemberRole.Admin)
             {
-                if (_isTenant) _ctx.Dispose();
+                return "admin";
             }
+
+            return "none";
+        }
+
+        private static async Task<bool> CanManageChatMemberAsync(DbContext ctx, int userId, int chatMemberId)
+        {
+            var chatMember = await ctx.Set<ChatMember>()
+                .AsNoTracking()
+                .FirstOrDefaultAsync(cm => cm.Id == chatMemberId);
+
+            if (chatMember == null || chatMember.UserId == userId)
+            {
+                return false;
+            }
+
+            var userRights = await CheckRightsAsync(ctx, userId, chatMember.ChatId);
+
+            if (userRights == "none")
+            {
+                return false;
+            }
+
+            if (userRights == "admin" && chatMember.Role != ChatMemberRole.Base)
+            {
+                return false;
+            }
+
+            return true;
         }
     }
 }

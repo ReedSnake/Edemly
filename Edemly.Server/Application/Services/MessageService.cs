@@ -9,13 +9,11 @@ using Edemly.Server.Services;
 
 namespace Edemly.Server.Api.Services
 {
-    public class MessageService : IMessageService
+    public class MessageService : TenantAwareServiceBase, IMessageService
     {
         private readonly ILogger<MessageService> _logger;
         private readonly ChatCacheRegistry _registry;
         private readonly IMemoryCache _cache;
-        private readonly DbContext _ctx;
-        private readonly bool _isTenant;
 
         public MessageService(
             ServerDbContext serverDb,
@@ -24,19 +22,24 @@ namespace Edemly.Server.Api.Services
             ChatCacheRegistry registry,
             ITenantProvider tenantProvider,
             ITenantDbContextFactory tenantDbFactory)
+            : base(serverDb, tenantProvider, tenantDbFactory)
         {
             _logger = logger;
             _registry = registry;
             _cache = cache;
-            _ctx = DbContextResolver.Resolve(out var isTenant, serverDb, tenantProvider, tenantDbFactory);
-            _isTenant = isTenant;
         }
 
         public async Task<ServiceDataResult<MessageDto>> GetById(int id)
         {
             try
             {
-                var msg = await _ctx.Set<Message>().FindAsync(id);
+                await using var dbContextLease = ResolveDbContext();
+                var ctx = dbContextLease.Context;
+
+                var msg = await ctx.Set<Message>()
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(message => message.Id == id);
+
                 if (msg == null)
                 {
                     return ServiceDataResult<MessageDto>.NotFound("Message not found");
@@ -47,11 +50,7 @@ namespace Edemly.Server.Api.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to get message by id");
-                return ServiceDataResult<MessageDto>.NotFound(ex.Message);
-            }
-            finally
-            {
-                DisposeTenantContext();
+                return ServiceDataResult<MessageDto>.Unexpected("Failed to get message");
             }
         }
 
@@ -61,7 +60,10 @@ namespace Edemly.Server.Api.Services
 
             try
             {
-                if (!await IsInChatAsync(currentUserId, chatId))
+                await using var dbContextLease = ResolveDbContext();
+                var ctx = dbContextLease.Context;
+
+                if (!await IsInChatAsync(ctx, currentUserId, chatId))
                 {
                     return ServiceDataResult<List<MessageDto>>.Forbidden();
                 }
@@ -71,7 +73,7 @@ namespace Edemly.Server.Api.Services
                     return ServiceDataResult<List<MessageDto>>.Ok(cached ?? new List<MessageDto>());
                 }
 
-                var messages = await _ctx.Set<Message>()
+                var messages = await ctx.Set<Message>()
                     .Where(m => m.ChatId == chatId)
                     .OrderBy(m => m.SentAt)
                     .Skip((page - 1) * pageSize)
@@ -97,11 +99,7 @@ namespace Edemly.Server.Api.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to get messages for chat");
-                return ServiceDataResult<List<MessageDto>>.NotFound(ex.Message);
-            }
-            finally
-            {
-                DisposeTenantContext();
+                return ServiceDataResult<List<MessageDto>>.Unexpected("Failed to get messages");
             }
         }
 
@@ -111,7 +109,10 @@ namespace Edemly.Server.Api.Services
 
             try
             {
-                if (!await IsInChatAsync(currentUserId, chatId))
+                await using var dbContextLease = ResolveDbContext();
+                var ctx = dbContextLease.Context;
+
+                if (!await IsInChatAsync(ctx, currentUserId, chatId))
                 {
                     return ServiceDataResult<MessageDto>.Forbidden();
                 }
@@ -121,7 +122,7 @@ namespace Edemly.Server.Api.Services
                     return ServiceDataResult<MessageDto>.Ok(cached);
                 }
 
-                MessageDto? message = await _ctx.Set<Message>()
+                MessageDto? message = await ctx.Set<Message>()
                     .Where(m => m.ChatId == chatId)
                     .OrderByDescending(m => m.SentAt)
                     .Select(m => new MessageDto
@@ -149,11 +150,7 @@ namespace Edemly.Server.Api.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to get last message for chat");
-                return ServiceDataResult<MessageDto>.NotFound(ex.Message);
-            }
-            finally
-            {
-                DisposeTenantContext();
+                return ServiceDataResult<MessageDto>.Unexpected("Failed to get last message");
             }
         }
 
@@ -161,7 +158,10 @@ namespace Edemly.Server.Api.Services
         {
             try
             {
-                if (!await IsInChatAsync(senderId, model.ChatId))
+                await using var dbContextLease = ResolveDbContext();
+                var ctx = dbContextLease.Context;
+
+                if (!await IsInChatAsync(ctx, senderId, model.ChatId))
                 {
                     return ServiceMessageResult.Forbidden();
                 }
@@ -177,8 +177,8 @@ namespace Edemly.Server.Api.Services
                     SentAt = DateTime.UtcNow
                 };
 
-                _ctx.Set<Message>().Add(msg);
-                await _ctx.SaveChangesAsync();
+                ctx.Set<Message>().Add(msg);
+                await ctx.SaveChangesAsync();
 
                 ClearChatCache(msg.ChatId);
                 return ServiceMessageResult.Ok("Message created");
@@ -186,11 +186,7 @@ namespace Edemly.Server.Api.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to create message");
-                return ServiceMessageResult.BadRequest(ex.Message);
-            }
-            finally
-            {
-                DisposeTenantContext();
+                return ServiceMessageResult.Unexpected("Failed to create message");
             }
         }
 
@@ -198,7 +194,10 @@ namespace Edemly.Server.Api.Services
         {
             try
             {
-                var msg = await _ctx.Set<Message>().FindAsync(model.Id);
+                await using var dbContextLease = ResolveDbContext();
+                var ctx = dbContextLease.Context;
+
+                var msg = await ctx.Set<Message>().FindAsync(model.Id);
                 if (msg == null || msg.SenderId != currentUserId)
                 {
                     return ServiceMessageResult.Forbidden();
@@ -216,7 +215,7 @@ namespace Edemly.Server.Api.Services
                 if (model.FileName != null)
                     msg.FileName = model.FileName;
 
-                await _ctx.SaveChangesAsync();
+                await ctx.SaveChangesAsync();
                 ClearChatCache(msg.ChatId);
 
                 return ServiceMessageResult.Ok("Message updated");
@@ -224,11 +223,7 @@ namespace Edemly.Server.Api.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to update message");
-                return ServiceMessageResult.BadRequest(ex.Message);
-            }
-            finally
-            {
-                DisposeTenantContext();
+                return ServiceMessageResult.Unexpected("Failed to update message");
             }
         }
 
@@ -236,19 +231,22 @@ namespace Edemly.Server.Api.Services
         {
             try
             {
-                var msg = await _ctx.Set<Message>().FindAsync(id);
+                await using var dbContextLease = ResolveDbContext();
+                var ctx = dbContextLease.Context;
+
+                var msg = await ctx.Set<Message>().FindAsync(id);
                 if (msg == null)
                 {
                     return ServiceMessageResult.Forbidden();
                 }
 
-                if (!await CanDeleteMessageAsync(currentUserId, msg))
+                if (!await CanDeleteMessageAsync(ctx, currentUserId, msg))
                 {
                     return ServiceMessageResult.Forbidden();
                 }
 
-                _ctx.Set<Message>().Remove(msg);
-                await _ctx.SaveChangesAsync();
+                ctx.Set<Message>().Remove(msg);
+                await ctx.SaveChangesAsync();
 
                 ClearChatCache(msg.ChatId);
                 return ServiceMessageResult.Ok("Message deleted");
@@ -256,27 +254,26 @@ namespace Edemly.Server.Api.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to delete message");
-                return ServiceMessageResult.BadRequest(ex.Message);
-            }
-            finally
-            {
-                DisposeTenantContext();
+                return ServiceMessageResult.Unexpected("Failed to delete message");
             }
         }
 
-        private async Task<bool> IsInChatAsync(int userId, int chatId)
+        private static Task<bool> IsInChatAsync(DbContext ctx, int userId, int chatId)
         {
-            return await _ctx.Set<ChatMember>().AnyAsync(cm => cm.UserId == userId && cm.ChatId == chatId);
+            return ctx.Set<ChatMember>()
+                .AsNoTracking()
+                .AnyAsync(cm => cm.UserId == userId && cm.ChatId == chatId);
         }
 
-        private async Task<bool> CanDeleteMessageAsync(int currentUserId, Message message)
+        private static async Task<bool> CanDeleteMessageAsync(DbContext ctx, int currentUserId, Message message)
         {
             if (message.SenderId == currentUserId)
             {
                 return true;
             }
 
-            var currentMember = await _ctx.Set<ChatMember>()
+            var currentMember = await ctx.Set<ChatMember>()
+                .AsNoTracking()
                 .FirstOrDefaultAsync(cm => cm.UserId == currentUserId && cm.ChatId == message.ChatId);
 
             if (currentMember == null)
@@ -305,14 +302,6 @@ namespace Edemly.Server.Api.Services
                 ContentUrl = msg.ContentUrl,
                 FileName = msg.FileName
             };
-        }
-
-        private void DisposeTenantContext()
-        {
-            if (_isTenant)
-            {
-                _ctx.Dispose();
-            }
         }
     }
 }

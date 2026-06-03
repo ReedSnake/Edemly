@@ -9,26 +9,26 @@ using Edemly.Server.Services;
 
 namespace Edemly.Server.Api.Services
 {
-    public class NoteService : INoteService
+    public class NoteService : TenantAwareServiceBase, INoteService
     {
         private const int FreePlanLimit = 5;
 
         private readonly ILogger<NoteService> _logger;
-        private readonly DbContext _ctx;
-        private readonly bool _isTenant;
 
         public NoteService(ServerDbContext serverDb, ILogger<NoteService> logger, ITenantProvider tenantProvider, ITenantDbContextFactory tenantDbFactory)
+            : base(serverDb, tenantProvider, tenantDbFactory)
         {
             _logger = logger;
-            _ctx = DbContextResolver.Resolve(out var isTenant, serverDb, tenantProvider, tenantDbFactory);
-            _isTenant = isTenant;
         }
 
         public async Task<ServiceDataResult<NoteDto>> GetById(int currentUserId, int id)
         {
             try
             {
-                var note = await GetOwnedNoteAsync(currentUserId, id);
+                await using var dbContextLease = ResolveDbContext();
+                var ctx = dbContextLease.Context;
+
+                var note = await GetOwnedNoteAsync(ctx, currentUserId, id);
                 if (note == null)
                 {
                     return ServiceDataResult<NoteDto>.Forbidden();
@@ -39,11 +39,7 @@ namespace Edemly.Server.Api.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to get note by id");
-                return ServiceDataResult<NoteDto>.NotFound(ex.Message);
-            }
-            finally
-            {
-                DisposeTenantContext();
+                return ServiceDataResult<NoteDto>.Unexpected("Failed to get note");
             }
         }
 
@@ -51,7 +47,11 @@ namespace Edemly.Server.Api.Services
         {
             try
             {
-                var notes = await _ctx.Set<Note>()
+                await using var dbContextLease = ResolveDbContext();
+                var ctx = dbContextLease.Context;
+
+                var notes = await ctx.Set<Note>()
+                    .AsNoTracking()
                     .Where(n => n.CreatorId == currentUserId)
                     .Select(n => new NoteDto
                     {
@@ -67,11 +67,7 @@ namespace Edemly.Server.Api.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to get notes");
-                return ServiceDataResult<List<NoteDto>>.NotFound(ex.Message);
-            }
-            finally
-            {
-                DisposeTenantContext();
+                return ServiceDataResult<List<NoteDto>>.Unexpected("Failed to get notes");
             }
         }
 
@@ -79,29 +75,32 @@ namespace Edemly.Server.Api.Services
         {
             try
             {
-                var creator = await _ctx.Set<User>().FindAsync(currentUserId);
+                await using var dbContextLease = ResolveDbContext();
+                var ctx = dbContextLease.Context;
+
+                var creator = await ctx.Set<User>().FindAsync(currentUserId);
                 if (creator == null)
                 {
                     return ServiceMessageResult.BadRequest("Creator not found");
                 }
 
-                var isUnlimited = _isTenant
+                var isUnlimited = IsTenantRequest
                     || creator.SubscriptionStatus == SubscriptionStatus.Premium
                     || creator.SubscriptionStatus == SubscriptionStatus.Vip;
 
-                var existingCount = await _ctx.Set<Note>().CountAsync(n => n.CreatorId == currentUserId);
+                var existingCount = await ctx.Set<Note>().CountAsync(n => n.CreatorId == currentUserId);
                 if (!isUnlimited && existingCount >= FreePlanLimit)
                 {
                     return ServiceMessageResult.BadRequest($"Note limit reached. Free plan allows up to {FreePlanLimit} notes.");
                 }
 
-                var existing = await _ctx.Set<Note>()
+                var existing = await ctx.Set<Note>()
                     .FirstOrDefaultAsync(n => n.CreatorId == currentUserId && n.UserId == model.UserId);
 
                 if (existing != null)
                 {
                     existing.Content = model.Content;
-                    await _ctx.SaveChangesAsync();
+                    await ctx.SaveChangesAsync();
                     return ServiceMessageResult.Ok("Note created");
                 }
 
@@ -112,8 +111,8 @@ namespace Edemly.Server.Api.Services
                     Content = model.Content
                 };
 
-                _ctx.Set<Note>().Add(note);
-                await _ctx.SaveChangesAsync();
+                ctx.Set<Note>().Add(note);
+                await ctx.SaveChangesAsync();
 
                 return ServiceMessageResult.Ok("Note created");
             }
@@ -125,11 +124,7 @@ namespace Edemly.Server.Api.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to create note");
-                return ServiceMessageResult.BadRequest(ex.Message);
-            }
-            finally
-            {
-                DisposeTenantContext();
+                return ServiceMessageResult.Unexpected("Failed to create note");
             }
         }
 
@@ -137,25 +132,24 @@ namespace Edemly.Server.Api.Services
         {
             try
             {
-                var note = await GetOwnedNoteAsync(currentUserId, model.Id);
+                await using var dbContextLease = ResolveDbContext();
+                var ctx = dbContextLease.Context;
+
+                var note = await GetOwnedNoteAsync(ctx, currentUserId, model.Id);
                 if (note == null)
                 {
                     return ServiceMessageResult.Forbidden();
                 }
 
                 note.Content = model.Content;
-                await _ctx.SaveChangesAsync();
+                await ctx.SaveChangesAsync();
 
                 return ServiceMessageResult.Ok("Note updated");
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to update note");
-                return ServiceMessageResult.BadRequest(ex.Message);
-            }
-            finally
-            {
-                DisposeTenantContext();
+                return ServiceMessageResult.Unexpected("Failed to update note");
             }
         }
 
@@ -163,24 +157,23 @@ namespace Edemly.Server.Api.Services
         {
             try
             {
-                var note = await GetOwnedNoteAsync(currentUserId, id);
+                await using var dbContextLease = ResolveDbContext();
+                var ctx = dbContextLease.Context;
+
+                var note = await GetOwnedNoteAsync(ctx, currentUserId, id);
                 if (note == null)
                 {
                     return ServiceMessageResult.Forbidden();
                 }
 
-                _ctx.Set<Note>().Remove(note);
-                await _ctx.SaveChangesAsync();
+                ctx.Set<Note>().Remove(note);
+                await ctx.SaveChangesAsync();
                 return ServiceMessageResult.Ok("Note deleted");
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to delete note");
-                return ServiceMessageResult.BadRequest(ex.Message);
-            }
-            finally
-            {
-                DisposeTenantContext();
+                return ServiceMessageResult.Unexpected("Failed to delete note");
             }
         }
 
@@ -188,17 +181,16 @@ namespace Edemly.Server.Api.Services
         {
             try
             {
-                var count = await _ctx.Set<Note>().CountAsync(n => n.CreatorId == currentUserId);
+                await using var dbContextLease = ResolveDbContext();
+                var ctx = dbContextLease.Context;
+
+                var count = await ctx.Set<Note>().CountAsync(n => n.CreatorId == currentUserId);
                 return ServiceDataResult<int>.Ok(count);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to get notes count");
-                return ServiceDataResult<int>.BadRequest(ex.Message);
-            }
-            finally
-            {
-                DisposeTenantContext();
+                return ServiceDataResult<int>.Unexpected("Failed to get notes count");
             }
         }
 
@@ -206,7 +198,10 @@ namespace Edemly.Server.Api.Services
         {
             try
             {
-                var note = await _ctx.Set<Note>()
+                await using var dbContextLease = ResolveDbContext();
+                var ctx = dbContextLease.Context;
+
+                var note = await ctx.Set<Note>()
                     .FirstOrDefaultAsync(n => n.CreatorId == currentUserId && n.UserId == userId);
 
                 if (note == null)
@@ -214,24 +209,20 @@ namespace Edemly.Server.Api.Services
                     return ServiceMessageResult.BadRequest("Note not found");
                 }
 
-                _ctx.Set<Note>().Remove(note);
-                await _ctx.SaveChangesAsync();
+                ctx.Set<Note>().Remove(note);
+                await ctx.SaveChangesAsync();
                 return ServiceMessageResult.Ok("Note deleted");
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to delete note by user");
-                return ServiceMessageResult.BadRequest(ex.Message);
-            }
-            finally
-            {
-                DisposeTenantContext();
+                return ServiceMessageResult.Unexpected("Failed to delete note");
             }
         }
 
-        private async Task<Note?> GetOwnedNoteAsync(int currentUserId, int noteId)
+        private static Task<Note?> GetOwnedNoteAsync(DbContext ctx, int currentUserId, int noteId)
         {
-            return await _ctx.Set<Note>()
+            return ctx.Set<Note>()
                 .FirstOrDefaultAsync(n => n.Id == noteId && n.CreatorId == currentUserId);
         }
 
@@ -244,14 +235,6 @@ namespace Edemly.Server.Api.Services
                 CreatorId = note.CreatorId,
                 Content = note.Content
             };
-        }
-
-        private void DisposeTenantContext()
-        {
-            if (_isTenant)
-            {
-                _ctx.Dispose();
-            }
         }
     }
 }
