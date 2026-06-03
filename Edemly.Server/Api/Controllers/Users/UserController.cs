@@ -1,11 +1,7 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Edemly.Contracts.Users;
 using Edemly.Server.Api.Services;
-using Edemly.Server.Data;
-using Edemly.Server.Services;
-using Edemly.Server.Api.Middleware;
-using Microsoft.Extensions.Configuration;
 
 namespace Edemly.Server.Api.Controllers.Users
 {
@@ -17,8 +13,7 @@ namespace Edemly.Server.Api.Controllers.Users
         private readonly IPermissionService _permissionService;
         private readonly ILogger<UserController> _logger;
 
-        public UserController(IUserService userService, IPermissionService permissionService, ILogger<UserController> logger, ServerDbContext serverDb, ITenantProvider tenantProvider, ITenantDbContextFactory tenantDbFactory, IConfiguration configuration)
-            : base(serverDb, tenantProvider, tenantDbFactory, configuration)
+        public UserController(IUserService userService, IPermissionService permissionService, ILogger<UserController> logger)
         {
             _permissionService = permissionService;
             _service = userService;
@@ -123,7 +118,6 @@ namespace Edemly.Server.Api.Controllers.Users
 
             try
             {
-                // Використовуємо сервіс замість прямого доступу до _context
                 var tasks = userIds.Select(id => _service.GetById(id));
                 var results = await Task.WhenAll(tasks);
 
@@ -140,6 +134,5 @@ namespace Edemly.Server.Api.Controllers.Users
                 return BadRequestMessage(ex.Message);
             }
         }
-
     }
 }

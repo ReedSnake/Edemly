@@ -2,11 +2,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Edemly.Contracts.Chats;
-using Edemly.Server.Api.Middleware;
 using Edemly.Server.Api.Services;
-using Edemly.Server.Data;
 using Edemly.Server.Hubs;
-using Edemly.Server.Services;
 
 namespace Edemly.Server.Api.Controllers.Chats
 {
@@ -21,12 +18,7 @@ namespace Edemly.Server.Api.Controllers.Chats
         public ChatController(
             IChatService chatService,
             IPermissionService permissionService,
-            IHubContext<MainHub> hubContext,
-            ServerDbContext serverDb,
-            ITenantProvider tenantProvider,
-            ITenantDbContextFactory tenantDbFactory,
-            IConfiguration configuration)
-            : base(serverDb, tenantProvider, tenantDbFactory, configuration)
+            IHubContext<MainHub> hubContext)
         {
             _chatService = chatService;
             _permissionService = permissionService;

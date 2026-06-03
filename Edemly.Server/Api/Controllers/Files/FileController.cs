@@ -1,16 +1,8 @@
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using Edemly.Server.Api.Services;
-using Edemly.Server.Data;
-using Edemly.Server.Services;
-using Edemly.Server.Api.Middleware;
-using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.Http;
-using System.IO;
-using System.Linq;
-using System;
-using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.StaticFiles;
+using Edemly.Server.Api.Services;
 
 namespace Edemly.Server.Api.Controllers.Files
 {
@@ -21,18 +13,12 @@ namespace Edemly.Server.Api.Controllers.Files
         private readonly IFileStorageService _fileStorageService;
         private readonly IUserService _userService;
         private readonly ILogger<FileController> _logger;
-        // Провайдер для визначення типу файлу
         private readonly FileExtensionContentTypeProvider _contentTypeProvider;
 
         public FileController(
             IFileStorageService fileStorageService,
             IUserService userService,
-            ILogger<FileController> logger,
-            ServerDbContext serverDb,
-            ITenantProvider tenantProvider,
-            ITenantDbContextFactory tenantDbFactory,
-            IConfiguration configuration)
-            : base(serverDb, tenantProvider, tenantDbFactory, configuration)
+            ILogger<FileController> logger)
         {
             _fileStorageService = fileStorageService;
             _userService = userService;
@@ -59,8 +45,7 @@ namespace Edemly.Server.Api.Controllers.Files
             try
             {
                 using var stream = file.OpenReadStream();
-                var result = await _fileStorageService.UploadProfilePictureAsync(
-                    userId, stream, file.FileName);
+                var result = await _fileStorageService.UploadProfilePictureAsync(userId, stream, file.FileName);
 
                 if (!result.Success)
                     return BadRequestMessage(result.Error);
@@ -97,8 +82,7 @@ namespace Edemly.Server.Api.Controllers.Files
                 var contentType = file.ContentType;
 
                 using var stream = file.OpenReadStream();
-                var result = await _fileStorageService.UploadFileAsync(
-                    userId, stream, file.FileName, contentType);
+                var result = await _fileStorageService.UploadFileAsync(userId, stream, file.FileName, contentType);
 
                 if (!result.Success)
                     return BadRequestMessage(result.Error);
@@ -108,7 +92,7 @@ namespace Edemly.Server.Api.Controllers.Files
                     url = result.Url,
                     fileName = file.FileName,
                     fileSize = file.Length,
-                    contentType = contentType,
+                    contentType,
                     message = "File uploaded successfully"
                 });
             }
@@ -141,9 +125,8 @@ namespace Edemly.Server.Api.Controllers.Files
             }
         }
 
-        // --- ВИПРАВЛЕНИЙ МЕТОД ---
         [HttpGet("download")]
-        [AllowAnonymous] // Додайте це, якщо картинки мають бути публічними
+        [AllowAnonymous]
         public async Task<IActionResult> DownloadFile([FromQuery] string fileUrl)
         {
             if (string.IsNullOrWhiteSpace(fileUrl))
@@ -157,14 +140,11 @@ namespace Edemly.Server.Api.Controllers.Files
 
                 var fileName = Path.GetFileName(fileUrl);
 
-                // Спроба визначити правильний Content-Type (наприклад, image/jpeg)
                 if (!_contentTypeProvider.TryGetContentType(fileName, out var contentType))
                 {
                     contentType = "application/octet-stream";
                 }
 
-                // Повертаємо файл без вказування імені файлу другим параметром, 
-                // щоб браузер відобразив його (inline), а не змушував скачувати (attachment)
                 return File(stream, contentType);
             }
             catch (Exception ex)

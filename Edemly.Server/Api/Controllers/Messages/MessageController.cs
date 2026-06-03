@@ -1,10 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Edemly.Server.Api.Services;
-using Edemly.Server.Services;
-using Edemly.Server.Data;
-using Edemly.Server.Api.Middleware;
-using Microsoft.Extensions.Configuration;
 
 namespace Edemly.Server.Api.Controllers.Messages
 {
@@ -15,8 +11,7 @@ namespace Edemly.Server.Api.Controllers.Messages
         private readonly IMessageService _service;
         private readonly IPermissionService _permissionService;
 
-        public MessageController(IMessageService service, IPermissionService permissionService, ServerDbContext serverDb, ITenantProvider tenantProvider, ITenantDbContextFactory tenantDbFactory, IConfiguration configuration)
-            : base(serverDb, tenantProvider, tenantDbFactory, configuration)
+        public MessageController(IMessageService service, IPermissionService permissionService)
         {
             _service = service;
             _permissionService = permissionService;

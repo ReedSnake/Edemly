@@ -1,11 +1,7 @@
 using Edemly.Contracts.Notes;
-using Edemly.Server.Api.Middleware;
 using Edemly.Server.Api.Services;
-using Edemly.Server.Data;
-using Edemly.Server.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
 
 namespace Edemly.Server.Api.Controllers.Notes
 {
@@ -16,8 +12,7 @@ namespace Edemly.Server.Api.Controllers.Notes
         private readonly INoteService _service;
         private readonly IPermissionService _permissionService;
 
-        public NoteController(INoteService service, IPermissionService permissionService, ServerDbContext serverDb, ITenantProvider tenantProvider, ITenantDbContextFactory tenantDbFactory, IConfiguration configuration)
-            : base(serverDb, tenantProvider, tenantDbFactory, configuration)
+        public NoteController(INoteService service, IPermissionService permissionService)
         {
             _service = service;
             _permissionService = permissionService;

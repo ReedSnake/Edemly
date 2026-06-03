@@ -8,7 +8,7 @@ namespace Edemly.Server.Api.Controllers.Auth
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class AuthController : ControllerBase
+    public class AuthController : ApiControllerBase
     {
         private readonly IAuthService _authService;
 
@@ -49,8 +49,8 @@ namespace Edemly.Server.Api.Controllers.Auth
         [HttpPost("logout")]
         public async Task<IActionResult> Logout()
         {
-            var userIdClaim = User.FindFirst("userId")?.Value;
-            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var userId))
+            var userId = GetCurrentUserIdOrDefault();
+            if (userId == 0)
             {
                 return Unauthorized();
             }
@@ -61,12 +61,7 @@ namespace Edemly.Server.Api.Controllers.Auth
 
         private IActionResult ToMessageResult(AuthMessageResult result)
         {
-            if (result.Success)
-            {
-                return Ok(new { message = result.Message });
-            }
-
-            return CreateErrorResult(result.StatusCode, result.Message);
+            return MessageResult(result.StatusCode, result.Message);
         }
 
         private IActionResult ToAuthResponseResult(AuthResponseResult result)
@@ -76,17 +71,7 @@ namespace Edemly.Server.Api.Controllers.Auth
                 return Ok(result.AuthResponse);
             }
 
-            return CreateErrorResult(result.StatusCode, result.Message ?? "Authentication failed");
-        }
-
-        private IActionResult CreateErrorResult(int statusCode, string message)
-        {
-            return statusCode switch
-            {
-                StatusCodes.Status400BadRequest => BadRequest(new { message }),
-                StatusCodes.Status401Unauthorized => Unauthorized(new { message }),
-                _ => StatusCode(statusCode, new { message })
-            };
+            return MessageResult(result.StatusCode, result.Message ?? "Authentication failed");
         }
     }
 }

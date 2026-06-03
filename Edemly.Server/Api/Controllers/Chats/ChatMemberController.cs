@@ -2,10 +2,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Edemly.Server.Api.Services;
 using Edemly.Contracts.ChatMembers;
-using Edemly.Server.Data;
-using Edemly.Server.Services;
-using Edemly.Server.Api.Middleware;
-using Microsoft.Extensions.Configuration;
 
 namespace Edemly.Server.Api.Controllers.Chats
 {
@@ -16,8 +12,7 @@ namespace Edemly.Server.Api.Controllers.Chats
         private readonly IChatMemberService _service;
         private readonly IPermissionService _permissionService;
 
-        public ChatMemberController(IChatMemberService service, IPermissionService permissionService, ServerDbContext serverDb, ITenantProvider tenantProvider, ITenantDbContextFactory tenantDbFactory, IConfiguration configuration)
-            : base(serverDb, tenantProvider, tenantDbFactory, configuration)
+        public ChatMemberController(IChatMemberService service, IPermissionService permissionService)
         {
             _service = service;
             _permissionService = permissionService;
@@ -99,6 +94,5 @@ namespace Edemly.Server.Api.Controllers.Chats
             var result = await _service.DeleteMember(id);
             return OkMessageOrBadRequest(result.Success, result.Error, "Chat member removed");
         }
-
     }
 }

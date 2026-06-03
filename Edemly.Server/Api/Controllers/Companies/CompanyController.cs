@@ -11,15 +11,17 @@ namespace Edemly.Server.Api.Controllers.Companies
 {
     [ApiController]
     [Route("api/admin/companies")]
-    public class CompanyController : ControllerBase
+    public class CompanyController : ApiControllerBase
     {
         private readonly TenantProvisioningService _provisioningService;
         private readonly ServerDbContext _serverDb;
+        private readonly IConfiguration _configuration;
 
-        public CompanyController(TenantProvisioningService provisioningService, ServerDbContext serverDb)
+        public CompanyController(TenantProvisioningService provisioningService, ServerDbContext serverDb, IConfiguration configuration)
         {
             _provisioningService = provisioningService;
             _serverDb = serverDb;
+            _configuration = configuration;
         }
 
         [HttpGet]
@@ -37,7 +39,7 @@ namespace Edemly.Server.Api.Controllers.Companies
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> CreateCompany([FromBody] CreateCompanyDto dto)
         {
-            if (string.IsNullOrWhiteSpace(dto?.Name)) return BadRequest("Name required");
+            if (string.IsNullOrWhiteSpace(dto?.Name)) return BadRequestMessage("Name required");
 
             var company = await _provisioningService.CreateCompanyAsync(dto.Name);
             return Ok(new { Id = company.Id, Name = company.Name });
@@ -52,7 +54,7 @@ namespace Edemly.Server.Api.Controllers.Companies
                 .Select(email => email.Trim())
                 .ToList();
 
-            if (validEmails == null || validEmails.Count == 0) return BadRequest("At least one email is required");
+            if (validEmails == null || validEmails.Count == 0) return BadRequestMessage("At least one email is required");
 
             await _provisioningService.AddEmailsToTenantAsync(companyId, validEmails);
             return Ok();
@@ -62,10 +64,10 @@ namespace Edemly.Server.Api.Controllers.Companies
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> UpdateAdmin([FromBody] UpdateAdminDto dto)
         {
-            if (string.IsNullOrWhiteSpace(dto?.Email)) return BadRequest("Email required");
+            if (string.IsNullOrWhiteSpace(dto?.Email)) return BadRequestMessage("Email required");
 
             // find existing admin logininfo by configured AdminEmail or default
-            var adminEmail = HttpContext.RequestServices.GetRequiredService<IConfiguration>().GetValue<string>("AdminEmail") ?? "admin@edemly.com";
+            var adminEmail = _configuration.GetValue<string>("AdminEmail") ?? "admin@edemly.com";
 
             var existing = await _serverDb.LoginInfos.FirstOrDefaultAsync(l => l.Email == adminEmail);
 
@@ -102,7 +104,7 @@ namespace Edemly.Server.Api.Controllers.Companies
             // update configuration AdminEmail
             // Note: cannot edit appsettings.json at runtime reliably; instruct user to update config manually or set environment variable
 
-            return Ok(new { message = "Admin updated. Please update AdminEmail in appsettings.json or environment variables." });
+            return OkMessage("Admin updated. Please update AdminEmail in appsettings.json or environment variables.");
         }
     }
 }

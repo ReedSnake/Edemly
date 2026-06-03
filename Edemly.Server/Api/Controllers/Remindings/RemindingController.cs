@@ -1,11 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Edemly.Server.Api.Services;
-using Edemly.Server.Data;
-using Edemly.Server.Services;
-using Edemly.Server.Api.Middleware;
 using Edemly.Contracts.Remindings;
-using Microsoft.Extensions.Configuration;
 
 namespace Edemly.Server.Api.Controllers.Remindings
 {
@@ -16,8 +12,7 @@ namespace Edemly.Server.Api.Controllers.Remindings
         private readonly IRemindingService _service;
         private readonly IPermissionService _permissionService;
 
-        public RemindingController(IRemindingService service, IPermissionService permissionService, ServerDbContext serverDb, ITenantProvider tenantProvider, ITenantDbContextFactory tenantDbFactory, IConfiguration configuration)
-            : base(serverDb, tenantProvider, tenantDbFactory, configuration)
+        public RemindingController(IRemindingService service, IPermissionService permissionService)
         {
             _service = service;
             _permissionService = permissionService;
