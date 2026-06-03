@@ -120,6 +120,73 @@ public sealed class UserIntegrationTests
     }
 
     [Test]
+    public async Task UpdateProfile_Should_Clear_Optional_Fields_When_Empty_Strings_Are_Provided()
+    {
+        using var factory = new CustomWebApplicationFactory();
+        using var client = factory.CreateClient();
+        var session = await TestAuthHelper.RegisterAsync(client, factory.Services);
+        client.AddBearerToken(session.JwtToken);
+
+        using (var initialResponse = await client.PutAsJsonAsync(
+                   "/api/user/update",
+                   new UpdateUserDto
+                   {
+                       Username = "clearableuser",
+                       FirstName = "Temp",
+                       LastName = "User"
+                   }))
+        {
+            Assert.That(initialResponse.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+        }
+
+        using var response = await client.PutAsJsonAsync(
+            "/api/user/update",
+            new UpdateUserDto
+            {
+                Username = string.Empty,
+                FirstName = string.Empty,
+                LastName = string.Empty
+            });
+
+        using var scope = factory.Services.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<ServerDbContext>();
+        var user = await dbContext.Users.SingleAsync(item => item.Id == session.AuthResponse.UserId);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+            Assert.That(user.Username, Is.Null);
+            Assert.That(user.FirstName, Is.Null);
+            Assert.That(user.LastName, Is.Null);
+        });
+    }
+
+    [Test]
+    public async Task UpdateProfile_Should_Return_BadRequest_When_Username_Is_Duplicate()
+    {
+        using var factory = new CustomWebApplicationFactory();
+        using var firstClient = factory.CreateClient();
+        using var secondClient = factory.CreateClient();
+        var firstSession = await TestAuthHelper.RegisterAsync(firstClient, factory.Services);
+        var secondSession = await TestAuthHelper.RegisterAsync(secondClient, factory.Services);
+        firstClient.AddBearerToken(firstSession.JwtToken);
+        secondClient.AddBearerToken(secondSession.JwtToken);
+
+        using (var firstResponse = await firstClient.PutAsJsonAsync(
+                   "/api/user/update",
+                   new UpdateUserDto { Username = "shared-update-user" }))
+        {
+            Assert.That(firstResponse.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+        }
+
+        using var response = await secondClient.PutAsJsonAsync(
+            "/api/user/update",
+            new UpdateUserDto { Username = "shared-update-user" });
+
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
+    }
+
+    [Test]
     public async Task UpdateProfile_Should_Return_Unauthorized_Without_Token()
     {
         using var factory = new CustomWebApplicationFactory();

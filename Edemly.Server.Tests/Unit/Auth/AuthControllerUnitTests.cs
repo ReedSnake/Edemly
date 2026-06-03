@@ -47,35 +47,14 @@ public sealed class AuthControllerUnitTests
     }
 
     [Test]
-    public async Task GetLoginCode_Should_Resolve_Company_From_HttpContext_Items()
+    public async Task GetLoginCode_Should_Use_CurrentCompany_From_TenantProvider()
     {
         using var serverConnection = CreateOpenConnection();
         await using var serverDb = CreateServerDbContext(serverConnection);
         using var tenantFactory = new SqliteTenantDbContextFactory();
         var company = new Company { Name = "acme", DbName = "tenant_acme" };
-        var httpContext = new DefaultHttpContext();
-        httpContext.Items["TenantCompany"] = company;
-        var controller = CreateController(serverDb, tenantDbFactory: tenantFactory, httpContext: httpContext);
-
-        var result = await controller.GetLoginCode(new LoginRequestDto { Email = "blocked@example.test" });
-
-        Assert.That(result, Is.TypeOf<BadRequestObjectResult>());
-        Assert.That(GetMessage(result), Is.EqualTo("Email is not allowed for this company"));
-    }
-
-    [Test]
-    public async Task GetLoginCode_Should_Resolve_Company_From_RequestPath_When_TenantPrefix_Is_Present()
-    {
-        using var serverConnection = CreateOpenConnection();
-        await using var serverDb = CreateServerDbContext(serverConnection);
-        using var tenantFactory = new SqliteTenantDbContextFactory();
-        var company = new Company { Name = "acme", DbName = "tenant_acme" };
-        serverDb.Companies.Add(company);
-        await serverDb.SaveChangesAsync();
-
-        var httpContext = new DefaultHttpContext();
-        httpContext.Request.Path = "/acme/api/auth/get-code";
-        var controller = CreateController(serverDb, tenantDbFactory: tenantFactory, httpContext: httpContext);
+        var tenantProvider = new TenantProvider { CurrentCompany = company };
+        var controller = CreateController(serverDb, tenantProvider: tenantProvider, tenantDbFactory: tenantFactory);
 
         var result = await controller.GetLoginCode(new LoginRequestDto { Email = "blocked@example.test" });
 
@@ -227,16 +206,21 @@ public sealed class AuthControllerUnitTests
                 .ReturnsAsync(true);
         }
 
-        var controller = new AuthController(
+        var resolvedConfiguration = configuration ?? CreateConfiguration();
+        var authResponseFactory = new AuthResponseFactory(
             CreateJwtSettings(),
-            serverDb,
             jwtService.Object,
+            resolvedConfiguration);
+        var welcomeChatService = new WelcomeChatService(NullLogger<WelcomeChatService>.Instance);
+        var authService = new AuthService(
+            serverDb,
+            NullLogger<AuthService>.Instance,
             emailService.Object,
-            NullLogger<AuthController>.Instance,
-            Mock.Of<IUserService>(),
             tenantProvider ?? new TenantProvider(),
-            configuration ?? CreateConfiguration(),
-            tenantDbFactory ?? new SqliteTenantDbContextFactory());
+            tenantDbFactory ?? new SqliteTenantDbContextFactory(),
+            authResponseFactory,
+            welcomeChatService);
+        var controller = new AuthController(authService);
 
         controller.ControllerContext = new ControllerContext
         {

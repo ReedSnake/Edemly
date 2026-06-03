@@ -11,9 +11,9 @@ This file records what server behavior is covered, what remains uncovered, and w
 
 ## Current Status
 
-- Branch: `test/server-test-coverage`
+- Branch: `refactor/auth-profile-redesign`
 - Test command: `dotnet test Edemly.Server.Tests\Edemly.Server.Tests.csproj`
-- Current result: `65 passed`
+- Current result: `72 passed`
 - Last verified: `2026-06-03`
 
 ## Test Infrastructure
@@ -43,7 +43,9 @@ Covered tests:
 - `Register_Should_Return_BadRequest_When_Request_Is_Invalid`
 - `Register_Should_Return_Unauthorized_When_Verification_Code_Is_Invalid`
 - `Register_Should_Create_Welcome_Chat_And_Membership`
-- `Register_Should_Generate_Unique_Username_From_Display_Name_When_Base_Is_Taken`
+- `Register_Should_Allow_Empty_Username`
+- `Register_Should_Return_BadRequest_When_Username_Already_Exists`
+- `Register_Should_Not_Derive_ProfileNames_From_Username`
 - `Login_Should_Return_Token_When_Credentials_Are_Valid`
 - `Login_Should_Return_Unauthorized_When_Password_Is_Wrong`
 - `Login_Should_Return_Unauthorized_When_Email_Does_Not_Exist`
@@ -86,6 +88,7 @@ Covered tests:
 - `CreatePrivateChat_Should_Create_Chat_When_Users_Exist`
 - `CreatePrivateChat_Should_Return_Unauthorized_Without_Token`
 - `GetMyChats_Should_Return_Only_User_Chats`
+- `GetMyChats_Should_Use_Fallback_Name_When_Other_User_Clears_ProfileFields`
 - `GetChat_Should_Return_Forbidden_When_User_Is_Not_Member`
 
 ## Chat Member Integration
@@ -118,6 +121,8 @@ Covered tests:
 - `SearchUsers_Should_Return_Matching_Users`
 - `SearchUsers_Should_Return_Unauthorized_Without_Token`
 - `UpdateProfile_Should_Update_User_Data_When_Request_Is_Valid`
+- `UpdateProfile_Should_Clear_Optional_Fields_When_Empty_Strings_Are_Provided`
+- `UpdateProfile_Should_Return_BadRequest_When_Username_Is_Duplicate`
 - `UpdateProfile_Should_Return_Unauthorized_Without_Token`
 - `DeleteUser_Should_Remove_Current_User`
 - `DeleteUser_Should_Return_Forbidden_When_Deleting_Another_User`
@@ -136,6 +141,7 @@ Covered tests:
 Covered tests:
 
 - `TenantRegister_Should_Create_User_In_Tenant_Database_When_Email_Is_Allowed`
+- `TenantRegister_Should_Allow_Empty_Username_When_Email_Is_Allowed`
 - `TenantRegister_Should_Return_BadRequest_When_Email_Is_Not_Allowed`
 - `TenantRegister_Should_Create_Welcome_Chat_And_Membership`
 - `TenantLogin_Should_Return_Token_When_User_Exists_In_Tenant_Database`

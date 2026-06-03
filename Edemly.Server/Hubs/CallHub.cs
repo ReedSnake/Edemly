@@ -47,91 +47,12 @@ namespace Edemly.Server.Hubs
 
         private DbContext ResolveDbContext(out bool isTenant)
         {
-            // Same resolution logic as in MainHub: prefer tenant if available, otherwise master
-            Company? company = null;
-            string source = "none";
-            if (_tenantProvider != null && _tenantProvider.IsTenant && _tenantProvider.CurrentCompany != null)
-            {
-                company = _tenantProvider.CurrentCompany;
-                source = "tenantProvider";
-            }
-
-            if (company == null)
-            {
-                try
-                {
-                    var http = this.Context?.GetHttpContext();
-                    if (http != null)
-                    {
-                        if (http.Items.TryGetValue("TenantCompany", out var item) && item is Company c)
-                        {
-                            company = c;
-                            source = "httpContext.Items";
-                        }
-                        else
-                        {
-                            var tenantQuery = http.Request.Query["tenant"].FirstOrDefault();
-                            if (!string.IsNullOrWhiteSpace(tenantQuery))
-                            {
-                                try
-                                {
-                                    var found = _serverDb.Companies.AsNoTracking().FirstOrDefaultAsync(x => x.Name == tenantQuery).GetAwaiter().GetResult();
-                                    if (found != null)
-                                    {
-                                        company = found;
-                                        source = "query-tenant";
-                                    }
-                                }
-                                catch (Exception ex)
-                                {
-                                    _logger.LogDebug(ex, "ResolveDbContext: error checking company by tenant query");
-                                }
-                            }
-
-                            if (company == null)
-                            {
-                                var path = http.Request?.Path.Value ?? string.Empty;
-                                if (!string.IsNullOrWhiteSpace(path))
-                                {
-                                    var segments = path.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
-                                    if (segments.Length > 0)
-                                    {
-                                        var first = segments[0];
-                                        if (!string.Equals(first, "api", StringComparison.OrdinalIgnoreCase) &&
-                                            !string.Equals(first, "main", StringComparison.OrdinalIgnoreCase) &&
-                                            !string.Equals(first, "hubs", StringComparison.OrdinalIgnoreCase) &&
-                                            !string.Equals(first, "swagger", StringComparison.OrdinalIgnoreCase))
-                                        {
-                                            try
-                                            {
-                                                var found = _serverDb.Companies.AsNoTracking().FirstOrDefaultAsync(x => x.Name == first).GetAwaiter().GetResult();
-                                                if (found != null)
-                                                {
-                                                    company = found;
-                                                    source = "path-first-segment";
-                                                }
-                                            }
-                                            catch (Exception ex)
-                                            {
-                                                _logger.LogDebug(ex, "ResolveDbContext: error checking company by path segment");
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogDebug(ex, "ResolveDbContext: error reading HttpContext.Items or Request.Path");
-                }
-            }
+            var company = TenantRequestContext.GetCurrentCompany(Context?.GetHttpContext(), _tenantProvider);
 
             if (company != null)
             {
                 isTenant = true;
-                _logger.LogDebug("ResolveDbContext: using tenant DB for company '{Company}' (source: {Source})", company.Name, source);
+                _logger.LogDebug("ResolveDbContext: using tenant DB for company '{Company}'", company.Name);
                 return _tenantDbFactory.CreateCompanyDbContext(company);
             }
 

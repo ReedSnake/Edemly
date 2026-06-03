@@ -42,9 +42,59 @@ public sealed class TenantAuthIntegrationTests
             Assert.That(tenantLogin, Is.Not.Null);
             Assert.That(tenantLogin!.User, Is.Not.Null);
             Assert.That(tenantLogin.User!.Id, Is.EqualTo(session.AuthResponse.UserId));
+            Assert.That(tenantLogin.User.Username, Is.EqualTo(tenantUser.Username));
+            Assert.That(tenantLogin.User.FirstName, Is.Null);
+            Assert.That(tenantLogin.User.LastName, Is.Null);
             Assert.That(session.AuthResponse.Email, Is.EqualTo(tenantUser.Email));
             Assert.That(session.AuthResponse.SessionToken, Is.Not.Empty);
             Assert.That(tenantSession, Is.Not.Null);
+        });
+    }
+
+    [Test]
+    public async Task TenantRegister_Should_Allow_Empty_Username_When_Email_Is_Allowed()
+    {
+        using var factory = new CustomWebApplicationFactory();
+        using var client = factory.CreateClient();
+        var company = await TestTenantHelper.CreateCompanyAsync(factory, "acme-empty-username");
+        var tenantUser = AuthTestData.CreateUser("tenant-empty-username");
+        await TestTenantHelper.AllowEmailAsync(factory.Services, company, tenantUser.Email);
+
+        using (var codeResponse = await client.PostAsJsonAsync(
+                   $"/{company.Name}/api/auth/get-code",
+                   new LoginRequestDto { Email = tenantUser.Email }))
+        {
+            Assert.That(codeResponse.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+        }
+
+        var code = factory.Services.GetRequiredService<TestEmailService>().GetCode(tenantUser.Email);
+
+        using var response = await client.PostAsJsonAsync(
+            $"/{company.Name}/api/auth/register",
+            new RegistrationWithCodeDto
+            {
+                Email = tenantUser.Email,
+                Username = null,
+                Code = code
+            });
+        var authResponse = await response.Content.ReadFromJsonAsync<AuthResponseDto>();
+
+        using var scope = factory.Services.CreateScope();
+        var tenantFactory = scope.ServiceProvider.GetRequiredService<ITenantDbContextFactory>();
+        await using var tenantDb = tenantFactory.CreateCompanyDbContext(company);
+        var tenantLogin = await tenantDb.LoginInfos
+            .Include(item => item.User)
+            .SingleAsync(item => item.Email == tenantUser.Email);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+            Assert.That(authResponse, Is.Not.Null);
+            Assert.That(authResponse!.Username, Is.Empty);
+            Assert.That(tenantLogin.User, Is.Not.Null);
+            Assert.That(tenantLogin.User!.Username, Is.Null);
+            Assert.That(tenantLogin.User.FirstName, Is.Null);
+            Assert.That(tenantLogin.User.LastName, Is.Null);
         });
     }
 

@@ -34,7 +34,10 @@ public sealed class AuthEndpointTests
             Assert.That(loginInfo!.IsEmailVerified, Is.True);
             Assert.That(loginInfo.User, Is.Not.Null);
             Assert.That(loginInfo.User!.Id, Is.EqualTo(session.AuthResponse.UserId));
-            Assert.That(loginInfo.User.Username, Is.EqualTo(session.AuthResponse.Username));
+            Assert.That(loginInfo.User.Username, Is.EqualTo(testUser.Username));
+            Assert.That(session.AuthResponse.Username, Is.EqualTo(testUser.Username));
+            Assert.That(loginInfo.User.FirstName, Is.Null);
+            Assert.That(loginInfo.User.LastName, Is.Null);
             Assert.That(session.AuthResponse.Email, Is.EqualTo(testUser.Email));
             Assert.That(session.JwtToken, Is.Not.Empty);
         });
@@ -124,12 +127,50 @@ public sealed class AuthEndpointTests
     }
 
     [Test]
-    public async Task Register_Should_Generate_Unique_Username_From_Display_Name_When_Base_Is_Taken()
+    public async Task Register_Should_Allow_Empty_Username()
     {
         using var factory = new CustomWebApplicationFactory();
         using var client = factory.CreateClient();
-        var firstUser = AuthTestData.CreateUser("john-base");
-        var secondUser = AuthTestData.CreateUser("john-second");
+        var testUser = AuthTestData.CreateUser("empty-username");
+
+        await RequestVerificationCodeAsync(client, testUser.Email);
+        var code = GetVerificationCode(factory.Services, testUser.Email);
+
+        using var response = await client.PostAsJsonAsync(
+            "/api/auth/register",
+            new RegistrationWithCodeDto
+            {
+                Email = testUser.Email,
+                Username = null,
+                Code = code
+            });
+        var authResponse = await response.Content.ReadFromJsonAsync<AuthResponseDto>();
+
+        using var scope = factory.Services.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<ServerDbContext>();
+        var createdUser = await dbContext.LoginInfos
+            .Include(login => login.User)
+            .SingleAsync(login => login.Email == testUser.Email);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+            Assert.That(authResponse, Is.Not.Null);
+            Assert.That(createdUser.User, Is.Not.Null);
+            Assert.That(createdUser.User!.Username, Is.Null);
+            Assert.That(authResponse!.Username, Is.Empty);
+            Assert.That(createdUser.User.FirstName, Is.Null);
+            Assert.That(createdUser.User.LastName, Is.Null);
+        });
+    }
+
+    [Test]
+    public async Task Register_Should_Return_BadRequest_When_Username_Already_Exists()
+    {
+        using var factory = new CustomWebApplicationFactory();
+        using var client = factory.CreateClient();
+        var firstUser = AuthTestData.CreateUser("duplicate-username-one");
+        var secondUser = AuthTestData.CreateUser("duplicate-username-two");
 
         await RequestVerificationCodeAsync(client, firstUser.Email);
         var firstCode = GetVerificationCode(factory.Services, firstUser.Email);
@@ -138,7 +179,7 @@ public sealed class AuthEndpointTests
                    new RegistrationWithCodeDto
                    {
                        Email = firstUser.Email,
-                       Username = "John",
+                       Username = "shareduser",
                        Code = firstCode
                    }))
         {
@@ -153,25 +194,45 @@ public sealed class AuthEndpointTests
             new RegistrationWithCodeDto
             {
                 Email = secondUser.Email,
-                Username = "John Smith",
+                Username = "shareduser",
                 Code = secondCode
+            });
+
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
+    }
+
+    [Test]
+    public async Task Register_Should_Not_Derive_ProfileNames_From_Username()
+    {
+        using var factory = new CustomWebApplicationFactory();
+        using var client = factory.CreateClient();
+        var testUser = AuthTestData.CreateUser("explicit-username");
+
+        await RequestVerificationCodeAsync(client, testUser.Email);
+        var code = GetVerificationCode(factory.Services, testUser.Email);
+
+        using var response = await client.PostAsJsonAsync(
+            "/api/auth/register",
+            new RegistrationWithCodeDto
+            {
+                Email = testUser.Email,
+                Username = "John Smith",
+                Code = code
             });
 
         using var scope = factory.Services.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<ServerDbContext>();
         var createdUser = await dbContext.LoginInfos
             .Include(login => login.User)
-            .SingleAsync(login => login.Email == secondUser.Email);
+            .SingleAsync(login => login.Email == testUser.Email);
 
         Assert.Multiple(() =>
         {
             Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
             Assert.That(createdUser.User, Is.Not.Null);
-            Assert.That(createdUser.User!.Username, Is.Not.EqualTo("John Smith"));
-            Assert.That(createdUser.User.Username, Does.StartWith("john"));
-            Assert.That(createdUser.User.Username, Is.Not.EqualTo("john"));
-            Assert.That(createdUser.User.FirstName, Is.EqualTo("John"));
-            Assert.That(createdUser.User.LastName, Is.EqualTo("Smith"));
+            Assert.That(createdUser.User!.Username, Is.EqualTo("John Smith"));
+            Assert.That(createdUser.User.FirstName, Is.Null);
+            Assert.That(createdUser.User.LastName, Is.Null);
         });
     }
 

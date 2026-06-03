@@ -26,15 +26,20 @@ namespace Edemly.Server.Api.Services
         {
             try
             {
+                var username = UsernameRules.Normalize(model.Username);
+                var usernameValidationError = UsernameRules.Validate(username);
+                if (usernameValidationError != null)
+                    return (false, usernameValidationError);
+
                 if (await _ctx.Set<LoginInfo>().AnyAsync(l => l.Email == model.Email))
                 {
                     _logger.LogWarning("Email already exists during registration: {Email}", model.Email);
                     return (false, "User with this email already exists");
                 }
 
-                if (await _ctx.Set<User>().AnyAsync(u => u.Username == model.Username))
+                if (await UsernameExistsAsync(username))
                 {
-                    _logger.LogWarning("Username already taken during registration: {Username}", model.Username);
+                    _logger.LogWarning("Username already taken during registration: {Username}", username);
                     return (false, "Username already taken");
                 }
 
@@ -60,7 +65,7 @@ namespace Edemly.Server.Api.Services
 
                         user = new User
                         {
-                            Username = model.Username,
+                            Username = username,
                             LoginInfoId = loginInfo.Id,
                             PfpUrl = null,
                             LastOnline = DateTime.UtcNow,
@@ -76,14 +81,14 @@ namespace Edemly.Server.Api.Services
                         _ctx.Set<User>().Add(user);
                         await _ctx.SaveChangesAsync();
 
-                        _logger.LogInformation("User created: {Username}, ID: {Id}", model.Username, user.Id);
+                        _logger.LogInformation("User created: {Username}, ID: {Id}", username ?? "(empty)", user.Id);
 
                         await transaction.CommitAsync();
                     }
                     catch (Exception ex)
                     {
                         await transaction.RollbackAsync();
-                        _logger.LogError(ex, "Error while creating user {Username}", model.Username);
+                        _logger.LogError(ex, "Error while creating user {Username}", username ?? "(empty)");
                         throw;
                     }
                 });
@@ -115,7 +120,7 @@ namespace Edemly.Server.Api.Services
                 var dto = new UserInfoDto
                 {
                     Id = user.Id,
-                    Username = user.Username,
+                    Username = user.Username ?? string.Empty,
                     Email = user.LoginInfo.Email,
                     FirstName = user.FirstName ?? string.Empty,
                     LastName = user.LastName ?? string.Empty,
@@ -156,7 +161,7 @@ namespace Edemly.Server.Api.Services
                 var dto = new UserDto
                 {
                     Id = user.Id,
-                    Username = user.Username,
+                    Username = user.Username ?? string.Empty,
                     Email = user.LoginInfo.Email,
                     PhoneNumber = user.PhoneNumber ?? string.Empty,
                     PfpUrl = user.PfpUrl ?? string.Empty,
@@ -187,13 +192,13 @@ namespace Edemly.Server.Api.Services
 
                 var users = await _ctx.Set<User>()
                     .Include(u => u.LoginInfo)
-                    .Where(u => u.Username.ToLower().Contains(query) ||
+                    .Where(u => (u.Username != null && u.Username.ToLower().Contains(query)) ||
                                 u.LoginInfo.Email.ToLower().Contains(query))
                     .Take(5)
                     .Select(u => new UserDto
                     {
                         Id = u.Id,
-                        Username = u.Username,
+                        Username = u.Username ?? string.Empty,
                         Email = u.LoginInfo.Email,
                         PhoneNumber = u.PhoneNumber ?? string.Empty,
                         PfpUrl = u.PfpUrl ?? string.Empty,
@@ -227,7 +232,7 @@ namespace Edemly.Server.Api.Services
                     .Select(u => new UserDto
                     {
                         Id = u.Id,
-                        Username = u.Username,
+                        Username = u.Username ?? string.Empty,
                         PfpUrl = u.PfpUrl ?? string.Empty,
                         Description = u.Description ?? string.Empty
                     })
@@ -258,25 +263,35 @@ namespace Edemly.Server.Api.Services
                     return (false, "User not found");
 
                 if (model.Username != null)
-                    user.Username = model.Username;
+                {
+                    var username = UsernameRules.Normalize(model.Username);
+                    var usernameValidationError = UsernameRules.Validate(username);
+                    if (usernameValidationError != null)
+                        return (false, usernameValidationError);
+
+                    if (await UsernameExistsAsync(username, excludeUserId: id))
+                        return (false, "Username already taken");
+
+                    user.Username = username;
+                }
 
                 if (model.FirstName != null)
-                    user.FirstName = model.FirstName;
+                    user.FirstName = NormalizeOptionalValue(model.FirstName);
 
                 if (model.LastName != null)
-                    user.LastName = model.LastName;
+                    user.LastName = NormalizeOptionalValue(model.LastName);
 
                 if (model.PhoneNumber != null)
-                    user.PhoneNumber = model.PhoneNumber;
+                    user.PhoneNumber = NormalizeOptionalValue(model.PhoneNumber);
 
                 if (model.Location != null)
-                    user.Location = model.Location;
+                    user.Location = NormalizeOptionalValue(model.Location);
 
                 if (model.Description != null)
-                    user.Description = model.Description;
+                    user.Description = NormalizeOptionalValue(model.Description);
 
                 if (model.PfpUrl != null)
-                    user.PfpUrl = model.PfpUrl;
+                    user.PfpUrl = NormalizeOptionalValue(model.PfpUrl);
 
                 await _ctx.SaveChangesAsync();
 
@@ -317,6 +332,26 @@ namespace Edemly.Server.Api.Services
             {
                 if (_isTenant) _ctx.Dispose();
             }
+        }
+
+        private static string? NormalizeOptionalValue(string? value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+                return null;
+
+            return value.Trim();
+        }
+
+        private Task<bool> UsernameExistsAsync(string? username, int? excludeUserId = null)
+        {
+            if (string.IsNullOrWhiteSpace(username))
+                return Task.FromResult(false);
+
+            var normalized = username.ToLower();
+            return _ctx.Set<User>().AnyAsync(user =>
+                user.Username != null &&
+                user.Username.ToLower() == normalized &&
+                (!excludeUserId.HasValue || user.Id != excludeUserId.Value));
         }
     }
 }

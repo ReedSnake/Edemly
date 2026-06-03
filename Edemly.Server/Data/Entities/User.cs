@@ -14,10 +14,9 @@ namespace Edemly.Server.Data.Entities
         [Column("login_info_id")]
         public int LoginInfoId { get; set; }
 
-        [Required]
         [MaxLength(50)]
         [Column("username")]
-        public string Username { get; set; } = string.Empty;
+        public string? Username { get; set; }
 
         [MaxLength(255)]
         [Column("pfp_url")]

@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Edemly.Contracts.Users;
 using Edemly.Contracts.Chats;
 using Edemly.Server.Data;
 using Edemly.Server.Data.Entities;
@@ -77,6 +78,43 @@ public sealed class ChatIntegrationTests
             Assert.That(chats, Is.Not.Null);
             Assert.That(chatIds, Does.Contain(user1ChatId));
             Assert.That(chatIds, Does.Not.Contain(unrelatedChatId));
+        });
+    }
+
+    [Test]
+    public async Task GetMyChats_Should_Use_Fallback_Name_When_Other_User_Clears_ProfileFields()
+    {
+        using var factory = new CustomWebApplicationFactory();
+        using var userClient = factory.CreateClient();
+        using var otherClient = factory.CreateClient();
+        var user = await TestAuthHelper.RegisterAsync(userClient, factory.Services);
+        var otherUser = await TestAuthHelper.RegisterAsync(otherClient, factory.Services);
+        userClient.AddBearerToken(user.JwtToken);
+        otherClient.AddBearerToken(otherUser.JwtToken);
+
+        using (var updateResponse = await otherClient.PutAsJsonAsync(
+                   "/api/user/update",
+                   new UpdateUserDto
+                   {
+                       Username = string.Empty,
+                       FirstName = string.Empty,
+                       LastName = string.Empty
+                   }))
+        {
+            Assert.That(updateResponse.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+        }
+
+        var chatId = await TestChatHelper.CreatePrivateChatAsync(userClient, otherUser.AuthResponse.UserId);
+
+        using var response = await userClient.GetAsync("/api/chat/my-chats");
+        var chats = await response.Content.ReadFromJsonAsync<List<ChatDto>>();
+        var chat = chats?.SingleOrDefault(item => item.Id == chatId);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+            Assert.That(chat, Is.Not.Null);
+            Assert.That(chat!.Name, Is.EqualTo($"User {otherUser.AuthResponse.UserId}"));
         });
     }
 

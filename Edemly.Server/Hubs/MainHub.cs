@@ -44,98 +44,12 @@ namespace Edemly.Server.Hubs
 
         private DbContext ResolveDbContext(out bool isTenant)
         {
-            // First try injected tenant provider (works for HTTP controller scopes)
-            Company? company = null;
-            string source = "none";
-            if (_tenantProvider != null && _tenantProvider.IsTenant && _tenantProvider.CurrentCompany != null)
-            {
-                company = _tenantProvider.CurrentCompany;
-                source = "tenantProvider";
-            }
-
-            // Fallback: SignalR may create new scopes for hub methods, tenantProvider set during negotiation may not persist.
-            // Check HttpContext.Items populated by TenantResolutionMiddleware during initial negotiate/connect request.
-            if (company == null)
-            {
-                try
-                {
-                    var http = this.Context?.GetHttpContext();
-                    if (http != null)
-                    {
-                        // 1) Try Items
-                        if (http.Items.TryGetValue("TenantCompany", out var item) && item is Company c)
-                        {
-                            company = c;
-                            source = "httpContext.Items";
-                        }
-                        else
-                        {
-                            // 2) Try query string 'tenant' (SignalR clients can send tenant as query param)
-                            var tenantQuery = http.Request.Query["tenant"].FirstOrDefault();
-                            if (!string.IsNullOrWhiteSpace(tenantQuery))
-                            {
-                                try
-                                {
-                                    var found = _serverDb.Companies.AsNoTracking().FirstOrDefaultAsync(x => x.Name == tenantQuery).GetAwaiter().GetResult();
-                                    if (found != null)
-                                    {
-                                        company = found;
-                                        source = "query-tenant";
-                                    }
-                                }
-                                catch (Exception ex)
-                                {
-                                    _logger.LogDebug(ex, "ResolveDbContext: error checking company by tenant query");
-                                }
-                            }
-
-                            // 3) Additional fallback: try to extract first path segment as company name
-                            if (company == null)
-                            {
-                                var path = http.Request?.Path.Value ?? string.Empty;
-                                if (!string.IsNullOrWhiteSpace(path))
-                                {
-                                    var segments = path.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
-                                    if (segments.Length > 0)
-                                    {
-                                        var first = segments[0];
-                                        // ignore common system segments
-                                        if (!string.Equals(first, "api", StringComparison.OrdinalIgnoreCase) &&
-                                            !string.Equals(first, "main", StringComparison.OrdinalIgnoreCase) &&
-                                            !string.Equals(first, "hubs", StringComparison.OrdinalIgnoreCase) &&
-                                            !string.Equals(first, "swagger", StringComparison.OrdinalIgnoreCase))
-                                        {
-                                            try
-                                            {
-                                                // Check if this segment matches a company in master DB
-                                                var found = _serverDb.Companies.AsNoTracking().FirstOrDefaultAsync(x => x.Name == first).GetAwaiter().GetResult();
-                                                if (found != null)
-                                                {
-                                                    company = found;
-                                                    source = "path-first-segment";
-                                                }
-                                            }
-                                            catch (Exception ex)
-                                            {
-                                                _logger.LogDebug(ex, "ResolveDbContext: error checking company by path segment");
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogDebug(ex, "ResolveDbContext: error reading HttpContext.Items or Request.Path");
-                }
-            }
+            var company = TenantRequestContext.GetCurrentCompany(Context?.GetHttpContext(), _tenantProvider);
 
             if (company != null)
             {
                 isTenant = true;
-                _logger.LogDebug("ResolveDbContext: using tenant DB for company '{Company}' (source: {Source})", company.Name, source);
+                _logger.LogDebug("ResolveDbContext: using tenant DB for company '{Company}'", company.Name);
                 return _tenantDbFactory.CreateCompanyDbContext(company);
             }
 

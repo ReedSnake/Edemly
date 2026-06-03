@@ -130,6 +130,9 @@ namespace Edemly.Server
                 Console.WriteLine("[INFO] Email Service: Підключено реальний API (Brevo).");
             }
             builder.Services.AddScoped<IUserService, UserService>();
+            builder.Services.AddScoped<IAuthService, AuthService>();
+            builder.Services.AddScoped<IAuthResponseFactory, AuthResponseFactory>();
+            builder.Services.AddScoped<IWelcomeChatService, WelcomeChatService>();
             builder.Services.AddScoped<IMessageService, MessageService>();
             builder.Services.AddScoped<IChatService, ChatService>();
             builder.Services.AddScoped<IChatMemberService, ChatMemberService>();
@@ -244,6 +247,7 @@ namespace Edemly.Server
 
             // Worker Service для фонових завдань
             builder.Services.AddHostedService<ServerMaintenanceWorker>();
+            builder.Services.AddScoped<WelcomeChatInitializer>();
 
             var app = builder.Build();
 
@@ -289,9 +293,7 @@ namespace Edemly.Server
                         await DbSeeder.SeedAdminAsync(scope.ServiceProvider);
 
                         // Ініціалізація привітального чату
-                        var welcomeChatLogger = scope.ServiceProvider.GetRequiredService<ILogger<WelcomeChatInitializer>>();
-                        var configuration = scope.ServiceProvider.GetRequiredService<IConfiguration>();
-                        var welcomeChatInitializer = new WelcomeChatInitializer(dbContext, welcomeChatLogger, configuration);
+                        var welcomeChatInitializer = scope.ServiceProvider.GetRequiredService<WelcomeChatInitializer>();
                         await welcomeChatInitializer.InitializeWelcomeChatAsync();
                     }
 

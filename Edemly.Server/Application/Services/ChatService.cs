@@ -53,8 +53,8 @@ namespace Edemly.Server.Api.Services
                     {
                         Id = existingChat.Id,
                         Name = existingChat.Name,
-                        Description = existingChat.Description,
-                        IconUrl = existingChat.IconUrl,
+                        Description = existingChat.Description ?? string.Empty,
+                        IconUrl = existingChat.IconUrl ?? string.Empty,
                         Type = (int)existingChat.Type,
                         CreatedAt = existingChat.CreatedAt,
                         LastMessageTime = existingChat.LastMessageTime
@@ -89,8 +89,8 @@ namespace Edemly.Server.Api.Services
                 {
                     Id = newChat.Id,
                     Name = newChat.Name,
-                    Description = newChat.Description,
-                    IconUrl = newChat.IconUrl,
+                    Description = newChat.Description ?? string.Empty,
+                    IconUrl = newChat.IconUrl ?? string.Empty,
                     Type = (int)newChat.Type,
                     CreatedAt = newChat.CreatedAt,
                     LastMessageTime = newChat.LastMessageTime
@@ -191,8 +191,8 @@ namespace Edemly.Server.Api.Services
                 {
                     Id = newChat.Id,
                     Name = newChat.Name,
-                    Description = newChat.Description,
-                    IconUrl = newChat.IconUrl,
+                    Description = newChat.Description ?? string.Empty,
+                    IconUrl = newChat.IconUrl ?? string.Empty,
                     Type = (int)newChat.Type,  // ← ВАЖЛИВО: Повертаємо правильний тип
                     CreatedAt = newChat.CreatedAt,
                     LastMessageTime = newChat.LastMessageTime  // ✅ ВАЖЛИВО: Повертаємо LastMessageTime
@@ -235,7 +235,7 @@ namespace Edemly.Server.Api.Services
                         var otherMember = chat.ChatMembers.FirstOrDefault(m => m.UserId != userId);
                         if (otherMember?.User != null)
                         {
-                            displayName = otherMember.User.Username;
+                            displayName = ResolveDirectChatDisplayName(otherMember.User, otherMember.UserId);
                             _logger.LogInformation($"[GET MY CHATS] Private chat {chat.Id}: displaying as '{displayName}' for user {userId}");
                         }
                     }
@@ -255,8 +255,8 @@ namespace Edemly.Server.Api.Services
                     {
                         Id = chat.Id,
                         Name = displayName,  // ← Правильне ім'я
-                        Description = chat.Description,
-                        IconUrl = chat.IconUrl,
+                        Description = chat.Description ?? string.Empty,
+                        IconUrl = chat.IconUrl ?? string.Empty,
                         Type = (int)chat.Type,  // ← Правильний тип з БД
                         CreatedAt = chat.CreatedAt,
                         LastMessageTime = chat.LastMessageTime,
@@ -303,8 +303,8 @@ namespace Edemly.Server.Api.Services
                 {
                     Id = chat.Id,
                     Name = chat.Name,  // За замовчуванням використовуємо назву з БД (для груп)
-                    Description = chat.Description,
-                    IconUrl = chat.IconUrl,
+                    Description = chat.Description ?? string.Empty,
+                    IconUrl = chat.IconUrl ?? string.Empty,
                     Type = (int)chat.Type,
                     CreatedAt = chat.CreatedAt,
                     LastMessageTime = chat.LastMessageTime
@@ -347,7 +347,7 @@ namespace Edemly.Server.Api.Services
                     var otherMember = chat.ChatMembers.FirstOrDefault(cm => cm.UserId != requestingUserId);
                     if (otherMember != null)
                     {
-                        displayName = otherMember.User.Username;
+                        displayName = ResolveDirectChatDisplayName(otherMember.User, otherMember.UserId);
                         _logger.LogInformation($"[GET BY ID] Private chat {chatId}: displaying as '{displayName}' for user {requestingUserId}");
                     }
                 }
@@ -361,8 +361,8 @@ namespace Edemly.Server.Api.Services
                 {
                     Id = chat.Id,
                     Name = displayName,
-                    Description = chat.Description,
-                    IconUrl = chat.IconUrl,
+                    Description = chat.Description ?? string.Empty,
+                    IconUrl = chat.IconUrl ?? string.Empty,
                     Type = (int)chat.Type,
                     CreatedAt = chat.CreatedAt,
                     LastMessageTime = chat.LastMessageTime
@@ -421,6 +421,24 @@ namespace Edemly.Server.Api.Services
             {
                 if (_isTenant) _ctx.Dispose();
             }
+        }
+
+        private static string ResolveDirectChatDisplayName(User user, int userId)
+        {
+            if (!string.IsNullOrWhiteSpace(user.Username))
+            {
+                return user.Username;
+            }
+
+            var fullName = string.Join(" ", new[] { user.FirstName, user.LastName }
+                .Where(part => !string.IsNullOrWhiteSpace(part)));
+
+            if (!string.IsNullOrWhiteSpace(fullName))
+            {
+                return fullName;
+            }
+
+            return $"User {userId}";
         }
     }
 }

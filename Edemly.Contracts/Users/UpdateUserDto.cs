@@ -4,7 +4,7 @@ namespace Edemly.Contracts.Users
 {
     public class UpdateUserDto
     {
-        [StringLength(50, MinimumLength = 3, ErrorMessage = "Username must be between 3 and 50 characters")]
+        [StringLength(50, ErrorMessage = "Username cannot exceed 50 characters")]
         public string? Username { get; set; }
 
         [StringLength(100)]
