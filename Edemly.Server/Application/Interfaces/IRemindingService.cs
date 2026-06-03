@@ -4,12 +4,12 @@ namespace Edemly.Server.Api.Services
 {
     public interface IRemindingService
     {
-        Task<(bool Success, string? Error)> Create(int creatorId, CreateRemindingDto model);
-        Task<(bool Success, string? Error)> Update(UpdateRemindingDto model);
-        Task<(bool Success, string? Error)> Delete(int id);
-        Task<(bool Success, string? Error, RemindingDto Reminding)> GetById(int id);
-        Task<(bool Success, string? Error, List<RemindingDto> Remindings)> GetByUser(int userId);
-        Task<(bool Success, string? Error)> ConfirmReminding(int userId, int remindingId);
-        Task<(bool Success, string? Error)> ToggleCompletion(int id);
+        Task<ServiceMessageResult> Create(int currentUserId, CreateRemindingDto model);
+        Task<ServiceMessageResult> Update(int currentUserId, UpdateRemindingDto model);
+        Task<ServiceMessageResult> Delete(int currentUserId, int id);
+        Task<ServiceDataResult<RemindingDto>> GetById(int currentUserId, int id);
+        Task<ServiceDataResult<List<RemindingDto>>> GetByUser(int currentUserId);
+        Task<ServiceMessageResult> ConfirmReminding(int userId, int remindingId);
+        Task<ServiceMessageResult> ToggleCompletion(int currentUserId, int id);
     }
 }
