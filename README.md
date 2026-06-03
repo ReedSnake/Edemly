@@ -74,10 +74,16 @@ dotnet restore Edemly.sln
 dotnet build Edemly.sln
 ```
 
-Apply the main database migration:
+Apply the master database migration:
 
 ```powershell
 dotnet ef database update --project Edemly.Server --startup-project Edemly.Server --context ServerDbContext
+```
+
+If you need to apply the tenant/company schema manually, use:
+
+```powershell
+dotnet ef database update --project Edemly.Server --startup-project Edemly.Server --context CompanyDbContext
 ```
 
 Start the server:
