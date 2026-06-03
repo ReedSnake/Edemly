@@ -13,7 +13,7 @@ This file records what server behavior is covered, what remains uncovered, and w
 
 - Branch: `test/server-test-coverage`
 - Test command: `dotnet test Edemly.Server.Tests\Edemly.Server.Tests.csproj`
-- Current result: `20 passed`
+- Current result: `25 passed`
 - Last verified: `2026-06-03`
 
 ## Test Infrastructure
@@ -63,6 +63,16 @@ Covered tests:
 - `GetMyChats_Should_Return_Only_User_Chats`
 - `GetChat_Should_Return_Forbidden_When_User_Is_Not_Member`
 
+## Chat Member Integration
+
+Covered tests:
+
+- `AddChatMember_Should_Add_User_When_Requester_Is_Admin`
+- `AddChatMember_Should_Return_Forbidden_When_Requester_Is_Not_Admin`
+- `UpdateChatMemberRole_Should_Update_Role_When_Requester_Is_Creator`
+- `RemoveChatMember_Should_Remove_User_When_Requester_Is_Admin`
+- `RemoveChatMember_Should_Return_Forbidden_When_Requester_Is_Not_Admin`
+
 ## Message Integration
 
 Covered tests:
@@ -101,7 +111,6 @@ Server integration tests:
 - Tenant register/login/session-login flows.
 - Tenant isolation for chats, messages, files, and users.
 - Group chat creation and membership notifications.
-- Chat member add/update/delete endpoints.
 - User search, profile update, and delete workflows.
 - File upload, download, delete, missing file, unauthorized access.
 - Notes and remindings authorization.

@@ -23,6 +23,22 @@ public static class TestChatHelper
         return document.RootElement.GetProperty("chat").GetProperty("id").GetInt32();
     }
 
+    public static async Task<int> CreateGroupChatAsync(HttpClient client, string groupName, params int[] participantIds)
+    {
+        using var response = await client.PostAsJsonAsync(
+            "/api/chat/create-group",
+            new CreateGroupChatDto
+            {
+                GroupName = groupName,
+                ParticipantIds = participantIds.ToList()
+            });
+
+        await EnsureSuccessAsync(response);
+
+        using var document = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        return document.RootElement.GetProperty("chat").GetProperty("id").GetInt32();
+    }
+
     public static async Task SendTextMessageAsync(HttpClient client, int chatId, string text)
     {
         using var response = await client.PostAsJsonAsync(
@@ -44,6 +60,15 @@ public static class TestChatHelper
 
         return await dbContext.Messages
             .SingleAsync(message => message.ChatId == chatId && message.Text == text);
+    }
+
+    public static async Task<ChatMember> GetChatMemberAsync(IServiceProvider services, int chatId, int userId)
+    {
+        using var scope = services.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<ServerDbContext>();
+
+        return await dbContext.ChatMembers
+            .SingleAsync(member => member.ChatId == chatId && member.UserId == userId);
     }
 
     private static async Task EnsureSuccessAsync(HttpResponseMessage response)
