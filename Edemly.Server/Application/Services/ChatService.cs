@@ -97,20 +97,29 @@ namespace Edemly.Server.Api.Services
             string groupName,
             List<int> participantIds)
         {
+            if (string.IsNullOrWhiteSpace(groupName))
+            {
+                return ServiceDataResult<ChatDto>.BadRequest("Group name is required");
+            }
+
+            if (participantIds == null || participantIds.Count == 0)
+            {
+                return ServiceDataResult<ChatDto>.BadRequest("At least one participant is required");
+            }
+
             try
             {
                 await using var dbContextLease = ResolveDbContext();
                 var ctx = dbContextLease.Context;
 
-                if (string.IsNullOrWhiteSpace(groupName))
-                {
-                    return ServiceDataResult<ChatDto>.BadRequest("Group name cannot be empty");
-                }
+                var distinctParticipantIds = participantIds
+                    .Where(id => id != creatorId)
+                    .Distinct()
+                    .ToList();
 
-                if (participantIds == null || participantIds.Count == 0)
-                {
-                    return ServiceDataResult<ChatDto>.BadRequest("Group must have at least one participant");
-                }
+                var allMemberIds = distinctParticipantIds
+                    .Append(creatorId)
+                    .ToList();
 
                 _logger.LogInformation(
                     "Creating group chat '{GroupName}' by user {CreatorId}",
@@ -119,19 +128,20 @@ namespace Edemly.Server.Api.Services
 
                 var validUsers = await ctx.Set<User>()
                     .AsNoTracking()
-                    .Where(u => participantIds.Contains(u.Id))
+                    .Where(u => allMemberIds.Contains(u.Id))
                     .Select(u => u.Id)
                     .ToListAsync();
 
-                if (validUsers.Count != participantIds.Count)
+                if (validUsers.Count != allMemberIds.Count)
                 {
-                    var invalidIds = participantIds.Except(validUsers);
-                    return ServiceDataResult<ChatDto>.BadRequest($"Users not found: {string.Join(", ", invalidIds)}");
+                    var invalidIds = allMemberIds.Except(validUsers);
+                    return ServiceDataResult<ChatDto>.BadRequest(
+                        $"Users not found: {string.Join(", ", invalidIds)}");
                 }
 
                 var newChat = new Chat
                 {
-                    Name = groupName,
+                    Name = groupName.Trim(),
                     Type = ChatType.Group,
                     CreatedAt = DateTime.UtcNow,
                     LastMessageTime = DateTime.UtcNow
@@ -140,21 +150,24 @@ namespace Edemly.Server.Api.Services
                 ctx.Set<Chat>().Add(newChat);
                 await ctx.SaveChangesAsync();
 
-                await _chatMemberService.AddMember(newChat.Id, creatorId, ChatMemberRole.Admin);
+                await _chatMemberService.AddMember(
+                    newChat.Id,
+                    creatorId,
+                    ChatMemberRole.Admin);
 
-                foreach (var userId in participantIds)
+                foreach (var participantId in distinctParticipantIds)
                 {
-                    if (userId != creatorId)
-                    {
-                        await _chatMemberService.AddMember(newChat.Id, userId, ChatMemberRole.Base);
-                    }
+                    await _chatMemberService.AddMember(
+                        newChat.Id,
+                        participantId,
+                        ChatMemberRole.Base);
                 }
 
                 _logger.LogInformation(
                     "Created group chat {ChatId} '{GroupName}' with {ParticipantCount} participants",
                     newChat.Id,
                     groupName,
-                    participantIds.Count);
+                    allMemberIds.Count);
 
                 return ServiceDataResult<ChatDto>.Ok(ToChatDto(newChat));
             }

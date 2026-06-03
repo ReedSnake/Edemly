@@ -28,11 +28,6 @@ namespace Edemly.Server.Api.Controllers.Chats
         {
             var userId = GetCurrentUserIdOrDefault();
 
-            if (userId == 0)
-            {
-                return UnauthorizedMessage("User not authenticated");
-            }
-
             return ToServiceDataResult(
                 await _chatService.CreateOrGetPrivateChat(userId, request.UserId),
                 chat => new { Chat = chat });
@@ -43,21 +38,6 @@ namespace Edemly.Server.Api.Controllers.Chats
         public async Task<IActionResult> CreateGroupChat([FromBody] CreateGroupChatDto request)
         {
             var userId = GetCurrentUserIdOrDefault();
-
-            if (userId == 0)
-            {
-                return UnauthorizedMessage("User not authenticated");
-            }
-
-            if (string.IsNullOrWhiteSpace(request.GroupName))
-            {
-                return BadRequestMessage("Group name is required");
-            }
-
-            if (request.ParticipantIds == null || request.ParticipantIds.Count == 0)
-            {
-                return BadRequestMessage("At least one participant is required");
-            }
 
             var result = await _chatService.CreateGroupChat(userId, request.GroupName, request.ParticipantIds);
             if (!result.Success)
@@ -90,11 +70,6 @@ namespace Edemly.Server.Api.Controllers.Chats
         {
             var userId = GetCurrentUserIdOrDefault();
 
-            if (userId == 0)
-            {
-                return UnauthorizedMessage("User not authenticated");
-            }
-
             return ToServiceDataResult(await _chatService.GetMyChats(userId));
         }
 
@@ -103,11 +78,6 @@ namespace Edemly.Server.Api.Controllers.Chats
         public async Task<IActionResult> GetById(int id)
         {
             var userId = GetCurrentUserIdOrDefault();
-
-            if (userId == 0)
-            {
-                return UnauthorizedMessage("User not authenticated");
-            }
 
             return ToServiceDataResult(await _chatService.GetById(userId, id));
         }
@@ -118,11 +88,6 @@ namespace Edemly.Server.Api.Controllers.Chats
         {
             var userId = GetCurrentUserIdOrDefault();
 
-            if (userId == 0)
-            {
-                return UnauthorizedMessage("User not authenticated");
-            }
-
             return ToServiceMessageResult(await _chatService.UpdateChat(request.Id, request.Name, request.Description, request.IconUrl));
         }
 
@@ -131,11 +96,6 @@ namespace Edemly.Server.Api.Controllers.Chats
         public async Task<IActionResult> UploadGroupIcon([FromServices] IFileStorageService fileStorageService)
         {
             var userId = GetCurrentUserIdOrDefault();
-
-            if (userId == 0)
-            {
-                return UnauthorizedMessage("User not authenticated");
-            }
 
             var chatIdStr = Request.Form["chatId"].FirstOrDefault();
             if (string.IsNullOrEmpty(chatIdStr) || !int.TryParse(chatIdStr, out var chatId))
