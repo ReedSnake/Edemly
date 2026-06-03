@@ -4,19 +4,16 @@ using Edemly.Server.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
-using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace Edemly.Server.Migrations
+namespace Edemly.Server.Data.Migrations.CompanyDb
 {
-    [DbContext(typeof(ServerDbContext))]
-    [Migration("20260603151619_MakeUsernameOptional")]
-    partial class MakeUsernameOptional
+    [DbContext(typeof(CompanyDbContext))]
+    partial class CompanyDbContextModelSnapshot : ModelSnapshot
     {
-        /// <inheritdoc />
-        protected override void BuildTargetModel(ModelBuilder modelBuilder)
+        protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -154,30 +151,6 @@ namespace Edemly.Server.Migrations
                     b.ToTable("chat_member");
                 });
 
-            modelBuilder.Entity("Edemly.Server.Data.Entities.Company", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("DbName")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("varchar(255)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Name")
-                        .IsUnique();
-
-                    b.ToTable("Companies");
-                });
-
             modelBuilder.Entity("Edemly.Server.Data.Entities.Email", b =>
                 {
                     b.Property<int>("Id")
@@ -192,7 +165,7 @@ namespace Edemly.Server.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("email", (string)null);
+                    b.ToTable("Emails");
                 });
 
             modelBuilder.Entity("Edemly.Server.Data.Entities.LoginInfo", b =>

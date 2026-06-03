@@ -4,7 +4,7 @@ Edemly is a Windows desktop messenger built with .NET 10, WPF, ASP.NET Core, Sig
 
 ## Projects
 
-- `Edemly.Server` - backend API, SignalR hubs, EF Core migrations, file storage, and MySQL access.
+- `Edemly.Server` - backend API, SignalR hubs, EF Core data and migrations, file storage, and MySQL access.
 - `Edemly.Client` - WPF desktop client.
 - `Edemly.Contracts` - shared DTO contracts used by the server and client.
 - `Edemly.Server.Tests` - server test project.
@@ -14,7 +14,7 @@ Edemly is a Windows desktop messenger built with .NET 10, WPF, ASP.NET Core, Sig
 
 ```text
 Edemly.Contracts/      Shared DTOs grouped by feature area.
-Edemly.Server/         ASP.NET Core API, SignalR hubs, EF Core data, migrations, tenant services.
+Edemly.Server/         ASP.NET Core API, SignalR hubs, EF Core data, tenant services, and migrations under Data/Migrations.
 Edemly.Client/         WPF desktop app, pages, helpers, API services, local cache models, assets.
 Edemly.Server.Tests/   Server-focused tests.
 Edemly.Client.Tests/   Client-focused tests.
@@ -63,7 +63,7 @@ Create the main database:
 CREATE DATABASE edemly CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 ```
 
-Database details: [Edemly.Server/DATABASE_SETUP.md](Edemly.Server/DATABASE_SETUP.md).
+Database details: [docs/DATABASE_SETUP.md](docs/DATABASE_SETUP.md).
 
 ## Build And Run
 
@@ -77,8 +77,7 @@ dotnet build Edemly.sln
 Apply the main database migration:
 
 ```powershell
-cd Edemly.Server
-dotnet ef database update --context ServerDbContext
+dotnet ef database update --project Edemly.Server --startup-project Edemly.Server --context ServerDbContext
 ```
 
 Start the server:
@@ -106,6 +105,9 @@ http://localhost:8100/swagger
 - The client server URL argument is required: `dotnet run -- http://localhost:8100`.
 - When `Brevo:ApiKey` is `MOCK_MODE`, login codes are printed to the server console.
 - Server startup applies pending master migrations and tenant migrations for existing companies.
+- Migrations now live in `Edemly.Server/Data/Migrations/ServerDb` and `Edemly.Server/Data/Migrations/CompanyDb`.
+- If you used the old migration chain locally, recreate your local databases before applying the new initial migrations.
+- New registrations may leave `Username`, `FirstName`, and `LastName` empty; `Username` must still be unique when set.
 - The desktop shortcut is optional and disabled by default.
 - Client config and cache files are stored under `%APPDATA%\Edemly`.
 

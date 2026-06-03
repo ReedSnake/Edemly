@@ -8,10 +8,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace Edemly.Server.Migrations.CompanyDbMigrations
+namespace Edemly.Server.Data.Migrations.ServerDb
 {
-    [DbContext(typeof(CompanyDbContext))]
-    partial class CompanyDbContextModelSnapshot : ModelSnapshot
+    [DbContext(typeof(ServerDbContext))]
+    partial class ServerDbContextModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
@@ -151,6 +151,30 @@ namespace Edemly.Server.Migrations.CompanyDbMigrations
                     b.ToTable("chat_member");
                 });
 
+            modelBuilder.Entity("Edemly.Server.Data.Entities.Company", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("DbName")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("varchar(255)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.ToTable("Companies");
+                });
+
             modelBuilder.Entity("Edemly.Server.Data.Entities.Email", b =>
                 {
                     b.Property<int>("Id")
@@ -165,7 +189,7 @@ namespace Edemly.Server.Migrations.CompanyDbMigrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Emails");
+                    b.ToTable("email", (string)null);
                 });
 
             modelBuilder.Entity("Edemly.Server.Data.Entities.LoginInfo", b =>

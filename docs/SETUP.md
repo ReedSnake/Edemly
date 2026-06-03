@@ -36,21 +36,28 @@ CREATE DATABASE edemly CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 Apply migrations:
 
 ```powershell
-cd Edemly.Server
-dotnet ef database update --context ServerDbContext
+dotnet ef database update --project Edemly.Server --startup-project Edemly.Server --context ServerDbContext
 ```
 
 Create new migrations after model changes:
 
 ```powershell
-cd Edemly.Server
-dotnet ef migrations add MigrationName --context ServerDbContext
-dotnet ef migrations add MigrationName --context CompanyDbContext -o Migrations/CompanyDbMigrations
+dotnet ef migrations add MigrationName --project Edemly.Server --startup-project Edemly.Server --context ServerDbContext --output-dir Data/Migrations/ServerDb
+dotnet ef migrations add MigrationName --project Edemly.Server --startup-project Edemly.Server --context CompanyDbContext --output-dir Data/Migrations/CompanyDb
 ```
 
 Tenant migrations are applied automatically when companies are created and when the server starts for existing companies.
 
-More details: [../Edemly.Server/DATABASE_SETUP.md](../Edemly.Server/DATABASE_SETUP.md).
+Current migration folders:
+
+```text
+Edemly.Server/Data/Migrations/ServerDb
+Edemly.Server/Data/Migrations/CompanyDb
+```
+
+If you previously used the old migration chain from `Edemly.Server/Migrations`, recreate your local databases before applying the new initial migrations.
+
+More details: [DATABASE_SETUP.md](DATABASE_SETUP.md).
 
 ## Logging
 

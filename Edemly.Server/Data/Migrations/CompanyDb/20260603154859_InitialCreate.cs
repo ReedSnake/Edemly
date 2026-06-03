@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace Edemly.Server.Migrations.CompanyDbMigrations
+namespace Edemly.Server.Data.Migrations.CompanyDb
 {
     /// <inheritdoc />
     public partial class InitialCreate : Migration
@@ -76,7 +76,7 @@ namespace Edemly.Server.Migrations.CompanyDbMigrations
                     id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     login_info_id = table.Column<int>(type: "int", nullable: false),
-                    username = table.Column<string>(type: "varchar(50)", maxLength: 50, nullable: false)
+                    username = table.Column<string>(type: "varchar(50)", maxLength: 50, nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     pfp_url = table.Column<string>(type: "varchar(255)", maxLength: 255, nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
