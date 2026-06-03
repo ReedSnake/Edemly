@@ -1,4 +1,4 @@
-﻿#nullable disable
+#nullable disable
 using System;
 using System.Linq;
 using System.Windows;
@@ -89,7 +89,7 @@ namespace Edemly.Client
                     new Uri("pack://application:,,,/Assets/Avatars/default-avatar.png", UriKind.RelativeOrAbsolute));
             }
 
-            await LoadContactNotes();
+            await LoadContactNotesAsync();
 
             EditContactButton.Visibility = Visibility.Visible;
 
@@ -159,7 +159,7 @@ namespace Edemly.Client
             }
         }
 
-        private async Task LoadContactNotes()
+        private async Task LoadContactNotesAsync()
         {
             Note1Border.Visibility = Visibility.Collapsed;
             Note2Border.Visibility = Visibility.Collapsed;
@@ -232,7 +232,7 @@ namespace Edemly.Client
 
             await LoadGroupDescriptionAsync();
 
-            await LoadGroupMembers();
+            await LoadGroupMembersAsync();
 
             await ShowGroupSettingsIconIfOwnerAsync();
 
@@ -321,7 +321,7 @@ namespace Edemly.Client
             }
         }
 
-        private async Task LoadGroupMembers()
+        private async Task LoadGroupMembersAsync()
         {
             GroupMembersPanel.Children.Clear();
 

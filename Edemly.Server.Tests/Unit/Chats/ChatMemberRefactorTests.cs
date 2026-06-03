@@ -17,27 +17,30 @@ namespace Edemly.Server.Tests.Unit.Chats;
 public sealed class ChatMemberRefactorTests
 {
     [Test]
-    public async Task Controller_AddMember_Should_Return_Forbid_When_Service_Returns_Forbidden()
+    public async Task Controller_AddMember_Should_Return_Forbid_When_Service_Returns_ForbiddenAsync()
     {
         var service = new Mock<IChatMemberService>();
-        service.Setup(x => x.AddMember(0, It.IsAny<CreateChatMemberDto>()))
-            .ReturnsAsync(ServiceMessageResult.Forbidden());
+        service.Setup(x => x.AddMemberAsync(7, It.IsAny<CreateChatMemberDto>()))
+            .ReturnsAsync(ServiceResult.Forbidden());
 
         var controller = new ChatMemberController(service.Object)
         {
             ControllerContext = new ControllerContext
             {
-                HttpContext = new DefaultHttpContext()
+                HttpContext = new DefaultHttpContext
+                {
+                    User = TestPrincipal(7)
+                }
             }
         };
 
-        var result = await controller.AddMember(new CreateChatMemberDto { ChatId = 1, UserId = 2, Role = (int)ChatMemberRole.Base });
+        var result = await controller.CreateAsync(new CreateChatMemberDto { ChatId = 1, UserId = 2, Role = (int)ChatMemberRole.Base });
 
         Assert.That(result, Is.TypeOf<ForbidResult>());
     }
 
     [Test]
-    public async Task Service_AddMember_Should_Return_Forbidden_When_Requester_Has_No_Manage_Rights()
+    public async Task Service_AddMember_Should_Return_Forbidden_When_Requester_Has_No_Manage_RightsAsync()
     {
         using var connection = CreateOpenConnection();
         await using var serverDb = CreateServerDbContext(connection);
@@ -48,7 +51,7 @@ public sealed class ChatMemberRefactorTests
         await AddMemberAsync(serverDb, chat.Id, requester.Id, ChatMemberRole.Base);
 
         var service = CreateService(serverDb);
-        var result = await service.AddMember(requester.Id, new CreateChatMemberDto
+        var result = await service.AddMemberAsync(requester.Id, new CreateChatMemberDto
         {
             ChatId = chat.Id,
             UserId = target.Id,
@@ -60,7 +63,7 @@ public sealed class ChatMemberRefactorTests
     }
 
     [Test]
-    public async Task Service_AddMember_Should_Not_Create_Duplicate_Membership()
+    public async Task Service_AddMember_Should_Return_Conflict_When_Membership_Already_ExistsAsync()
     {
         using var connection = CreateOpenConnection();
         await using var serverDb = CreateServerDbContext(connection);
@@ -72,14 +75,15 @@ public sealed class ChatMemberRefactorTests
         await AddMemberAsync(serverDb, chat.Id, target.Id, ChatMemberRole.Base);
 
         var service = CreateService(serverDb);
-        var result = await service.AddMember(creator.Id, new CreateChatMemberDto
+        var result = await service.AddMemberAsync(creator.Id, new CreateChatMemberDto
         {
             ChatId = chat.Id,
             UserId = target.Id,
             Role = (int)ChatMemberRole.Base
         });
 
-        Assert.That(result.Success, Is.True);
+        Assert.That(result.Success, Is.False);
+        Assert.That(result.StatusCode, Is.EqualTo(StatusCodes.Status409Conflict));
         Assert.That(serverDb.ChatMembers.Count(cm => cm.ChatId == chat.Id && cm.UserId == target.Id), Is.EqualTo(1));
     }
 
@@ -159,5 +163,16 @@ public sealed class ChatMemberRefactorTests
         {
             throw new InvalidOperationException("Tenant DB should not be used in this test.");
         }
+    }
+
+    private static System.Security.Claims.ClaimsPrincipal TestPrincipal(int userId)
+    {
+        return new System.Security.Claims.ClaimsPrincipal(
+            new System.Security.Claims.ClaimsIdentity(
+                new[]
+                {
+                    new System.Security.Claims.Claim("userId", userId.ToString())
+                },
+                "test"));
     }
 }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Windows;
 using Edemly.Client.Controls;
 using Edemly.Client.Services;
@@ -427,7 +427,7 @@ namespace Edemly.Client
                 UserInfoDto? info = null;
                 try
                 {
-                    info = await App.ApiService.GetUserInfo();
+                    info = await App.ApiService.GetUserInfoAsync();
                 }
                 catch (Exception ex)
                 {

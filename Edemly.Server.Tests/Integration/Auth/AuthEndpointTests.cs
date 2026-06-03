@@ -14,7 +14,7 @@ namespace Edemly.Server.Tests.Integration.Auth;
 public sealed class AuthEndpointTests
 {
     [Test]
-    public async Task Register_Should_Create_User_When_Request_Is_Valid()
+    public async Task Register_Should_Create_User_When_Request_Is_ValidAsync()
     {
         using var factory = new CustomWebApplicationFactory();
         using var client = factory.CreateClient();
@@ -44,7 +44,7 @@ public sealed class AuthEndpointTests
     }
 
     [Test]
-    public async Task Register_Should_Return_BadRequest_When_Email_Already_Exists()
+    public async Task Register_Should_Return_Conflict_When_Email_Already_ExistsAsync()
     {
         using var factory = new CustomWebApplicationFactory();
         using var client = factory.CreateClient();
@@ -63,11 +63,11 @@ public sealed class AuthEndpointTests
                 Code = code
             });
 
-        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Conflict));
     }
 
     [Test]
-    public async Task Register_Should_Return_BadRequest_When_Request_Is_Invalid()
+    public async Task Register_Should_Return_BadRequest_When_Request_Is_InvalidAsync()
     {
         using var factory = new CustomWebApplicationFactory();
         using var client = factory.CreateClient();
@@ -85,7 +85,7 @@ public sealed class AuthEndpointTests
     }
 
     [Test]
-    public async Task Register_Should_Return_Unauthorized_When_Verification_Code_Is_Invalid()
+    public async Task Register_Should_Return_Unauthorized_When_Verification_Code_Is_InvalidAsync()
     {
         using var factory = new CustomWebApplicationFactory();
         using var client = factory.CreateClient();
@@ -106,7 +106,7 @@ public sealed class AuthEndpointTests
     }
 
     [Test]
-    public async Task Register_Should_Create_Welcome_Chat_And_Membership()
+    public async Task Register_Should_Create_Welcome_Chat_And_MembershipAsync()
     {
         using var factory = new CustomWebApplicationFactory();
         using var client = factory.CreateClient();
@@ -127,7 +127,7 @@ public sealed class AuthEndpointTests
     }
 
     [Test]
-    public async Task Register_Should_Allow_Empty_Username()
+    public async Task Register_Should_Allow_Empty_UsernameAsync()
     {
         using var factory = new CustomWebApplicationFactory();
         using var client = factory.CreateClient();
@@ -165,7 +165,7 @@ public sealed class AuthEndpointTests
     }
 
     [Test]
-    public async Task Register_Should_Return_BadRequest_When_Username_Already_Exists()
+    public async Task Register_Should_Return_Conflict_When_Username_Already_ExistsAsync()
     {
         using var factory = new CustomWebApplicationFactory();
         using var client = factory.CreateClient();
@@ -198,11 +198,11 @@ public sealed class AuthEndpointTests
                 Code = secondCode
             });
 
-        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Conflict));
     }
 
     [Test]
-    public async Task Register_Should_Not_Derive_ProfileNames_From_Username()
+    public async Task Register_Should_Not_Derive_ProfileNames_From_UsernameAsync()
     {
         using var factory = new CustomWebApplicationFactory();
         using var client = factory.CreateClient();
@@ -237,7 +237,7 @@ public sealed class AuthEndpointTests
     }
 
     [Test]
-    public async Task Login_Should_Return_Token_When_Credentials_Are_Valid()
+    public async Task Login_Should_Return_Token_When_Credentials_Are_ValidAsync()
     {
         using var factory = new CustomWebApplicationFactory();
         using var client = factory.CreateClient();
@@ -255,7 +255,7 @@ public sealed class AuthEndpointTests
     }
 
     [Test]
-    public async Task Login_Should_Return_Unauthorized_When_Password_Is_Wrong()
+    public async Task Login_Should_Return_Unauthorized_When_Password_Is_WrongAsync()
     {
         using var factory = new CustomWebApplicationFactory();
         using var client = factory.CreateClient();
@@ -273,7 +273,7 @@ public sealed class AuthEndpointTests
     }
 
     [Test]
-    public async Task Login_Should_Return_Unauthorized_When_Email_Does_Not_Exist()
+    public async Task Login_Should_Return_Unauthorized_When_Email_Does_Not_ExistAsync()
     {
         using var factory = new CustomWebApplicationFactory();
         using var client = factory.CreateClient();
@@ -294,7 +294,7 @@ public sealed class AuthEndpointTests
     }
 
     [Test]
-    public async Task Login_Should_Not_Return_Password_Or_PasswordHash()
+    public async Task Login_Should_Not_Return_Password_Or_PasswordHashAsync()
     {
         using var factory = new CustomWebApplicationFactory();
         using var client = factory.CreateClient();
@@ -321,7 +321,7 @@ public sealed class AuthEndpointTests
     }
 
     [Test]
-    public async Task Login_Should_Return_BadRequest_When_Request_Is_Invalid()
+    public async Task Login_Should_Return_BadRequest_When_Request_Is_InvalidAsync()
     {
         using var factory = new CustomWebApplicationFactory();
         using var client = factory.CreateClient();
@@ -338,7 +338,7 @@ public sealed class AuthEndpointTests
     }
 
     [Test]
-    public async Task SessionLogin_Should_Return_Token_When_SessionToken_Is_Valid()
+    public async Task SessionLogin_Should_Return_Token_When_SessionToken_Is_ValidAsync()
     {
         using var factory = new CustomWebApplicationFactory();
         using var client = factory.CreateClient();
@@ -364,7 +364,7 @@ public sealed class AuthEndpointTests
     }
 
     [Test]
-    public async Task SessionLogin_Should_Return_Unauthorized_When_SessionToken_Is_Invalid()
+    public async Task SessionLogin_Should_Return_Unauthorized_When_SessionToken_Is_InvalidAsync()
     {
         using var factory = new CustomWebApplicationFactory();
         using var client = factory.CreateClient();
@@ -380,7 +380,7 @@ public sealed class AuthEndpointTests
     }
 
     [Test]
-    public async Task SessionLogin_Should_Return_Unauthorized_When_SessionToken_Is_Expired()
+    public async Task SessionLogin_Should_Return_Unauthorized_When_SessionToken_Is_ExpiredAsync()
     {
         using var factory = new CustomWebApplicationFactory();
         using var client = factory.CreateClient();
@@ -405,7 +405,7 @@ public sealed class AuthEndpointTests
     }
 
     [Test]
-    public async Task Logout_Should_Remove_Session_When_User_Is_Authenticated()
+    public async Task Logout_Should_Remove_Session_When_User_Is_AuthenticatedAsync()
     {
         using var factory = new CustomWebApplicationFactory();
         using var client = factory.CreateClient();
@@ -426,7 +426,7 @@ public sealed class AuthEndpointTests
     }
 
     [Test]
-    public async Task Protected_Endpoint_Should_Return_Unauthorized_Without_Token()
+    public async Task Protected_Endpoint_Should_Return_Unauthorized_Without_TokenAsync()
     {
         using var factory = new CustomWebApplicationFactory();
         using var client = factory.CreateClient();
@@ -437,7 +437,7 @@ public sealed class AuthEndpointTests
     }
 
     [Test]
-    public async Task Protected_Endpoint_Should_Return_Success_With_Valid_Token()
+    public async Task Protected_Endpoint_Should_Return_Success_With_Valid_TokenAsync()
     {
         using var factory = new CustomWebApplicationFactory();
         using var client = factory.CreateClient();

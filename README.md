@@ -14,7 +14,7 @@ Edemly is a Windows desktop messenger built with .NET 10, WPF, ASP.NET Core, Sig
 
 ```text
 Edemly.Contracts/      Shared DTOs grouped by feature area.
-Edemly.Server/         ASP.NET Core API, SignalR hubs, EF Core data, tenant services, and migrations under Data/Migrations.
+Edemly.Server/         ASP.NET Core API, SignalR hubs, EF Core data, tenant services, and migrations under Data/Migrations/ServerDb and Data/Migrations/CompanyDb.
 Edemly.Client/         WPF desktop app, pages, helpers, API services, local cache models, assets.
 Edemly.Server.Tests/   Server-focused tests.
 Edemly.Client.Tests/   Client-focused tests.

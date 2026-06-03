@@ -84,7 +84,8 @@ namespace Edemly.Server.Hubs
         }
 
         // Start a call: read members from resolved DB (tenant preferred), persist call in master DB
-        public async Task StartCall(int chatId, string callUid, string? metadata = null)
+        [HubMethodName("StartCall")]
+        public async Task StartCallAsync(int chatId, string callUid, string? metadata = null)
         {
             var initiatorId = GetUserId();
             _logger.LogInformation("StartCall: initiator={Initiator} chatId={ChatId} callUid={CallUid}", initiatorId, chatId, callUid);
@@ -194,7 +195,8 @@ namespace Edemly.Server.Hubs
             }
         }
 
-        public async Task AcceptCall(int callId)
+        [HubMethodName("AcceptCall")]
+        public async Task AcceptCallAsync(int callId)
         {
             var userId = GetUserId();
             _logger.LogInformation("AcceptCall: user={User} callId={CallId}", userId, callId);
@@ -222,7 +224,8 @@ namespace Edemly.Server.Hubs
             }
         }
 
-        public async Task RejectCall(int callId, string? reason = null)
+        [HubMethodName("RejectCall")]
+        public async Task RejectCallAsync(int callId, string? reason = null)
         {
             var userId = GetUserId();
             _logger.LogInformation("RejectCall: user={User} callId={CallId} reason={Reason}", userId, callId, reason);
@@ -262,7 +265,8 @@ namespace Edemly.Server.Hubs
             }
         }
 
-        public async Task EndCall(int callId)
+        [HubMethodName("EndCall")]
+        public async Task EndCallAsync(int callId)
         {
             var userId = GetUserId();
             _logger.LogInformation("EndCall: user={User} callId={CallId}", userId, callId);
@@ -291,19 +295,22 @@ namespace Edemly.Server.Hubs
         }
 
         // WebRTC signaling passthrough
-        public async Task SendOffer(int targetUserId, string sdp, string callUid)
+        [HubMethodName("SendOffer")]
+        public async Task SendOfferAsync(int targetUserId, string sdp, string callUid)
         {
             var userId = GetUserId();
             await Clients.User(targetUserId.ToString()).SendAsync("Offer", new { CallUid = callUid, From = userId, Sdp = sdp });
         }
 
-        public async Task SendAnswer(int targetUserId, string sdp, string callUid)
+        [HubMethodName("SendAnswer")]
+        public async Task SendAnswerAsync(int targetUserId, string sdp, string callUid)
         {
             var userId = GetUserId();
             await Clients.User(targetUserId.ToString()).SendAsync("Answer", new { CallUid = callUid, From = userId, Sdp = sdp });
         }
 
-        public async Task SendIceCandidate(int targetUserId, string candidate, string? sdpMid, int? sdpMLineIndex, string callUid)
+        [HubMethodName("SendIceCandidate")]
+        public async Task SendIceCandidateAsync(int targetUserId, string candidate, string? sdpMid, int? sdpMLineIndex, string callUid)
         {
             var userId = GetUserId();
             await Clients.User(targetUserId.ToString()).SendAsync("IceCandidate", new
@@ -316,7 +323,8 @@ namespace Edemly.Server.Hubs
             });
         }
 
-        public async Task SendAudioChunk(int? targetUserId, byte[] chunk, int callId, long sequenceId, long timestampMs)
+        [HubMethodName("SendAudioChunk")]
+        public async Task SendAudioChunkAsync(int? targetUserId, byte[] chunk, int callId, long sequenceId, long timestampMs)
         {
             var userId = GetUserId();
             _logger.LogDebug("SendAudioChunk: from={From} to={To} callId={CallId} bytes={Len} seq={Seq} ts={Ts}", userId, targetUserId?.ToString() ?? "<all>", callId, chunk?.Length ?? 0, sequenceId, timestampMs);

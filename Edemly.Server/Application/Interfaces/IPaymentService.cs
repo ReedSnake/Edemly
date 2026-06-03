@@ -4,10 +4,10 @@ namespace Edemly.Server.Api.Services
 {
     public interface IPaymentService
     {
-        Task<ServiceMessageResult> Create(int userId, CreatePaymentDto model);
-        Task<ServiceDataResult<PaymentDto>> GetById(int id);
-        Task<ServiceDataResult<List<PaymentDto>>> GetByUser(int userId);
-        Task<ServiceMessageResult> UpdatePaymentStatus(string transactionId, PaymentStatus newStatus);
-        Task<ServiceMessageResult> UpgradeUserToPremium(int userId, int durationDays = 30);
+        Task<ServiceResult> CreateAsync(int currentUserId, CreatePaymentDto request);
+        Task<ServiceResult<PaymentDto>> GetByIdAsync(int paymentId);
+        Task<ServiceResult<List<PaymentDto>>> GetByUserAsync(int targetUserId);
+        Task<ServiceResult> UpdatePaymentStatusAsync(string transactionId, PaymentStatus newStatus);
+        Task<ServiceResult> UpgradeUserToPremiumAsync(int targetUserId, int durationDays = 30);
     }
 }

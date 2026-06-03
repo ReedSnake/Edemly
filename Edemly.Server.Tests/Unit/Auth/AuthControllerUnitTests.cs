@@ -21,33 +21,33 @@ namespace Edemly.Server.Tests.Unit.Auth;
 public sealed class AuthControllerUnitTests
 {
     [Test]
-    public async Task GetLoginCode_Should_Return_BadRequest_When_Request_Model_Is_Missing()
+    public async Task GetLoginCode_Should_Return_BadRequest_When_Request_Model_Is_MissingAsync()
     {
         using var serverConnection = CreateOpenConnection();
         await using var serverDb = CreateServerDbContext(serverConnection);
         var controller = CreateController(serverDb);
 
-        var result = await controller.GetLoginCode(null!);
+        var result = await controller.GetLoginCodeAsync(null!);
 
         Assert.That(result, Is.TypeOf<BadRequestObjectResult>());
         Assert.That(GetMessage(result), Is.EqualTo("Email must be provided"));
     }
 
     [Test]
-    public async Task GetLoginCode_Should_Return_BadRequest_When_Email_Format_Is_Invalid()
+    public async Task GetLoginCode_Should_Return_BadRequest_When_Email_Format_Is_InvalidAsync()
     {
         using var serverConnection = CreateOpenConnection();
         await using var serverDb = CreateServerDbContext(serverConnection);
         var controller = CreateController(serverDb);
 
-        var result = await controller.GetLoginCode(new LoginRequestDto { Email = "invalid-email" });
+        var result = await controller.GetLoginCodeAsync(new LoginRequestDto { Email = "invalid-email" });
 
         Assert.That(result, Is.TypeOf<BadRequestObjectResult>());
         Assert.That(GetMessage(result), Is.EqualTo("Invalid email format"));
     }
 
     [Test]
-    public async Task GetLoginCode_Should_Use_CurrentCompany_From_TenantProvider()
+    public async Task GetLoginCode_Should_Use_CurrentCompany_From_TenantProviderAsync()
     {
         using var serverConnection = CreateOpenConnection();
         await using var serverDb = CreateServerDbContext(serverConnection);
@@ -56,14 +56,14 @@ public sealed class AuthControllerUnitTests
         var tenantProvider = new TenantProvider { CurrentCompany = company };
         var controller = CreateController(serverDb, tenantProvider: tenantProvider, tenantDbFactory: tenantFactory);
 
-        var result = await controller.GetLoginCode(new LoginRequestDto { Email = "blocked@example.test" });
+        var result = await controller.GetLoginCodeAsync(new LoginRequestDto { Email = "blocked@example.test" });
 
         Assert.That(result, Is.TypeOf<BadRequestObjectResult>());
         Assert.That(GetMessage(result), Is.EqualTo("Email is not allowed for this company"));
     }
 
     [Test]
-    public async Task GetLoginCode_Should_Return_ServerError_When_TenantAllowlistLookup_Fails()
+    public async Task GetLoginCode_Should_Return_ServerError_When_TenantAllowlistLookup_FailsAsync()
     {
         using var serverConnection = CreateOpenConnection();
         await using var serverDb = CreateServerDbContext(serverConnection);
@@ -74,7 +74,7 @@ public sealed class AuthControllerUnitTests
             tenantProvider: tenantProvider,
             tenantDbFactory: new ThrowingTenantDbContextFactory());
 
-        var result = await controller.GetLoginCode(new LoginRequestDto { Email = "user@example.test" });
+        var result = await controller.GetLoginCodeAsync(new LoginRequestDto { Email = "user@example.test" });
 
         Assert.That(result, Is.TypeOf<ObjectResult>());
         Assert.That(GetStatusCode(result), Is.EqualTo(StatusCodes.Status500InternalServerError));
@@ -82,7 +82,7 @@ public sealed class AuthControllerUnitTests
     }
 
     [Test]
-    public async Task GetLoginCode_Should_Return_ServerError_When_EmailService_Throws()
+    public async Task GetLoginCode_Should_Return_ServerError_When_EmailService_ThrowsAsync()
     {
         using var serverConnection = CreateOpenConnection();
         await using var serverDb = CreateServerDbContext(serverConnection);
@@ -92,7 +92,7 @@ public sealed class AuthControllerUnitTests
 
         var controller = CreateController(serverDb, emailService: emailService);
 
-        var result = await controller.GetLoginCode(new LoginRequestDto { Email = "user@example.test" });
+        var result = await controller.GetLoginCodeAsync(new LoginRequestDto { Email = "user@example.test" });
 
         Assert.That(result, Is.TypeOf<ObjectResult>());
         Assert.That(GetStatusCode(result), Is.EqualTo(StatusCodes.Status500InternalServerError));
@@ -100,7 +100,7 @@ public sealed class AuthControllerUnitTests
     }
 
     [Test]
-    public async Task Login_Should_Request_Admin_Token_When_Admin_Email_Matches_Configuration()
+    public async Task Login_Should_Request_Admin_Token_When_Admin_Email_Matches_ConfigurationAsync()
     {
         using var serverConnection = CreateOpenConnection();
         await using var serverDb = CreateServerDbContext(serverConnection);
@@ -142,7 +142,7 @@ public sealed class AuthControllerUnitTests
             emailService: emailService,
             configuration: configuration);
 
-        var result = await controller.Login(new LoginWithCodeDto
+        var result = await controller.LoginAsync(new LoginWithCodeDto
         {
             Email = email,
             Code = "123456"
@@ -157,7 +157,7 @@ public sealed class AuthControllerUnitTests
     }
 
     [Test]
-    public async Task Logout_Should_Return_Unauthorized_When_UserIdClaim_Is_Invalid()
+    public async Task Logout_Should_Return_Unauthorized_When_UserIdClaim_Is_InvalidAsync()
     {
         using var serverConnection = CreateOpenConnection();
         await using var serverDb = CreateServerDbContext(serverConnection);
@@ -172,7 +172,7 @@ public sealed class AuthControllerUnitTests
         };
         var controller = CreateController(serverDb, httpContext: httpContext);
 
-        var result = await controller.Logout();
+        var result = await controller.LogoutAsync();
 
         Assert.That(result, Is.TypeOf<UnauthorizedResult>());
     }

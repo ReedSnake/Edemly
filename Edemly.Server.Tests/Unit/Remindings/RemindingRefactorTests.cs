@@ -18,36 +18,39 @@ namespace Edemly.Server.Tests.Unit.Remindings;
 public sealed class RemindingRefactorTests
 {
     [Test]
-    public async Task Controller_Toggle_Should_Return_Forbid_When_Service_Returns_Forbidden()
+    public async Task Controller_Toggle_Should_Return_Forbid_When_Service_Returns_ForbiddenAsync()
     {
         var service = new Mock<IRemindingService>();
-        service.Setup(x => x.ToggleCompletion(0, 5))
-            .ReturnsAsync(ServiceMessageResult.Forbidden());
+        service.Setup(x => x.ToggleCompletionAsync(6, 5))
+            .ReturnsAsync(ServiceResult.Forbidden());
 
         var controller = new RemindingController(service.Object)
         {
             ControllerContext = new ControllerContext
             {
-                HttpContext = new DefaultHttpContext()
+                HttpContext = new DefaultHttpContext
+                {
+                    User = TestPrincipal(6)
+                }
             }
         };
 
-        var result = await controller.Toggle(5);
+        var result = await controller.ToggleAsync(5);
 
         Assert.That(result, Is.TypeOf<ForbidResult>());
     }
 
     [Test]
-    public async Task Controller_GetByUser_Should_Return_Ok_When_Service_Returns_Data()
+    public async Task Controller_GetByUser_Should_Return_Ok_When_Service_Returns_DataAsync()
     {
         var service = new Mock<IRemindingService>();
-        service.Setup(x => x.GetByUser(0))
-            .ReturnsAsync(ServiceDataResult<List<RemindingDto>>.Ok(new List<RemindingDto>
+        service.Setup(x => x.GetByUserAsync(6))
+            .ReturnsAsync(ServiceResult<List<RemindingDto>>.Ok(new List<RemindingDto>
             {
                 new()
                 {
                     Id = 1,
-                    UserId = 0,
+                    UserId = 6,
                     Content = "Check",
                     CreatedAt = DateTime.UtcNow,
                     Name = "Check",
@@ -59,18 +62,21 @@ public sealed class RemindingRefactorTests
         {
             ControllerContext = new ControllerContext
             {
-                HttpContext = new DefaultHttpContext()
+                HttpContext = new DefaultHttpContext
+                {
+                    User = TestPrincipal(6)
+                }
             }
         };
 
-        var result = await controller.GetByUser();
+        var result = await controller.GetByUserAsync();
 
         Assert.That(result, Is.TypeOf<OkObjectResult>());
         Assert.That(GetJsonArrayLength(result), Is.EqualTo(1));
     }
 
     [Test]
-    public async Task Service_ToggleCompletion_Should_Update_Owned_Reminding()
+    public async Task Service_ToggleCompletion_Should_Update_Owned_RemindingAsync()
     {
         using var connection = CreateOpenConnection();
         await using var serverDb = CreateServerDbContext(connection);
@@ -99,10 +105,29 @@ public sealed class RemindingRefactorTests
             new TenantProvider(),
             new ThrowingTenantDbContextFactory());
 
-        var result = await service.ToggleCompletion(1, reminding.Id);
+        var result = await service.ToggleCompletionAsync(1, reminding.Id);
 
         Assert.That(result.Success, Is.True);
         Assert.That(serverDb.Remindings.Single().IsCompleted, Is.True);
+    }
+
+    [Test]
+    public async Task Service_ToggleCompletion_Should_Return_NotFound_When_Reminding_Does_Not_ExistAsync()
+    {
+        using var connection = CreateOpenConnection();
+        await using var serverDb = CreateServerDbContext(connection);
+
+        var owner = await CreateUserAsync(serverDb, "owner@example.test");
+        var service = new RemindingService(
+            serverDb,
+            NullLogger<RemindingService>.Instance,
+            new TenantProvider(),
+            new ThrowingTenantDbContextFactory());
+
+        var result = await service.ToggleCompletionAsync(owner.Id, 999);
+
+        Assert.That(result.Success, Is.False);
+        Assert.That(result.StatusCode, Is.EqualTo(StatusCodes.Status404NotFound));
     }
 
     private static int GetJsonArrayLength(IActionResult result)
@@ -164,5 +189,16 @@ public sealed class RemindingRefactorTests
         {
             throw new InvalidOperationException("Tenant DB should not be used in this test.");
         }
+    }
+
+    private static System.Security.Claims.ClaimsPrincipal TestPrincipal(int userId)
+    {
+        return new System.Security.Claims.ClaimsPrincipal(
+            new System.Security.Claims.ClaimsIdentity(
+                new[]
+                {
+                    new System.Security.Claims.Claim("userId", userId.ToString())
+                },
+                "test"));
     }
 }

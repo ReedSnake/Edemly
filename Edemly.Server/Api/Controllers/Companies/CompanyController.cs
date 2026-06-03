@@ -17,23 +17,23 @@ namespace Edemly.Server.Api.Controllers.Companies
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetCompanies()
+        public async Task<IActionResult> GetCompaniesAsync()
         {
-            return ToServiceDataResult(await _companyService.GetCompanies());
+            return ToServiceResult(await _companyService.GetCompaniesAsync());
         }
 
         [HttpPost]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> CreateCompany([FromBody] CreateCompanyDto dto)
+        public async Task<IActionResult> CreateAsync([FromBody] CreateCompanyDto request)
         {
-            return ToServiceDataResult(await _companyService.CreateCompany(dto));
+            return ToServiceResult(await _companyService.CreateAsync(request));
         }
 
         [HttpPost("{companyId}/emails")]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> AddEmails(int companyId, [FromBody] List<string>? emails)
+        public async Task<IActionResult> AddEmailsAsync(int companyId, [FromBody] List<string>? emails)
         {
-            return ToServiceMessageResult(await _companyService.AddEmails(companyId, emails));
+            return ToServiceResult(await _companyService.AddEmailsAsync(companyId, emails));
         }
     }
 }

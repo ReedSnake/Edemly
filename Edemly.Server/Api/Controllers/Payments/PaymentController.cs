@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using System.Security.Claims;
+using Edemly.Contracts.Payments;
 using Edemly.Server.Api.Services;
 using Edemly.Server.Data.Entities;
 
@@ -30,30 +31,31 @@ namespace Edemly.Server.Api.Controllers.Payments
 
         [HttpGet("initiate")]
         [Authorize]
-        public async Task<IActionResult> InitiatePayment([FromQuery] decimal amount = 100.00m)
+        public async Task<IActionResult> CreateAsync([FromQuery] decimal amount = 100.00m)
         {
-            if (!TryGetCurrentUserId(out var userId, ClaimTypes.NameIdentifier))
+            var unauthorizedResult = RequireCurrentUserId(out var currentUserId, ClaimTypes.NameIdentifier);
+            if (unauthorizedResult != null)
             {
-                return Unauthorized(new { error = "User not authenticated" });
+                return unauthorizedResult;
             }
 
             if (amount < 0.01m || amount > 10000m)
             {
-                return BadRequest(new { error = "Invalid amount. Must be between 0.01 and 10000 UAH" });
+                return ToServiceResult(ServiceResult.BadRequest("Invalid amount. Must be between 0.01 and 10000 UAH"));
             }
 
-            var result = await _wayForPayService.GeneratePaymentFormAsync(userId, amount);
+            var result = await _wayForPayService.GeneratePaymentFormAsync(currentUserId, amount);
 
             if (!result.Success)
             {
-                return BadRequest(new { error = result.Error });
+                return ToServiceResult(ServiceResult.BadRequest(result.Error ?? "Failed to generate payment form"));
             }
 
             return Content(result.FormHtml!, "text/html");
         }
 
         [HttpPost("return")]
-        public async Task<IActionResult> ReturnFromPayment([FromForm] string orderReference, [FromForm] string? testSuccess)
+        public async Task<IActionResult> ReturnFromPaymentAsync([FromForm] string orderReference, [FromForm] string? testSuccess)
         {
             if (string.IsNullOrEmpty(orderReference))
             {
@@ -84,17 +86,17 @@ namespace Edemly.Server.Api.Controllers.Payments
 
             if (isPaid)
             {
-                await _paymentService.UpdatePaymentStatus(orderReference, PaymentStatus.Paid);
+                await _paymentService.UpdatePaymentStatusAsync(orderReference, PaymentStatus.Paid);
 
-                var userId = ExtractUserIdFromOrderReference(orderReference);
+                var targetUserId = ExtractUserIdFromOrderReference(orderReference);
 
-                if (userId > 0)
+                if (targetUserId > 0)
                 {
-                    var upgradeResult = await _paymentService.UpgradeUserToPremium(userId, 30);
+                    var upgradeResult = await _paymentService.UpgradeUserToPremiumAsync(targetUserId, 30);
 
                     if (upgradeResult.Success)
                     {
-                        _logger.LogInformation("User {UserId} successfully upgraded to Premium", userId);
+                        _logger.LogInformation("User {UserId} successfully upgraded to Premium", targetUserId);
                         return Content(GenerateResultPage(true, "Оплату успішно підтверджено! Ваш акаунт тепер Premium."), "text/html");
                     }
                 }
@@ -102,38 +104,33 @@ namespace Edemly.Server.Api.Controllers.Payments
                 return Content(GenerateResultPage(false, "Помилка при оновленні статусу користувача"), "text/html");
             }
 
-            await _paymentService.UpdatePaymentStatus(orderReference, PaymentStatus.Failed);
+            await _paymentService.UpdatePaymentStatusAsync(orderReference, PaymentStatus.Failed);
             return Content(GenerateResultPage(false, "Оплату не підтверджено. Спробуйте ще раз."), "text/html");
         }
 
         [HttpGet("history")]
         [Authorize]
-        public async Task<IActionResult> GetPaymentHistory()
+        public async Task<IActionResult> GetPaymentHistoryAsync()
         {
-            if (!TryGetCurrentUserId(out var userId, ClaimTypes.NameIdentifier))
+            var unauthorizedResult = RequireCurrentUserId(out var currentUserId, ClaimTypes.NameIdentifier);
+            if (unauthorizedResult != null)
             {
-                return Unauthorized(new { error = "User not authenticated" });
+                return unauthorizedResult;
             }
 
-            var result = await _paymentService.GetByUser(userId);
-
-            if (!result.Success)
-            {
-                return StatusCode(result.StatusCode, new { error = result.Message });
-            }
-
-            return Ok(new { payments = result.Data });
+            var result = await _paymentService.GetByUserAsync(currentUserId);
+            return ToServiceResult(result, payments => new { payments = payments ?? new List<PaymentDto>() });
         }
 
         [HttpGet("status/{orderId}")]
         [Authorize]
-        public async Task<IActionResult> CheckPaymentStatus(string orderId)
+        public async Task<IActionResult> CheckPaymentStatusAsync(string orderId)
         {
             var result = await _wayForPayService.CheckPaymentStatusAsync(orderId);
 
             if (!result.Success)
             {
-                return BadRequest(new { error = result.Error });
+                return ToServiceResult(ServiceResult.BadRequest(result.Error ?? "Failed to check payment status"));
             }
 
             return Ok(new
@@ -149,9 +146,9 @@ namespace Edemly.Server.Api.Controllers.Payments
             try
             {
                 var parts = orderReference.Split('_');
-                if (parts.Length >= 2 && int.TryParse(parts[1], out int userId))
+                if (parts.Length >= 2 && int.TryParse(parts[1], out int targetUserId))
                 {
-                    return userId;
+                    return targetUserId;
                 }
             }
             catch (Exception ex)

@@ -7,23 +7,23 @@ namespace Edemly.Server.Api.Services
 {
     public abstract class TenantAwareServiceBase
     {
-        private readonly ServerDbContext _serverDb;
+        private readonly ServerDbContext _serverDbContext;
         private readonly ITenantProvider _tenantProvider;
-        private readonly ITenantDbContextFactory _tenantDbFactory;
+        private readonly ITenantDbContextFactory _tenantDbContextFactory;
 
         protected TenantAwareServiceBase(
-            ServerDbContext serverDb,
+            ServerDbContext serverDbContext,
             ITenantProvider tenantProvider,
-            ITenantDbContextFactory tenantDbFactory)
+            ITenantDbContextFactory tenantDbContextFactory)
         {
-            _serverDb = serverDb;
+            _serverDbContext = serverDbContext;
             _tenantProvider = tenantProvider;
-            _tenantDbFactory = tenantDbFactory;
+            _tenantDbContextFactory = tenantDbContextFactory;
         }
 
         protected DbContextLease ResolveDbContext()
         {
-            return DbContextResolver.ResolveLease(_serverDb, _tenantProvider, _tenantDbFactory);
+            return DbContextResolver.ResolveLease(_serverDbContext, _tenantProvider, _tenantDbContextFactory);
         }
 
         protected bool IsTenantRequest => _tenantProvider.IsTenant && _tenantProvider.CurrentCompany != null;

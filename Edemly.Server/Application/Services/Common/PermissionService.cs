@@ -14,46 +14,46 @@ namespace Edemly.Server.Api.Services
         {
         }
 
-        public async Task<bool> IsInChat(int userId, int chatId)
+        public async Task<bool> IsInChatAsync(int currentUserId, int chatId)
         {
             await using var dbContextLease = ResolveDbContext();
             var ctx = dbContextLease.Context;
 
             return await ctx.Set<ChatMember>()
                 .AsNoTracking()
-                .AnyAsync(cm => cm.UserId == userId && cm.ChatId == chatId);
+                .AnyAsync(cm => cm.UserId == currentUserId && cm.ChatId == chatId);
         }
 
-        public bool CanDeleteUser(int userId, int userToDeleteId)
+        public bool CanDeleteUser(int requesterId, int targetUserId)
         {
-            return userId == userToDeleteId;
+            return requesterId == targetUserId;
         }
 
-        public async Task<bool> CanUpdateChat(int userId, int chatId)
-        {
-            await using var dbContextLease = ResolveDbContext();
-            return await CheckRightsAsync(dbContextLease.Context, userId, chatId) != "none";
-        }
-
-        public async Task<bool> CanDeleteChat(int userId, int chatId)
+        public async Task<bool> CanUpdateChatAsync(int currentUserId, int chatId)
         {
             await using var dbContextLease = ResolveDbContext();
-            return await CheckRightsAsync(dbContextLease.Context, userId, chatId) == "creator";
+            return await CheckRightsAsync(dbContextLease.Context, currentUserId, chatId) != "none";
         }
 
-        public async Task<bool> CanUpdateMessage(int userId, int messageId)
+        public async Task<bool> CanDeleteChatAsync(int currentUserId, int chatId)
+        {
+            await using var dbContextLease = ResolveDbContext();
+            return await CheckRightsAsync(dbContextLease.Context, currentUserId, chatId) == "creator";
+        }
+
+        public async Task<bool> CanUpdateMessageAsync(int currentUserId, int messageId)
         {
             await using var dbContextLease = ResolveDbContext();
             var ctx = dbContextLease.Context;
 
             var message = await ctx.Set<Message>()
                 .AsNoTracking()
-                .FirstOrDefaultAsync(m => m.SenderId == userId && m.Id == messageId);
+                .FirstOrDefaultAsync(m => m.SenderId == currentUserId && m.Id == messageId);
 
             return message != null;
         }
 
-        public async Task<bool> CanDeleteMessage(int userId, int messageId)
+        public async Task<bool> CanDeleteMessageAsync(int requesterId, int messageId)
         {
             await using var dbContextLease = ResolveDbContext();
             var ctx = dbContextLease.Context;
@@ -67,33 +67,33 @@ namespace Edemly.Server.Api.Services
                 return false;
             }
 
-            if (await CheckRightsAsync(ctx, userId, message.ChatId) != "none")
+            if (await CheckRightsAsync(ctx, requesterId, message.ChatId) != "none")
             {
                 return true;
             }
 
-            return message.SenderId == userId;
+            return message.SenderId == requesterId;
         }
 
-        public async Task<bool> CanAddChatMember(int userId, int chatId)
+        public async Task<bool> CanAddChatMemberAsync(int requesterId, int chatId)
         {
             await using var dbContextLease = ResolveDbContext();
-            return await CheckRightsAsync(dbContextLease.Context, userId, chatId) != "none";
+            return await CheckRightsAsync(dbContextLease.Context, requesterId, chatId) != "none";
         }
 
-        public async Task<bool> CanUpdateChatMember(int userId, int chatMemberId)
+        public async Task<bool> CanUpdateChatMemberAsync(int requesterId, int chatMemberId)
         {
             await using var dbContextLease = ResolveDbContext();
-            return await CanManageChatMemberAsync(dbContextLease.Context, userId, chatMemberId);
+            return await CanManageChatMemberAsync(dbContextLease.Context, requesterId, chatMemberId);
         }
 
-        public async Task<bool> CanDeleteChatMember(int userId, int chatMemberId)
+        public async Task<bool> CanDeleteChatMemberAsync(int requesterId, int chatMemberId)
         {
             await using var dbContextLease = ResolveDbContext();
-            return await CanManageChatMemberAsync(dbContextLease.Context, userId, chatMemberId);
+            return await CanManageChatMemberAsync(dbContextLease.Context, requesterId, chatMemberId);
         }
 
-        public async Task<bool> IsNoteAuthor(int userId, int noteId)
+        public async Task<bool> IsNoteAuthorAsync(int currentUserId, int noteId)
         {
             await using var dbContextLease = ResolveDbContext();
             var ctx = dbContextLease.Context;
@@ -102,10 +102,10 @@ namespace Edemly.Server.Api.Services
                 .AsNoTracking()
                 .FirstOrDefaultAsync(n => n.Id == noteId);
 
-            return note != null && note.CreatorId == userId;
+            return note != null && note.CreatorId == currentUserId;
         }
 
-        public async Task<bool> IsRemindingAuthor(int userId, int remindingId)
+        public async Task<bool> IsRemindingAuthorAsync(int currentUserId, int remindingId)
         {
             await using var dbContextLease = ResolveDbContext();
             var ctx = dbContextLease.Context;
@@ -114,14 +114,14 @@ namespace Edemly.Server.Api.Services
                 .AsNoTracking()
                 .FirstOrDefaultAsync(r => r.Id == remindingId);
 
-            return reminding != null && reminding.UserId == userId;
+            return reminding != null && reminding.UserId == currentUserId;
         }
 
-        private static async Task<string> CheckRightsAsync(DbContext ctx, int userId, int chatId)
+        private static async Task<string> CheckRightsAsync(DbContext ctx, int currentUserId, int chatId)
         {
             var chatMember = await ctx.Set<ChatMember>()
                 .AsNoTracking()
-                .FirstOrDefaultAsync(cm => cm.UserId == userId && cm.ChatId == chatId);
+                .FirstOrDefaultAsync(cm => cm.UserId == currentUserId && cm.ChatId == chatId);
 
             var role = chatMember?.Role;
 
@@ -138,18 +138,18 @@ namespace Edemly.Server.Api.Services
             return "none";
         }
 
-        private static async Task<bool> CanManageChatMemberAsync(DbContext ctx, int userId, int chatMemberId)
+        private static async Task<bool> CanManageChatMemberAsync(DbContext ctx, int requesterId, int chatMemberId)
         {
             var chatMember = await ctx.Set<ChatMember>()
                 .AsNoTracking()
                 .FirstOrDefaultAsync(cm => cm.Id == chatMemberId);
 
-            if (chatMember == null || chatMember.UserId == userId)
+            if (chatMember == null || chatMember.UserId == requesterId)
             {
                 return false;
             }
 
-            var userRights = await CheckRightsAsync(ctx, userId, chatMember.ChatId);
+            var userRights = await CheckRightsAsync(ctx, requesterId, chatMember.ChatId);
 
             if (userRights == "none")
             {

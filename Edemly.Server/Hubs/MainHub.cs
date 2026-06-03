@@ -58,11 +58,12 @@ namespace Edemly.Server.Hubs
             return _serverDb;
         }
 
-        public async Task SendMessage(CreateMessageDto messageDto)
+        [HubMethodName("SendMessage")]
+        public async Task SendMessageAsync(CreateMessageDto messageDto)
         {
             var userId = GetUserId();
 
-            var chatMemberUserIds = await GetChatMemberIds(messageDto.ChatId);
+            var chatMemberUserIds = await GetChatMemberIdsAsync(messageDto.ChatId);
 
             if (!chatMemberUserIds.Contains(userId.ToString()))
             {
@@ -123,17 +124,7 @@ namespace Edemly.Server.Hubs
                     _logger.LogWarning(ex, "Failed to update LastMessageTime for chat {ChatId}", chat.Id);
                 }
 
-                var messageToSend = new MessageDto
-                {
-                    Id = msg.Id,
-                    ChatId = msg.ChatId,
-                    SenderId = msg.SenderId,
-                    Text = msg.Text,
-                    SentAt = msg.SentAt,
-                    Type = (int)msg.Type,
-                    ContentUrl = msg.ContentUrl,
-                    FileName = msg.FileName
-                };
+                var messageToSend = MessageMappings.ToDto(msg);
 
                 // If we created a placeholder chat, some member ids may be invalid. Recompute recipients from actual chat id.
                 var recipients = chatMemberUserIds;
@@ -157,18 +148,12 @@ namespace Edemly.Server.Hubs
             }
         }
 
-        // helper wrapper to keep original behavior and simplify edits
-        private async Task<bool> _message_service_Create(CreateMessageDto messageDto, int userId)
-        {
-            var result = await _messageService.Create(userId, messageDto);
-            return result.Success;
-        }
-
-        public async Task UpdateMessage(UpdateMessageDto messageDto)
+        [HubMethodName("UpdateMessage")]
+        public async Task UpdateMessageAsync(UpdateMessageDto messageDto)
         {
             var userId = GetUserId();
 
-            var validationResult = await ValidateMessageAccess(messageDto.ChatId, messageDto.Id, userId, requireSender: true);
+            var validationResult = await ValidateMessageAccessAsync(messageDto.ChatId, messageDto.Id, userId, requireSender: true);
 
             // Update message directly in resolved DB
             DbContext ctx = ResolveDbContext(out var isTenant);
@@ -189,17 +174,7 @@ namespace Edemly.Server.Hubs
                 await ctx.SaveChangesAsync();
                 _cacheRegistry.ClearChat(message.ChatId, _cache);
 
-                var updatedMessageDto = new MessageDto
-                {
-                    Id = message.Id,
-                    ChatId = message.ChatId,
-                    SenderId = message.SenderId,
-                    Text = message.Text,
-                    SentAt = message.SentAt,
-                    Type = (int)message.Type,
-                    ContentUrl = message.ContentUrl,
-                    FileName = message.FileName
-                };
+                var updatedMessageDto = MessageMappings.ToDto(message);
 
                 await Clients.Users(validationResult.ChatMemberIds).SendAsync("ReceiveMessageUpdate", updatedMessageDto);
             }
@@ -209,11 +184,12 @@ namespace Edemly.Server.Hubs
             }
         }
 
-        public async Task DeleteMessage(int messageId, int chatId)
+        [HubMethodName("DeleteMessage")]
+        public async Task DeleteMessageAsync(int messageId, int chatId)
         {
             var userId = GetUserId();
 
-            var validationResult = await ValidateMessageDeletion(chatId, messageId, userId);
+            var validationResult = await ValidateMessageDeletionAsync(chatId, messageId, userId);
 
             DbContext ctx = ResolveDbContext(out var isTenant);
             try
@@ -245,7 +221,7 @@ namespace Edemly.Server.Hubs
             return int.Parse(userIdClaim);
         }
 
-        private async Task<List<string>> GetChatMemberIds(int chatId)
+        private async Task<List<string>> GetChatMemberIdsAsync(int chatId)
         {
             DbContext ctx = ResolveDbContext(out var isTenant);
             try
@@ -261,7 +237,7 @@ namespace Edemly.Server.Hubs
             }
         }
 
-        private async Task<(Message Message, List<string> ChatMemberIds)> ValidateMessageAccess(
+        private async Task<(Message Message, List<string> ChatMemberIds)> ValidateMessageAccessAsync(
             int chatId,
             int messageId,
             int userId,
@@ -303,7 +279,7 @@ namespace Edemly.Server.Hubs
             }
         }
 
-        private async Task<(Message Message, ChatMember ChatMember, List<string> ChatMemberIds)> ValidateMessageDeletion(
+        private async Task<(Message Message, ChatMember ChatMember, List<string> ChatMemberIds)> ValidateMessageDeletionAsync(
             int chatId,
             int messageId,
             int userId)
@@ -353,7 +329,8 @@ namespace Edemly.Server.Hubs
         /// <summary>
         /// Notification when group created
         /// </summary>
-        public async Task NotifyGroupCreated(int chatId, List<int> memberIds)
+        [HubMethodName("NotifyGroupCreated")]
+        public async Task NotifyGroupCreatedAsync(int chatId, List<int> memberIds)
         {
             try
             {
@@ -366,7 +343,7 @@ namespace Edemly.Server.Hubs
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to notify group creation for chat {ChatId}", chatId);
-                throw new HubException($"Failed to notify group creation: {ex.Message}");
+                throw new HubException("Failed to notify group creation");
             }
         }
 
@@ -381,7 +358,8 @@ namespace Edemly.Server.Hubs
         /// <summary>
         /// Notify profile update to all clients
         /// </summary>
-        public async Task NotifyProfileUpdated(int userId, string newPfpUrl)
+        [HubMethodName("NotifyProfileUpdated")]
+        public async Task NotifyProfileUpdatedAsync(int userId, string newPfpUrl)
         {
             try
             {
@@ -401,14 +379,15 @@ namespace Edemly.Server.Hubs
         /// <summary>
         /// Notify group update to all group members
         /// </summary>
-        public async Task NotifyGroupUpdated(int chatId, string? name, string? description, string? iconUrl)
+        [HubMethodName("NotifyGroupUpdated")]
+        public async Task NotifyGroupUpdatedAsync(int chatId, string? name, string? description, string? iconUrl)
         {
             try
             {
                 _logger.LogInformation("NotifyGroupUpdated called for chat {ChatId}", chatId);
 
                 // Get all members of the chat
-                var memberIds = await GetChatMemberIds(chatId);
+                var memberIds = await GetChatMemberIdsAsync(chatId);
                 
                 if (memberIds == null || !memberIds.Any())
                 {
@@ -428,10 +407,11 @@ namespace Edemly.Server.Hubs
             }
         }
 
-        public async Task ConfirmRemindingReceived(int remindingId)
+        [HubMethodName("ConfirmRemindingReceived")]
+        public async Task ConfirmRemindingReceivedAsync(int remindingId)
         {
             var userId = GetUserId();
-            await _remindingService.ConfirmReminding(userId, remindingId);
+            await _remindingService.ConfirmRemindingAsync(userId, remindingId);
         }
 
         public override async Task OnConnectedAsync()

@@ -88,7 +88,7 @@ namespace Edemly.Client.Caching
             try
             {
                 if (_tokenProvider != null)
-                    return await _token_provider_wrapper();
+                    return await _token_provider_wrapperAsync();
             }
             catch (Exception ex)
             {
@@ -99,7 +99,7 @@ namespace Edemly.Client.Caching
         }
 
         // wrapper to call provider safely (keeps naming consistent)
-        private async Task<string?> _token_provider_wrapper()
+        private async Task<string?> _token_provider_wrapperAsync()
         {
             return await _tokenProvider!();
         }

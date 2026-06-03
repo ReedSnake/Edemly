@@ -4,8 +4,8 @@ namespace Edemly.Server.Api.Services
 {
     public interface ICompanyService
     {
-        Task<ServiceDataResult<List<CompanyListItemDto>>> GetCompanies();
-        Task<ServiceDataResult<CompanyListItemDto>> CreateCompany(CreateCompanyDto model);
-        Task<ServiceMessageResult> AddEmails(int companyId, List<string>? emails);
+        Task<ServiceResult<List<CompanyListItemDto>>> GetCompaniesAsync();
+        Task<ServiceResult<CompanyListItemDto>> CreateAsync(CreateCompanyDto request);
+        Task<ServiceResult> AddEmailsAsync(int companyId, List<string>? emails);
     }
 }

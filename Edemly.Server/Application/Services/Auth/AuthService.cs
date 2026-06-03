@@ -14,42 +14,42 @@ namespace Edemly.Server.Api.Services
     {
         private static readonly Regex EmailRegex = new(@"^[^@\s]+@[^@\s]+\.[^@\s]+$", RegexOptions.Compiled);
 
-        private readonly ServerDbContext _serverDb;
+        private readonly ServerDbContext _serverDbContext;
         private readonly ILogger<AuthService> _logger;
         private readonly IEmailService _emailService;
         private readonly ITenantProvider _tenantProvider;
-        private readonly ITenantDbContextFactory _tenantDbFactory;
+        private readonly ITenantDbContextFactory _tenantDbContextFactory;
         private readonly IAuthResponseFactory _authResponseFactory;
         private readonly IWelcomeChatService _welcomeChatService;
 
         public AuthService(
-            ServerDbContext serverDb,
+            ServerDbContext serverDbContext,
             ILogger<AuthService> logger,
             IEmailService emailService,
             ITenantProvider tenantProvider,
-            ITenantDbContextFactory tenantDbFactory,
+            ITenantDbContextFactory tenantDbContextFactory,
             IAuthResponseFactory authResponseFactory,
             IWelcomeChatService welcomeChatService)
         {
-            _serverDb = serverDb;
+            _serverDbContext = serverDbContext;
             _logger = logger;
             _emailService = emailService;
             _tenantProvider = tenantProvider;
-            _tenantDbFactory = tenantDbFactory;
+            _tenantDbContextFactory = tenantDbContextFactory;
             _authResponseFactory = authResponseFactory;
             _welcomeChatService = welcomeChatService;
         }
 
-        public async Task<AuthMessageResult> GetLoginCodeAsync(LoginRequestDto? model)
+        public async Task<ServiceResult> GetLoginCodeAsync(LoginRequestDto? request)
         {
-            if (model == null || string.IsNullOrWhiteSpace(model.Email))
+            if (request == null || string.IsNullOrWhiteSpace(request.Email))
             {
-                return MessageFailure(StatusCodes.Status400BadRequest, "Email must be provided");
+                return ServiceResult.BadRequest("Email must be provided");
             }
 
-            if (!EmailRegex.IsMatch(model.Email))
+            if (!EmailRegex.IsMatch(request.Email))
             {
-                return MessageFailure(StatusCodes.Status400BadRequest, "Invalid email format");
+                return ServiceResult.BadRequest("Invalid email format");
             }
 
             var company = _tenantProvider.CurrentCompany;
@@ -57,21 +57,21 @@ namespace Edemly.Server.Api.Services
             {
                 try
                 {
-                    await using var tenantDb = _tenantDbFactory.CreateCompanyDbContext(company);
-                    var allowed = await tenantDb.Emails.AnyAsync(item => item.EmailAddress == model.Email);
+                    await using var tenantDb = _tenantDbContextFactory.CreateCompanyDbContext(company);
+                    var allowed = await tenantDb.Emails.AnyAsync(item => item.EmailAddress == request.Email);
                     if (!allowed)
                     {
                         _logger.LogWarning(
                             "Attempt to request verification code for non-allowed email {Email} in company {Company}",
-                            model.Email,
+                            request.Email,
                             company.Name);
-                        return MessageFailure(StatusCodes.Status400BadRequest, "Email is not allowed for this company");
+                        return ServiceResult.BadRequest("Email is not allowed for this company");
                     }
                 }
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Error while checking allowed emails for company {Company}", company.Name);
-                    return MessageFailure(StatusCodes.Status500InternalServerError, "Server error while validating email for company");
+                    return ServiceResult.Unexpected("Server error while validating email for company");
                 }
             }
 
@@ -79,101 +79,101 @@ namespace Edemly.Server.Api.Services
             {
                 _logger.LogInformation(
                     "Generating verification code for {Email} (company: {Company})",
-                    model.Email,
+                    request.Email,
                     company?.Name ?? "(master)");
-                var code = await _emailService.GenerateCodeAsync(model.Email);
-                await _emailService.SendVerificationCodeAsync(model.Email, code);
-                return MessageSuccess("Verification code sent to your email");
+                var code = await _emailService.GenerateCodeAsync(request.Email);
+                await _emailService.SendVerificationCodeAsync(request.Email, code);
+                return ServiceResult.Ok("Verification code sent to your email");
             }
             catch (Exception ex)
             {
                 _logger.LogError(
                     ex,
                     "Failed to send verification code to {Email} (company: {Company})",
-                    model.Email,
+                    request.Email,
                     company?.Name ?? "(master)");
-                return MessageFailure(StatusCodes.Status500InternalServerError, "Failed to send verification email: " + ex.Message);
+                return ServiceResult.Unexpected("Failed to send verification email");
             }
         }
 
-        public async Task<AuthResponseResult> LoginAsync(LoginWithCodeDto model)
+        public async Task<ServiceResult<AuthResponseDto>> LoginAsync(LoginWithCodeDto request)
         {
-            if (!await _emailService.VerifyCodeAsync(model.Email, model.Code))
+            if (!await _emailService.VerifyCodeAsync(request.Email, request.Code))
             {
-                return ResponseFailure(StatusCodes.Status401Unauthorized, "Invalid verification code");
+                return ServiceResult<AuthResponseDto>.Unauthorized("Invalid verification code");
             }
 
             var company = _tenantProvider.CurrentCompany;
             if (company != null)
             {
-                await using var tenantDb = _tenantDbFactory.CreateCompanyDbContext(company);
+                await using var tenantDb = _tenantDbContextFactory.CreateCompanyDbContext(company);
                 var loginInfo = await tenantDb.LoginInfos
                     .Include(item => item.User)
-                    .FirstOrDefaultAsync(item => item.Email == model.Email);
+                    .FirstOrDefaultAsync(item => item.Email == request.Email);
 
                 if (loginInfo?.User == null)
                 {
-                    return ResponseFailure(StatusCodes.Status401Unauthorized, "User not found");
+                    return ServiceResult<AuthResponseDto>.Unauthorized("User not found");
                 }
 
                 var response = await _authResponseFactory.CreateAuthResponseAsync(loginInfo.User, loginInfo, tenantDb);
-                return ResponseSuccess(response);
+                return ServiceResult<AuthResponseDto>.Ok(response);
             }
 
-            var masterLoginInfo = await _serverDb.LoginInfos
+            var masterLoginInfo = await _serverDbContext.LoginInfos
                 .Include(item => item.User)
-                .FirstOrDefaultAsync(item => item.Email == model.Email);
+                .FirstOrDefaultAsync(item => item.Email == request.Email);
 
             if (masterLoginInfo?.User == null)
             {
-                return ResponseFailure(StatusCodes.Status401Unauthorized, "User not found");
+                return ServiceResult<AuthResponseDto>.Unauthorized("User not found");
             }
 
-            var masterResponse = await _authResponseFactory.CreateAuthResponseAsync(masterLoginInfo.User, masterLoginInfo, _serverDb);
-            return ResponseSuccess(masterResponse);
+            var masterResponse = await _authResponseFactory.CreateAuthResponseAsync(masterLoginInfo.User, masterLoginInfo, _serverDbContext);
+            return ServiceResult<AuthResponseDto>.Ok(masterResponse);
         }
 
-        public async Task<AuthResponseResult> RegisterAsync(RegistrationWithCodeDto model)
+        public async Task<ServiceResult<AuthResponseDto>> RegisterAsync(RegistrationWithCodeDto request)
         {
             try
             {
-                if (!await _emailService.VerifyCodeAsync(model.Email, model.Code))
+                if (!await _emailService.VerifyCodeAsync(request.Email, request.Code))
                 {
-                    _logger.LogWarning("Invalid verification code for registration: {Email}", model.Email);
-                    return ResponseFailure(StatusCodes.Status401Unauthorized, "Invalid verification code");
+                    _logger.LogWarning("Invalid verification code for registration: {Email}", request.Email);
+                    return ServiceResult<AuthResponseDto>.Unauthorized("Invalid verification code");
                 }
 
-                var username = UsernameRules.Normalize(model.Username);
+                var username = UsernameRules.Normalize(request.Username);
                 var usernameValidationError = UsernameRules.Validate(username);
                 if (usernameValidationError != null)
                 {
-                    return ResponseFailure(StatusCodes.Status400BadRequest, usernameValidationError);
+                    return ServiceResult<AuthResponseDto>.BadRequest(usernameValidationError);
                 }
 
                 var company = _tenantProvider.CurrentCompany;
 
                 if (company != null)
                 {
-                    await using var tenantDb = _tenantDbFactory.CreateCompanyDbContext(company);
+                    await using var tenantDb = _tenantDbContextFactory.CreateCompanyDbContext(company);
 
-                    var allowed = await tenantDb.Emails.AnyAsync(item => item.EmailAddress == model.Email);
+                    var allowed = await tenantDb.Emails.AnyAsync(item => item.EmailAddress == request.Email);
                     if (!allowed)
                     {
-                        return ResponseFailure(StatusCodes.Status400BadRequest, "Email is not allowed for registration in this company");
+                        return ServiceResult<AuthResponseDto>.BadRequest("Email is not allowed for registration in this company");
                     }
 
-                    if (await tenantDb.LoginInfos.AnyAsync(item => item.Email == model.Email))
+                    if (await tenantDb.LoginInfos.AnyAsync(item => item.Email == request.Email))
                     {
-                        _logger.LogWarning("Email already exists during tenant registration: {Email}", model.Email);
-                        return ResponseFailure(StatusCodes.Status400BadRequest, "User with this email already exists");
+                        _logger.LogWarning("Email already exists during tenant registration: {Email}", request.Email);
+                        return ServiceResult<AuthResponseDto>.Conflict("User with this email already exists");
                     }
 
                     if (await UsernameExistsAsync(tenantDb, username))
                     {
-                        return ResponseFailure(StatusCodes.Status400BadRequest, "Username already taken");
+                        return ServiceResult<AuthResponseDto>.Conflict("Username already taken");
                     }
 
-                    var created = await CreateUserAsync(tenantDb, model.Email, username, company.Name);
+                    var created = await CreateUserAsync(tenantDb, request.Email, username, company.Name);
 
                     try
                     {
@@ -185,57 +185,57 @@ namespace Edemly.Server.Api.Services
                     }
 
                     var tenantResponse = await _authResponseFactory.CreateAuthResponseAsync(created.User, created.LoginInfo, tenantDb);
-                    return ResponseSuccess(tenantResponse);
+                    return ServiceResult<AuthResponseDto>.Ok(tenantResponse);
                 }
 
-                if (await _serverDb.LoginInfos.AnyAsync(item => item.Email == model.Email))
+                if (await _serverDbContext.LoginInfos.AnyAsync(item => item.Email == request.Email))
                 {
-                    _logger.LogWarning("Email already exists during master registration: {Email}", model.Email);
-                    return ResponseFailure(StatusCodes.Status400BadRequest, "User with this email already exists");
+                    _logger.LogWarning("Email already exists during master registration: {Email}", request.Email);
+                    return ServiceResult<AuthResponseDto>.Conflict("User with this email already exists");
                 }
 
-                if (await UsernameExistsAsync(_serverDb, username))
+                if (await UsernameExistsAsync(_serverDbContext, username))
                 {
                     _logger.LogWarning("Username already taken during master registration: {Username}", username);
-                    return ResponseFailure(StatusCodes.Status400BadRequest, "Username already taken");
+                    return ServiceResult<AuthResponseDto>.Conflict("Username already taken");
                 }
 
-                var masterCreated = await CreateUserAsync(_serverDb, model.Email, username, "master");
-                _logger.LogInformation("New user registered successfully: {Username} ({Email})", username ?? "(empty)", model.Email);
+                var masterCreated = await CreateUserAsync(_serverDbContext, request.Email, username, "master");
+                _logger.LogInformation("New user registered successfully: {Username} ({Email})", username ?? "(empty)", request.Email);
 
                 try
                 {
-                    await _welcomeChatService.EnsureUserInWelcomeChatAsync(_serverDb, masterCreated.User.Id);
+                    await _welcomeChatService.EnsureUserInWelcomeChatAsync(_serverDbContext, masterCreated.User.Id);
                 }
                 catch (Exception ex)
                 {
                     _logger.LogWarning(ex, "Failed to add master user {UserId} to welcome chat", masterCreated.User.Id);
                 }
 
-                var masterResponse = await _authResponseFactory.CreateAuthResponseAsync(masterCreated.User, masterCreated.LoginInfo, _serverDb);
-                return ResponseSuccess(masterResponse);
+                var masterResponse = await _authResponseFactory.CreateAuthResponseAsync(masterCreated.User, masterCreated.LoginInfo, _serverDbContext);
+                return ServiceResult<AuthResponseDto>.Ok(masterResponse);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error during user registration for {Email}", model.Email);
-                return ResponseFailure(StatusCodes.Status500InternalServerError, "An error occurred during registration: " + ex.Message);
+                _logger.LogError(ex, "Error during user registration for {Email}", request.Email);
+                return ServiceResult<AuthResponseDto>.Unexpected("An error occurred during registration.");
             }
         }
 
-        public async Task<AuthResponseResult> SessionLoginAsync(SessionLoginDto model)
+        public async Task<ServiceResult<AuthResponseDto>> SessionLoginAsync(SessionLoginDto request)
         {
             var company = _tenantProvider.CurrentCompany;
             if (company != null)
             {
-                await using var tenantDb = _tenantDbFactory.CreateCompanyDbContext(company);
+                await using var tenantDb = _tenantDbContextFactory.CreateCompanyDbContext(company);
                 var session = await tenantDb.Sessions
                     .Include(item => item.User)
                         .ThenInclude(item => item.LoginInfo)
-                    .FirstOrDefaultAsync(item => item.SessionToken == model.SessionToken);
+                    .FirstOrDefaultAsync(item => item.SessionToken == request.SessionToken);
 
                 if (session?.User == null || session.ExpirationTime < DateTime.UtcNow)
                 {
-                    return ResponseFailure(StatusCodes.Status401Unauthorized, "Invalid or expired session token");
+                    return ServiceResult<AuthResponseDto>.Unauthorized("Invalid or expired session token");
                 }
 
                 var response = await _authResponseFactory.CreateAuthResponseAsync(
@@ -245,35 +245,35 @@ namespace Edemly.Server.Api.Services
                     rotateSessionToken: false,
                     existingSession: session);
 
-                return ResponseSuccess(response);
+                return ServiceResult<AuthResponseDto>.Ok(response);
             }
 
-            var masterSession = await _serverDb.Sessions
+            var masterSession = await _serverDbContext.Sessions
                 .Include(item => item.User)
                     .ThenInclude(item => item.LoginInfo)
-                .FirstOrDefaultAsync(item => item.SessionToken == model.SessionToken);
+                .FirstOrDefaultAsync(item => item.SessionToken == request.SessionToken);
 
             if (masterSession?.User == null || masterSession.ExpirationTime < DateTime.UtcNow)
             {
-                return ResponseFailure(StatusCodes.Status401Unauthorized, "Invalid or expired session token");
+                return ServiceResult<AuthResponseDto>.Unauthorized("Invalid or expired session token");
             }
 
             var masterResponse = await _authResponseFactory.CreateAuthResponseAsync(
                 masterSession.User,
                 masterSession.User.LoginInfo,
-                _serverDb,
+                _serverDbContext,
                 rotateSessionToken: false,
                 existingSession: masterSession);
 
-            return ResponseSuccess(masterResponse);
+            return ServiceResult<AuthResponseDto>.Ok(masterResponse);
         }
 
-        public async Task<AuthMessageResult> LogoutAsync(int userId)
+        public async Task<ServiceResult> LogoutAsync(int userId)
         {
             var company = _tenantProvider.CurrentCompany;
             if (company != null)
             {
-                await using var tenantDb = _tenantDbFactory.CreateCompanyDbContext(company);
+                await using var tenantDb = _tenantDbContextFactory.CreateCompanyDbContext(company);
                 var tenantSession = await tenantDb.Sessions.FirstOrDefaultAsync(item => item.UserId == userId);
                 if (tenantSession != null)
                 {
@@ -281,17 +281,17 @@ namespace Edemly.Server.Api.Services
                     await tenantDb.SaveChangesAsync();
                 }
 
-                return MessageSuccess("Logged out successfully");
+                return ServiceResult.Ok("Logged out successfully");
             }
 
-            var session = await _serverDb.Sessions.FirstOrDefaultAsync(item => item.UserId == userId);
+            var session = await _serverDbContext.Sessions.FirstOrDefaultAsync(item => item.UserId == userId);
             if (session != null)
             {
-                _serverDb.Sessions.Remove(session);
-                await _serverDb.SaveChangesAsync();
+                _serverDbContext.Sessions.Remove(session);
+                await _serverDbContext.SaveChangesAsync();
             }
 
-            return MessageSuccess("Logged out successfully");
+            return ServiceResult.Ok("Logged out successfully");
         }
 
         private async Task<(LoginInfo LoginInfo, User User)> CreateUserAsync(
@@ -350,26 +350,6 @@ namespace Edemly.Server.Api.Services
             }
 
             return (createdLoginInfo, createdUser);
-        }
-
-        private static AuthMessageResult MessageSuccess(string message)
-        {
-            return new AuthMessageResult(true, StatusCodes.Status200OK, message);
-        }
-
-        private static AuthMessageResult MessageFailure(int statusCode, string message)
-        {
-            return new AuthMessageResult(false, statusCode, message);
-        }
-
-        private static AuthResponseResult ResponseSuccess(AuthResponseDto response)
-        {
-            return new AuthResponseResult(true, StatusCodes.Status200OK, response, null);
-        }
-
-        private static AuthResponseResult ResponseFailure(int statusCode, string message)
-        {
-            return new AuthResponseResult(false, statusCode, null, message);
         }
 
         private static async Task<bool> UsernameExistsAsync(DbContext dbContext, string? username)

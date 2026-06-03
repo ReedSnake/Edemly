@@ -34,77 +34,80 @@ namespace Edemly.Server.Api.Controllers
             return false;
         }
 
-        protected OkObjectResult OkMessage(string message)
+        protected IActionResult? RequireCurrentUserId(out int userId, params string[] claimTypes)
         {
-            return Ok(new { message });
-        }
-
-        protected BadRequestObjectResult BadRequestMessage(string? message)
-        {
-            return BadRequest(new { message });
-        }
-
-        protected NotFoundObjectResult NotFoundMessage(string? message)
-        {
-            return NotFound(new { message });
-        }
-
-        protected UnauthorizedObjectResult UnauthorizedMessage(string? message)
-        {
-            return Unauthorized(new { message });
-        }
-
-        protected IActionResult MessageResult(int statusCode, string message)
-        {
-            return statusCode switch
+            if (TryGetCurrentUserId(out userId, claimTypes))
             {
-                StatusCodes.Status200OK => OkMessage(message),
-                StatusCodes.Status400BadRequest => BadRequestMessage(message),
-                StatusCodes.Status401Unauthorized => UnauthorizedMessage(message),
+                return null;
+            }
+
+            return Unauthorized();
+        }
+
+        protected IActionResult ToServiceResult(ServiceResult result)
+        {
+            return result.StatusCode switch
+            {
+                StatusCodes.Status200OK => Ok(new { message = result.Message }),
+                StatusCodes.Status201Created => StatusCode(result.StatusCode, new { message = result.Message }),
+                StatusCodes.Status204NoContent => NoContent(),
+                StatusCodes.Status400BadRequest => BadRequest(new { message = result.Message }),
+                StatusCodes.Status401Unauthorized => Unauthorized(new { message = result.Message }),
                 StatusCodes.Status403Forbidden => Forbid(),
-                StatusCodes.Status404NotFound => NotFoundMessage(message),
-                _ => StatusCode(statusCode, new { message })
+                StatusCodes.Status404NotFound => NotFound(new { message = result.Message }),
+                StatusCodes.Status409Conflict => Conflict(new { message = result.Message }),
+                _ => StatusCode(result.StatusCode, new { message = result.Message })
             };
         }
 
-        protected IActionResult ToServiceMessageResult(ServiceMessageResult result)
-        {
-            return MessageResult(result.StatusCode, result.Message);
-        }
-
-        protected IActionResult ToServiceDataResult<T>(ServiceDataResult<T> result)
+        protected IActionResult ToServiceResult<T>(ServiceResult<T> result)
         {
             if (result.Success)
             {
-                return Ok(result.Data);
+                return result.StatusCode switch
+                {
+                    StatusCodes.Status200OK => Ok(result.Data),
+                    StatusCodes.Status201Created => StatusCode(result.StatusCode, result.Data),
+                    StatusCodes.Status204NoContent => NoContent(),
+                    _ => StatusCode(result.StatusCode, result.Data)
+                };
             }
 
-            return MessageResult(result.StatusCode, result.Message ?? "Request failed");
+            return result.StatusCode switch
+            {
+                StatusCodes.Status400BadRequest => BadRequest(new { message = result.Message }),
+                StatusCodes.Status401Unauthorized => Unauthorized(new { message = result.Message }),
+                StatusCodes.Status403Forbidden => Forbid(),
+                StatusCodes.Status404NotFound => NotFound(new { message = result.Message }),
+                StatusCodes.Status409Conflict => Conflict(new { message = result.Message }),
+                _ => StatusCode(result.StatusCode, new { message = result.Message })
+            };
         }
 
-        protected IActionResult ToServiceDataResult<TInput, TOutput>(ServiceDataResult<TInput> result, Func<TInput?, TOutput> successMapper)
+        protected IActionResult ToServiceResult<TInput, TOutput>(
+            ServiceResult<TInput> result,
+            Func<TInput?, TOutput> successMapper)
         {
             if (result.Success)
             {
-                return Ok(successMapper(result.Data));
+                return result.StatusCode switch
+                {
+                    StatusCodes.Status200OK => Ok(successMapper(result.Data)),
+                    StatusCodes.Status201Created => StatusCode(result.StatusCode, successMapper(result.Data)),
+                    StatusCodes.Status204NoContent => NoContent(),
+                    _ => StatusCode(result.StatusCode, successMapper(result.Data))
+                };
             }
 
-            return MessageResult(result.StatusCode, result.Message ?? "Request failed");
-        }
-
-        protected IActionResult OkOrNotFound<T>(bool success, string? error, T payload)
-        {
-            return success ? Ok(payload) : NotFoundMessage(error);
-        }
-
-        protected IActionResult OkOrBadRequest<T>(bool success, string? error, T payload)
-        {
-            return success ? Ok(payload) : BadRequestMessage(error);
-        }
-
-        protected IActionResult OkMessageOrBadRequest(bool success, string? error, string successMessage)
-        {
-            return success ? OkMessage(successMessage) : BadRequestMessage(error);
+            return result.StatusCode switch
+            {
+                StatusCodes.Status400BadRequest => BadRequest(new { message = result.Message }),
+                StatusCodes.Status401Unauthorized => Unauthorized(new { message = result.Message }),
+                StatusCodes.Status403Forbidden => Forbid(),
+                StatusCodes.Status404NotFound => NotFound(new { message = result.Message }),
+                StatusCodes.Status409Conflict => Conflict(new { message = result.Message }),
+                _ => StatusCode(result.StatusCode, new { message = result.Message })
+            };
         }
     }
 }

@@ -5,7 +5,7 @@ namespace Edemly.Server.Tests.Unit.Auth;
 public sealed class TestEmailServiceTests
 {
     [Test]
-    public async Task TestEmailService_Should_Treat_Email_Case_Insensitively()
+    public async Task TestEmailService_Should_Treat_Email_Case_InsensitivelyAsync()
     {
         var service = new TestEmailService();
 
@@ -18,7 +18,7 @@ public sealed class TestEmailServiceTests
     }
 
     [Test]
-    public async Task TestEmailService_Should_Invalidate_Code_After_Successful_Verification()
+    public async Task TestEmailService_Should_Invalidate_Code_After_Successful_VerificationAsync()
     {
         var service = new TestEmailService();
 

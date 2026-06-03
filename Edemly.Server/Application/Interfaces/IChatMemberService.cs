@@ -5,12 +5,12 @@ namespace Edemly.Server.Api.Services
 {
     public interface IChatMemberService
     {
-        Task<ServiceMessageResult> AddMember(int currentUserId, CreateChatMemberDto model);
-        Task<(bool Success, string? Error)> AddMember(int chatId, int userId, ChatMemberRole role);
-        Task<ServiceMessageResult> UpdateMember(int currentUserId, UpdateChatMemberDto model);
-        Task<ServiceMessageResult> DeleteMember(int currentUserId, int id);
-        Task<ServiceDataResult<ChatMemberDto>> GetMember(int id);
-        Task<ServiceDataResult<List<ChatMemberDto>>> GetMembers(int currentUserId, int chatId);
-        Task<ServiceDataResult<List<ChatMemberDto>>> GetMemberships(int currentUserId);
+        Task<ServiceResult> AddMemberAsync(int requesterId, CreateChatMemberDto request);
+        Task<ServiceResult> AddMemberAsync(int chatId, int targetUserId, ChatMemberRole role);
+        Task<ServiceResult> UpdateAsync(int requesterId, UpdateChatMemberDto request);
+        Task<ServiceResult> DeleteAsync(int requesterId, int chatMemberId);
+        Task<ServiceResult<ChatMemberDto>> GetMemberAsync(int chatMemberId);
+        Task<ServiceResult<List<ChatMemberDto>>> GetMembersAsync(int currentUserId, int chatId);
+        Task<ServiceResult<List<ChatMemberDto>>> GetMembershipsAsync(int currentUserId);
     }
 }

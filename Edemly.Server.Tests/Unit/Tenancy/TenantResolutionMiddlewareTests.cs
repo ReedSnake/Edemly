@@ -12,7 +12,7 @@ namespace Edemly.Server.Tests.Unit.Tenancy;
 public sealed class TenantResolutionMiddlewareTests
 {
     [Test]
-    public async Task InvokeAsync_Should_Set_Tenant_From_Query_When_Path_Uses_Reserved_Root()
+    public async Task InvokeAsync_Should_Set_Tenant_From_Query_When_Path_Uses_Reserved_RootAsync()
     {
         using var connection = CreateOpenConnection();
         await using var serverDb = CreateServerDbContext(connection);
@@ -44,7 +44,7 @@ public sealed class TenantResolutionMiddlewareTests
     }
 
     [Test]
-    public async Task InvokeAsync_Should_Rewrite_Path_When_Tenant_Is_First_PathSegment()
+    public async Task InvokeAsync_Should_Rewrite_Path_When_Tenant_Is_First_PathSegmentAsync()
     {
         using var connection = CreateOpenConnection();
         await using var serverDb = CreateServerDbContext(connection);

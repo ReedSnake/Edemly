@@ -4,14 +4,10 @@ namespace Edemly.Server.Api.Services
 {
     public interface IAuthService
     {
-        Task<AuthMessageResult> GetLoginCodeAsync(LoginRequestDto? model);
-        Task<AuthResponseResult> LoginAsync(LoginWithCodeDto model);
-        Task<AuthResponseResult> RegisterAsync(RegistrationWithCodeDto model);
-        Task<AuthResponseResult> SessionLoginAsync(SessionLoginDto model);
-        Task<AuthMessageResult> LogoutAsync(int userId);
+        Task<ServiceResult> GetLoginCodeAsync(LoginRequestDto? request);
+        Task<ServiceResult<AuthResponseDto>> LoginAsync(LoginWithCodeDto request);
+        Task<ServiceResult<AuthResponseDto>> RegisterAsync(RegistrationWithCodeDto request);
+        Task<ServiceResult<AuthResponseDto>> SessionLoginAsync(SessionLoginDto request);
+        Task<ServiceResult> LogoutAsync(int userId);
     }
-
-    public sealed record AuthMessageResult(bool Success, int StatusCode, string Message);
-
-    public sealed record AuthResponseResult(bool Success, int StatusCode, AuthResponseDto? AuthResponse, string? Message);
 }

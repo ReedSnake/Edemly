@@ -1,7 +1,6 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.SignalR;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -12,7 +11,6 @@ using Edemly.Server.Api.Middleware;
 using Edemly.Server.Api.Services;
 using Edemly.Server.Data;
 using Edemly.Server.Data.Entities;
-using Edemly.Server.Hubs;
 using Edemly.Server.Services;
 
 namespace Edemly.Server.Tests.Unit.Chats;
@@ -20,10 +18,12 @@ namespace Edemly.Server.Tests.Unit.Chats;
 public sealed class ChatRefactorTests
 {
     [Test]
-    public async Task Controller_GetById_Should_Return_Unauthorized_When_UserId_Claim_Is_Missing()
+    public async Task Controller_GetById_Should_Return_Unauthorized_When_UserId_Claim_Is_MissingAsync()
     {
         var service = new Mock<IChatService>(MockBehavior.Strict);
-        var controller = new ChatController(service.Object, Mock.Of<IHubContext<MainHub>>())
+        var controller = new ChatController(
+            service.Object,
+            Mock.Of<IChatRealtimeNotifier>())
         {
             ControllerContext = new ControllerContext
             {
@@ -31,19 +31,21 @@ public sealed class ChatRefactorTests
             }
         };
 
-        var result = await controller.GetById(7);
+        var result = await controller.GetByIdAsync(7);
 
-        Assert.That(result, Is.TypeOf<UnauthorizedObjectResult>());
+        Assert.That(result, Is.TypeOf<UnauthorizedResult>());
     }
 
     [Test]
-    public async Task Controller_GetById_Should_Return_Forbid_When_Service_Returns_Forbidden()
+    public async Task Controller_GetById_Should_Return_Forbid_When_Service_Returns_ForbiddenAsync()
     {
         var service = new Mock<IChatService>();
-        service.Setup(x => x.GetById(12, 7))
-            .ReturnsAsync(ServiceDataResult<ChatDto>.Forbidden());
+        service.Setup(x => x.GetByIdAsync(12, 7))
+            .ReturnsAsync(ServiceResult<ChatDto>.Forbidden());
 
-        var controller = new ChatController(service.Object, Mock.Of<IHubContext<MainHub>>())
+        var controller = new ChatController(
+            service.Object,
+            Mock.Of<IChatRealtimeNotifier>())
         {
             ControllerContext = new ControllerContext
             {
@@ -56,13 +58,13 @@ public sealed class ChatRefactorTests
             }
         };
 
-        var result = await controller.GetById(7);
+        var result = await controller.GetByIdAsync(7);
 
         Assert.That(result, Is.TypeOf<ForbidResult>());
     }
 
     [Test]
-    public async Task Service_GetById_Should_Return_Forbidden_When_Requester_Is_Not_Chat_Member()
+    public async Task Service_GetById_Should_Return_Forbidden_When_Requester_Is_Not_Chat_MemberAsync()
     {
         using var connection = CreateOpenConnection();
         await using var serverDb = CreateServerDbContext(connection);
@@ -73,7 +75,7 @@ public sealed class ChatRefactorTests
         await AddMemberAsync(serverDb, chat.Id, member.Id, ChatMemberRole.Base);
 
         var service = CreateService(serverDb);
-        var result = await service.GetById(outsider.Id, chat.Id);
+        var result = await service.GetByIdAsync(outsider.Id, chat.Id);
 
         Assert.That(result.Success, Is.False);
         Assert.That(result.StatusCode, Is.EqualTo(StatusCodes.Status403Forbidden));

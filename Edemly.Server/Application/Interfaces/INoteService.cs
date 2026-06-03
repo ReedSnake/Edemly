@@ -4,12 +4,12 @@ namespace Edemly.Server.Api.Services
 {
     public interface INoteService
     {
-        Task<ServiceDataResult<NoteDto>> GetById(int currentUserId, int id);
-        Task<ServiceDataResult<List<NoteDto>>> GetAll(int currentUserId);
-        Task<ServiceMessageResult> Create(int currentUserId, CreateNoteDto model);
-        Task<ServiceMessageResult> Update(int currentUserId, UpdateNoteDto model);
-        Task<ServiceMessageResult> Delete(int currentUserId, int id);
-        Task<ServiceDataResult<int>> GetCount(int currentUserId);
-        Task<ServiceMessageResult> DeleteByUser(int currentUserId, int userId);
+        Task<ServiceResult<NoteDto>> GetByIdAsync(int currentUserId, int noteId);
+        Task<ServiceResult<List<NoteDto>>> GetAllAsync(int currentUserId);
+        Task<ServiceResult> CreateAsync(int currentUserId, CreateNoteDto request);
+        Task<ServiceResult> UpdateAsync(int currentUserId, UpdateNoteDto request);
+        Task<ServiceResult> DeleteAsync(int currentUserId, int noteId);
+        Task<ServiceResult<int>> GetCountAsync(int currentUserId);
+        Task<ServiceResult> DeleteByUserAsync(int currentUserId, int targetUserId);
     }
 }

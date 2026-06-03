@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 using Edemly.Client.Api;
 using Edemly.Client.Models;
@@ -24,7 +24,7 @@ namespace Edemly.Client.Pages.Settings
         {
             try
             {
-                var userInfo = await apiService.GetUserInfo();
+                var userInfo = await apiService.GetUserInfoAsync();
 
                 if (userInfo != null && userInfo.Id > 0)
                 {
