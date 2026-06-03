@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Edemly.Server.Api.Middleware;
 using Edemly.Server.Data;
@@ -22,47 +22,45 @@ namespace Edemly.Server.Api.Services
             _isTenant = isTenant;
         }
 
-        // Add a member to a chat (DTO version)
-        public async Task<(bool Success, string? Error)> AddMember(CreateChatMemberDto model)
+        public async Task<ServiceMessageResult> AddMember(int currentUserId, CreateChatMemberDto model)
         {
             try
             {
-                var member = new ChatMember
+                if (!await CanAddChatMemberAsync(currentUserId, model.ChatId))
                 {
-                    UserId = model.UserId,
-                    ChatId = model.ChatId,
-                    Role = (ChatMemberRole)model.Role,
-                    JoinedAt = DateTime.UtcNow
-                };
+                    return ServiceMessageResult.Forbidden();
+                }
 
-                _ctx.Set<ChatMember>().Add(member);
-                await _ctx.SaveChangesAsync();
-                return (true, null);
+                var result = await AddMember(model.ChatId, model.UserId, (ChatMemberRole)model.Role);
+                if (!result.Success)
+                {
+                    return ServiceMessageResult.BadRequest(result.Error ?? "Failed to add member");
+                }
+
+                return ServiceMessageResult.Ok("Chat member added");
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to add chat member");
-                return (false, ex.Message);
+                return ServiceMessageResult.BadRequest(ex.Message);
             }
             finally
             {
-                if (_isTenant) _ctx.Dispose();
+                DisposeTenantContext();
             }
         }
 
-        // ✅ Додаємо перевантажений метод для простого додавання
         public async Task<(bool Success, string? Error)> AddMember(int chatId, int userId, ChatMemberRole role)
         {
             try
             {
-                // Перевіряємо, чи користувач вже є членом
                 var existingMember = await _ctx.Set<ChatMember>()
                     .FirstOrDefaultAsync(cm => cm.ChatId == chatId && cm.UserId == userId);
 
                 if (existingMember != null)
                 {
-                    _logger.LogInformation($"User {userId} is already a member of chat {chatId}");
-                    return (true, null); // Вже є членом, повертаємо успіх
+                    _logger.LogInformation("User {UserId} is already a member of chat {ChatId}", userId, chatId);
+                    return (true, null);
                 }
 
                 var member = new ChatMember
@@ -76,106 +74,102 @@ namespace Edemly.Server.Api.Services
                 _ctx.Set<ChatMember>().Add(member);
                 await _ctx.SaveChangesAsync();
 
-                _logger.LogInformation($"Added user {userId} to chat {chatId} with role {role}");
+                _logger.LogInformation("Added user {UserId} to chat {ChatId} with role {Role}", userId, chatId, role);
                 return (true, null);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Failed to add user {userId} to chat {chatId}");
+                _logger.LogError(ex, "Failed to add user {UserId} to chat {ChatId}", userId, chatId);
                 return (false, ex.Message);
-            }
-            finally
-            {
-                if (_isTenant) _ctx.Dispose();
             }
         }
 
-        // Update a member's role
-        public async Task<(bool Success, string? Error)> UpdateMember(UpdateChatMemberDto model)
+        public async Task<ServiceMessageResult> UpdateMember(int currentUserId, UpdateChatMemberDto model)
         {
             try
             {
                 var member = await _ctx.Set<ChatMember>().FindAsync(model.Id);
-                if (member == null)
-                    return (false, "Member not found");
+                if (member == null || !await CanManageMemberAsync(currentUserId, member, requireDifferentUser: true))
+                {
+                    return ServiceMessageResult.Forbidden();
+                }
 
                 if (model.Role.HasValue)
+                {
                     member.Role = (ChatMemberRole)model.Role.Value;
+                }
 
                 await _ctx.SaveChangesAsync();
-                return (true, null);
+                return ServiceMessageResult.Ok("Chat member updated");
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to update chat member");
-                return (false, ex.Message);
+                return ServiceMessageResult.BadRequest(ex.Message);
             }
             finally
             {
-                if (_isTenant) _ctx.Dispose();
+                DisposeTenantContext();
             }
         }
 
-        // Delete a member
-        public async Task<(bool Success, string? Error)> DeleteMember(int id)
+        public async Task<ServiceMessageResult> DeleteMember(int currentUserId, int id)
         {
             try
             {
                 var member = await _ctx.Set<ChatMember>().FindAsync(id);
-                if (member == null)
-                    return (false, "Member not found");
+                if (member == null || !await CanManageMemberAsync(currentUserId, member, requireDifferentUser: true))
+                {
+                    return ServiceMessageResult.Forbidden();
+                }
 
                 _ctx.Set<ChatMember>().Remove(member);
                 await _ctx.SaveChangesAsync();
-                return (true, null);
+                return ServiceMessageResult.Ok("Chat member removed");
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to delete chat member");
-                return (false, ex.Message);
+                return ServiceMessageResult.BadRequest(ex.Message);
             }
             finally
             {
-                if (_isTenant) _ctx.Dispose();
+                DisposeTenantContext();
             }
         }
 
-        // Get a single member
-        public async Task<(bool Success, string? Error, ChatMemberDto Member)> GetMember(int id)
+        public async Task<ServiceDataResult<ChatMemberDto>> GetMember(int id)
         {
             try
             {
                 var member = await _ctx.Set<ChatMember>().FindAsync(id);
                 if (member == null)
-                    return (false, "Member not found", null!);
-
-                var dto = new ChatMemberDto
                 {
-                    Id = member.Id,
-                    UserId = member.UserId,
-                    ChatId = member.ChatId,
-                    Role = (int)member.Role,
-                    JoinedAt = member.JoinedAt
-                };
+                    return ServiceDataResult<ChatMemberDto>.NotFound("Member not found");
+                }
 
-                return (true, null, dto);
+                return ServiceDataResult<ChatMemberDto>.Ok(ToDto(member));
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to get chat member");
-                return (false, ex.Message, null!);
+                return ServiceDataResult<ChatMemberDto>.NotFound(ex.Message);
             }
             finally
             {
-                if (_isTenant) _ctx.Dispose();
+                DisposeTenantContext();
             }
         }
 
-        // Get all members of a chat
-        public async Task<(bool Success, string? Error, List<ChatMemberDto> Members)> GetMembers(int chatId)
+        public async Task<ServiceDataResult<List<ChatMemberDto>>> GetMembers(int currentUserId, int chatId)
         {
             try
             {
+                if (!await IsInChatAsync(currentUserId, chatId))
+                {
+                    return ServiceDataResult<List<ChatMemberDto>>.Forbidden();
+                }
+
                 var members = await _ctx.Set<ChatMember>()
                     .Where(m => m.ChatId == chatId)
                     .Select(m => new ChatMemberDto
@@ -188,26 +182,25 @@ namespace Edemly.Server.Api.Services
                     })
                     .ToListAsync();
 
-                return (true, null, members);
+                return ServiceDataResult<List<ChatMemberDto>>.Ok(members);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to get chat members");
-                return (false, ex.Message, new List<ChatMemberDto>());
+                return ServiceDataResult<List<ChatMemberDto>>.NotFound(ex.Message);
             }
             finally
             {
-                if (_isTenant) _ctx.Dispose();
+                DisposeTenantContext();
             }
         }
 
-        // Get all chats a user is in
-        public async Task<(bool Success, string? Error, List<ChatMemberDto> Memberships)> GetMemberships(int userId)
+        public async Task<ServiceDataResult<List<ChatMemberDto>>> GetMemberships(int currentUserId)
         {
             try
             {
                 var memberships = await _ctx.Set<ChatMember>()
-                    .Where(m => m.UserId == userId)
+                    .Where(m => m.UserId == currentUserId)
                     .Select(m => new ChatMemberDto
                     {
                         Id = m.Id,
@@ -218,16 +211,82 @@ namespace Edemly.Server.Api.Services
                     })
                     .ToListAsync();
 
-                return (true, null, memberships);
+                return ServiceDataResult<List<ChatMemberDto>>.Ok(memberships);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to get user memberships");
-                return (false, ex.Message, new List<ChatMemberDto>());
+                return ServiceDataResult<List<ChatMemberDto>>.NotFound(ex.Message);
             }
             finally
             {
-                if (_isTenant) _ctx.Dispose();
+                DisposeTenantContext();
+            }
+        }
+
+        private async Task<bool> IsInChatAsync(int userId, int chatId)
+        {
+            return await _ctx.Set<ChatMember>().AnyAsync(cm => cm.UserId == userId && cm.ChatId == chatId);
+        }
+
+        private async Task<bool> CanAddChatMemberAsync(int currentUserId, int chatId)
+        {
+            var currentMember = await _ctx.Set<ChatMember>()
+                .FirstOrDefaultAsync(cm => cm.UserId == currentUserId && cm.ChatId == chatId);
+
+            if (currentMember == null)
+            {
+                return false;
+            }
+
+            return currentMember.Role == ChatMemberRole.Admin || currentMember.Role == ChatMemberRole.Creator;
+        }
+
+        private async Task<bool> CanManageMemberAsync(int currentUserId, ChatMember member, bool requireDifferentUser)
+        {
+            if (requireDifferentUser && member.UserId == currentUserId)
+            {
+                return false;
+            }
+
+            var currentMember = await _ctx.Set<ChatMember>()
+                .FirstOrDefaultAsync(cm => cm.UserId == currentUserId && cm.ChatId == member.ChatId);
+
+            if (currentMember == null)
+            {
+                return false;
+            }
+
+            if (currentMember.Role == ChatMemberRole.Creator)
+            {
+                return true;
+            }
+
+            if (currentMember.Role == ChatMemberRole.Admin)
+            {
+                return member.Role == ChatMemberRole.Base;
+            }
+
+            return false;
+        }
+
+        private static ChatMemberDto ToDto(ChatMember member)
+        {
+            return new ChatMemberDto
+            {
+                Id = member.Id,
+                UserId = member.UserId,
+                ChatId = member.ChatId,
+                Role = (int)member.Role,
+                JoinedAt = member.JoinedAt
+            };
+        }
+
+        private void DisposeTenantContext()
+        {
+            if (_isTenant)
+            {
+                _ctx.Dispose();
             }
         }
     }
