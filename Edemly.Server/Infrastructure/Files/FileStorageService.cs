@@ -139,7 +139,7 @@ namespace Edemly.Server.Api.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error uploading profile picture for user {UserId}", userId);
-                return (false, null, $"Upload failed: {ex.Message}");
+                return (false, null, "Upload failed");
             }
         }
 
@@ -187,7 +187,7 @@ namespace Edemly.Server.Api.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error uploading file for user {UserId}", userId);
-                return (false, null, $"Upload failed: {ex.Message}");
+                return (false, null, "Upload failed");
             }
         }
 
@@ -219,7 +219,7 @@ namespace Edemly.Server.Api.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error deleting file: {Url}", fileUrl);
-                return (false, $"Delete failed: {ex.Message}");
+                return (false, "Delete failed");
             }
         }
 

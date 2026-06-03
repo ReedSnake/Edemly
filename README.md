@@ -14,7 +14,7 @@ Edemly is a Windows desktop messenger built with .NET 10, WPF, ASP.NET Core, Sig
 
 ```text
 Edemly.Contracts/      Shared DTOs grouped by feature area.
-Edemly.Server/         ASP.NET Core API, SignalR hubs, EF Core data, tenant services, and migrations under Data/Migrations.
+Edemly.Server/         ASP.NET Core API, SignalR hubs, EF Core data, tenant services, and migrations under Data/Migrations/ServerDb and Data/Migrations/CompanyDb.
 Edemly.Client/         WPF desktop app, pages, helpers, API services, local cache models, assets.
 Edemly.Server.Tests/   Server-focused tests.
 Edemly.Client.Tests/   Client-focused tests.
@@ -74,10 +74,16 @@ dotnet restore Edemly.sln
 dotnet build Edemly.sln
 ```
 
-Apply the main database migration:
+Apply the master database migration:
 
 ```powershell
 dotnet ef database update --project Edemly.Server --startup-project Edemly.Server --context ServerDbContext
+```
+
+If you need to apply the tenant/company schema manually, use:
+
+```powershell
+dotnet ef database update --project Edemly.Server --startup-project Edemly.Server --context CompanyDbContext
 ```
 
 Start the server:

@@ -15,7 +15,7 @@ namespace Edemly.Server.Tests.Integration.Tenancy;
 public sealed class TenantAuthIntegrationTests
 {
     [Test]
-    public async Task TenantRegister_Should_Create_User_In_Tenant_Database_When_Email_Is_Allowed()
+    public async Task TenantRegister_Should_Create_User_In_Tenant_Database_When_Email_Is_AllowedAsync()
     {
         using var factory = new CustomWebApplicationFactory();
         using var client = factory.CreateClient();
@@ -52,7 +52,7 @@ public sealed class TenantAuthIntegrationTests
     }
 
     [Test]
-    public async Task TenantRegister_Should_Allow_Empty_Username_When_Email_Is_Allowed()
+    public async Task TenantRegister_Should_Allow_Empty_Username_When_Email_Is_AllowedAsync()
     {
         using var factory = new CustomWebApplicationFactory();
         using var client = factory.CreateClient();
@@ -99,7 +99,7 @@ public sealed class TenantAuthIntegrationTests
     }
 
     [Test]
-    public async Task TenantRegister_Should_Return_BadRequest_When_Email_Is_Not_Allowed()
+    public async Task TenantRegister_Should_Return_BadRequest_When_Email_Is_Not_AllowedAsync()
     {
         using var factory = new CustomWebApplicationFactory();
         using var client = factory.CreateClient();
@@ -143,7 +143,7 @@ public sealed class TenantAuthIntegrationTests
     }
 
     [Test]
-    public async Task TenantRegister_Should_Create_Welcome_Chat_And_Membership()
+    public async Task TenantRegister_Should_Create_Welcome_Chat_And_MembershipAsync()
     {
         using var factory = new CustomWebApplicationFactory();
         using var client = factory.CreateClient();
@@ -168,7 +168,7 @@ public sealed class TenantAuthIntegrationTests
     }
 
     [Test]
-    public async Task TenantLogin_Should_Return_Token_When_User_Exists_In_Tenant_Database()
+    public async Task TenantLogin_Should_Return_Token_When_User_Exists_In_Tenant_DatabaseAsync()
     {
         using var factory = new CustomWebApplicationFactory();
         using var client = factory.CreateClient();
@@ -189,7 +189,7 @@ public sealed class TenantAuthIntegrationTests
     }
 
     [Test]
-    public async Task TenantLogin_Should_Return_Unauthorized_When_User_Does_Not_Exist_In_Tenant_Database()
+    public async Task TenantLogin_Should_Return_Unauthorized_When_User_Does_Not_Exist_In_Tenant_DatabaseAsync()
     {
         using var factory = new CustomWebApplicationFactory();
         using var client = factory.CreateClient();
@@ -218,7 +218,7 @@ public sealed class TenantAuthIntegrationTests
     }
 
     [Test]
-    public async Task TenantSessionLogin_Should_Return_Token_When_SessionToken_Is_Valid_For_Tenant()
+    public async Task TenantSessionLogin_Should_Return_Token_When_SessionToken_Is_Valid_For_TenantAsync()
     {
         using var factory = new CustomWebApplicationFactory();
         using var client = factory.CreateClient();
@@ -247,7 +247,7 @@ public sealed class TenantAuthIntegrationTests
     }
 
     [Test]
-    public async Task TenantSessionLogin_Should_Return_Unauthorized_When_SessionToken_Is_Invalid_For_Tenant()
+    public async Task TenantSessionLogin_Should_Return_Unauthorized_When_SessionToken_Is_Invalid_For_TenantAsync()
     {
         using var factory = new CustomWebApplicationFactory();
         using var client = factory.CreateClient();
@@ -264,7 +264,7 @@ public sealed class TenantAuthIntegrationTests
     }
 
     [Test]
-    public async Task TenantLogout_Should_Remove_Session_When_User_Is_Authenticated()
+    public async Task TenantLogout_Should_Remove_Session_When_User_Is_AuthenticatedAsync()
     {
         using var factory = new CustomWebApplicationFactory();
         using var client = factory.CreateClient();
@@ -289,7 +289,7 @@ public sealed class TenantAuthIntegrationTests
     }
 
     [Test]
-    public async Task TenantGetCode_Should_Resolve_Company_From_QueryParameter_When_Tenant_Is_Provided()
+    public async Task TenantGetCode_Should_Resolve_Company_From_QueryParameter_When_Tenant_Is_ProvidedAsync()
     {
         using var factory = new CustomWebApplicationFactory();
         using var client = factory.CreateClient();

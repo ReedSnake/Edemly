@@ -18,60 +18,40 @@ namespace Edemly.Server.Api.Controllers.Auth
         }
 
         [HttpPost("get-code")]
-        public async Task<IActionResult> GetLoginCode([FromBody] LoginRequestDto model)
+        public async Task<IActionResult> GetLoginCodeAsync([FromBody] LoginRequestDto request)
         {
-            var result = await _authService.GetLoginCodeAsync(model);
-            return ToMessageResult(result);
+            return ToServiceResult(await _authService.GetLoginCodeAsync(request));
         }
 
         [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] LoginWithCodeDto model)
+        public async Task<IActionResult> LoginAsync([FromBody] LoginWithCodeDto request)
         {
-            var result = await _authService.LoginAsync(model);
-            return ToAuthResponseResult(result);
+            return ToServiceResult(await _authService.LoginAsync(request));
         }
 
         [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] RegistrationWithCodeDto model)
+        public async Task<IActionResult> RegisterAsync([FromBody] RegistrationWithCodeDto request)
         {
-            var result = await _authService.RegisterAsync(model);
-            return ToAuthResponseResult(result);
+            return ToServiceResult(await _authService.RegisterAsync(request));
         }
 
         [HttpPost("session-login")]
-        public async Task<IActionResult> SessionLogin([FromBody] SessionLoginDto model)
+        public async Task<IActionResult> SessionLoginAsync([FromBody] SessionLoginDto request)
         {
-            var result = await _authService.SessionLoginAsync(model);
-            return ToAuthResponseResult(result);
+            return ToServiceResult(await _authService.SessionLoginAsync(request));
         }
 
         [Authorize]
         [HttpPost("logout")]
-        public async Task<IActionResult> Logout()
+        public async Task<IActionResult> LogoutAsync()
         {
-            var userId = GetCurrentUserIdOrDefault();
-            if (userId == 0)
+            var unauthorizedResult = RequireCurrentUserId(out var currentUserId);
+            if (unauthorizedResult != null)
             {
-                return Unauthorized();
+                return unauthorizedResult;
             }
 
-            var result = await _authService.LogoutAsync(userId);
-            return ToMessageResult(result);
-        }
-
-        private IActionResult ToMessageResult(AuthMessageResult result)
-        {
-            return MessageResult(result.StatusCode, result.Message);
-        }
-
-        private IActionResult ToAuthResponseResult(AuthResponseResult result)
-        {
-            if (result.Success && result.AuthResponse != null)
-            {
-                return Ok(result.AuthResponse);
-            }
-
-            return MessageResult(result.StatusCode, result.Message ?? "Authentication failed");
+            return ToServiceResult(await _authService.LogoutAsync(currentUserId));
         }
     }
 }

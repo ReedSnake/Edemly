@@ -1,4 +1,4 @@
-﻿#nullable disable
+#nullable disable
 using System;
 using System.Collections.Generic;
 using System.Windows;
@@ -46,7 +46,7 @@ namespace Edemly.Client.Pages
             ApplyThemeToPage();
 
             LoadGroupData();
-            LoadGroupMembers();
+            LoadGroupMembersAsync();
 
             _ = CheckOwnerStatusAndEnableChangeIconAsync();
 
@@ -289,7 +289,7 @@ namespace Edemly.Client.Pages
             }
         }
 
-        private async Task LoadGroupMembers()
+        private async Task LoadGroupMembersAsync()
         {
             try
             {
@@ -460,7 +460,7 @@ namespace Edemly.Client.Pages
 
             container.MouseLeftButtonDown += async (s, e) =>
             {
-                await ShowMemberOptions(member);
+                await ShowMemberOptionsAsync(member);
             };
 
             return container;
@@ -542,7 +542,7 @@ namespace Edemly.Client.Pages
             }
         }
 
-        private async Task ShowMemberOptions(ChatMemberDto member)
+        private async Task ShowMemberOptionsAsync(ChatMemberDto member)
         {
         }
 
@@ -727,9 +727,9 @@ namespace Edemly.Client.Pages
             }
         }
 
-        public async Task RefreshMembersList()
+        public async Task RefreshMembersListAsync()
         {
-            await LoadGroupMembers();
+            await LoadGroupMembersAsync();
         }
     }
 }

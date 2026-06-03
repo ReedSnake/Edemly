@@ -1,4 +1,4 @@
-﻿#nullable disable
+#nullable disable
 using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
@@ -134,7 +134,7 @@ namespace Edemly.Client
 
                     System.Diagnostics.Debug.WriteLine($"[PASTE_HANDLER] Files from clipboard: {files.Count}");
 
-                    Dispatcher.InvokeAsync(async () => await ProcessDroppedFiles(files));
+                    Dispatcher.InvokeAsync(async () => await ProcessDroppedFilesAsync(files));
                 }
                 else if (Clipboard.ContainsImage())
                 {
@@ -166,7 +166,7 @@ namespace Edemly.Client
 
                     System.Diagnostics.Debug.WriteLine($"[PASTE_CMD] Files from clipboard: {files.Count}");
 
-                    Dispatcher.InvokeAsync(async () => await ProcessDroppedFiles(files));
+                    Dispatcher.InvokeAsync(async () => await ProcessDroppedFilesAsync(files));
 
                     e.Handled = true;
                 }
@@ -214,7 +214,7 @@ namespace Edemly.Client
                     {
                         var sc = Clipboard.GetFileDropList();
                         var files = sc.Cast<string>().ToList();
-                        _ = ProcessDroppedFiles(files);
+                        _ = ProcessDroppedFilesAsync(files);
                         e.Handled = true;
                         return;
                     }
@@ -406,7 +406,7 @@ namespace Edemly.Client
                     var files = (string[])e.Data.GetData(DataFormats.FileDrop);
                     System.Diagnostics.Debug.WriteLine($"[DROP] FileDrop count: {files.Length}");
                     e.Handled = true;
-                    _ = ProcessDroppedFiles(files);
+                    _ = ProcessDroppedFilesAsync(files);
                 }
                 else if (e.Data.GetDataPresent(DataFormats.UnicodeText) || e.Data.GetDataPresent(DataFormats.Text))
                 {
@@ -427,9 +427,9 @@ namespace Edemly.Client
             }
         }
 
-        private async Task ProcessDroppedFiles(IEnumerable<string> files)
+        private async Task ProcessDroppedFilesAsync(IEnumerable<string> files)
         {
-            System.Diagnostics.Debug.WriteLine($"[FILES] ProcessDroppedFiles called with {files.Count()} items");
+            System.Diagnostics.Debug.WriteLine($"[FILES] ProcessDroppedFilesAsync called with {files.Count()} items");
             if (chatManager.CurrentChatId < 0)
             {
                 MessageBox.ShowWarning("First select a contact to chat", "Error");

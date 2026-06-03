@@ -1,4 +1,4 @@
-﻿#nullable enable
+#nullable enable
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -513,7 +513,7 @@ namespace Edemly.Client
             _messageRenderer.UpdateMessagesPanel(messagesPanel);
         }
 
-        public async Task RestoreUI()
+        public async Task RestoreUIAsync()
         {
             _chatsPanel.Children.Clear();
             SortAllChats();
@@ -532,7 +532,7 @@ namespace Edemly.Client
                         UpdateChatButton(CurrentChatId);
                     }
                 }
-                catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[CHAT MANAGER] RestoreUI unread marker clear error: {ex.Message}"); }
+                catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[CHAT MANAGER] RestoreUIAsync unread marker clear error: {ex.Message}"); }
 
                 // If we don't have local history for the chat or it is empty, load messages from server
                 try
@@ -546,10 +546,10 @@ namespace Edemly.Client
                 }
                 catch (Exception ex)
                 {
-                    System.Diagnostics.Debug.WriteLine($"[CHAT MANAGER] RestoreUI: failed to load messages for chat {CurrentChatId}: {ex.Message}");
+                    System.Diagnostics.Debug.WriteLine($"[CHAT MANAGER] RestoreUIAsync: failed to load messages for chat {CurrentChatId}: {ex.Message}");
                 }
 
-                await RestoreChatMessages(CurrentChatId);
+                await RestoreChatMessagesAsync(CurrentChatId);
             }
             else
             {
@@ -557,7 +557,7 @@ namespace Edemly.Client
             }
         }
 
-        private async Task RestoreChatMessages(int chatId)
+        private async Task RestoreChatMessagesAsync(int chatId)
         {
             _messagesPanel.Children.Clear();
 
@@ -646,7 +646,7 @@ namespace Edemly.Client
                 else
                     _messageRenderer.SetGroupChatMode(false);
 
-                await RestoreChatMessages(chatId);
+                await RestoreChatMessagesAsync(chatId);
             }
             catch (Exception ex)
             {
@@ -1179,7 +1179,7 @@ namespace Edemly.Client
                     Application.Current.Dispatcher.Invoke(() => { _messagesPanel.Dispatcher.Invoke(() => { }); });
 
                     // Refresh UI
-                    await Application.Current.Dispatcher.InvokeAsync(() => RefreshCurrentChatMessages());
+                    await Application.Current.Dispatcher.InvokeAsync(() => RefreshCurrentChatMessagesAsync());
 
                     // Allow layout to update
                     await Task.Delay(10);
@@ -1206,7 +1206,7 @@ namespace Edemly.Client
             }
         }
 
-        private async Task RefreshCurrentChatMessages()
+        private async Task RefreshCurrentChatMessagesAsync()
         {
             if (CurrentChatId < 0 || !_chatHistory.ContainsKey(CurrentChatId))
                 return;

@@ -9,55 +9,91 @@ namespace Edemly.Server.Api.Controllers.Notes
     [Route("api/[controller]")]
     public class NoteController : ApiControllerBase
     {
-        private readonly INoteService _service;
+        private readonly INoteService _noteService;
 
-        public NoteController(INoteService service)
+        public NoteController(INoteService noteService)
         {
-            _service = service;
+            _noteService = noteService;
         }
 
         [Authorize]
-        [HttpGet("id/{id}")]
-        public async Task<IActionResult> GetById(int id)
+        [HttpGet("id/{noteId}")]
+        public async Task<IActionResult> GetByIdAsync(int noteId)
         {
-            return ToServiceDataResult(await _service.GetById(GetCurrentUserIdOrDefault(), id));
+            var unauthorizedResult = RequireCurrentUserId(out var currentUserId);
+            if (unauthorizedResult != null)
+            {
+                return unauthorizedResult;
+            }
+
+            return ToServiceResult(await _noteService.GetByIdAsync(currentUserId, noteId));
         }
 
         [Authorize]
         [HttpGet("my-notes")]
-        public async Task<IActionResult> GetByCreator()
+        public async Task<IActionResult> GetByCreatorAsync()
         {
-            return ToServiceDataResult(await _service.GetAll(GetCurrentUserIdOrDefault()));
+            var unauthorizedResult = RequireCurrentUserId(out var currentUserId);
+            if (unauthorizedResult != null)
+            {
+                return unauthorizedResult;
+            }
+
+            return ToServiceResult(await _noteService.GetAllAsync(currentUserId));
         }
 
         [Authorize]
         [HttpGet("count")]
-        public async Task<IActionResult> GetCount()
+        public async Task<IActionResult> GetCountAsync()
         {
-            return ToServiceDataResult(
-                await _service.GetCount(GetCurrentUserIdOrDefault()),
+            var unauthorizedResult = RequireCurrentUserId(out var currentUserId);
+            if (unauthorizedResult != null)
+            {
+                return unauthorizedResult;
+            }
+
+            return ToServiceResult(
+                await _noteService.GetCountAsync(currentUserId),
                 count => new { count });
         }
 
         [Authorize]
         [HttpPost("create")]
-        public async Task<IActionResult> Create([FromBody] CreateNoteDto model)
+        public async Task<IActionResult> CreateAsync([FromBody] CreateNoteDto request)
         {
-            return ToServiceMessageResult(await _service.Create(GetCurrentUserIdOrDefault(), model));
+            var unauthorizedResult = RequireCurrentUserId(out var currentUserId);
+            if (unauthorizedResult != null)
+            {
+                return unauthorizedResult;
+            }
+
+            return ToServiceResult(await _noteService.CreateAsync(currentUserId, request));
         }
 
         [Authorize]
         [HttpPut("update")]
-        public async Task<IActionResult> Update([FromBody] UpdateNoteDto model)
+        public async Task<IActionResult> UpdateAsync([FromBody] UpdateNoteDto request)
         {
-            return ToServiceMessageResult(await _service.Update(GetCurrentUserIdOrDefault(), model));
+            var unauthorizedResult = RequireCurrentUserId(out var currentUserId);
+            if (unauthorizedResult != null)
+            {
+                return unauthorizedResult;
+            }
+
+            return ToServiceResult(await _noteService.UpdateAsync(currentUserId, request));
         }
 
         [Authorize]
-        [HttpDelete("delete/{id}")]
-        public async Task<IActionResult> Delete(int id)
+        [HttpDelete("delete/{noteId}")]
+        public async Task<IActionResult> DeleteAsync(int noteId)
         {
-            return ToServiceMessageResult(await _service.Delete(GetCurrentUserIdOrDefault(), id));
+            var unauthorizedResult = RequireCurrentUserId(out var currentUserId);
+            if (unauthorizedResult != null)
+            {
+                return unauthorizedResult;
+            }
+
+            return ToServiceResult(await _noteService.DeleteAsync(currentUserId, noteId));
         }
     }
 }

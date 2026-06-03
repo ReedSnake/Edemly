@@ -1,9 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.SignalR;
 using Edemly.Contracts.Chats;
 using Edemly.Server.Api.Services;
-using Edemly.Server.Hubs;
 
 namespace Edemly.Server.Api.Controllers.Chats
 {
@@ -12,169 +10,81 @@ namespace Edemly.Server.Api.Controllers.Chats
     public class ChatController : ApiControllerBase
     {
         private readonly IChatService _chatService;
-        private readonly IHubContext<MainHub> _hubContext;
+        private readonly IChatRealtimeNotifier _chatRealtimeNotifier;
 
         public ChatController(
             IChatService chatService,
-            IHubContext<MainHub> hubContext)
+            IChatRealtimeNotifier chatRealtimeNotifier)
         {
             _chatService = chatService;
-            _hubContext = hubContext;
+            _chatRealtimeNotifier = chatRealtimeNotifier;
         }
 
         [Authorize]
         [HttpPost("create-private")]
-        public async Task<IActionResult> CreatePrivateChat([FromBody] CreatePrivateChatDto request)
+        public async Task<IActionResult> CreatePrivateChatAsync([FromBody] CreatePrivateChatDto request)
         {
-            var userId = GetCurrentUserIdOrDefault();
-
-            if (userId == 0)
+            var unauthorizedResult = RequireCurrentUserId(out var currentUserId);
+            if (unauthorizedResult != null)
             {
-                return UnauthorizedMessage("User not authenticated");
+                return unauthorizedResult;
             }
 
-            return ToServiceDataResult(
-                await _chatService.CreateOrGetPrivateChat(userId, request.UserId),
+            return ToServiceResult(
+                await _chatService.CreateOrGetPrivateChatAsync(currentUserId, request.UserId),
                 chat => new { Chat = chat });
         }
 
         [Authorize]
         [HttpPost("create-group")]
-        public async Task<IActionResult> CreateGroupChat([FromBody] CreateGroupChatDto request)
+        public async Task<IActionResult> CreateGroupChatAsync([FromBody] CreateGroupChatDto request)
         {
-            var userId = GetCurrentUserIdOrDefault();
-
-            if (userId == 0)
+            var unauthorizedResult = RequireCurrentUserId(out var requesterId);
+            if (unauthorizedResult != null)
             {
-                return UnauthorizedMessage("User not authenticated");
+                return unauthorizedResult;
             }
 
-            if (string.IsNullOrWhiteSpace(request.GroupName))
-            {
-                return BadRequestMessage("Group name is required");
-            }
-
-            if (request.ParticipantIds == null || request.ParticipantIds.Count == 0)
-            {
-                return BadRequestMessage("At least one participant is required");
-            }
-
-            var result = await _chatService.CreateGroupChat(userId, request.GroupName, request.ParticipantIds);
-            if (!result.Success)
-            {
-                return MessageResult(result.StatusCode, result.Message ?? "Failed to create group chat");
-            }
-
+            var result = await _chatService.CreateGroupChatAsync(requesterId, request.GroupName, request.ParticipantIds);
             if (result.Data != null)
             {
-                var allMemberIds = new List<int> { userId };
-                allMemberIds.AddRange(request.ParticipantIds);
-
-                var memberIdStrings = allMemberIds.Distinct().Select(id => id.ToString()).ToList();
-
-                await _hubContext.Clients.Users(memberIdStrings).SendAsync("GroupCreated", new
-                {
-                    ChatId = result.Data.Id,
-                    ChatName = result.Data.Name,
-                    ChatType = result.Data.Type,
-                    CreatorId = userId
-                });
+                await _chatRealtimeNotifier.NotifyGroupCreatedAsync(result.Data, requesterId, request.ParticipantIds);
             }
 
-            return Ok(new { Chat = result.Data });
+            return ToServiceResult(result, chat => new { Chat = chat });
         }
 
         [Authorize]
         [HttpGet("my-chats")]
-        public async Task<IActionResult> GetMyChats()
+        public async Task<IActionResult> GetMyChatsAsync()
         {
-            var userId = GetCurrentUserIdOrDefault();
-
-            if (userId == 0)
+            var unauthorizedResult = RequireCurrentUserId(out var currentUserId);
+            if (unauthorizedResult != null)
             {
-                return UnauthorizedMessage("User not authenticated");
+                return unauthorizedResult;
             }
 
-            return ToServiceDataResult(await _chatService.GetMyChats(userId));
+            return ToServiceResult(await _chatService.GetMyChatsAsync(currentUserId));
         }
 
         [Authorize]
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetById(int id)
+        [HttpGet("{chatId}")]
+        public async Task<IActionResult> GetByIdAsync(int chatId)
         {
-            var userId = GetCurrentUserIdOrDefault();
-
-            if (userId == 0)
+            var unauthorizedResult = RequireCurrentUserId(out var currentUserId);
+            if (unauthorizedResult != null)
             {
-                return UnauthorizedMessage("User not authenticated");
+                return unauthorizedResult;
             }
 
-            return ToServiceDataResult(await _chatService.GetById(userId, id));
+            return ToServiceResult(await _chatService.GetByIdAsync(currentUserId, chatId));
         }
 
         [Authorize]
         [HttpPut("update")]
-        public async Task<IActionResult> UpdateChat([FromBody] UpdateChatDto request)
+        public async Task<IActionResult> UpdateChatAsync([FromBody] UpdateChatDto request)
         {
-            var userId = GetCurrentUserIdOrDefault();
-
-            if (userId == 0)
-            {
-                return UnauthorizedMessage("User not authenticated");
-            }
-
-            return ToServiceMessageResult(await _chatService.UpdateChat(request.Id, request.Name, request.Description, request.IconUrl));
-        }
-
-        [Authorize]
-        [HttpPost("upload-icon")]
-        public async Task<IActionResult> UploadGroupIcon([FromServices] IFileStorageService fileStorageService)
-        {
-            var userId = GetCurrentUserIdOrDefault();
-
-            if (userId == 0)
-            {
-                return UnauthorizedMessage("User not authenticated");
-            }
-
-            var chatIdStr = Request.Form["chatId"].FirstOrDefault();
-            if (string.IsNullOrEmpty(chatIdStr) || !int.TryParse(chatIdStr, out var chatId))
-            {
-                return BadRequestMessage("Invalid chat ID");
-            }
-
-            var file = Request.Form.Files.FirstOrDefault();
-            if (file == null || file.Length == 0)
-            {
-                return BadRequestMessage("No file uploaded");
-            }
-
-            try
-            {
-                using var stream = file.OpenReadStream();
-                var result = await fileStorageService.UploadFileAsync(
-                    userId,
-                    stream,
-                    $"group_{chatId}_{DateTime.UtcNow.Ticks}{Path.GetExtension(file.FileName)}",
-                    file.ContentType ?? "image/jpeg");
-
-                if (!result.Success)
-                {
-                    return BadRequestMessage(result.Error ?? "Failed to upload file");
-                }
-
-                var updateResult = await _chatService.UpdateChat(chatId, name: null, description: null, iconUrl: result.Url);
-                if (!updateResult.Success)
-                {
-                    return MessageResult(updateResult.StatusCode, updateResult.Message);
-                }
-
-                return Ok(new { url = result.Url });
-            }
-            catch (Exception)
-            {
-                return BadRequestMessage("Error uploading file");
-            }
+            return ToServiceResult(await _chatService.UpdateAsync(request.Id, request.Name, request.Description, request.IconUrl));
         }
     }
 }

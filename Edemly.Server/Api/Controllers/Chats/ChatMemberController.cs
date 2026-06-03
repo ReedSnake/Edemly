@@ -9,52 +9,82 @@ namespace Edemly.Server.Api.Controllers.Chats
     [Route("api/[controller]")]
     public class ChatMemberController : ApiControllerBase
     {
-        private readonly IChatMemberService _service;
+        private readonly IChatMemberService _chatMemberService;
 
-        public ChatMemberController(IChatMemberService service)
+        public ChatMemberController(IChatMemberService chatMemberService)
         {
-            _service = service;
+            _chatMemberService = chatMemberService;
         }
 
-        [HttpGet("id/{id}")]
-        public async Task<IActionResult> GetMember(int id)
+        [HttpGet("id/{chatMemberId}")]
+        public async Task<IActionResult> GetMemberAsync(int chatMemberId)
         {
-            return ToServiceDataResult(await _service.GetMember(id));
+            return ToServiceResult(await _chatMemberService.GetMemberAsync(chatMemberId));
         }
 
         [Authorize]
         [HttpGet("list/{chatId}")]
-        public async Task<IActionResult> GetMembers(int chatId)
+        public async Task<IActionResult> GetMembersAsync(int chatId)
         {
-            return ToServiceDataResult(await _service.GetMembers(GetCurrentUserIdOrDefault(), chatId));
+            var unauthorizedResult = RequireCurrentUserId(out var currentUserId);
+            if (unauthorizedResult != null)
+            {
+                return unauthorizedResult;
+            }
+
+            return ToServiceResult(await _chatMemberService.GetMembersAsync(currentUserId, chatId));
         }
 
         [Authorize]
         [HttpGet("my-memberships")]
-        public async Task<IActionResult> GetMemberships()
+        public async Task<IActionResult> GetMembershipsAsync()
         {
-            return ToServiceDataResult(await _service.GetMemberships(GetCurrentUserIdOrDefault()));
+            var unauthorizedResult = RequireCurrentUserId(out var currentUserId);
+            if (unauthorizedResult != null)
+            {
+                return unauthorizedResult;
+            }
+
+            return ToServiceResult(await _chatMemberService.GetMembershipsAsync(currentUserId));
         }
 
         [Authorize]
         [HttpPost("add")]
-        public async Task<IActionResult> AddMember([FromBody] CreateChatMemberDto model)
+        public async Task<IActionResult> CreateAsync([FromBody] CreateChatMemberDto request)
         {
-            return ToServiceMessageResult(await _service.AddMember(GetCurrentUserIdOrDefault(), model));
+            var unauthorizedResult = RequireCurrentUserId(out var requesterId);
+            if (unauthorizedResult != null)
+            {
+                return unauthorizedResult;
+            }
+
+            return ToServiceResult(await _chatMemberService.AddMemberAsync(requesterId, request));
         }
 
         [Authorize]
         [HttpPut("update")]
-        public async Task<IActionResult> UpdateMember([FromBody] UpdateChatMemberDto model)
+        public async Task<IActionResult> UpdateAsync([FromBody] UpdateChatMemberDto request)
         {
-            return ToServiceMessageResult(await _service.UpdateMember(GetCurrentUserIdOrDefault(), model));
+            var unauthorizedResult = RequireCurrentUserId(out var requesterId);
+            if (unauthorizedResult != null)
+            {
+                return unauthorizedResult;
+            }
+
+            return ToServiceResult(await _chatMemberService.UpdateAsync(requesterId, request));
         }
 
         [Authorize]
-        [HttpDelete("delete/{id}")]
-        public async Task<IActionResult> DeleteMember(int id)
+        [HttpDelete("delete/{chatMemberId}")]
+        public async Task<IActionResult> DeleteAsync(int chatMemberId)
         {
-            return ToServiceMessageResult(await _service.DeleteMember(GetCurrentUserIdOrDefault(), id));
+            var unauthorizedResult = RequireCurrentUserId(out var requesterId);
+            if (unauthorizedResult != null)
+            {
+                return unauthorizedResult;
+            }
+
+            return ToServiceResult(await _chatMemberService.DeleteAsync(requesterId, chatMemberId));
         }
     }
 }

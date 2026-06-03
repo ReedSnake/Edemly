@@ -13,7 +13,7 @@ namespace Edemly.Server.Tests.Integration.Messages;
 public sealed class MessageIntegrationTests
 {
     [Test]
-    public async Task SendMessage_Should_Create_Message_When_User_Is_Chat_Member()
+    public async Task SendMessage_Should_Create_Message_When_User_Is_Chat_MemberAsync()
     {
         using var factory = new CustomWebApplicationFactory();
         using var senderClient = factory.CreateClient();
@@ -46,7 +46,7 @@ public sealed class MessageIntegrationTests
     }
 
     [Test]
-    public async Task SendMessage_Should_Return_Forbidden_When_User_Is_Not_Member()
+    public async Task SendMessage_Should_Return_Forbidden_When_User_Is_Not_MemberAsync()
     {
         using var factory = new CustomWebApplicationFactory();
         using var ownerClient = factory.CreateClient();
@@ -72,7 +72,7 @@ public sealed class MessageIntegrationTests
     }
 
     [Test]
-    public async Task GetMessages_Should_Return_Messages_In_Correct_Order()
+    public async Task GetMessages_Should_Return_Messages_In_Correct_OrderAsync()
     {
         using var factory = new CustomWebApplicationFactory();
         using var senderClient = factory.CreateClient();
@@ -97,7 +97,7 @@ public sealed class MessageIntegrationTests
     }
 
     [Test]
-    public async Task DeleteMessage_Should_Return_Forbidden_When_User_Is_Not_Author()
+    public async Task DeleteMessage_Should_Return_Forbidden_When_User_Is_Not_AuthorAsync()
     {
         using var factory = new CustomWebApplicationFactory();
         using var authorClient = factory.CreateClient();

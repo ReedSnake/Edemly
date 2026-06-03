@@ -18,38 +18,50 @@ namespace Edemly.Server.Tests.Unit.Users;
 public sealed class UserRefactorTests
 {
     [Test]
-    public async Task Controller_DeleteUser_Should_Return_Forbid_When_Service_Returns_Forbidden()
+    public async Task Controller_DeleteUser_Should_Return_Forbid_When_Service_Returns_ForbiddenAsync()
     {
         var service = new Mock<IUserService>();
-        service.Setup(x => x.DeleteUser(0, 7))
-            .ReturnsAsync(ServiceMessageResult.Forbidden());
+        service.Setup(x => x.DeleteAsync(11, 7))
+            .ReturnsAsync(ServiceResult.Forbidden());
 
         var controller = new UserController(service.Object)
         {
             ControllerContext = new ControllerContext
             {
-                HttpContext = new DefaultHttpContext()
+                HttpContext = new DefaultHttpContext
+                {
+                    User = TestPrincipal(11)
+                }
             }
         };
 
-        var result = await controller.DeleteUser(7);
+        var result = await controller.DeleteAsync(7);
 
         Assert.That(result, Is.TypeOf<ForbidResult>());
     }
 
     [Test]
-    public async Task Controller_GetUsersBatch_Should_Return_Users_And_Count_From_Service()
+    public async Task Controller_GetUsersBatch_Should_Return_Users_And_Count_From_ServiceAsync()
     {
         var service = new Mock<IUserService>();
-        service.Setup(x => x.GetUsersBatch(It.IsAny<List<int>>()))
-            .ReturnsAsync(ServiceDataResult<List<UserDto>>.Ok(new List<UserDto>
+        service.Setup(x => x.GetUsersBatchAsync(It.IsAny<List<int>>()))
+            .ReturnsAsync(ServiceResult<List<UserDto>>.Ok(new List<UserDto>
             {
                 new() { Id = 4, Username = "alice" }
             }));
 
-        var controller = new UserController(service.Object);
+        var controller = new UserController(service.Object)
+        {
+            ControllerContext = new ControllerContext
+            {
+                HttpContext = new DefaultHttpContext
+                {
+                    User = TestPrincipal(11)
+                }
+            }
+        };
 
-        var result = await controller.GetUsersBatch(new List<int> { 4 });
+        var result = await controller.GetUsersBatchAsync(new List<int> { 4 });
 
         var ok = result as OkObjectResult;
         Assert.That(ok, Is.Not.Null);
@@ -60,7 +72,7 @@ public sealed class UserRefactorTests
     }
 
     [Test]
-    public async Task Service_DeleteUser_Should_Return_Forbidden_When_Deleting_Other_User()
+    public async Task Service_DeleteUser_Should_Return_Forbidden_When_Deleting_Other_UserAsync()
     {
         using var connection = CreateOpenConnection();
         await using var serverDb = CreateServerDbContext(connection);
@@ -69,11 +81,24 @@ public sealed class UserRefactorTests
         var target = await CreateUserAsync(serverDb, "target@example.test");
 
         var service = CreateService(serverDb);
-        var result = await service.DeleteUser(requester.Id, target.Id);
+        var result = await service.DeleteAsync(requester.Id, target.Id);
 
         Assert.That(result.Success, Is.False);
         Assert.That(result.StatusCode, Is.EqualTo(StatusCodes.Status403Forbidden));
         Assert.That(serverDb.Users.Count(), Is.EqualTo(2));
+    }
+
+    [Test]
+    public async Task Service_GetSelf_Should_Return_NotFound_When_Current_User_Does_Not_ExistAsync()
+    {
+        using var connection = CreateOpenConnection();
+        await using var serverDb = CreateServerDbContext(connection);
+
+        var service = CreateService(serverDb);
+        var result = await service.GetFullInfoAsync(999);
+
+        Assert.That(result.Success, Is.False);
+        Assert.That(result.StatusCode, Is.EqualTo(StatusCodes.Status404NotFound));
     }
 
     private static UserService CreateService(ServerDbContext serverDb)
@@ -127,5 +152,16 @@ public sealed class UserRefactorTests
         {
             throw new InvalidOperationException("Tenant DB should not be used in this test.");
         }
+    }
+
+    private static System.Security.Claims.ClaimsPrincipal TestPrincipal(int userId)
+    {
+        return new System.Security.Claims.ClaimsPrincipal(
+            new System.Security.Claims.ClaimsIdentity(
+                new[]
+                {
+                    new System.Security.Claims.Claim("userId", userId.ToString())
+                },
+                "test"));
     }
 }

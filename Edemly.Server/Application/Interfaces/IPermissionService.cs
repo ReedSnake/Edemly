@@ -2,22 +2,22 @@
 {
     public interface IPermissionService
     {
-        public Task<bool> IsInChat(int userId, int chatId);
+        public Task<bool> IsInChatAsync(int currentUserId, int chatId);
         //User
-        public bool CanDeleteUser(int userId, int userToDeleteId);
+        public bool CanDeleteUser(int requesterId, int targetUserId);
         //Chat
-        public Task<bool> CanUpdateChat(int userId, int chatId);
-        public Task<bool> CanDeleteChat(int userId, int chatId);
+        public Task<bool> CanUpdateChatAsync(int currentUserId, int chatId);
+        public Task<bool> CanDeleteChatAsync(int currentUserId, int chatId);
         //Message
-        public Task<bool> CanUpdateMessage(int userId, int messageId);
-        public Task<bool> CanDeleteMessage(int userId, int messageId);
+        public Task<bool> CanUpdateMessageAsync(int currentUserId, int messageId);
+        public Task<bool> CanDeleteMessageAsync(int requesterId, int messageId);
         //Chat mem
-        public Task<bool> CanAddChatMember(int userId, int chatId);
-        public Task<bool> CanUpdateChatMember(int userId, int chatMemberId);
-        public Task<bool> CanDeleteChatMember(int userId, int chatMemberId);
+        public Task<bool> CanAddChatMemberAsync(int requesterId, int chatId);
+        public Task<bool> CanUpdateChatMemberAsync(int requesterId, int chatMemberId);
+        public Task<bool> CanDeleteChatMemberAsync(int requesterId, int chatMemberId);
         //Note
-        public Task<bool> IsNoteAuthor(int userId, int noteId);
+        public Task<bool> IsNoteAuthorAsync(int currentUserId, int noteId);
         //Reminding
-        public Task<bool> IsRemindingAuthor(int userId, int remindingId);
+        public Task<bool> IsRemindingAuthorAsync(int currentUserId, int remindingId);
     }
 }

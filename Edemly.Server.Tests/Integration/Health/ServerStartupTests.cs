@@ -8,7 +8,7 @@ namespace Edemly.Server.Tests.Integration.Health;
 public sealed class ServerStartupTests
 {
     [Test]
-    public async Task Server_Should_Start()
+    public async Task Server_Should_StartAsync()
     {
         using var factory = new CustomWebApplicationFactory();
 

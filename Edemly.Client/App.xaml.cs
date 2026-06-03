@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Windows;
 using Edemly.Client.Services;
@@ -468,7 +468,7 @@ namespace Edemly.Client
                     return;
                 }
 
-                var userInfo = await ApiService.GetUserInfo();
+                var userInfo = await ApiService.GetUserInfoAsync();
                 if (userInfo == null || userInfo.Id <= 0)
                 {
                     return;

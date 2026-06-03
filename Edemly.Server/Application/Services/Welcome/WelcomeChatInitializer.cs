@@ -9,18 +9,18 @@ namespace Edemly.Server.Services
 {
     public class WelcomeChatInitializer
     {
-        private readonly ServerDbContext _context;
+        private readonly ServerDbContext _serverDbContext;
         private readonly ILogger<WelcomeChatInitializer> _logger;
         private readonly IConfiguration _configuration;
         private readonly IWelcomeChatService _welcomeChatService;
 
         public WelcomeChatInitializer(
-            ServerDbContext context,
+            ServerDbContext serverDbContext,
             ILogger<WelcomeChatInitializer> logger,
             IConfiguration configuration,
             IWelcomeChatService welcomeChatService)
         {
-            _context = context;
+            _serverDbContext = serverDbContext;
             _logger = logger;
             _configuration = configuration;
             _welcomeChatService = welcomeChatService;
@@ -32,7 +32,7 @@ namespace Edemly.Server.Services
             {
                 _logger.LogInformation("Checking for welcome chat...");
 
-                var (welcomeChat, created) = await _welcomeChatService.EnsureWelcomeChatAsync(_context);
+                var (welcomeChat, created) = await _welcomeChatService.EnsureWelcomeChatAsync(_serverDbContext);
                 if (!created)
                 {
                     _logger.LogInformation("Welcome chat already exists (ID: {ChatId})", welcomeChat.Id);
@@ -56,11 +56,11 @@ namespace Edemly.Server.Services
 
         private async Task AddAllUsersToWelcomeChatAsync(int chatId)
         {
-            var users = await _context.Users.ToListAsync();
+            var users = await _serverDbContext.Users.ToListAsync();
 
             foreach (var user in users)
             {
-                var existingMember = await _context.ChatMembers
+                var existingMember = await _serverDbContext.ChatMembers
                     .FirstOrDefaultAsync(item => item.ChatId == chatId && item.UserId == user.Id);
 
                 if (existingMember != null)
@@ -68,7 +68,7 @@ namespace Edemly.Server.Services
                     continue;
                 }
 
-                _context.ChatMembers.Add(new ChatMember
+                _serverDbContext.ChatMembers.Add(new ChatMember
                 {
                     ChatId = chatId,
                     UserId = user.Id,
@@ -77,14 +77,14 @@ namespace Edemly.Server.Services
                 });
             }
 
-            await _context.SaveChangesAsync();
+            await _serverDbContext.SaveChangesAsync();
             _logger.LogInformation("Added {UserCount} users to welcome chat", users.Count);
         }
 
         private async Task AddNewUsersToWelcomeChatAsync(int chatId)
         {
-            var allUserIds = await _context.Users.Select(item => item.Id).ToListAsync();
-            var existingMembers = await _context.ChatMembers
+            var allUserIds = await _serverDbContext.Users.Select(item => item.Id).ToListAsync();
+            var existingMembers = await _serverDbContext.ChatMembers
                 .Where(item => item.ChatId == chatId)
                 .Select(item => item.UserId)
                 .ToListAsync();
@@ -97,7 +97,7 @@ namespace Edemly.Server.Services
 
             foreach (var userId in newUserIds)
             {
-                _context.ChatMembers.Add(new ChatMember
+                _serverDbContext.ChatMembers.Add(new ChatMember
                 {
                     ChatId = chatId,
                     UserId = userId,
@@ -106,13 +106,13 @@ namespace Edemly.Server.Services
                 });
             }
 
-            await _context.SaveChangesAsync();
+            await _serverDbContext.SaveChangesAsync();
             _logger.LogInformation("Added {UserCount} new users to welcome chat", newUserIds.Count);
         }
 
         public Task EnsureUserInWelcomeChatAsync(int userId)
         {
-            return _welcomeChatService.EnsureUserInWelcomeChatAsync(_context, userId);
+            return _welcomeChatService.EnsureUserInWelcomeChatAsync(_serverDbContext, userId);
         }
 
         private async Task AddOwnerAdminToChatAsync(int chatId)
@@ -124,13 +124,13 @@ namespace Edemly.Server.Services
 
                 if (!string.IsNullOrWhiteSpace(adminEmail))
                 {
-                    adminUser = await _context.Users
+                    adminUser = await _serverDbContext.Users
                         .Include(item => item.LoginInfo)
                         .FirstOrDefaultAsync(item => item.LoginInfo != null && item.LoginInfo.Email == adminEmail);
                 }
 
-                adminUser ??= await _context.Users.FirstOrDefaultAsync(item => item.Username == "admin");
-                adminUser ??= await _context.Users.OrderBy(item => item.CreatedAt).FirstOrDefaultAsync();
+                adminUser ??= await _serverDbContext.Users.FirstOrDefaultAsync(item => item.Username == "admin");
+                adminUser ??= await _serverDbContext.Users.OrderBy(item => item.CreatedAt).FirstOrDefaultAsync();
 
                 if (adminUser == null)
                 {
@@ -138,7 +138,7 @@ namespace Edemly.Server.Services
                     return;
                 }
 
-                var existingMember = await _context.ChatMembers
+                var existingMember = await _serverDbContext.ChatMembers
                     .FirstOrDefaultAsync(item => item.ChatId == chatId && item.UserId == adminUser.Id);
 
                 if (existingMember != null)
@@ -146,8 +146,8 @@ namespace Edemly.Server.Services
                     if (existingMember.Role != ChatMemberRole.Creator)
                     {
                         existingMember.Role = ChatMemberRole.Creator;
-                        _context.ChatMembers.Update(existingMember);
-                        await _context.SaveChangesAsync();
+                        _serverDbContext.ChatMembers.Update(existingMember);
+                        await _serverDbContext.SaveChangesAsync();
                         _logger.LogInformation("Promoted user {UserId} to Creator for welcome chat {ChatId}", adminUser.Id, chatId);
                     }
                     else
@@ -158,14 +158,14 @@ namespace Edemly.Server.Services
                     return;
                 }
 
-                _context.ChatMembers.Add(new ChatMember
+                _serverDbContext.ChatMembers.Add(new ChatMember
                 {
                     ChatId = chatId,
                     UserId = adminUser.Id,
                     Role = ChatMemberRole.Creator,
                     JoinedAt = DateTime.UtcNow
                 });
-                await _context.SaveChangesAsync();
+                await _serverDbContext.SaveChangesAsync();
 
                 _logger.LogInformation("Assigned user {UserId} as Creator for welcome chat {ChatId}", adminUser.Id, chatId);
             }
@@ -177,7 +177,7 @@ namespace Edemly.Server.Services
 
         private async Task CreateWelcomeMessagesAsync(int chatId)
         {
-            var adminMember = await _context.ChatMembers
+            var adminMember = await _serverDbContext.ChatMembers
                 .Where(item => item.ChatId == chatId && (item.Role == ChatMemberRole.Creator || item.Role == ChatMemberRole.Admin))
                 .OrderBy(item => item.JoinedAt)
                 .FirstOrDefaultAsync();
@@ -185,10 +185,10 @@ namespace Edemly.Server.Services
             User? admin = null;
             if (adminMember != null)
             {
-                admin = await _context.Users.FindAsync(adminMember.UserId);
+                admin = await _serverDbContext.Users.FindAsync(adminMember.UserId);
             }
 
-            admin ??= await _context.Users.FirstOrDefaultAsync(item => item.Username == "admin");
+            admin ??= await _serverDbContext.Users.FirstOrDefaultAsync(item => item.Username == "admin");
             if (admin == null)
             {
                 _logger.LogWarning("No admin user found for sending welcome messages");
@@ -220,21 +220,21 @@ namespace Edemly.Server.Services
                     SentAt = DateTime.UtcNow
                 };
 
-                _context.Messages.Add(message);
+                _serverDbContext.Messages.Add(message);
                 if (message.SentAt > latestSentAt)
                 {
                     latestSentAt = message.SentAt;
                 }
             }
 
-            await _context.SaveChangesAsync();
+            await _serverDbContext.SaveChangesAsync();
 
-            var chat = await _context.Chats.FindAsync(chatId);
+            var chat = await _serverDbContext.Chats.FindAsync(chatId);
             if (chat != null)
             {
                 chat.LastMessageTime = latestSentAt == DateTime.MinValue ? DateTime.UtcNow : latestSentAt;
-                _context.Chats.Update(chat);
-                await _context.SaveChangesAsync();
+                _serverDbContext.Chats.Update(chat);
+                await _serverDbContext.SaveChangesAsync();
             }
 
             _logger.LogInformation("Created {MessageCount} welcome messages (sender user id: {UserId})", welcomeMessages.Length, admin.Id);

@@ -9,55 +9,73 @@ namespace Edemly.Server.Api.Controllers.Users
     [Route("api/[controller]")]
     public class UserController : ApiControllerBase
     {
-        private readonly IUserService _service;
+        private readonly IUserService _userService;
 
         public UserController(IUserService userService)
         {
-            _service = userService;
+            _userService = userService;
         }
 
         [Authorize]
         [HttpGet("me")]
-        public async Task<IActionResult> GetSelf()
+        public async Task<IActionResult> GetSelfAsync()
         {
-            return ToServiceDataResult(await _service.GetFullInfo(GetCurrentUserIdOrDefault()), user => new { User = user });
+            var unauthorizedResult = RequireCurrentUserId(out var currentUserId);
+            if (unauthorizedResult != null)
+            {
+                return unauthorizedResult;
+            }
+
+            return ToServiceResult(await _userService.GetFullInfoAsync(currentUserId), user => new { User = user });
         }
 
-        [HttpGet("id/{id}")]
-        public async Task<IActionResult> GetById(int id)
+        [HttpGet("id/{targetUserId}")]
+        public async Task<IActionResult> GetByIdAsync(int targetUserId)
         {
-            return ToServiceDataResult(await _service.GetById(id), user => new { User = user });
+            return ToServiceResult(await _userService.GetByIdAsync(targetUserId), user => new { User = user });
         }
 
         [Authorize]
         [HttpGet("search")]
-        public async Task<IActionResult> SearchUsers([FromQuery] string query)
+        public async Task<IActionResult> SearchUsersAsync([FromQuery] string query)
         {
-            return ToServiceDataResult(
-                await _service.SearchUsers(query),
+            return ToServiceResult(
+                await _userService.SearchUsersAsync(query),
                 users => new { users = users ?? new List<UserDto>(), count = users?.Count ?? 0 });
         }
 
         [Authorize]
         [HttpPut("update")]
-        public async Task<IActionResult> UpdateUser([FromBody] UpdateUserDto model)
+        public async Task<IActionResult> UpdateAsync([FromBody] UpdateUserDto request)
         {
-            return ToServiceMessageResult(await _service.UpdateUser(GetCurrentUserIdOrDefault(), model));
+            var unauthorizedResult = RequireCurrentUserId(out var currentUserId);
+            if (unauthorizedResult != null)
+            {
+                return unauthorizedResult;
+            }
+
+            return ToServiceResult(await _userService.UpdateAsync(currentUserId, request));
         }
 
         [Authorize]
         [HttpDelete("delete")]
-        public async Task<IActionResult> DeleteUser(int id)
+        public async Task<IActionResult> DeleteAsync(int targetUserId)
         {
-            return ToServiceMessageResult(await _service.DeleteUser(GetCurrentUserIdOrDefault(), id));
+            var unauthorizedResult = RequireCurrentUserId(out var requesterId);
+            if (unauthorizedResult != null)
+            {
+                return unauthorizedResult;
+            }
+
+            return ToServiceResult(await _userService.DeleteAsync(requesterId, targetUserId));
         }
 
         [Authorize]
         [HttpPost("batch")]
-        public async Task<IActionResult> GetUsersBatch([FromBody] List<int> userIds)
+        public async Task<IActionResult> GetUsersBatchAsync([FromBody] List<int> targetUserIds)
         {
-            return ToServiceDataResult(
-                await _service.GetUsersBatch(userIds),
+            return ToServiceResult(
+                await _userService.GetUsersBatchAsync(targetUserIds),
                 users => new { Users = users ?? new List<UserDto>(), Count = users?.Count ?? 0 });
         }
     }

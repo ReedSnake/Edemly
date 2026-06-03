@@ -17,7 +17,7 @@ namespace Edemly.Server.Tests.Unit.Payments;
 public sealed class PaymentRefactorTests
 {
     [Test]
-    public async Task Controller_GetPaymentHistory_Should_Return_Unauthorized_When_NameIdentifier_Claim_Is_Missing()
+    public async Task Controller_GetPaymentHistory_Should_Return_Unauthorized_When_NameIdentifier_Claim_Is_MissingAsync()
     {
         var configuration = CreateConfiguration();
         var wayForPayService = new WayForPayService(
@@ -40,13 +40,13 @@ public sealed class PaymentRefactorTests
             }
         };
 
-        var result = await controller.GetPaymentHistory();
+        var result = await controller.GetPaymentHistoryAsync();
 
-        Assert.That(result, Is.TypeOf<UnauthorizedObjectResult>());
+        Assert.That(result, Is.TypeOf<UnauthorizedResult>());
     }
 
     [Test]
-    public async Task Service_UpgradeUserToPremium_Should_Update_Subscription_Status_And_Expiration()
+    public async Task Service_UpgradeUserToPremium_Should_Update_Subscription_Status_And_ExpirationAsync()
     {
         using var connection = CreateOpenConnection();
         await using var serverDb = CreateServerDbContext(connection);
@@ -55,7 +55,7 @@ public sealed class PaymentRefactorTests
         var service = CreateService(serverDb);
 
         var before = DateTime.UtcNow;
-        var result = await service.UpgradeUserToPremium(user.Id, 30);
+        var result = await service.UpgradeUserToPremiumAsync(user.Id, 30);
         var refreshed = await serverDb.Users.FindAsync(user.Id);
 
         Assert.That(result.Success, Is.True);
@@ -63,6 +63,19 @@ public sealed class PaymentRefactorTests
         Assert.That(refreshed!.SubscriptionStatus, Is.EqualTo(SubscriptionStatus.Premium));
         Assert.That(refreshed.SubscriptionExpiration, Is.Not.Null);
         Assert.That(refreshed.SubscriptionExpiration!.Value, Is.GreaterThan(before.AddDays(29)));
+    }
+
+    [Test]
+    public async Task Service_UpgradeUserToPremium_Should_Return_NotFound_When_User_Does_Not_ExistAsync()
+    {
+        using var connection = CreateOpenConnection();
+        await using var serverDb = CreateServerDbContext(connection);
+
+        var service = CreateService(serverDb);
+        var result = await service.UpgradeUserToPremiumAsync(999, 30);
+
+        Assert.That(result.Success, Is.False);
+        Assert.That(result.StatusCode, Is.EqualTo(StatusCodes.Status404NotFound));
     }
 
     private static PaymentService CreateService(ServerDbContext serverDb)

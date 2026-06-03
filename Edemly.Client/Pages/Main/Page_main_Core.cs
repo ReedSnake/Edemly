@@ -1,4 +1,4 @@
-﻿#nullable disable
+#nullable disable
 using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
@@ -383,7 +383,7 @@ namespace Edemly.Client
                 }
                 else
                 {
-                    await chatManager.RestoreUI();
+                    await chatManager.RestoreUIAsync();
                 }
             }
             catch (Exception ex)

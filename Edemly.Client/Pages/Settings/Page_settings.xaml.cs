@@ -170,7 +170,7 @@ namespace Edemly.Client
             {
                 if (_apiService == null) return;
 
-                var userInfo = await _apiService.GetUserInfo();
+                var userInfo = await _apiService.GetUserInfoAsync();
                 if (userInfo == null) return;
 
                 var fullName = (userInfo.FirstName + " " + userInfo.LastName).Trim();
@@ -196,7 +196,7 @@ namespace Edemly.Client
                 _originalAvatarPath = userInfo.PfpUrl ?? string.Empty;
 
                 if (!string.IsNullOrEmpty(_originalAvatarPath))
-                    await LoadAvatarFromUrl(_originalAvatarPath);
+                    await LoadAvatarFromUrlAsync(_originalAvatarPath);
                 else
                     ShowInitials();
 
@@ -208,7 +208,7 @@ namespace Edemly.Client
             }
         }
 
-        private async Task LoadAvatarFromUrl(string url)
+        private async Task LoadAvatarFromUrlAsync(string url)
         {
             try
             {
@@ -229,7 +229,7 @@ namespace Edemly.Client
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[SETTINGS] LoadAvatarFromUrl error: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"[SETTINGS] LoadAvatarFromUrlAsync error: {ex.Message}");
                 ShowInitials();
             }
         }
@@ -315,7 +315,7 @@ namespace Edemly.Client
                 var name = NameTextBox.Text?.Trim();
 
                 bool updated = false;
-                try { updated = await _apiService.UpdateUserInfo(phone, about, newUrl, name); } catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[PAGE_SETTINGS] UpdateUserInfo failed: {ex}"); }
+                try { updated = await _apiService.UpdateUserInfoAsync(phone, about, newUrl, name); } catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[PAGE_SETTINGS] UpdateUserInfoAsync failed: {ex}"); }
 
                 if (!updated)
                     MessageBox.ShowWarning(DefaultLanguage.PhotoUploadedButUpdateFailed, DefaultLanguage.WarningTitle);
@@ -326,7 +326,7 @@ namespace Edemly.Client
                 _originalAvatarPath = newUrl;
                 App.CurrentUserPhotoUrl = newUrl;
 
-                await LoadAvatarFromUrl(newUrl);
+                await LoadAvatarFromUrlAsync(newUrl);
 
                 try
                 {
@@ -374,7 +374,7 @@ namespace Edemly.Client
                     return;
                 }
 
-                bool success = await _apiService.UpdateUserInfo(phone, about, _originalAvatarPath, name);
+                bool success = await _apiService.UpdateUserInfoAsync(phone, about, _originalAvatarPath, name);
 
                 if (!success)
                 {

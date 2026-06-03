@@ -14,54 +14,54 @@ namespace Edemly.Server.Api.Services
         private readonly ILogger<ChatService> _logger;
 
         public ChatService(
-            ServerDbContext serverDb,
+            ServerDbContext serverDbContext,
             IChatMemberService chatMemberService,
             ILogger<ChatService> logger,
             ITenantProvider tenantProvider,
-            ITenantDbContextFactory tenantDbFactory)
-            : base(serverDb, tenantProvider, tenantDbFactory)
+            ITenantDbContextFactory tenantDbContextFactory)
+            : base(serverDbContext, tenantProvider, tenantDbContextFactory)
         {
             _chatMemberService = chatMemberService;
             _logger = logger;
         }
 
-        public async Task<ServiceDataResult<ChatDto>> CreateOrGetPrivateChat(int currentUserId, int otherUserId)
+        public async Task<ServiceResult<ChatDto>> CreateOrGetPrivateChatAsync(int currentUserId, int targetUserId)
         {
             try
             {
                 await using var dbContextLease = ResolveDbContext();
                 var ctx = dbContextLease.Context;
 
-                if (currentUserId == otherUserId)
+                if (currentUserId == targetUserId)
                 {
-                    return ServiceDataResult<ChatDto>.BadRequest("Cannot create chat with yourself");
+                    return ServiceResult<ChatDto>.BadRequest("Cannot create chat with yourself");
                 }
 
                 var existingChat = await ctx.Set<Chat>()
                     .AsNoTracking()
                     .Where(c => c.Type == ChatType.Direct)
                     .Where(c => c.ChatMembers.Any(cm => cm.UserId == currentUserId))
-                    .Where(c => c.ChatMembers.Any(cm => cm.UserId == otherUserId))
+                    .Where(c => c.ChatMembers.Any(cm => cm.UserId == targetUserId))
                     .FirstOrDefaultAsync();
 
                 if (existingChat != null)
                 {
                     _logger.LogInformation(
-                        "Found existing private chat {ChatId} between users {CurrentUserId} and {OtherUserId}",
+                        "Found existing private chat {ChatId} between users {CurrentUserId} and {TargetUserId}",
                         existingChat.Id,
                         currentUserId,
-                        otherUserId);
+                        targetUserId);
 
-                    return ServiceDataResult<ChatDto>.Ok(ToChatDto(existingChat));
+                    return ServiceResult<ChatDto>.Ok(ChatMappings.ToDto(existingChat));
                 }
 
-                var otherUser = await ctx.Set<User>()
+                var targetUser = await ctx.Set<User>()
                     .AsNoTracking()
-                    .FirstOrDefaultAsync(user => user.Id == otherUserId);
+                    .FirstOrDefaultAsync(user => user.Id == targetUserId);
 
-                if (otherUser == null)
+                if (targetUser == null)
                 {
-                    return ServiceDataResult<ChatDto>.BadRequest("User not found");
+                    return ServiceResult<ChatDto>.NotFound("User not found");
                 }
 
                 var newChat = new Chat
@@ -74,64 +74,74 @@ namespace Edemly.Server.Api.Services
                 ctx.Set<Chat>().Add(newChat);
                 await ctx.SaveChangesAsync();
 
-                await _chatMemberService.AddMember(newChat.Id, currentUserId, ChatMemberRole.Base);
-                await _chatMemberService.AddMember(newChat.Id, otherUserId, ChatMemberRole.Base);
+                await _chatMemberService.AddMemberAsync(newChat.Id, currentUserId, ChatMemberRole.Base);
+                await _chatMemberService.AddMemberAsync(newChat.Id, targetUserId, ChatMemberRole.Base);
 
                 _logger.LogInformation(
-                    "Created new private chat {ChatId} between users {CurrentUserId} and {OtherUserId}",
+                    "Created new private chat {ChatId} between users {CurrentUserId} and {TargetUserId}",
                     newChat.Id,
                     currentUserId,
-                    otherUserId);
+                    targetUserId);
 
-                return ServiceDataResult<ChatDto>.Ok(ToChatDto(newChat));
+                return ServiceResult<ChatDto>.Ok(ChatMappings.ToDto(newChat));
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error creating or getting private chat");
-                return ServiceDataResult<ChatDto>.Unexpected("Failed to create private chat");
+                return ServiceResult<ChatDto>.Unexpected("Failed to create private chat");
             }
         }
 
-        public async Task<ServiceDataResult<ChatDto>> CreateGroupChat(
-            int creatorId,
+        public async Task<ServiceResult<ChatDto>> CreateGroupChatAsync(
+            int requesterId,
             string groupName,
             List<int> participantIds)
         {
+            if (string.IsNullOrWhiteSpace(groupName))
+            {
+                return ServiceResult<ChatDto>.BadRequest("Group name is required");
+            }
+
+            if (participantIds == null || participantIds.Count == 0)
+            {
+                return ServiceResult<ChatDto>.BadRequest("At least one participant is required");
+            }
+
             try
             {
                 await using var dbContextLease = ResolveDbContext();
                 var ctx = dbContextLease.Context;
 
-                if (string.IsNullOrWhiteSpace(groupName))
-                {
-                    return ServiceDataResult<ChatDto>.BadRequest("Group name cannot be empty");
-                }
+                var distinctParticipantIds = participantIds
+                    .Where(participantId => participantId != requesterId)
+                    .Distinct()
+                    .ToList();
 
-                if (participantIds == null || participantIds.Count == 0)
-                {
-                    return ServiceDataResult<ChatDto>.BadRequest("Group must have at least one participant");
-                }
+                var allMemberIds = distinctParticipantIds
+                    .Append(requesterId)
+                    .ToList();
 
                 _logger.LogInformation(
                     "Creating group chat '{GroupName}' by user {CreatorId}",
                     groupName,
-                    creatorId);
+                    requesterId);
 
                 var validUsers = await ctx.Set<User>()
                     .AsNoTracking()
-                    .Where(u => participantIds.Contains(u.Id))
+                    .Where(u => allMemberIds.Contains(u.Id))
                     .Select(u => u.Id)
                     .ToListAsync();
 
-                if (validUsers.Count != participantIds.Count)
+                if (validUsers.Count != allMemberIds.Count)
                 {
-                    var invalidIds = participantIds.Except(validUsers);
-                    return ServiceDataResult<ChatDto>.BadRequest($"Users not found: {string.Join(", ", invalidIds)}");
+                    var invalidIds = allMemberIds.Except(validUsers);
+                    return ServiceResult<ChatDto>.NotFound(
+                        $"Users not found: {string.Join(", ", invalidIds)}");
                 }
 
                 var newChat = new Chat
                 {
-                    Name = groupName,
+                    Name = groupName.Trim(),
                     Type = ChatType.Group,
                     CreatedAt = DateTime.UtcNow,
                     LastMessageTime = DateTime.UtcNow
@@ -140,32 +150,35 @@ namespace Edemly.Server.Api.Services
                 ctx.Set<Chat>().Add(newChat);
                 await ctx.SaveChangesAsync();
 
-                await _chatMemberService.AddMember(newChat.Id, creatorId, ChatMemberRole.Admin);
+                await _chatMemberService.AddMemberAsync(
+                    newChat.Id,
+                    requesterId,
+                    ChatMemberRole.Admin);
 
-                foreach (var userId in participantIds)
+                foreach (var participantId in distinctParticipantIds)
                 {
-                    if (userId != creatorId)
-                    {
-                        await _chatMemberService.AddMember(newChat.Id, userId, ChatMemberRole.Base);
-                    }
+                    await _chatMemberService.AddMemberAsync(
+                        newChat.Id,
+                        participantId,
+                        ChatMemberRole.Base);
                 }
 
                 _logger.LogInformation(
                     "Created group chat {ChatId} '{GroupName}' with {ParticipantCount} participants",
                     newChat.Id,
                     groupName,
-                    participantIds.Count);
+                    allMemberIds.Count);
 
-                return ServiceDataResult<ChatDto>.Ok(ToChatDto(newChat));
+                return ServiceResult<ChatDto>.Ok(ChatMappings.ToDto(newChat));
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error creating group chat '{GroupName}'", groupName);
-                return ServiceDataResult<ChatDto>.Unexpected("Failed to create group chat");
+                return ServiceResult<ChatDto>.Unexpected("Failed to create group chat");
             }
         }
 
-        public async Task<ServiceDataResult<List<ChatDto>>> GetMyChats(int userId)
+        public async Task<ServiceResult<List<ChatDto>>> GetMyChatsAsync(int currentUserId)
         {
             try
             {
@@ -176,14 +189,14 @@ namespace Edemly.Server.Api.Services
                     .AsNoTracking()
                     .Include(c => c.ChatMembers)
                         .ThenInclude(cm => cm.User)
-                    .Where(c => c.ChatMembers.Any(cm => cm.UserId == userId))
+                    .Where(c => c.ChatMembers.Any(cm => cm.UserId == currentUserId))
                     .ToListAsync();
 
                 var result = new List<ChatDto>();
 
                 foreach (var chat in chats)
                 {
-                    var displayName = ResolveDisplayName(chat, userId);
+                    var displayName = ResolveDisplayName(chat, currentUserId);
 
                     var lastMessage = await ctx.Set<Message>()
                         .AsNoTracking()
@@ -191,24 +204,24 @@ namespace Edemly.Server.Api.Services
                         .OrderByDescending(m => m.SentAt)
                         .FirstOrDefaultAsync();
 
-                    result.Add(ToChatDto(chat, displayName, lastMessage));
+                    result.Add(ChatMappings.ToDto(chat, displayName, lastMessage));
                 }
 
                 result = result
                     .OrderByDescending(c => c.LastMessageTime ?? c.CreatedAt)
                     .ToList();
 
-                _logger.LogInformation("Returning {Count} chats for user {UserId}", result.Count, userId);
-                return ServiceDataResult<List<ChatDto>>.Ok(result);
+                _logger.LogInformation("Returning {Count} chats for user {UserId}", result.Count, currentUserId);
+                return ServiceResult<List<ChatDto>>.Ok(result);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error getting user chats");
-                return ServiceDataResult<List<ChatDto>>.Unexpected("Failed to get chats");
+                return ServiceResult<List<ChatDto>>.Unexpected("Failed to get chats");
             }
         }
 
-        public async Task<ServiceDataResult<ChatDto>> GetById(int currentUserId, int chatId)
+        public async Task<ServiceResult<ChatDto>> GetByIdAsync(int currentUserId, int chatId)
         {
             try
             {
@@ -223,24 +236,24 @@ namespace Edemly.Server.Api.Services
 
                 if (chat == null)
                 {
-                    return ServiceDataResult<ChatDto>.NotFound("Chat not found");
+                    return ServiceResult<ChatDto>.NotFound("Chat not found");
                 }
 
                 if (!chat.ChatMembers.Any(member => member.UserId == currentUserId))
                 {
-                    return ServiceDataResult<ChatDto>.Forbidden();
+                    return ServiceResult<ChatDto>.Forbidden();
                 }
 
-                return ServiceDataResult<ChatDto>.Ok(ToChatDto(chat, ResolveDisplayName(chat, currentUserId)));
+                return ServiceResult<ChatDto>.Ok(ChatMappings.ToDto(chat, ResolveDisplayName(chat, currentUserId)));
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error getting chat by id {ChatId} for user {UserId}", chatId, currentUserId);
-                return ServiceDataResult<ChatDto>.Unexpected("Failed to get chat");
+                return ServiceResult<ChatDto>.Unexpected("Failed to get chat");
             }
         }
 
-        public async Task<ServiceMessageResult> UpdateChat(int chatId, string? name, string? description, string? iconUrl)
+        public async Task<ServiceResult> UpdateAsync(int chatId, string? name, string? description, string? iconUrl)
         {
             try
             {
@@ -251,7 +264,7 @@ namespace Edemly.Server.Api.Services
 
                 if (chat == null)
                 {
-                    return ServiceMessageResult.BadRequest("Chat not found");
+                    return ServiceResult.NotFound("Chat not found");
                 }
 
                 if (!string.IsNullOrWhiteSpace(name))
@@ -272,29 +285,13 @@ namespace Edemly.Server.Api.Services
                 await ctx.SaveChangesAsync();
 
                 _logger.LogInformation("Updated chat {ChatId}", chatId);
-                return ServiceMessageResult.Ok("Chat updated successfully");
+                return ServiceResult.Ok("Chat updated successfully");
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error updating chat {ChatId}", chatId);
-                return ServiceMessageResult.Unexpected("Failed to update chat");
+                return ServiceResult.Unexpected("Failed to update chat");
             }
-        }
-
-        private static ChatDto ToChatDto(Chat chat, string? displayName = null, Message? lastMessage = null)
-        {
-            return new ChatDto
-            {
-                Id = chat.Id,
-                Name = displayName ?? chat.Name,
-                Description = chat.Description ?? string.Empty,
-                IconUrl = chat.IconUrl ?? string.Empty,
-                Type = (int)chat.Type,
-                CreatedAt = chat.CreatedAt,
-                LastMessageTime = chat.LastMessageTime,
-                LastMessageText = lastMessage?.Text,
-                LastMessageSenderId = lastMessage?.SenderId
-            };
         }
 
         private static string ResolveDisplayName(Chat chat, int requestingUserId)
@@ -313,7 +310,7 @@ namespace Edemly.Server.Api.Services
             return ResolveDirectChatDisplayName(otherMember.User, otherMember.UserId);
         }
 
-        private static string ResolveDirectChatDisplayName(User? user, int userId)
+        private static string ResolveDirectChatDisplayName(User? user, int targetUserId)
         {
             if (!string.IsNullOrWhiteSpace(user?.Username))
             {
@@ -328,7 +325,7 @@ namespace Edemly.Server.Api.Services
                 return fullName;
             }
 
-            return $"User {userId}";
+            return $"User {targetUserId}";
         }
     }
 }

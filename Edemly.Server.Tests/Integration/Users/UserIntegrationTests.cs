@@ -12,7 +12,7 @@ namespace Edemly.Server.Tests.Integration.Users;
 public sealed class UserIntegrationTests
 {
     [Test]
-    public async Task GetMe_Should_Return_Current_User_When_Token_Is_Valid()
+    public async Task GetMe_Should_Return_Current_User_When_Token_Is_ValidAsync()
     {
         using var factory = new CustomWebApplicationFactory();
         using var client = factory.CreateClient();
@@ -33,7 +33,7 @@ public sealed class UserIntegrationTests
     }
 
     [Test]
-    public async Task GetMe_Should_Return_Unauthorized_Without_Token()
+    public async Task GetMe_Should_Return_Unauthorized_Without_TokenAsync()
     {
         using var factory = new CustomWebApplicationFactory();
         using var client = factory.CreateClient();
@@ -44,7 +44,7 @@ public sealed class UserIntegrationTests
     }
 
     [Test]
-    public async Task SearchUsers_Should_Return_Matching_Users()
+    public async Task SearchUsers_Should_Return_Matching_UsersAsync()
     {
         using var factory = new CustomWebApplicationFactory();
         using var searcherClient = factory.CreateClient();
@@ -71,7 +71,7 @@ public sealed class UserIntegrationTests
     }
 
     [Test]
-    public async Task SearchUsers_Should_Return_Unauthorized_Without_Token()
+    public async Task SearchUsers_Should_Return_Unauthorized_Without_TokenAsync()
     {
         using var factory = new CustomWebApplicationFactory();
         using var client = factory.CreateClient();
@@ -82,7 +82,7 @@ public sealed class UserIntegrationTests
     }
 
     [Test]
-    public async Task UpdateProfile_Should_Update_User_Data_When_Request_Is_Valid()
+    public async Task UpdateProfile_Should_Update_User_Data_When_Request_Is_ValidAsync()
     {
         using var factory = new CustomWebApplicationFactory();
         using var client = factory.CreateClient();
@@ -120,7 +120,7 @@ public sealed class UserIntegrationTests
     }
 
     [Test]
-    public async Task UpdateProfile_Should_Clear_Optional_Fields_When_Empty_Strings_Are_Provided()
+    public async Task UpdateProfile_Should_Clear_Optional_Fields_When_Empty_Strings_Are_ProvidedAsync()
     {
         using var factory = new CustomWebApplicationFactory();
         using var client = factory.CreateClient();
@@ -162,7 +162,7 @@ public sealed class UserIntegrationTests
     }
 
     [Test]
-    public async Task UpdateProfile_Should_Return_BadRequest_When_Username_Is_Duplicate()
+    public async Task UpdateProfile_Should_Return_Conflict_When_Username_Is_DuplicateAsync()
     {
         using var factory = new CustomWebApplicationFactory();
         using var firstClient = factory.CreateClient();
@@ -183,11 +183,11 @@ public sealed class UserIntegrationTests
             "/api/user/update",
             new UpdateUserDto { Username = "shared-update-user" });
 
-        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Conflict));
     }
 
     [Test]
-    public async Task UpdateProfile_Should_Return_Unauthorized_Without_Token()
+    public async Task UpdateProfile_Should_Return_Unauthorized_Without_TokenAsync()
     {
         using var factory = new CustomWebApplicationFactory();
         using var client = factory.CreateClient();
@@ -203,14 +203,14 @@ public sealed class UserIntegrationTests
     }
 
     [Test]
-    public async Task DeleteUser_Should_Remove_Current_User()
+    public async Task DeleteUser_Should_Remove_Current_UserAsync()
     {
         using var factory = new CustomWebApplicationFactory();
         using var client = factory.CreateClient();
         var session = await TestAuthHelper.RegisterAsync(client, factory.Services);
         client.AddBearerToken(session.JwtToken);
 
-        using var response = await client.DeleteAsync($"/api/user/delete?id={session.AuthResponse.UserId}");
+        using var response = await client.DeleteAsync($"/api/user/delete?targetUserId={session.AuthResponse.UserId}");
 
         using var scope = factory.Services.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<ServerDbContext>();
@@ -228,7 +228,7 @@ public sealed class UserIntegrationTests
     }
 
     [Test]
-    public async Task DeleteUser_Should_Return_Forbidden_When_Deleting_Another_User()
+    public async Task DeleteUser_Should_Return_Forbidden_When_Deleting_Another_UserAsync()
     {
         using var factory = new CustomWebApplicationFactory();
         using var ownerClient = factory.CreateClient();
@@ -237,7 +237,7 @@ public sealed class UserIntegrationTests
         var otherUser = await TestAuthHelper.RegisterAsync(otherUserClient, factory.Services);
         ownerClient.AddBearerToken(owner.JwtToken);
 
-        using var response = await ownerClient.DeleteAsync($"/api/user/delete?id={otherUser.AuthResponse.UserId}");
+        using var response = await ownerClient.DeleteAsync($"/api/user/delete?targetUserId={otherUser.AuthResponse.UserId}");
 
         using var scope = factory.Services.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<ServerDbContext>();
@@ -251,12 +251,12 @@ public sealed class UserIntegrationTests
     }
 
     [Test]
-    public async Task DeleteUser_Should_Return_Unauthorized_Without_Token()
+    public async Task DeleteUser_Should_Return_Unauthorized_Without_TokenAsync()
     {
         using var factory = new CustomWebApplicationFactory();
         using var client = factory.CreateClient();
 
-        using var response = await client.DeleteAsync("/api/user/delete?id=1");
+        using var response = await client.DeleteAsync("/api/user/delete?targetUserId=1");
 
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
     }

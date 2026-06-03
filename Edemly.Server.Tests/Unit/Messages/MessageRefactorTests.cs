@@ -20,27 +20,30 @@ namespace Edemly.Server.Tests.Unit.Messages;
 public sealed class MessageRefactorTests
 {
     [Test]
-    public async Task Controller_GetByChat_Should_Return_Forbid_When_Service_Returns_Forbidden()
+    public async Task Controller_GetByChat_Should_Return_Forbid_When_Service_Returns_ForbiddenAsync()
     {
         var service = new Mock<IMessageService>();
-        service.Setup(x => x.GetByChat(0, 7, 1, 20))
-            .ReturnsAsync(ServiceDataResult<List<MessageDto>>.Forbidden());
+        service.Setup(x => x.GetByChatAsync(12, 7, 1, 20))
+            .ReturnsAsync(ServiceResult<List<MessageDto>>.Forbidden());
 
         var controller = new MessageController(service.Object)
         {
             ControllerContext = new ControllerContext
             {
-                HttpContext = new DefaultHttpContext()
+                HttpContext = new DefaultHttpContext
+                {
+                    User = TestPrincipal(12)
+                }
             }
         };
 
-        var result = await controller.GetByChat(7);
+        var result = await controller.GetByChatAsync(7);
 
         Assert.That(result, Is.TypeOf<ForbidResult>());
     }
 
     [Test]
-    public async Task Service_Create_Should_Return_Forbidden_When_User_Is_Not_In_Chat()
+    public async Task Service_Create_Should_Return_Forbidden_When_User_Is_Not_In_ChatAsync()
     {
         using var connection = CreateOpenConnection();
         await using var serverDb = CreateServerDbContext(connection);
@@ -49,7 +52,7 @@ public sealed class MessageRefactorTests
         var chat = await CreateChatAsync(serverDb);
 
         var service = CreateService(serverDb);
-        var result = await service.Create(user.Id, new CreateMessageDto
+        var result = await service.CreateAsync(user.Id, new CreateMessageDto
         {
             ChatId = chat.Id,
             Text = "hi",
@@ -61,7 +64,26 @@ public sealed class MessageRefactorTests
     }
 
     [Test]
-    public async Task Service_Delete_Should_Allow_Creator_To_Delete_Chat_Message()
+    public async Task Service_Create_Should_Return_NotFound_When_Chat_Does_Not_ExistAsync()
+    {
+        using var connection = CreateOpenConnection();
+        await using var serverDb = CreateServerDbContext(connection);
+
+        var user = await CreateUserAsync(serverDb, "user@example.test");
+        var service = CreateService(serverDb);
+        var result = await service.CreateAsync(user.Id, new CreateMessageDto
+        {
+            ChatId = 999,
+            Text = "hi",
+            Type = (int)MessageType.Txt
+        });
+
+        Assert.That(result.Success, Is.False);
+        Assert.That(result.StatusCode, Is.EqualTo(StatusCodes.Status404NotFound));
+    }
+
+    [Test]
+    public async Task Service_Delete_Should_Allow_Creator_To_Delete_Chat_MessageAsync()
     {
         using var connection = CreateOpenConnection();
         await using var serverDb = CreateServerDbContext(connection);
@@ -84,7 +106,7 @@ public sealed class MessageRefactorTests
         await serverDb.SaveChangesAsync();
 
         var service = CreateService(serverDb);
-        var result = await service.Delete(creator.Id, message.Id);
+        var result = await service.DeleteAsync(creator.Id, message.Id);
 
         Assert.That(result.Success, Is.True);
         Assert.That(serverDb.Messages.Any(), Is.False);
@@ -168,5 +190,16 @@ public sealed class MessageRefactorTests
         {
             throw new InvalidOperationException("Tenant DB should not be used in this test.");
         }
+    }
+
+    private static System.Security.Claims.ClaimsPrincipal TestPrincipal(int userId)
+    {
+        return new System.Security.Claims.ClaimsPrincipal(
+            new System.Security.Claims.ClaimsIdentity(
+                new[]
+                {
+                    new System.Security.Claims.Claim("userId", userId.ToString())
+                },
+                "test"));
     }
 }

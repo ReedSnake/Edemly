@@ -14,7 +14,7 @@ namespace Edemly.Server.Tests.Integration.Chats;
 public sealed class ChatIntegrationTests
 {
     [Test]
-    public async Task CreatePrivateChat_Should_Create_Chat_When_Users_Exist()
+    public async Task CreatePrivateChat_Should_Create_Chat_When_Users_ExistAsync()
     {
         using var factory = new CustomWebApplicationFactory();
         using var userClient = factory.CreateClient();
@@ -41,7 +41,7 @@ public sealed class ChatIntegrationTests
     }
 
     [Test]
-    public async Task CreatePrivateChat_Should_Return_Unauthorized_Without_Token()
+    public async Task CreatePrivateChat_Should_Return_Unauthorized_Without_TokenAsync()
     {
         using var factory = new CustomWebApplicationFactory();
         using var client = factory.CreateClient();
@@ -54,7 +54,7 @@ public sealed class ChatIntegrationTests
     }
 
     [Test]
-    public async Task GetMyChats_Should_Return_Only_User_Chats()
+    public async Task GetMyChats_Should_Return_Only_User_ChatsAsync()
     {
         using var factory = new CustomWebApplicationFactory();
         using var user1Client = factory.CreateClient();
@@ -82,7 +82,7 @@ public sealed class ChatIntegrationTests
     }
 
     [Test]
-    public async Task GetMyChats_Should_Use_Fallback_Name_When_Other_User_Clears_ProfileFields()
+    public async Task GetMyChats_Should_Use_Fallback_Name_When_Other_User_Clears_ProfileFieldsAsync()
     {
         using var factory = new CustomWebApplicationFactory();
         using var userClient = factory.CreateClient();
@@ -119,7 +119,7 @@ public sealed class ChatIntegrationTests
     }
 
     [Test]
-    public async Task GetChat_Should_Return_Forbidden_When_User_Is_Not_Member()
+    public async Task GetChat_Should_Return_Forbidden_When_User_Is_Not_MemberAsync()
     {
         using var factory = new CustomWebApplicationFactory();
         using var ownerClient = factory.CreateClient();

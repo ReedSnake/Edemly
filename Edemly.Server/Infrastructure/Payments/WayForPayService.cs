@@ -87,7 +87,7 @@ namespace Edemly.Server.Api.Services
             try
             {
                 var orderId = $"User_{userId}_Order_{Guid.NewGuid():N}";
-                var createResult = await _payment_service_create_wrapper(userId, amount, orderId);
+                var createResult = await CreatePaymentAsync(userId, amount, orderId);
 
                 if (!createResult.Success)
                     return (false, createResult.Error, null);
@@ -154,9 +154,9 @@ namespace Edemly.Server.Api.Services
             }
         }
 
-        private async Task<(bool Success, string? Error)> _payment_service_create_wrapper(int userId, decimal amount, string orderId)
+        private async Task<(bool Success, string? Error)> CreatePaymentAsync(int userId, decimal amount, string orderId)
         {
-            var result = await _paymentService.Create(userId, new CreatePaymentDto
+            var result = await _paymentService.CreateAsync(userId, new CreatePaymentDto
             {
                 Amount = amount,
                 Status = PaymentStatus.Pending.ToString(),

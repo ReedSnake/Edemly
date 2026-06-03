@@ -6,7 +6,7 @@ namespace Edemly.Server.Tests.Integration.Auth;
 public sealed class AuthHelperTests
 {
     [Test]
-    public async Task TestAuthHelper_Should_Register_Login_And_Add_Bearer_Token()
+    public async Task TestAuthHelper_Should_Register_Login_And_Add_Bearer_TokenAsync()
     {
         using var factory = new CustomWebApplicationFactory();
         using var client = factory.CreateClient();

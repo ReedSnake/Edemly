@@ -10,7 +10,7 @@ namespace Edemly.Server.Tests.Integration.Tenancy;
 public sealed class TenantResolutionIntegrationTests
 {
     [Test]
-    public async Task TenantPath_Should_Rewrite_To_Protected_Endpoint_When_Company_Exists()
+    public async Task TenantPath_Should_Rewrite_To_Protected_Endpoint_When_Company_ExistsAsync()
     {
         using var factory = new CustomWebApplicationFactory();
         using var client = factory.CreateClient();
@@ -22,7 +22,7 @@ public sealed class TenantResolutionIntegrationTests
     }
 
     [Test]
-    public async Task TenantPath_Should_Not_Rewrite_When_First_Segment_Does_Not_Match_Company()
+    public async Task TenantPath_Should_Not_Rewrite_When_First_Segment_Does_Not_Match_CompanyAsync()
     {
         using var factory = new CustomWebApplicationFactory();
         using var client = factory.CreateClient();
@@ -34,7 +34,7 @@ public sealed class TenantResolutionIntegrationTests
     }
 
     [Test]
-    public async Task TenantPath_Should_Resolve_Company_Case_Insensitively_When_Request_Uses_Tenant_Prefix()
+    public async Task TenantPath_Should_Resolve_Company_Case_Insensitively_When_Request_Uses_Tenant_PrefixAsync()
     {
         using var factory = new CustomWebApplicationFactory();
         using var client = factory.CreateClient();

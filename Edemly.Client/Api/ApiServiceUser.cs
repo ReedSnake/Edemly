@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -16,7 +16,7 @@ namespace Edemly.Client.Api
 {
     public partial class ApiService : IApiService, IDisposable
     {
-        public async Task<UserInfoDto> GetUserInfo()
+        public async Task<UserInfoDto> GetUserInfoAsync()
         {
             try
             {
@@ -37,7 +37,7 @@ namespace Edemly.Client.Api
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[API] GetUserInfo failed: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"[API] GetUserInfoAsync failed: {ex.Message}");
                 return new UserInfoDto();
             }
         }
@@ -94,7 +94,7 @@ namespace Edemly.Client.Api
             }
         }
 
-        public async Task<bool> UpdateUserInfo(string? phoneNumber, string? description, string? pfpUrl, string? name)
+        public async Task<bool> UpdateUserInfoAsync(string? phoneNumber, string? description, string? pfpUrl, string? name)
         {
             try
             {

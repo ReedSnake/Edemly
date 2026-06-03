@@ -6,6 +6,7 @@ using Edemly.Server.Api.Services;
 using Edemly.Server.Configuration;
 using Edemly.Server.Data;
 using Edemly.Server.Hubs;
+using Edemly.Server.Infrastructure.Realtime;
 using Edemly.Server.Services;
 using Edemly.Server.Utils;
 using Edemly.Server.Api.Middleware;
@@ -14,7 +15,12 @@ namespace Edemly.Server
 {
     public partial class Program
     {
-        public static async Task Main(string[] args)
+        public static Task Main(string[] args)
+        {
+            return MainAsync(args);
+        }
+
+        private static async Task MainAsync(string[] args)
         {
             // Перевірка чи це EF Core tools через ProcessName
             //DaemonHelper.Daemonize();
@@ -135,6 +141,7 @@ namespace Edemly.Server
             builder.Services.AddScoped<IWelcomeChatService, WelcomeChatService>();
             builder.Services.AddScoped<IMessageService, MessageService>();
             builder.Services.AddScoped<IChatService, ChatService>();
+            builder.Services.AddScoped<IChatRealtimeNotifier, SignalRChatRealtimeNotifier>();
             builder.Services.AddScoped<IChatMemberService, ChatMemberService>();
             builder.Services.AddScoped<INoteService, NoteService>();
             builder.Services.AddScoped<IRemindingService, RemindingService>();

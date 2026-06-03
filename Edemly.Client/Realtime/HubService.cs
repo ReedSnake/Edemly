@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.WinUI.Notifications;
+using CommunityToolkit.WinUI.Notifications;
 using Microsoft.AspNetCore.SignalR.Client;
 using System;
 using System.Collections.Concurrent;
@@ -64,7 +64,7 @@ namespace Edemly.Client.Realtime
         public bool IsReconnecting => _isReconnecting;
 
         // Internal lifecycle handlers that are aware of which connection raised the event
-        private async Task OnConnectionClosedInternal(HubConnection conn, Exception? error)
+        private async Task OnConnectionClosedInternalAsync(HubConnection conn, Exception? error)
         {
             // Only consider main connection for global reconnecting state
             if (!ReferenceEquals(conn, _connection))
@@ -629,7 +629,7 @@ namespace Edemly.Client.Realtime
 
                         if (!isFromMe && message.ChatId != currentChat)
                         {
-                            ShowToast(message);
+                            ShowToastAsync(message);
                         }
                     }
                     catch (Exception ex)
@@ -660,7 +660,7 @@ namespace Edemly.Client.Realtime
                     {
                         await Application.Current.Dispatcher.Invoke(async () =>
                         {
-                            await ShowReminderToast(reminderId);
+                            await ShowReminderToastAsync(reminderId);
                         });
 
                         await conn.InvokeAsync("ConfirmRemindingReceived", reminderId);
@@ -842,7 +842,7 @@ namespace Edemly.Client.Realtime
             });
 
             // Attach lifecycle handlers that know which connection raised the event
-            conn.Closed += async (ex) => await OnConnectionClosedInternal(conn, ex);
+            conn.Closed += async (ex) => await OnConnectionClosedInternalAsync(conn, ex);
             conn.Reconnecting += (ex) => OnReconnectingInternal(conn, ex);
             conn.Reconnected += (id) => OnReconnectedInternal(conn, id);
         }
@@ -1002,7 +1002,7 @@ namespace Edemly.Client.Realtime
             });
 
             // also hook lifecycle events for call connection but use connection-aware handlers
-            conn.Closed += async (ex) => await OnConnectionClosedInternal(conn, ex);
+            conn.Closed += async (ex) => await OnConnectionClosedInternalAsync(conn, ex);
             conn.Reconnecting += (ex) => OnReconnectingInternal(conn, ex);
             conn.Reconnected += (id) => OnReconnectedInternal(conn, id);
         }
@@ -1054,7 +1054,7 @@ namespace Edemly.Client.Realtime
             }
         }
 
-        private async Task OnConnectionClosed(Exception? error)
+        private async Task OnConnectionClosedAsync(Exception? error)
         {
             if (!_allowReconnect)
             {
@@ -1179,7 +1179,7 @@ namespace Edemly.Client.Realtime
             GC.SuppressFinalize(this);
         }
 
-        private async Task ShowToast(MessageDto content)
+        private async Task ShowToastAsync(MessageDto content)
         {
             try
             {
@@ -1208,7 +1208,7 @@ namespace Edemly.Client.Realtime
             }
         }
 
-        private async Task ShowReminderToast(int remindingId)
+        private async Task ShowReminderToastAsync(int remindingId)
         {
             try
             {
@@ -1269,7 +1269,7 @@ namespace Edemly.Client.Realtime
                     if (msg.IndexOf("Connection closed", StringComparison.OrdinalIgnoreCase) >= 0 ||
                         msg.IndexOf("closed the connection", StringComparison.OrdinalIgnoreCase) >= 0)
                     {
-                        _ = OnConnectionClosed(ex);
+                        _ = OnConnectionClosedAsync(ex);
                     }
                 }
                 catch (Exception logEx)

@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 using Edemly.Contracts.Calls;
@@ -18,8 +18,8 @@ namespace Edemly.Client.Api
         Task<UserDto?> GetUserByIdAsync(int userId);
         Task<ChatDto?> CreateOrGetPrivateChatAsync(int userId);
         Task<List<ChatMemberDto>> GetChatMembersAsync(int chatId);
-        Task<UserInfoDto> GetUserInfo();
-        Task<bool> UpdateUserInfo(string? phoneNumber, string? description, string? pfpUrl, string? name);
+        Task<UserInfoDto> GetUserInfoAsync();
+        Task<bool> UpdateUserInfoAsync(string? phoneNumber, string? description, string? pfpUrl, string? name);
 
         // Для роботи зі світлинами
         Task<(bool Success, string? Url, string? Error)> UploadProfilePictureAsync(string filePath);

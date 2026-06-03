@@ -9,53 +9,89 @@ namespace Edemly.Server.Api.Controllers.Remindings
     [Route("api/[controller]")]
     public class RemindingController : ApiControllerBase
     {
-        private readonly IRemindingService _service;
+        private readonly IRemindingService _remindingService;
 
-        public RemindingController(IRemindingService service)
+        public RemindingController(IRemindingService remindingService)
         {
-            _service = service;
+            _remindingService = remindingService;
         }
 
         [Authorize]
-        [HttpGet("id/{id}")]
-        public async Task<IActionResult> GetById(int id)
+        [HttpGet("id/{remindingId}")]
+        public async Task<IActionResult> GetByIdAsync(int remindingId)
         {
-            return ToServiceDataResult(await _service.GetById(GetCurrentUserIdOrDefault(), id));
+            var unauthorizedResult = RequireCurrentUserId(out var currentUserId);
+            if (unauthorizedResult != null)
+            {
+                return unauthorizedResult;
+            }
+
+            return ToServiceResult(await _remindingService.GetByIdAsync(currentUserId, remindingId));
         }
 
         [Authorize]
         [HttpGet("my-remindings")]
-        public async Task<IActionResult> GetByUser()
+        public async Task<IActionResult> GetByUserAsync()
         {
-            return ToServiceDataResult(await _service.GetByUser(GetCurrentUserIdOrDefault()));
+            var unauthorizedResult = RequireCurrentUserId(out var currentUserId);
+            if (unauthorizedResult != null)
+            {
+                return unauthorizedResult;
+            }
+
+            return ToServiceResult(await _remindingService.GetByUserAsync(currentUserId));
         }
 
         [Authorize]
         [HttpPost("create")]
-        public async Task<IActionResult> Create([FromBody] CreateRemindingDto model)
+        public async Task<IActionResult> CreateAsync([FromBody] CreateRemindingDto request)
         {
-            return ToServiceMessageResult(await _service.Create(GetCurrentUserIdOrDefault(), model));
+            var unauthorizedResult = RequireCurrentUserId(out var currentUserId);
+            if (unauthorizedResult != null)
+            {
+                return unauthorizedResult;
+            }
+
+            return ToServiceResult(await _remindingService.CreateAsync(currentUserId, request));
         }
 
         [Authorize]
         [HttpPut("update")]
-        public async Task<IActionResult> Update([FromBody] UpdateRemindingDto model)
+        public async Task<IActionResult> UpdateAsync([FromBody] UpdateRemindingDto request)
         {
-            return ToServiceMessageResult(await _service.Update(GetCurrentUserIdOrDefault(), model));
+            var unauthorizedResult = RequireCurrentUserId(out var currentUserId);
+            if (unauthorizedResult != null)
+            {
+                return unauthorizedResult;
+            }
+
+            return ToServiceResult(await _remindingService.UpdateAsync(currentUserId, request));
         }
 
         [Authorize]
-        [HttpPut("toggle-completion/{id}")]
-        public async Task<IActionResult> Toggle(int id)
+        [HttpPut("toggle-completion/{remindingId}")]
+        public async Task<IActionResult> ToggleAsync(int remindingId)
         {
-            return ToServiceMessageResult(await _service.ToggleCompletion(GetCurrentUserIdOrDefault(), id));
+            var unauthorizedResult = RequireCurrentUserId(out var currentUserId);
+            if (unauthorizedResult != null)
+            {
+                return unauthorizedResult;
+            }
+
+            return ToServiceResult(await _remindingService.ToggleCompletionAsync(currentUserId, remindingId));
         }
 
         [Authorize]
-        [HttpDelete("delete/{id}")]
-        public async Task<IActionResult> Delete(int id)
+        [HttpDelete("delete/{remindingId}")]
+        public async Task<IActionResult> DeleteAsync(int remindingId)
         {
-            return ToServiceMessageResult(await _service.Delete(GetCurrentUserIdOrDefault(), id));
+            var unauthorizedResult = RequireCurrentUserId(out var currentUserId);
+            if (unauthorizedResult != null)
+            {
+                return unauthorizedResult;
+            }
+
+            return ToServiceResult(await _remindingService.DeleteAsync(currentUserId, remindingId));
         }
     }
 }

@@ -13,7 +13,7 @@ namespace Edemly.Server.Tests.Integration.Chats;
 public sealed class ChatMemberIntegrationTests
 {
     [Test]
-    public async Task AddChatMember_Should_Add_User_When_Requester_Is_Admin()
+    public async Task AddChatMember_Should_Add_User_When_Requester_Is_AdminAsync()
     {
         using var factory = new CustomWebApplicationFactory();
         using var adminClient = factory.CreateClient();
@@ -46,7 +46,7 @@ public sealed class ChatMemberIntegrationTests
     }
 
     [Test]
-    public async Task AddChatMember_Should_Return_Forbidden_When_Requester_Is_Not_Admin()
+    public async Task AddChatMember_Should_Return_Forbidden_When_Requester_Is_Not_AdminAsync()
     {
         using var factory = new CustomWebApplicationFactory();
         using var adminClient = factory.CreateClient();
@@ -81,7 +81,7 @@ public sealed class ChatMemberIntegrationTests
     }
 
     [Test]
-    public async Task UpdateChatMemberRole_Should_Update_Role_When_Requester_Is_Creator()
+    public async Task UpdateChatMemberRole_Should_Update_Role_When_Requester_Is_CreatorAsync()
     {
         using var factory = new CustomWebApplicationFactory();
         using var creatorClient = factory.CreateClient();
@@ -121,7 +121,7 @@ public sealed class ChatMemberIntegrationTests
     }
 
     [Test]
-    public async Task RemoveChatMember_Should_Remove_User_When_Requester_Is_Admin()
+    public async Task RemoveChatMember_Should_Remove_User_When_Requester_Is_AdminAsync()
     {
         using var factory = new CustomWebApplicationFactory();
         using var adminClient = factory.CreateClient();
@@ -146,7 +146,7 @@ public sealed class ChatMemberIntegrationTests
     }
 
     [Test]
-    public async Task RemoveChatMember_Should_Return_Forbidden_When_Requester_Is_Not_Admin()
+    public async Task RemoveChatMember_Should_Return_Forbidden_When_Requester_Is_Not_AdminAsync()
     {
         using var factory = new CustomWebApplicationFactory();
         using var adminClient = factory.CreateClient();
@@ -178,7 +178,7 @@ public sealed class ChatMemberIntegrationTests
     }
 
     [Test]
-    public async Task UpdateChatMemberRole_Should_Return_Forbidden_When_Requester_Targets_Self_As_Creator()
+    public async Task UpdateChatMemberRole_Should_Return_Forbidden_When_Requester_Targets_Self_As_CreatorAsync()
     {
         using var factory = new CustomWebApplicationFactory();
         using var seedOwnerClient = factory.CreateClient();
@@ -223,7 +223,7 @@ public sealed class ChatMemberIntegrationTests
     }
 
     [Test]
-    public async Task RemoveChatMember_Should_Return_Forbidden_When_Requester_Targets_Self_As_Creator()
+    public async Task RemoveChatMember_Should_Return_Forbidden_When_Requester_Targets_Self_As_CreatorAsync()
     {
         using var factory = new CustomWebApplicationFactory();
         using var seedOwnerClient = factory.CreateClient();
