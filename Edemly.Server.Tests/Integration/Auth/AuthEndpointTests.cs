@@ -82,6 +82,100 @@ public sealed class AuthEndpointTests
     }
 
     [Test]
+    public async Task Register_Should_Return_Unauthorized_When_Verification_Code_Is_Invalid()
+    {
+        using var factory = new CustomWebApplicationFactory();
+        using var client = factory.CreateClient();
+        var testUser = AuthTestData.CreateUser();
+
+        await RequestVerificationCodeAsync(client, testUser.Email);
+
+        using var response = await client.PostAsJsonAsync(
+            "/api/auth/register",
+            new RegistrationWithCodeDto
+            {
+                Email = testUser.Email,
+                Username = testUser.Username,
+                Code = "000000"
+            });
+
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
+    }
+
+    [Test]
+    public async Task Register_Should_Create_Welcome_Chat_And_Membership()
+    {
+        using var factory = new CustomWebApplicationFactory();
+        using var client = factory.CreateClient();
+
+        var session = await TestAuthHelper.RegisterAsync(client, factory.Services);
+
+        using var scope = factory.Services.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<ServerDbContext>();
+        var welcomeChat = await dbContext.Chats
+            .Include(chat => chat.ChatMembers)
+            .SingleOrDefaultAsync(chat => chat.Name == "Edemly" && chat.Type == Edemly.Server.Data.Entities.ChatType.Group);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(welcomeChat, Is.Not.Null);
+            Assert.That(welcomeChat!.ChatMembers.Select(member => member.UserId), Does.Contain(session.AuthResponse.UserId));
+        });
+    }
+
+    [Test]
+    public async Task Register_Should_Generate_Unique_Username_From_Display_Name_When_Base_Is_Taken()
+    {
+        using var factory = new CustomWebApplicationFactory();
+        using var client = factory.CreateClient();
+        var firstUser = AuthTestData.CreateUser("john-base");
+        var secondUser = AuthTestData.CreateUser("john-second");
+
+        await RequestVerificationCodeAsync(client, firstUser.Email);
+        var firstCode = GetVerificationCode(factory.Services, firstUser.Email);
+        using (var firstResponse = await client.PostAsJsonAsync(
+                   "/api/auth/register",
+                   new RegistrationWithCodeDto
+                   {
+                       Email = firstUser.Email,
+                       Username = "John",
+                       Code = firstCode
+                   }))
+        {
+            Assert.That(firstResponse.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+        }
+
+        await RequestVerificationCodeAsync(client, secondUser.Email);
+        var secondCode = GetVerificationCode(factory.Services, secondUser.Email);
+
+        using var response = await client.PostAsJsonAsync(
+            "/api/auth/register",
+            new RegistrationWithCodeDto
+            {
+                Email = secondUser.Email,
+                Username = "John Smith",
+                Code = secondCode
+            });
+
+        using var scope = factory.Services.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<ServerDbContext>();
+        var createdUser = await dbContext.LoginInfos
+            .Include(login => login.User)
+            .SingleAsync(login => login.Email == secondUser.Email);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+            Assert.That(createdUser.User, Is.Not.Null);
+            Assert.That(createdUser.User!.Username, Is.Not.EqualTo("John Smith"));
+            Assert.That(createdUser.User.Username, Does.StartWith("john"));
+            Assert.That(createdUser.User.Username, Is.Not.EqualTo("john"));
+            Assert.That(createdUser.User.FirstName, Is.EqualTo("John"));
+            Assert.That(createdUser.User.LastName, Is.EqualTo("Smith"));
+        });
+    }
+
+    [Test]
     public async Task Login_Should_Return_Token_When_Credentials_Are_Valid()
     {
         using var factory = new CustomWebApplicationFactory();
@@ -180,6 +274,94 @@ public sealed class AuthEndpointTests
             });
 
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
+    }
+
+    [Test]
+    public async Task SessionLogin_Should_Return_Token_When_SessionToken_Is_Valid()
+    {
+        using var factory = new CustomWebApplicationFactory();
+        using var client = factory.CreateClient();
+        var session = await TestAuthHelper.RegisterAsync(client, factory.Services);
+
+        using var response = await client.PostAsJsonAsync(
+            "/api/auth/session-login",
+            new SessionLoginDto
+            {
+                SessionToken = session.AuthResponse.SessionToken
+            });
+        var authResponse = await response.Content.ReadFromJsonAsync<AuthResponseDto>();
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+            Assert.That(authResponse, Is.Not.Null);
+            Assert.That(authResponse!.UserId, Is.EqualTo(session.AuthResponse.UserId));
+            Assert.That(authResponse.Email, Is.EqualTo(session.User.Email));
+            Assert.That(authResponse.Token, Is.Not.Empty);
+            Assert.That(authResponse.SessionToken, Is.EqualTo(session.AuthResponse.SessionToken));
+        });
+    }
+
+    [Test]
+    public async Task SessionLogin_Should_Return_Unauthorized_When_SessionToken_Is_Invalid()
+    {
+        using var factory = new CustomWebApplicationFactory();
+        using var client = factory.CreateClient();
+
+        using var response = await client.PostAsJsonAsync(
+            "/api/auth/session-login",
+            new SessionLoginDto
+            {
+                SessionToken = Guid.NewGuid().ToString("N")
+            });
+
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
+    }
+
+    [Test]
+    public async Task SessionLogin_Should_Return_Unauthorized_When_SessionToken_Is_Expired()
+    {
+        using var factory = new CustomWebApplicationFactory();
+        using var client = factory.CreateClient();
+        var session = await TestAuthHelper.RegisterAsync(client, factory.Services);
+
+        using (var scope = factory.Services.CreateScope())
+        {
+            var dbContext = scope.ServiceProvider.GetRequiredService<ServerDbContext>();
+            var storedSession = await dbContext.Sessions.SingleAsync(item => item.UserId == session.AuthResponse.UserId);
+            storedSession.ExpirationTime = DateTime.UtcNow.AddMinutes(-5);
+            await dbContext.SaveChangesAsync();
+        }
+
+        using var response = await client.PostAsJsonAsync(
+            "/api/auth/session-login",
+            new SessionLoginDto
+            {
+                SessionToken = session.AuthResponse.SessionToken
+            });
+
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
+    }
+
+    [Test]
+    public async Task Logout_Should_Remove_Session_When_User_Is_Authenticated()
+    {
+        using var factory = new CustomWebApplicationFactory();
+        using var client = factory.CreateClient();
+        var session = await TestAuthHelper.RegisterAsync(client, factory.Services);
+        client.AddBearerToken(session.JwtToken);
+
+        using var response = await client.PostAsync("/api/auth/logout", content: null);
+
+        using var scope = factory.Services.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<ServerDbContext>();
+        var sessionExists = await dbContext.Sessions.AnyAsync(item => item.UserId == session.AuthResponse.UserId);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+            Assert.That(sessionExists, Is.False);
+        });
     }
 
     [Test]

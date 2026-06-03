@@ -93,6 +93,31 @@ public sealed class TenantAuthIntegrationTests
     }
 
     [Test]
+    public async Task TenantRegister_Should_Create_Welcome_Chat_And_Membership()
+    {
+        using var factory = new CustomWebApplicationFactory();
+        using var client = factory.CreateClient();
+        var company = await TestTenantHelper.CreateCompanyAsync(factory, "acme-welcome");
+        var tenantUser = AuthTestData.CreateUser("tenantwelcome");
+        await TestTenantHelper.AllowEmailAsync(factory.Services, company, tenantUser.Email);
+
+        var session = await TestAuthHelper.RegisterAsync(client, factory.Services, tenantUser, company.Name);
+
+        using var scope = factory.Services.CreateScope();
+        var tenantFactory = scope.ServiceProvider.GetRequiredService<ITenantDbContextFactory>();
+        await using var tenantDb = tenantFactory.CreateCompanyDbContext(company);
+        var welcomeChat = await tenantDb.Chats
+            .Include(chat => chat.ChatMembers)
+            .SingleOrDefaultAsync(chat => chat.Name == "Edemly" && chat.Type == Edemly.Server.Data.Entities.ChatType.Group);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(welcomeChat, Is.Not.Null);
+            Assert.That(welcomeChat!.ChatMembers.Select(member => member.UserId), Does.Contain(session.AuthResponse.UserId));
+        });
+    }
+
+    [Test]
     public async Task TenantLogin_Should_Return_Token_When_User_Exists_In_Tenant_Database()
     {
         using var factory = new CustomWebApplicationFactory();
@@ -111,6 +136,35 @@ public sealed class TenantAuthIntegrationTests
             Assert.That(loginSession.JwtToken, Is.Not.Empty);
             Assert.That(loginSession.AuthResponse.SessionToken, Is.Not.Empty);
         });
+    }
+
+    [Test]
+    public async Task TenantLogin_Should_Return_Unauthorized_When_User_Does_Not_Exist_In_Tenant_Database()
+    {
+        using var factory = new CustomWebApplicationFactory();
+        using var client = factory.CreateClient();
+        var company = await TestTenantHelper.CreateCompanyAsync(factory, "acme-login-missing");
+        var tenantUser = AuthTestData.CreateUser("tenantmissing");
+        await TestTenantHelper.AllowEmailAsync(factory.Services, company, tenantUser.Email);
+
+        using (var codeResponse = await client.PostAsJsonAsync(
+                   $"/{company.Name}/api/auth/get-code",
+                   new LoginRequestDto { Email = tenantUser.Email }))
+        {
+            Assert.That(codeResponse.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+        }
+
+        var code = factory.Services.GetRequiredService<TestEmailService>().GetCode(tenantUser.Email);
+
+        using var response = await client.PostAsJsonAsync(
+            $"/{company.Name}/api/auth/login",
+            new LoginWithCodeDto
+            {
+                Email = tenantUser.Email,
+                Code = code
+            });
+
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
     }
 
     [Test]
@@ -139,6 +193,70 @@ public sealed class TenantAuthIntegrationTests
             Assert.That(authResponse.Email, Is.EqualTo(tenantUser.Email));
             Assert.That(authResponse.Token, Is.Not.Empty);
             Assert.That(authResponse.SessionToken, Is.Not.Empty);
+        });
+    }
+
+    [Test]
+    public async Task TenantSessionLogin_Should_Return_Unauthorized_When_SessionToken_Is_Invalid_For_Tenant()
+    {
+        using var factory = new CustomWebApplicationFactory();
+        using var client = factory.CreateClient();
+        var company = await TestTenantHelper.CreateCompanyAsync(factory, "acme-session-invalid");
+
+        using var response = await client.PostAsJsonAsync(
+            $"/{company.Name}/api/auth/session-login",
+            new SessionLoginDto
+            {
+                SessionToken = Guid.NewGuid().ToString("N")
+            });
+
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
+    }
+
+    [Test]
+    public async Task TenantLogout_Should_Remove_Session_When_User_Is_Authenticated()
+    {
+        using var factory = new CustomWebApplicationFactory();
+        using var client = factory.CreateClient();
+        var company = await TestTenantHelper.CreateCompanyAsync(factory, "acme-logout");
+        var tenantUser = AuthTestData.CreateUser("tenantlogout");
+        await TestTenantHelper.AllowEmailAsync(factory.Services, company, tenantUser.Email);
+        var session = await TestAuthHelper.RegisterAsync(client, factory.Services, tenantUser, company.Name);
+        client.AddBearerToken(session.JwtToken);
+
+        using var response = await client.PostAsync($"/{company.Name}/api/auth/logout", content: null);
+
+        using var scope = factory.Services.CreateScope();
+        var tenantFactory = scope.ServiceProvider.GetRequiredService<ITenantDbContextFactory>();
+        await using var tenantDb = tenantFactory.CreateCompanyDbContext(company);
+        var sessionExists = await tenantDb.Sessions.AnyAsync(item => item.UserId == session.AuthResponse.UserId);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+            Assert.That(sessionExists, Is.False);
+        });
+    }
+
+    [Test]
+    public async Task TenantGetCode_Should_Resolve_Company_From_QueryParameter_When_Tenant_Is_Provided()
+    {
+        using var factory = new CustomWebApplicationFactory();
+        using var client = factory.CreateClient();
+        var company = await TestTenantHelper.CreateCompanyAsync(factory, "acme-query");
+
+        using var response = await client.PostAsJsonAsync(
+            $"/api/auth/get-code?tenant={company.Name}",
+            new LoginRequestDto
+            {
+                Email = "blocked@example.test"
+            });
+        var body = await response.Content.ReadAsStringAsync();
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
+            Assert.That(GetMessage(body), Is.EqualTo("Email is not allowed for this company"));
         });
     }
 
