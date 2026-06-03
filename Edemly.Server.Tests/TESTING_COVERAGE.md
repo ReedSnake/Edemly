@@ -13,7 +13,7 @@ This file records what server behavior is covered, what remains uncovered, and w
 
 - Branch: `test/server-test-coverage`
 - Test command: `dotnet test Edemly.Server.Tests\Edemly.Server.Tests.csproj`
-- Current result: `41 passed`
+- Current result: `43 passed`
 - Last verified: `2026-06-03`
 
 ## Test Infrastructure
@@ -72,6 +72,8 @@ Covered tests:
 - `UpdateChatMemberRole_Should_Update_Role_When_Requester_Is_Creator`
 - `RemoveChatMember_Should_Remove_User_When_Requester_Is_Admin`
 - `RemoveChatMember_Should_Return_Forbidden_When_Requester_Is_Not_Admin`
+- `UpdateChatMemberRole_Should_Return_Forbidden_When_Requester_Targets_Self_As_Creator`
+- `RemoveChatMember_Should_Return_Forbidden_When_Requester_Targets_Self_As_Creator`
 
 ## Message Integration
 

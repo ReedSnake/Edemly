@@ -176,4 +176,90 @@ public sealed class ChatMemberIntegrationTests
             Assert.That(stillExists, Is.True);
         });
     }
+
+    [Test]
+    public async Task UpdateChatMemberRole_Should_Return_Forbidden_When_Requester_Targets_Self_As_Creator()
+    {
+        using var factory = new CustomWebApplicationFactory();
+        using var seedOwnerClient = factory.CreateClient();
+        using var seedMemberClient = factory.CreateClient();
+        using var creatorClient = factory.CreateClient();
+        var seedOwner = await TestAuthHelper.RegisterAsync(seedOwnerClient, factory.Services);
+        var seedMember = await TestAuthHelper.RegisterAsync(seedMemberClient, factory.Services);
+        seedOwnerClient.AddBearerToken(seedOwner.JwtToken);
+        await TestChatHelper.CreateGroupChatAsync(seedOwnerClient, "Seed Chat", seedMember.AuthResponse.UserId);
+
+        var creator = await TestAuthHelper.RegisterAsync(creatorClient, factory.Services);
+        creatorClient.AddBearerToken(creator.JwtToken);
+        var chatId = await TestChatHelper.CreateGroupChatAsync(creatorClient, "Creator Chat", seedOwner.AuthResponse.UserId);
+
+        using (var scope = factory.Services.CreateScope())
+        {
+            var dbContext = scope.ServiceProvider.GetRequiredService<ServerDbContext>();
+            var creatorMembership = await dbContext.ChatMembers.SingleAsync(chatMember =>
+                chatMember.ChatId == chatId && chatMember.UserId == creator.AuthResponse.UserId);
+
+            creatorMembership.Role = ChatMemberRole.Creator;
+            await dbContext.SaveChangesAsync();
+        }
+
+        var creatorMembershipToUpdate = await TestChatHelper.GetChatMemberAsync(factory.Services, chatId, creator.AuthResponse.UserId);
+
+        using var response = await creatorClient.PutAsJsonAsync(
+            "/api/chatmember/update",
+            new UpdateChatMemberDto
+            {
+                Id = creatorMembershipToUpdate.Id,
+                Role = (int)ChatMemberRole.Admin
+            });
+
+        var updatedMembership = await TestChatHelper.GetChatMemberAsync(factory.Services, chatId, creator.AuthResponse.UserId);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Forbidden));
+            Assert.That(updatedMembership.Role, Is.EqualTo(ChatMemberRole.Creator));
+        });
+    }
+
+    [Test]
+    public async Task RemoveChatMember_Should_Return_Forbidden_When_Requester_Targets_Self_As_Creator()
+    {
+        using var factory = new CustomWebApplicationFactory();
+        using var seedOwnerClient = factory.CreateClient();
+        using var seedMemberClient = factory.CreateClient();
+        using var creatorClient = factory.CreateClient();
+        var seedOwner = await TestAuthHelper.RegisterAsync(seedOwnerClient, factory.Services);
+        var seedMember = await TestAuthHelper.RegisterAsync(seedMemberClient, factory.Services);
+        seedOwnerClient.AddBearerToken(seedOwner.JwtToken);
+        await TestChatHelper.CreateGroupChatAsync(seedOwnerClient, "Seed Chat", seedMember.AuthResponse.UserId);
+
+        var creator = await TestAuthHelper.RegisterAsync(creatorClient, factory.Services);
+        creatorClient.AddBearerToken(creator.JwtToken);
+        var chatId = await TestChatHelper.CreateGroupChatAsync(creatorClient, "Creator Chat", seedOwner.AuthResponse.UserId);
+
+        using (var scope = factory.Services.CreateScope())
+        {
+            var dbContext = scope.ServiceProvider.GetRequiredService<ServerDbContext>();
+            var creatorMembership = await dbContext.ChatMembers.SingleAsync(chatMember =>
+                chatMember.ChatId == chatId && chatMember.UserId == creator.AuthResponse.UserId);
+
+            creatorMembership.Role = ChatMemberRole.Creator;
+            await dbContext.SaveChangesAsync();
+        }
+
+        var creatorMembershipToDelete = await TestChatHelper.GetChatMemberAsync(factory.Services, chatId, creator.AuthResponse.UserId);
+
+        using var response = await creatorClient.DeleteAsync($"/api/chatmember/delete/{creatorMembershipToDelete.Id}");
+
+        using var verifyScope = factory.Services.CreateScope();
+        var verifyDbContext = verifyScope.ServiceProvider.GetRequiredService<ServerDbContext>();
+        var stillExists = await verifyDbContext.ChatMembers.AnyAsync(chatMember => chatMember.Id == creatorMembershipToDelete.Id);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Forbidden));
+            Assert.That(stillExists, Is.True);
+        });
+    }
 }

@@ -102,10 +102,9 @@ namespace Edemly.Server.Api.Services
         {
             try
             {
-                ChatMember? userCm = await _ctx.Set<ChatMember>().FindAsync(userId);
                 ChatMember? cm = await _ctx.Set<ChatMember>().FindAsync(chatMemberId);
-                if (cm == null || userCm == null) return false;
-                if (cm.UserId == userCm.UserId) return false;
+                if (cm == null) return false;
+                if (cm.UserId == userId) return false;
 
                 string userRights = await CheckRights(userId, cm.ChatId);
 
@@ -120,13 +119,11 @@ namespace Edemly.Server.Api.Services
         }
         public async Task<bool> CanDeleteChatMember(int userId, int chatMemberId)
         {
-            if (userId == chatMemberId) return false;
-
             try
             {
-                ChatMember? userCm = await _ctx.Set<ChatMember>().FindAsync(userId);
                 ChatMember? cm = await _ctx.Set<ChatMember>().FindAsync(chatMemberId);
-                if (cm == null || userCm == null) return false;
+                if (cm == null) return false;
+                if (cm.UserId == userId) return false;
 
                 string userRights = await CheckRights(userId, cm.ChatId);
 
