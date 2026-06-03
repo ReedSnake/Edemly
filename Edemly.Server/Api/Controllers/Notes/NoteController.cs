@@ -27,80 +27,74 @@ namespace Edemly.Server.Api.Controllers.Notes
         [HttpGet("id/{id}")]
         public async Task<IActionResult> GetById(int id)
         {
-            var userIdClaim = int.Parse(User.Claims.FirstOrDefault(c => c.Type == "userId")?.Value ?? "0");
+            var userId = GetCurrentUserIdOrDefault();
 
-            if (!await _permissionService.IsNoteAuthor(userIdClaim, id))
+            if (!await _permissionService.IsNoteAuthor(userId, id))
             {
                 return Forbid();
             }
 
             var result = await _service.GetById(id);
-            if (!result.Success) return NotFound(new { message = result.Error });
-            return Ok(result.Note);
+            return OkOrNotFound(result.Success, result.Error, result.Note);
         }
 
         [Authorize]
         [HttpGet("my-notes")]
         public async Task<IActionResult> GetByCreator()
         {
-            var userIdClaim = int.Parse(User.Claims.FirstOrDefault(c => c.Type == "userId")?.Value ?? "0");
+            var userId = GetCurrentUserIdOrDefault();
 
-            var result = await _service.GetAll(userIdClaim);
-            if (!result.Success) return NotFound(new { message = result.Error });
-            return Ok(result.Notes);
+            var result = await _service.GetAll(userId);
+            return OkOrNotFound(result.Success, result.Error, result.Notes);
         }
 
         [Authorize]
         [HttpGet("count")]
         public async Task<IActionResult> GetCount()
         {
-            var userIdClaim = int.Parse(User.Claims.FirstOrDefault(c => c.Type == "userId")?.Value ?? "0");
-            var result = await _service.GetCount(userIdClaim);
-            if (!result.Success) return BadRequest(new { message = result.Error });
-            return Ok(new { count = result.Count });
+            var userId = GetCurrentUserIdOrDefault();
+            var result = await _service.GetCount(userId);
+            return OkOrBadRequest(result.Success, result.Error, new { count = result.Count });
         }
 
         [Authorize]
         [HttpPost("create")]
         public async Task<IActionResult> Create([FromBody] CreateNoteDto model)
         {
-            var userIdClaim = int.Parse(User.Claims.FirstOrDefault(c => c.Type == "userId")?.Value ?? "0");
+            var userId = GetCurrentUserIdOrDefault();
 
-            var result = await _service.Create(userIdClaim, model);
-            if (!result.Success) return BadRequest(new { message = result.Error });
-            return Ok(new { message = "Note created" });
+            var result = await _service.Create(userId, model);
+            return OkMessageOrBadRequest(result.Success, result.Error, "Note created");
         }
 
         [Authorize]
         [HttpPut("update")]
         public async Task<IActionResult> Update([FromBody] UpdateNoteDto model)
         {
-            var userIdClaim = int.Parse(User.Claims.FirstOrDefault(c => c.Type == "userId")?.Value ?? "0");
+            var userId = GetCurrentUserIdOrDefault();
 
-            if (!await _permissionService.IsNoteAuthor(userIdClaim, model.Id))
+            if (!await _permissionService.IsNoteAuthor(userId, model.Id))
             {
                 return Forbid();
             }
 
             var result = await _service.Update(model);
-            if (!result.Success) return BadRequest(new { message = result.Error });
-            return Ok(new { message = "Note updated" });
+            return OkMessageOrBadRequest(result.Success, result.Error, "Note updated");
         }
 
         [Authorize]
         [HttpDelete("delete/{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            var userIdClaim = int.Parse(User.Claims.FirstOrDefault(c => c.Type == "userId")?.Value ?? "0");
+            var userId = GetCurrentUserIdOrDefault();
 
-            if (!await _permissionService.IsNoteAuthor(userIdClaim, id))
+            if (!await _permissionService.IsNoteAuthor(userId, id))
             {
                 return Forbid();
             }
 
             var result = await _service.Delete(id);
-            if (!result.Success) return BadRequest(new { message = result.Error });
-            return Ok(new { message = "Note deleted" });
+            return OkMessageOrBadRequest(result.Success, result.Error, "Note deleted");
         }
     }
 }

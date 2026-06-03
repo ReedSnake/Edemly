@@ -26,88 +26,82 @@ namespace Edemly.Server.Api.Controllers.Messages
         public async Task<IActionResult> GetById(int id)
         {
             var result = await _service.GetById(id);
-            if (!result.Success) return NotFound(new { message = result.Error });
-            return Ok(result.Message);
+            return OkOrNotFound(result.Success, result.Error, result.Message);
         }
 
         [Authorize]
         [HttpGet("chat/last/{chatId}")]
         public async Task<IActionResult> GetLastByChat(int chatId)
         {
-            var userIdClaim = int.Parse(User.Claims.FirstOrDefault(c => c.Type == "userId")?.Value ?? "0");
+            var userId = GetCurrentUserIdOrDefault();
 
-            if (!await _permissionService.IsInChat(userIdClaim, chatId))
+            if (!await _permissionService.IsInChat(userId, chatId))
             {
                 return Forbid();
             }
 
             var result = await _service.GetLastByChat(chatId);
-            if (!result.Success) return NotFound(new { message = result.Error });
-            return Ok(result.Message);
+            return OkOrNotFound(result.Success, result.Error, result.Message);
         }
 
         [Authorize]
         [HttpGet("chat/{chatId}")]
         public async Task<IActionResult> GetByChat(int chatId, [FromQuery] int page = 1, [FromQuery] int pageSize = 20)
         {
-            var userIdClaim = int.Parse(User.Claims.FirstOrDefault(c => c.Type == "userId")?.Value ?? "0");
+            var userId = GetCurrentUserIdOrDefault();
 
-            if (!await _permissionService.IsInChat(userIdClaim, chatId))
+            if (!await _permissionService.IsInChat(userId, chatId))
             {
                 return Forbid();
             }
 
             var result = await _service.GetByChat(chatId, page, pageSize);
-            if (!result.Success) return NotFound(new { message = result.Error });
-            return Ok(result.Messages);
+            return OkOrNotFound(result.Success, result.Error, result.Messages);
         }
 
         [Authorize]
         [HttpPost("create")]
         public async Task<IActionResult> Create([FromBody] CreateMessageDto model)
         {
-            var userIdClaim = int.Parse(User.Claims.FirstOrDefault(c => c.Type == "userId")?.Value ?? "0");
+            var userId = GetCurrentUserIdOrDefault();
 
-            if (!await _permissionService.IsInChat(userIdClaim, model.ChatId))
+            if (!await _permissionService.IsInChat(userId, model.ChatId))
             {
                 return Forbid();
             }
 
-            var result = await _service.Create(userIdClaim, model);
-            if (!result.Success) return BadRequest(new { message = result.Error });
-            return Ok(new { message = "Message created" });
+            var result = await _service.Create(userId, model);
+            return OkMessageOrBadRequest(result.Success, result.Error, "Message created");
         }
 
         [Authorize]
         [HttpPut("update")]
         public async Task<IActionResult> Update([FromBody] UpdateMessageDto model)
         {
-            var userIdClaim = int.Parse(User.Claims.FirstOrDefault(c => c.Type == "userId")?.Value ?? "0");
+            var userId = GetCurrentUserIdOrDefault();
 
-            if (!await _permissionService.CanUpdateMessage(userIdClaim, model.Id))
+            if (!await _permissionService.CanUpdateMessage(userId, model.Id))
             {
                 return Forbid();
             }
 
             var result = await _service.Update(model);
-            if (!result.Success) return BadRequest(new { message = result.Error });
-            return Ok(new { message = "Message updated" });
+            return OkMessageOrBadRequest(result.Success, result.Error, "Message updated");
         }
 
         [Authorize]
         [HttpDelete("delete/{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            var userIdClaim = int.Parse(User.Claims.FirstOrDefault(c => c.Type == "userId")?.Value ?? "0");
+            var userId = GetCurrentUserIdOrDefault();
 
-            if (!await _permissionService.CanDeleteMessage(userIdClaim, id))
+            if (!await _permissionService.CanDeleteMessage(userId, id))
             {
                 return Forbid();
             }
 
             var result = await _service.Delete(id);
-            if (!result.Success) return BadRequest(new { message = result.Error });
-            return Ok(new { message = "Message deleted" });
+            return OkMessageOrBadRequest(result.Success, result.Error, "Message deleted");
         }
     }
 }
