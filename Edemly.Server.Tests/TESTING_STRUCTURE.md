@@ -24,6 +24,7 @@ Edemly.Server.Tests/
     Tenancy/
     Users/
   Unit/
+    Auth/
     Helpers/
     Middleware/
     Services/
@@ -39,9 +40,10 @@ Edemly.Server.Tests/
 ## Notes
 
 - See `TESTING_COVERAGE.md` for covered behavior, red specifications, and backlog.
+- See `TESTING_AUTH.md` for auth-specific testing boundaries and examples.
 - `Infrastructure` is for host setup, database setup, and tenant setup.
 - `Integration` is for controller, middleware, and full request pipeline tests.
-- `Unit` is for isolated service logic without a full host.
+- `Unit` is for isolated controller, helper, and service logic without a full host.
 - `Fixtures` should manage shared lifecycle objects for the test host and database.
 - `TestData` should store reusable seed data and builders.
 - `Utilities` should contain helper assertions and random data builders.

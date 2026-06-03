@@ -13,7 +13,7 @@ This file records what server behavior is covered, what remains uncovered, and w
 
 - Branch: `test/server-test-coverage`
 - Test command: `dotnet test Edemly.Server.Tests\Edemly.Server.Tests.csproj`
-- Current result: `43 passed`
+- Current result: `65 passed`
 - Last verified: `2026-06-03`
 
 ## Test Infrastructure
@@ -41,11 +41,18 @@ Covered tests:
 - `Register_Should_Create_User_When_Request_Is_Valid`
 - `Register_Should_Return_BadRequest_When_Email_Already_Exists`
 - `Register_Should_Return_BadRequest_When_Request_Is_Invalid`
+- `Register_Should_Return_Unauthorized_When_Verification_Code_Is_Invalid`
+- `Register_Should_Create_Welcome_Chat_And_Membership`
+- `Register_Should_Generate_Unique_Username_From_Display_Name_When_Base_Is_Taken`
 - `Login_Should_Return_Token_When_Credentials_Are_Valid`
 - `Login_Should_Return_Unauthorized_When_Password_Is_Wrong`
 - `Login_Should_Return_Unauthorized_When_Email_Does_Not_Exist`
 - `Login_Should_Not_Return_Password_Or_PasswordHash`
 - `Login_Should_Return_BadRequest_When_Request_Is_Invalid`
+- `SessionLogin_Should_Return_Token_When_SessionToken_Is_Valid`
+- `SessionLogin_Should_Return_Unauthorized_When_SessionToken_Is_Invalid`
+- `SessionLogin_Should_Return_Unauthorized_When_SessionToken_Is_Expired`
+- `Logout_Should_Remove_Session_When_User_Is_Authenticated`
 - `Protected_Endpoint_Should_Return_Unauthorized_Without_Token`
 - `Protected_Endpoint_Should_Return_Success_With_Valid_Token`
 
@@ -53,6 +60,24 @@ Notes:
 
 - Auth is currently verification-code based. `Password_Is_Wrong` means wrong verification code until password auth exists.
 - Register tests verify user persistence through the SQLite test database.
+
+## Auth Unit
+
+Covered tests:
+
+- `GetLoginCode_Should_Return_BadRequest_When_Request_Model_Is_Missing`
+- `GetLoginCode_Should_Return_BadRequest_When_Email_Format_Is_Invalid`
+- `GetLoginCode_Should_Resolve_Company_From_HttpContext_Items`
+- `GetLoginCode_Should_Resolve_Company_From_RequestPath_When_TenantPrefix_Is_Present`
+- `GetLoginCode_Should_Return_ServerError_When_TenantAllowlistLookup_Fails`
+- `GetLoginCode_Should_Return_ServerError_When_EmailService_Throws`
+- `Login_Should_Request_Admin_Token_When_Admin_Email_Matches_Configuration`
+- `Logout_Should_Return_Unauthorized_When_UserIdClaim_Is_Invalid`
+
+Helper coverage:
+
+- `TestEmailService_Should_Treat_Email_Case_Insensitively`
+- `TestEmailService_Should_Invalidate_Code_After_Successful_Verification`
 
 ## Chat Integration
 
@@ -112,8 +137,13 @@ Covered tests:
 
 - `TenantRegister_Should_Create_User_In_Tenant_Database_When_Email_Is_Allowed`
 - `TenantRegister_Should_Return_BadRequest_When_Email_Is_Not_Allowed`
+- `TenantRegister_Should_Create_Welcome_Chat_And_Membership`
 - `TenantLogin_Should_Return_Token_When_User_Exists_In_Tenant_Database`
+- `TenantLogin_Should_Return_Unauthorized_When_User_Does_Not_Exist_In_Tenant_Database`
 - `TenantSessionLogin_Should_Return_Token_When_SessionToken_Is_Valid_For_Tenant`
+- `TenantSessionLogin_Should_Return_Unauthorized_When_SessionToken_Is_Invalid_For_Tenant`
+- `TenantLogout_Should_Remove_Session_When_User_Is_Authenticated`
+- `TenantGetCode_Should_Resolve_Company_From_QueryParameter_When_Tenant_Is_Provided`
 
 ## Red Specifications
 
