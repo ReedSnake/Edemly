@@ -16,7 +16,7 @@ namespace Edemly.Client
     public partial class ChatManager : IDisposable
     {
         private readonly StackPanel _messagesPanel;
-        private readonly ScrollViewer _messagesScrollViewer;
+        private readonly ScrollViewer? _messagesScrollViewer;
         private readonly StackPanel _chatsPanel;
         private readonly TextBlock _chatHeaderText;
 
@@ -71,7 +71,7 @@ namespace Edemly.Client
 
         public ChatManager(
             StackPanel messagesPanel,
-            ScrollViewer messagesScrollViewer,
+            ScrollViewer? messagesScrollViewer,
             StackPanel chatsPanel,
             TextBlock chatHeaderText,
             int currentUserId,
@@ -573,7 +573,7 @@ namespace Edemly.Client
                     });
                 }
 
-                _messagesScrollViewer.ScrollToEnd();
+                _messagesScrollViewer?.ScrollToEnd();
             }
         }
 
@@ -1086,7 +1086,13 @@ namespace Edemly.Client
 
                 double oldOffset = 0;
                 double oldExtent = 0;
-                try { oldOffset = _messagesScrollViewer.VerticalOffset; oldExtent = _messagesScrollViewer.ExtentHeight; } catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[CHAT MANAGER] LoadOlderMessagesAsync offset measure error: {ex.Message}"); }
+                try {
+                    if (_messagesScrollViewer != null)
+                    {
+                        oldOffset = _messagesScrollViewer.VerticalOffset;
+                        oldExtent = _messagesScrollViewer.ExtentHeight;
+                    }
+                } catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[CHAT MANAGER] LoadOlderMessagesAsync offset measure error: {ex.Message}"); }
 
                 var newMessages = await _chatLoader.LoadChatMessagesAsync(chatId, page: nextPage, pageSize: INITIAL_MESSAGE_COUNT);
 
@@ -1122,15 +1128,21 @@ namespace Edemly.Client
                     await Application.Current.Dispatcher.InvokeAsync(() => RefreshCurrentChatMessagesAsync());
 
                     await Task.Delay(10);
-                    _messagesScrollViewer.UpdateLayout();
+                    _messagesScrollViewer?.UpdateLayout();
 
                     try
                     {
-                        double newExtent = _messagesScrollViewer.ExtentHeight;
-                        double delta = newExtent - oldExtent;
-                        var target = oldOffset + delta;
-                        if (target < 0) target = 0;
-                        _messagesScrollViewer.ScrollToVerticalOffset(target);
+                        if (_messagesScrollViewer != null)
+                        {
+                            double newExtent = _messagesScrollViewer.ExtentHeight;
+                            double delta = newExtent - oldExtent;
+                            var target = oldOffset + delta;
+
+                            if (target < 0)
+                                target = 0;
+
+                            _messagesScrollViewer.ScrollToVerticalOffset(target);
+                        }
                     }
                     catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[CHAT MANAGER] LoadOlderMessagesAsync scroll restore error: {ex.Message}"); }
                 }
@@ -1181,7 +1193,7 @@ namespace Edemly.Client
                 });
             }
 
-            _messagesScrollViewer.ScrollToEnd();
+            _messagesScrollViewer?.ScrollToEnd();
         }
 
         private async Task<string> GetUserNameAsync(int userId)

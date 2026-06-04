@@ -145,6 +145,11 @@ namespace Edemly.Client.Realtime
                 Debug.WriteLine(
                     $"[HUB PARSED] ProfileUpdated -> userId: {payload.UserId}, pfp: {payload.PfpUrl}");
 
+                if (string.IsNullOrWhiteSpace(payload.PfpUrl))
+                {
+                    return;
+                }
+
                 HubEventDispatcher.Dispatch(() =>
                     ProfileUpdated?.Invoke(payload.UserId, payload.PfpUrl));
             });

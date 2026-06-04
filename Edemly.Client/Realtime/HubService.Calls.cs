@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.SignalR.Client;
+using System.Diagnostics;
 
 namespace Edemly.Client.Realtime
 {
@@ -78,27 +79,15 @@ namespace Edemly.Client.Realtime
 
             try
             {
-                var sendTask = conn.SendAsync(HubMethods.EndCall, callId);
-                sendTask.ContinueWith(t =>
-                {
-                    if (t.IsFaulted)
-                    {
-                        try
-                        {
-                            var ex = t.Exception?.GetBaseException();
-                            System.Diagnostics.Debug.WriteLine($"[HUB] EndCall SendAsync failed: {ex?.Message}");
-                        }
-                        catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[HUB] EndCall SendAsync continuation failed: {ex.Message}"); }
-                    }
-                }, TaskContinuationOptions.OnlyOnFaulted);
+                await conn.SendAsync(HubMethods.EndCall, callId);
             }
             catch (TaskCanceledException tce)
             {
-                System.Diagnostics.Debug.WriteLine($"[HUB] EndCall canceled: {tce.Message}");
+                Debug.WriteLine($"[HUB] EndCall canceled: {tce.Message}");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[HUB] EndCall failed: {ex.Message}");
+                Debug.WriteLine($"[HUB] EndCall failed: {ex.Message}");
             }
         }
 
@@ -155,22 +144,24 @@ namespace Edemly.Client.Realtime
             var conn = await GetReadyCallConnectionAsync();
             if (conn == null) return;
 
+            _ = SendAudioChunkCoreAsync(conn, targetUserId, chunk, callId, sequenceId, timestampMs);
+        }
+
+        private static async Task SendAudioChunkCoreAsync(
+            HubConnection conn,
+            int? targetUserId,
+            byte[] chunk,
+            int callId,
+            long sequenceId,
+            long timestampMs)
+        {
             try
             {
-                var sendTask = conn.SendAsync(HubMethods.SendAudioChunk, targetUserId, chunk, callId, sequenceId, timestampMs);
-                sendTask.ContinueWith(t =>
-                {
-                    try
-                    {
-                        var ex = t.Exception?.GetBaseException();
-                        System.Diagnostics.Debug.WriteLine($"[HUB] SendAudioChunk failed: {ex?.Message}");
-                    }
-                    catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[HUB] SendAudioChunk continuation failed: {ex.Message}"); }
-                }, TaskContinuationOptions.OnlyOnFaulted);
+                await conn.SendAsync(HubMethods.SendAudioChunk, targetUserId, chunk, callId, sequenceId, timestampMs);
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[HUB] SendAudioChunkAsync failed: {ex.Message}");
+                Debug.WriteLine($"[HUB] SendAudioChunk failed: {ex.Message}");
             }
         }
 

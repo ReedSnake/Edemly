@@ -34,10 +34,7 @@ namespace Edemly.Client.Pages.Settings
 
                 return false;
             }
-            catch (Exception ex)
-            {
-                return false;
-            }
+            catch (Exception) { return false; }
         }
 
         public static void Clear()

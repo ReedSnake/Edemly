@@ -45,9 +45,6 @@ namespace Edemly.Client
             set => CurrentUserName = value;
         }
 
-        private ApiService _apiService;
-        private ProfilePictureCache _pfpCache;
-
         protected override void OnStartup(StartupEventArgs e)
         {
             if (e.Args.Length < 1 || string.IsNullOrWhiteSpace(e.Args[0]))
@@ -282,15 +279,15 @@ namespace Edemly.Client
 
             try
             {
-                if (!string.IsNullOrWhiteSpace(tenantArg))
+                var cfg = ConfigService.Instance;
+
+                if (cfg != null &&
+                    !string.IsNullOrWhiteSpace(tenantArg) &&
+                    !string.Equals(tenantArg, "Personal", StringComparison.OrdinalIgnoreCase))
                 {
-                    var cfg = ConfigService.Instance;
-                    if (!string.IsNullOrWhiteSpace(tenantArg) && !string.Equals(tenantArg, "Personal", StringComparison.OrdinalIgnoreCase))
-                    {
-                        cfg.Company = tenantArg.Trim();
-                        cfg.IsInstalled = true; // treat as pre-configured
-                        cfg.Save();
-                    }
+                    cfg.Company = tenantArg.Trim();
+                    cfg.IsInstalled = true;
+                    cfg.Save();
                 }
             }
             catch (Exception ex)
@@ -300,7 +297,11 @@ namespace Edemly.Client
 
             var cfg2 = ConfigService.Instance;
             string apiBase = BaseServerUrlNoCompany;
-            if (cfg2.IsInstalled && !string.IsNullOrWhiteSpace(cfg2.Company) && !string.Equals(cfg2.Company, "Personal", StringComparison.OrdinalIgnoreCase))
+
+            if (cfg2 != null &&
+                cfg2.IsInstalled &&
+                !string.IsNullOrWhiteSpace(cfg2.Company) &&
+                !string.Equals(cfg2.Company, "Personal", StringComparison.OrdinalIgnoreCase))
             {
                 apiBase = BaseServerUrlNoCompany.TrimEnd('/') + "/" + cfg2.Company.Trim().Trim('/');
             }
@@ -333,7 +334,7 @@ namespace Edemly.Client
                 System.Diagnostics.Debug.WriteLine($"[APP] Failed to subscribe to HubService.ConnectionStateChanged: {ex.Message}");
             }
 
-            var cacheScope = string.IsNullOrWhiteSpace(cfg2.Company) ? "personal" : cfg2.Company.Trim();
+            var cacheScope = cfg2 == null || string.IsNullOrWhiteSpace(cfg2.Company) ? "personal" : cfg2.Company.Trim();
             GlobalProfilePictureCache = new ProfilePictureCache(apiBase, () => Task.FromResult(AuthToken), cacheScope);
             GlobalFileCache = new FileCache(apiBase, () => Task.FromResult(AuthToken), cacheScope);
 

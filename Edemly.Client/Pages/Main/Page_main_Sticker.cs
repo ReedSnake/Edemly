@@ -7,12 +7,6 @@ using System.Windows.Media.Imaging;
 
 namespace Edemly.Client
 {
-    public class StickerModel
-    {
-        public string FilePath { get; set; }
-        public ImageSource ImageSource { get; set; }
-    }
-
     public partial class Page_main : Page
     {
         public ObservableCollection<StickerModel> Stickers { get; set; } = new ObservableCollection<StickerModel>();
@@ -55,11 +49,7 @@ namespace Edemly.Client
                             bitmap.EndInit();
                             bitmap.Freeze();
 
-                            Stickers.Add(new StickerModel
-                            {
-                                FilePath = file,
-                                ImageSource = bitmap
-                            });
+                            Stickers.Add(new StickerModel(file, bitmap));
                         }
                     }
                     catch (Exception ex)
@@ -132,7 +122,17 @@ namespace Edemly.Client
                 StickersPanel.Visibility = Visibility.Visible;
             }
         }
+        public class StickerModel
+        {
+            public StickerModel(string filePath, ImageSource imageSource)
+            {
+                FilePath = filePath;
+                ImageSource = imageSource;
+            }
 
+            public string FilePath { get; }
+            public ImageSource ImageSource { get; }
+        }
         private void StickerButton_Click(object sender, RoutedEventArgs e)
         {
             ToggleStickers_Click(sender, e);

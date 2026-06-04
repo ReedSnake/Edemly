@@ -70,7 +70,7 @@ namespace Edemly.Client
 
             ApplyThemeToPage();
 
-            UpdateCalendarAsync();
+            _ = UpdateCalendarAsync();
             UpdateTasksList();
             UpdateFilterButtonsStyle(_currentFilter);
         }
@@ -1054,12 +1054,12 @@ namespace Edemly.Client
                 doneCheckbox.Checked += async (s, e) =>
                 {
                     task.IsCompleted = true;
-                    _apiService.ToggleRemindingAsync(task.Id);
+                    await _apiService.ToggleRemindingAsync(task.Id);
                 };
                 doneCheckbox.Unchecked += async (s, e) =>
                 {
                     task.IsCompleted = false;
-                    _apiService.ToggleRemindingAsync(task.Id);
+                    await _apiService.ToggleRemindingAsync(task.Id);
                 };
                 Grid.SetColumn(doneCheckbox, 2);
                 taskGrid.Children.Add(doneCheckbox);

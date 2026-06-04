@@ -231,7 +231,7 @@ namespace Edemly.Client.Pages
                 using var http = new HttpClient { Timeout = HubSettings.ShortOperationTimeout };
                 var url = baseUrl + "/api/admin/companies";
 
-                HttpResponseMessage resp;
+                HttpResponseMessage? resp;
                 try
                 {
                     resp = await http.GetAsync(url);
@@ -314,7 +314,15 @@ namespace Edemly.Client.Pages
                 var wshType = Type.GetTypeFromProgID("WScript.Shell");
                 if (wshType == null) return false;
                 var wsh = Activator.CreateInstance(wshType);
-                var shortcut = wshType.InvokeMember("CreateShortcut", BindingFlags.InvokeMethod, null, wsh, new object[] { shortcutPath });
+                var shortcut = wshType.InvokeMember(
+                    "CreateShortcut",
+                    BindingFlags.InvokeMethod,
+                    null,
+                    wsh,
+                    new object[] { shortcutPath });
+
+                if (shortcut == null)
+                    return false;
 
                 var scType = shortcut.GetType();
                 scType.InvokeMember("TargetPath", BindingFlags.SetProperty, null, shortcut, new object[] { exePath });
@@ -375,7 +383,7 @@ namespace Edemly.Client.Pages
                 }
                 catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[PAGE_INSTALL] Assembly name retrieval failed: {ex}"); }
 
-                DirectoryInfo di = new DirectoryInfo(baseDir);
+                DirectoryInfo? di = new DirectoryInfo(baseDir);
                 for (int depth = 0; di != null && depth < 4; depth++)
                 {
                     foreach (var name in candidates)

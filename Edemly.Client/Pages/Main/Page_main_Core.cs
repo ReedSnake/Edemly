@@ -1,4 +1,4 @@
-#nullable disable
+#nullable enable
 
 using Edemly.Client.Lang;
 using Edemly.Client.Services;
@@ -17,8 +17,8 @@ namespace Edemly.Client
         private bool isMenuOpen = false;
         private bool isContactInfoOpen = false;
         private bool isGroupInfoOpen = false;
-        private ChatManager chatManager;
-        private CancellationTokenSource _cancellationTokenSource;
+        private ChatManager? chatManager;
+        private CancellationTokenSource? _cancellationTokenSource;
         private bool _isFirstLoad = true;
 
         private HashSet<int> _selectedParticipants = new HashSet<int>();
@@ -276,7 +276,7 @@ namespace Edemly.Client
 
                 RefreshPlaceholders();
 
-                CommandBinding pasteBinding = null;
+                CommandBinding? pasteBinding = null;
 
                 if (MessageTextBox != null)
                 {
@@ -365,6 +365,9 @@ namespace Edemly.Client
                 }
                 else
                 {
+                    if (chatManager == null)
+                        return;
+
                     await chatManager.RestoreUIAsync();
                 }
             }
@@ -517,6 +520,8 @@ namespace Edemly.Client
         {
             try
             {
+                if (chatManager == null)
+                    return;
                 await chatManager.LoadExistingChatsAsync();
             }
             catch (Exception ex)
@@ -554,7 +559,7 @@ namespace Edemly.Client
         {
             try
             {
-                DependencyObject original = e.OriginalSource as DependencyObject;
+                DependencyObject? original = e.OriginalSource as DependencyObject;
                 ScrollViewer? target = FindAncestor<ScrollViewer>(original) ?? (sender as ScrollViewer);
 
                 if (target == null)

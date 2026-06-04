@@ -58,10 +58,7 @@ namespace Edemly.Client.Pages
         private BufferedWaveProvider? _bufferedWaveProvider;
         private WaveOutEvent? _waveOut;
         private bool _muted = false;
-        private int? _peerUserId = null; // the other participant in 1-on-1
-
-        private OpusEncoder? _opusEncoder;
-        private OpusDecoder? _opusDecoder;
+        private int? _peerUserId = null; 
 
         private WaveOutEvent? _ringWaveOut;
         private LoopStream? _ringLoopStream;
@@ -74,7 +71,6 @@ namespace Edemly.Client.Pages
         private readonly object _jitterLock = new object();
         private Dictionary<int, SortedDictionary<long, byte[]>> _jitterBuffers = new Dictionary<int, SortedDictionary<long, byte[]>>();
         private System.Threading.Timer? _playoutTimer;
-        private int _jitterTargetMs = 120; // target buffering before playout
         private long _sendSequence = 0;
         private Dictionary<int, bool> _participantMuted = new Dictionary<int, bool>();
 
@@ -84,8 +80,6 @@ namespace Edemly.Client.Pages
         private int _dialSecondsLeft = 30;
         private int? _dialCallId = null;
 
-        private double _sendAgcGain = 1.0;
-        private double _recvAgcGain = 1.0;
         private const double AGC_TARGET_RMS = 0.05;
         private const double AGC_SMOOTHING = 0.15;
         private const double AGC_MAX_GAIN = 8.0;
@@ -98,8 +92,7 @@ namespace Edemly.Client.Pages
         public CallWindow()
         {
             InitializeComponent();
-            _hub = App.HubService as HubService;
-            if (_hub == null) throw new InvalidOperationException("HubService not available");
+            _hub = App.HubService as HubService ?? throw new InvalidOperationException("HubService not available");
 
             ThemeService.Instance.ThemeChanged += (themeName) => OnThemeChanged();
 
@@ -300,20 +293,26 @@ namespace Edemly.Client.Pages
                         try
                         {
                             var user = await App.ApiService.GetUserByIdAsync(c.InitiatorId);
-                            if (user != null)
+                            if (user == null) return;
+
+                            await Application.Current.Dispatcher.InvokeAsync(async () =>
                             {
-                                Application.Current.Dispatcher.Invoke(async () =>
+                                title.Text = user.Username ?? title.Text;
+
+                                if (!string.IsNullOrEmpty(user.PfpUrl))
                                 {
-                                    title.Text = user.Username ?? title.Text;
-                                    if (!string.IsNullOrEmpty(user.PfpUrl))
+                                    var bmp = await App.GlobalProfilePictureCache.GetOrDownloadAsync(user.PfpUrl);
+                                    if (bmp != null)
                                     {
-                                        var bmp = await App.GlobalProfilePictureCache.GetOrDownloadAsync(user.PfpUrl);
-                                        if (bmp != null) avatarImg.Source = bmp;
+                                        avatarImg.Source = bmp;
                                     }
-                                });
-                            }
+                                }
+                            });
                         }
-                        catch (Exception ex) { Debug.WriteLine($"[CALLWINDOW] LoadActiveCalls user fetch failed: {ex}"); }
+                        catch (Exception ex)
+                        {
+                            Debug.WriteLine($"[CALLWINDOW] LoadActiveCalls user fetch failed: {ex}");
+                        }
                     });
                 }
             }
@@ -386,8 +385,6 @@ namespace Edemly.Client.Pages
                 _bufferedWaveProvider = new BufferedWaveProvider(new WaveFormat(16000, 16, 1)) { DiscardOnBufferOverflow = true };
                 _waveOut = new WaveOutEvent(); _waveOut.Init(_bufferedWaveProvider); _waveOut.Play();
 
-                _opusEncoder = null; _opusDecoder = null;
-
                 lock (_jitterLock)
                 {
                     _jitterBuffers.Clear();
@@ -442,8 +439,6 @@ namespace Edemly.Client.Pages
                 _playoutTimer?.Dispose(); _playoutTimer = null;
                 lock (_jitterLock) { _jitterBuffers.Clear(); }
                 _participantMuted.Clear();
-
-                _opusEncoder = null; _opusDecoder = null;
             }
             catch (Exception ex) { Debug.WriteLine($"[CALLWINDOW] StopAudio failed: {ex}"); }
         }
@@ -477,53 +472,89 @@ namespace Edemly.Client.Pages
             }
         }
 
-        public void HandleIncomingCall(IncomingCallEventDto data)
+        public void HandleIncomingCall(IncomingCallEventDto? data)
         {
+            if (data is not { } incomingCall)
+            {
+                Debug.WriteLine("[CALLWINDOW] Incoming call data is null");
+                return;
+            }
+
             Application.Current.Dispatcher.Invoke(() =>
             {
                 try
                 {
-                    Debug.WriteLine($"[CALLWINDOW] HandleIncomingCall invoked. callId={data?.CallId} callUid={data?.CallUid} metadata={data?.Metadata}");
+                    Debug.WriteLine(
+                        $"[CALLWINDOW] HandleIncomingCall invoked. callId={incomingCall.CallId} callUid={incomingCall.CallUid} metadata={incomingCall.Metadata}");
 
-                    if (data.InitiatorId == App.CurrentUserId) { Debug.WriteLine("[CALLWINDOW] Ignoring call from self"); return; }
-
-                    if (_inCall && _currentCallId.HasValue && _currentCallId.Value == data.CallId)
+                    if (_inCall && _currentCallId.HasValue && _currentCallId.Value == incomingCall.CallId)
                     {
                         try
                         {
-                            if (!this.IsVisible) { this.Owner = Application.Current.MainWindow; this.Show(); }
-                            this.WindowState = WindowState.Normal;
-                            this.Topmost = true; this.Topmost = false;
-                            this.Activate();
+                            if (!IsVisible)
+                            {
+                                Owner = Application.Current.MainWindow;
+                                Show();
+                            }
+
+                            WindowState = WindowState.Normal;
+                            Topmost = true;
+                            Topmost = false;
+                            Activate();
+
                             Debug.WriteLine("[CALLWINDOW] Already in call - window brought to front");
                         }
-                        catch (Exception ex) { Debug.WriteLine($"[CALLWINDOW] Failed to bring window to front: {ex}"); }
+                        catch (Exception ex)
+                        {
+                            Debug.WriteLine($"[CALLWINDOW] Failed to bring window to front: {ex}");
+                        }
+
                         return;
                     }
 
-                    if (_inCall && _currentCallId.HasValue && _currentCallId.Value != data.CallId)
+                    if (_inCall && _currentCallId.HasValue && _currentCallId.Value != incomingCall.CallId)
                     {
                         ShowInlineNotification("Incoming call received while already in a call");
                         Debug.WriteLine("[CALLWINDOW] Incoming call ignored because already in another call");
                         return;
                     }
 
-                    IncomingText.Text = DefaultLanguage.IncomingCall; // ? ����˲������
-                    IncomingFromText.Text = $"{DefaultLanguage.IncomingCall}: {data.InitiatorId}"; // ? ����˲������
+                    IncomingText.Text = DefaultLanguage.IncomingCall;
+                    IncomingFromText.Text = $"{DefaultLanguage.IncomingCall}: {incomingCall.InitiatorId}";
 
-                    try { Panel.SetZIndex(IncomingPrompt, 9999); } catch (Exception ex) { Debug.WriteLine($"[CALLWINDOW] SetZIndex failed: {ex}"); }
+                    try
+                    {
+                        Panel.SetZIndex(IncomingPrompt, 9999);
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine($"[CALLWINDOW] SetZIndex failed: {ex}");
+                    }
 
-                    try { ListViewGrid.Visibility = Visibility.Collapsed; } catch (Exception ex) { Debug.WriteLine($"[CALLWINDOW] Hide ListViewGrid failed: {ex}"); }
+                    try
+                    {
+                        ListViewGrid.Visibility = Visibility.Collapsed;
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine($"[CALLWINDOW] Hide ListViewGrid failed: {ex}");
+                    }
 
                     IncomingPrompt.Visibility = Visibility.Visible;
 
                     try
                     {
-                        this.Owner = Application.Current.MainWindow;
-                        if (!this.IsVisible) this.Show();
-                        this.WindowState = WindowState.Normal;
-                        this.Topmost = true; this.Topmost = false;
-                        this.Activate();
+                        Owner = Application.Current.MainWindow;
+
+                        if (!IsVisible)
+                        {
+                            Show();
+                        }
+
+                        WindowState = WindowState.Normal;
+                        Topmost = true;
+                        Topmost = false;
+                        Activate();
 
                         Debug.WriteLine("[CALLWINDOW] Incoming prompt shown and window activated");
                     }
@@ -534,14 +565,39 @@ namespace Edemly.Client.Pages
 
                     PlayRingtone();
 
-                    _currentCallId = data.CallId; _currentCallUid = data.CallUid; _callInitiatorId = data.InitiatorId; _currentChatId = data.ChatId;
+                    _currentCallId = incomingCall.CallId;
+                    _currentCallUid = incomingCall.CallUid;
+                    _callInitiatorId = incomingCall.InitiatorId;
+                    _currentChatId = incomingCall.ChatId;
 
                     try
                     {
-                        var panel = CallsListPanel;
-                        var btn = new Button { Content = $"Incoming: {data.CallUid} from {data.InitiatorId}", Tag = new { data.CallId, data.CallUid, data.ChatId, data.InitiatorId }, Margin = new Thickness(4) };
-                        btn.Click += async (s, e) => { var tag = (dynamic)btn.Tag; await JoinCallAsync((int)tag.CallId, (string)tag.CallUid, (int)tag.ChatId, (int)tag.InitiatorId); };
-                        panel.Children.Insert(0, btn);
+                        var btn = new Button
+                        {
+                            Content = $"Incoming: {incomingCall.CallUid} from {incomingCall.InitiatorId}",
+                            Tag = new
+                            {
+                                incomingCall.CallId,
+                                incomingCall.CallUid,
+                                incomingCall.ChatId,
+                                incomingCall.InitiatorId
+                            },
+                            Margin = new Thickness(4)
+                        };
+
+                        btn.Click += async (s, e) =>
+                        {
+                            var tag = (dynamic)btn.Tag;
+
+                            await JoinCallAsync(
+                                (int)tag.CallId,
+                                (string?)tag.CallUid ?? string.Empty,
+                                (int)tag.ChatId,
+                                (int)tag.InitiatorId);
+                        };
+
+                        CallsListPanel.Children.Insert(0, btn);
+
                         Debug.WriteLine("[CALLWINDOW] Added incoming call button to list");
                     }
                     catch (Exception ex)
@@ -556,20 +612,50 @@ namespace Edemly.Client.Pages
                         {
                             try
                             {
-                                if (!_inCall && _currentCallId == data.CallId)
+                                if (!_inCall && _currentCallId == incomingCall.CallId)
                                 {
                                     StopRingtone();
-                                    try { await _hub.EndCallAsync(data.CallId); } catch (Exception ex) { Debug.WriteLine($"[CALLWINDOW] NoPeer timer EndCall failed: {ex}"); }
+
+                                    try
+                                    {
+                                        await _hub.EndCallAsync(incomingCall.CallId);
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        Debug.WriteLine($"[CALLWINDOW] NoPeer timer EndCall failed: {ex}");
+                                    }
+
                                     Application.Current.Dispatcher.Invoke(() =>
                                     {
                                         IncomingPrompt.Visibility = Visibility.Collapsed;
-                                        var toRemove = CallsListPanel.Children.OfType<Button>().FirstOrDefault(b => ((dynamic)b.Tag).CallId == data.CallId);
-                                        if (toRemove != null) CallsListPanel.Children.Remove(toRemove);
+
+                                        var toRemove = CallsListPanel.Children
+                                            .OfType<Button>()
+                                            .FirstOrDefault(b =>
+                                            {
+                                                try
+                                                {
+                                                    return ((dynamic)b.Tag).CallId == incomingCall.CallId;
+                                                }
+                                                catch
+                                                {
+                                                    return false;
+                                                }
+                                            });
+
+                                        if (toRemove != null)
+                                        {
+                                            CallsListPanel.Children.Remove(toRemove);
+                                        }
                                     });
                                 }
                             }
-                            catch (Exception ex) { Debug.WriteLine($"[CALLWINDOW] NoPeer inner timer failed: {ex}"); }
+                            catch (Exception ex)
+                            {
+                                Debug.WriteLine($"[CALLWINDOW] NoPeer inner timer failed: {ex}");
+                            }
                         }, null, TimeSpan.FromSeconds(30), System.Threading.Timeout.InfiniteTimeSpan);
+
                         Debug.WriteLine("[CALLWINDOW] No-peer timer started");
                     }
                     catch (Exception ex)
@@ -577,49 +663,40 @@ namespace Edemly.Client.Pages
                         Debug.WriteLine($"[CALLWINDOW] Failed to start no-peer timer: {ex}");
                     }
 
-                    try
-                    {
-                        _ = Task.Run(async () =>
-                        {
-                            var user = await App.ApiService.GetUserByIdAsync(data.InitiatorId);
-                            if (user != null)
-                            {
-                                Application.Current.Dispatcher.Invoke(async () =>
-                                {
-                                    try
-                                    {
-                                        IncomingFromText.Text = $"From: {user.Username}";
-                                    }
-                                    catch (Exception ex) { Debug.WriteLine($"[CALLWINDOW] Setting IncomingFromText failed: {ex}"); }
-
-                                    try
-                                    {
-                                        if (!string.IsNullOrEmpty(user.PfpUrl))
-                                        {
-                                            var bmp = await App.GlobalProfilePictureCache.GetOrDownloadAsync(user.PfpUrl);
-                                            if (bmp != null) IncomingAvatar.Source = bmp;
-                                        }
-                                    }
-                                    catch (Exception ex)
-                                    {
-                                        Debug.WriteLine($"[CALLWINDOW] Failed to load avatar: {ex}");
-                                    }
-                                });
-                            }
-                        });
-                    }
-                    catch (Exception ex)
-                    {
-                        Debug.WriteLine($"[CALLWINDOW] Failed to fetch user details: {ex}");
-                    }
+                    _ = LoadIncomingCallerDetailsAsync(incomingCall.InitiatorId);
                 }
                 catch (Exception ex)
                 {
-                    System.Diagnostics.Debug.WriteLine($"HandleIncomingCall UI update error: {ex.Message}");
+                    Debug.WriteLine($"HandleIncomingCall UI update error: {ex.Message}");
                 }
             });
         }
+        private async Task LoadIncomingCallerDetailsAsync(int initiatorId)
+        {
+            try
+            {
+                var user = await App.ApiService.GetUserByIdAsync(initiatorId);
+                if (user == null) return;
 
+                var avatar = !string.IsNullOrEmpty(user.PfpUrl)
+                    ? await App.GlobalProfilePictureCache.GetOrDownloadAsync(user.PfpUrl)
+                    : null;
+
+                await Dispatcher.InvokeAsync(() =>
+                {
+                    IncomingFromText.Text = $"From: {user.Username}";
+
+                    if (avatar != null)
+                    {
+                        IncomingAvatar.Source = avatar;
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[CALLWINDOW] Failed to fetch user details: {ex}");
+            }
+        }
         private void OnCallingReceived(int callId, string? callUid)
         {
             Application.Current.Dispatcher.Invoke(() =>

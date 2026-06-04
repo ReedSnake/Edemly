@@ -89,7 +89,7 @@ namespace Edemly.Client
 
                     _messageRenderer.RenderMessage(message, isHistorical: false, senderName);
                     MakeTextLinksClickable(FindBorderByMessageId(message.Id), message.Text);
-                    _messagesScrollViewer.ScrollToEnd();
+                    _messagesScrollViewer?.ScrollToEnd();
                 }
             });
         }

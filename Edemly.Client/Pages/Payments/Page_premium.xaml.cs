@@ -145,7 +145,7 @@ namespace Edemly.Client
                 {
                     Process.Start(new ProcessStartInfo(tmp) { UseShellExecute = true });
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     try
                     {

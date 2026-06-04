@@ -42,7 +42,7 @@ namespace Edemly.Client.Pages
             ApplyThemeToPage();
 
             LoadGroupData();
-            LoadGroupMembersAsync();
+            _ = LoadGroupMembersAsync();
 
             _ = CheckOwnerStatusAndEnableChangeIconAsync();
 

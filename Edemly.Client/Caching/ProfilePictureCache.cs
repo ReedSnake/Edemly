@@ -1,4 +1,4 @@
-﻿#nullable disable
+﻿#nullable enable
 
 using System.Collections.Concurrent;
 using System.Diagnostics;
@@ -21,7 +21,7 @@ namespace Edemly.Client.Caching
         private const int MAX_MEMORY_CACHE_SIZE = 50;
         private readonly object _cacheLock = new object();
 
-        private readonly ConcurrentDictionary<string, Task<BitmapImage>> _downloadTasks = new();
+        private readonly ConcurrentDictionary<string, Task<BitmapImage?>> _downloadTasks = new();
 
         public event Action<string>? DownloadStarted;
 
@@ -86,7 +86,7 @@ namespace Edemly.Client.Caching
             return url;
         }
 
-        public async Task<BitmapImage> GetOrDownloadAsync(string pfpUrl)
+        public async Task<BitmapImage?> GetOrDownloadAsync(string pfpUrl)
         {
             if (string.IsNullOrEmpty(pfpUrl))
                 return null;
@@ -129,7 +129,7 @@ namespace Edemly.Client.Caching
             }
         }
 
-        private async Task<BitmapImage> DownloadAndCacheAsync(string pfpUrl, string cacheKey)
+        private async Task<BitmapImage?> DownloadAndCacheAsync(string pfpUrl, string cacheKey)
         {
             DownloadStarted?.Invoke(pfpUrl);
 
@@ -162,7 +162,7 @@ namespace Edemly.Client.Caching
             }
         }
 
-        public async Task<BitmapImage> ForceDownloadAsync(string pfpUrl)
+        public async Task<BitmapImage?> ForceDownloadAsync(string pfpUrl)
         {
             if (string.IsNullOrEmpty(pfpUrl))
                 return null;
@@ -219,7 +219,7 @@ namespace Edemly.Client.Caching
             return null;
         }
 
-        public async Task<BitmapImage> CacheLocalFileAsync(string filePath)
+        public async Task<BitmapImage?> CacheLocalFileAsync(string filePath)
         {
             try
             {
@@ -340,10 +340,10 @@ namespace Edemly.Client.Caching
             return null;
         }
 
-        private async Task<(byte[] data, string? contentType)> DownloadImageWithRetriesAsync(string url, int maxAttempts = 3)
+        private async Task<(byte[]? data, string? contentType)> DownloadImageWithRetriesAsync(string url, int maxAttempts = 3)
         {
             int attempt = 0;
-            Exception lastEx = null;
+            Exception? lastEx = null;
             while (attempt < maxAttempts)
             {
                 try
@@ -377,7 +377,7 @@ namespace Edemly.Client.Caching
             return _staticToken;
         }
 
-        private async Task<(byte[] data, string? contentType)> DownloadImageAsync(string url)
+        private async Task<(byte[]? data, string? contentType)> DownloadImageAsync(string url)
         {
             if (string.IsNullOrWhiteSpace(url))
                 throw new ArgumentException("url is null or empty", nameof(url));
@@ -565,8 +565,11 @@ namespace Edemly.Client.Caching
             try
             {
                 var dir = Path.GetDirectoryName(path);
-                if (!Directory.Exists(dir))
+
+                if (!string.IsNullOrWhiteSpace(dir) && !Directory.Exists(dir))
+                {
                     Directory.CreateDirectory(dir);
+                }
 
                 var tmpPath = path + ".tmp";
                 await File.WriteAllBytesAsync(tmpPath, data);
@@ -589,7 +592,7 @@ namespace Edemly.Client.Caching
             }
         }
 
-        private BitmapImage LoadImageFromDisk(string path)
+        private BitmapImage? LoadImageFromDisk(string path)
         {
             try
             {
@@ -609,7 +612,7 @@ namespace Edemly.Client.Caching
             }
         }
 
-        private BitmapImage LoadImageFromBytes(byte[] imageData)
+        private BitmapImage? LoadImageFromBytes(byte[] imageData)
         {
             try
             {

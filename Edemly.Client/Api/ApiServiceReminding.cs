@@ -121,7 +121,7 @@ namespace Edemly.Client.Api
                 await _httpClient.DeleteAsync(url);
                 return true;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return false;
             }

@@ -1,4 +1,4 @@
-#nullable disable
+#nullable enable
 
 using System.Collections.Concurrent;
 using System.Diagnostics;
@@ -96,7 +96,7 @@ namespace Edemly.Client.Caching
             return await _tokenProvider!();
         }
 
-        public async Task<string> GetOrDownloadAsync(string fileUrl, string originalFileName)
+        public async Task<string?> GetOrDownloadAsync(string fileUrl, string originalFileName)
         {
             if (string.IsNullOrEmpty(fileUrl))
                 return null;
@@ -171,7 +171,7 @@ namespace Edemly.Client.Caching
             }
         }
 
-        public async Task<string> CacheLocalFileAsync(string filePath)
+        public async Task<string?> CacheLocalFileAsync(string filePath)
         {
             try
             {
@@ -214,9 +214,18 @@ namespace Edemly.Client.Caching
             }
         }
 
-        private bool _file_path_cache_try_remove(string cacheKey, out string filePath)
+        private bool _file_path_cache_try_remove(string cacheKey, out string? filePath)
         {
-            try { return _filePathCache.TryRemove(cacheKey, out filePath); } catch (Exception ex) { Debug.WriteLine($"[FileCache] Failed to remove cache key: {ex.Message}"); filePath = null; return false; }
+            try
+            {
+                return _filePathCache.TryRemove(cacheKey, out filePath);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[FileCache] Failed to remove cache key: {ex.Message}");
+                filePath = null;
+                return false;
+            }
         }
 
         public void ClearAll()
@@ -272,7 +281,7 @@ namespace Edemly.Client.Caching
         private async Task<(byte[] data, string? contentType)> DownloadFileWithRetriesAsync(string url, int maxAttempts = 3)
         {
             int attempt = 0;
-            Exception last = null;
+            Exception? last = null;
             while (attempt < maxAttempts)
             {
                 try
@@ -349,7 +358,7 @@ namespace Edemly.Client.Caching
             }
 
             resp.EnsureSuccessStatusCode();
-            return (null, null);
+            throw new InvalidOperationException("Download failed unexpectedly.");
         }
 
         private static async Task<string> SafeReadResponseBodyAsync(HttpResponseMessage resp)
@@ -398,7 +407,11 @@ namespace Edemly.Client.Caching
             try
             {
                 var dir = Path.GetDirectoryName(path);
-                if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
+
+                if (!string.IsNullOrWhiteSpace(dir) && !Directory.Exists(dir))
+                {
+                    Directory.CreateDirectory(dir);
+                }
 
                 var tmp = path + ".tmp";
                 await File.WriteAllBytesAsync(tmp, data);
