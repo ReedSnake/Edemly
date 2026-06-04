@@ -7,7 +7,6 @@ namespace Edemly.Client.Pages.Settings
 {
     internal class MyInfo
     {
-        public static string Name { get; set; } = string.Empty;
         public static string Email { get; set; } = string.Empty;
         public static string PhoneNumber { get; set; } = string.Empty;
         public static string UserName { get; set; } = string.Empty;
@@ -36,12 +35,6 @@ namespace Edemly.Client.Pages.Settings
                     FirstName = userInfo.FirstName ?? string.Empty;
                     LastName = userInfo.LastName ?? string.Empty;
 
-                    Name = $"{FirstName} {LastName}".Trim();
-                    if (string.IsNullOrEmpty(Name))
-                    {
-                        Name = UserName;
-                    }
-
                     return true;
                 }
 
@@ -58,7 +51,6 @@ namespace Edemly.Client.Pages.Settings
         /// </summary>
         public static void Clear()
         {
-            Name = string.Empty;
             Email = string.Empty;
             PhoneNumber = string.Empty;
             UserName = string.Empty;

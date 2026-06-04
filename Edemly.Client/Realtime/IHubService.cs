@@ -1,6 +1,3 @@
-using System;
-using System.Threading.Tasks;
-
 namespace Edemly.Client.Realtime
 {
     public interface IHubService : IDisposable

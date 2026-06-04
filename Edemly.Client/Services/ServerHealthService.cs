@@ -2,7 +2,7 @@ using System;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-
+using Edemly.Client.Realtime;
 namespace Edemly.Client.Services
 {
     /// <summary>
@@ -26,7 +26,7 @@ namespace Edemly.Client.Services
             _serverUrl = serverUrl;
             _httpClient = new HttpClient
             {
-                Timeout = TimeSpan.FromSeconds(3)
+                Timeout = HubSettings.ConnectionCheckInitialDelay
             };
             _lastKnownState = false;
             IsServerAvailable = false;
@@ -51,7 +51,7 @@ namespace Edemly.Client.Services
             _healthCheckTimer = new Timer(async _ =>
             {
                 await CheckServerHealthAsync();
-            }, null, TimeSpan.FromSeconds(3), TimeSpan.FromSeconds(3));
+            }, null, HubSettings.ConnectionCheckInitialDelay, HubSettings.ConnectionCheckInitialDelay);
         }
 
         /// <summary>

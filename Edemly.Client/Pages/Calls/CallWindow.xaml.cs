@@ -1,21 +1,21 @@
+using Concentus.Enums;
+using Concentus.Structs;
+using Edemly.Client.Lang;
+using Edemly.Client.Realtime; // ? ���������
+using Edemly.Client.Services;
+using NAudio.Wave;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using Edemly.Client.Services;
-using NAudio.Wave;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
-using System.Threading;
-using Concentus.Structs;
-using Concentus.Enums;
-using System.ComponentModel;
-using System.Diagnostics;
-using Edemly.Client.Lang;
-using Edemly.Client.Realtime; // ? ���������
-
+using Edemly.Contracts.Realtime;
 namespace Edemly.Client.Pages
 {
     // small helper to loop a WaveStream
@@ -507,7 +507,7 @@ namespace Edemly.Client.Pages
         }
 
         // Make handler public so App can forward incoming call events to this window instance
-        public void HandleIncomingCall(IncomingCallData data)
+        public void HandleIncomingCall(IncomingCallEventDto data)
         {
             Application.Current.Dispatcher.Invoke(() =>
             {

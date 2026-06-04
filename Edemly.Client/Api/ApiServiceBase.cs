@@ -1,3 +1,6 @@
+using Edemly.Client.Api;
+using Edemly.Client.Helpers;
+using Edemly.Contracts.Calls;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -8,8 +11,6 @@ using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
-using Edemly.Client.Api;
-using Edemly.Contracts.Calls;
 namespace Edemly.Client.Api
 {
     public partial class ApiService : IApiService, IDisposable
@@ -24,9 +25,8 @@ namespace Edemly.Client.Api
             if (string.IsNullOrWhiteSpace(serverUrl))
                 throw new ArgumentException("serverUrl must be provided", nameof(serverUrl));
 
-            _baseUrl = serverUrl.TrimEnd('/');
+            _baseUrl = UrlHelper.NormalizeBaseUrl(serverUrl);
 
-            // Ensure BaseAddress ends with slash so HttpClient combines relative URIs correctly
             var baseAddr = _baseUrl.EndsWith('/') ? _baseUrl : _baseUrl + "/";
 
             _httpClient = new HttpClient
@@ -44,7 +44,7 @@ namespace Edemly.Client.Api
             if (string.IsNullOrWhiteSpace(serverUrl))
                 throw new ArgumentException("serverUrl must be provided", nameof(serverUrl));
 
-            _baseUrl = serverUrl.TrimEnd('/');
+            _baseUrl = UrlHelper.NormalizeBaseUrl(serverUrl);
 
             try
             {
@@ -57,19 +57,6 @@ namespace Edemly.Client.Api
                 System.Diagnostics.Debug.WriteLine($"[API SERVICE] Failed to set BaseAddress: {ex.Message}");
                 throw;
             }
-        }
-
-        // Helper to build request URIs. Return absolute URIs unchanged; return relative paths without leading slash
-        // so HttpClient combines them with BaseAddress (which always ends with a slash).
-        private string BuildUrl(string relativeOrAbsolute)
-        {
-            if (string.IsNullOrWhiteSpace(relativeOrAbsolute))
-                return relativeOrAbsolute ?? string.Empty;
-
-            if (Uri.IsWellFormedUriString(relativeOrAbsolute, UriKind.Absolute))
-                return relativeOrAbsolute;
-
-            return relativeOrAbsolute.TrimStart('/');
         }
 
         public void SetAuthToken(string token)
@@ -119,13 +106,16 @@ namespace Edemly.Client.Api
                 return default;
             }
         }
-
+        private static string BuildUrl(string relativeOrAbsolute)
+        {
+            return UrlHelper.BuildRelativeUrl(relativeOrAbsolute);
+        }
         public async Task<List<CallDto>> GetActiveCallsAsync() //I left this here but pls make a separate file if you add more call related stuff to the api later
         {
             try
             {
                 var rel = "api/call/active";
-                var url = BuildUrl(rel);
+                var url = UrlHelper.BuildRelativeUrl(rel);
                 System.Diagnostics.Debug.WriteLine($"[API] GET {_httpClient.BaseAddress}{url}");
                 var response = await _httpClient.GetAsync(url);
 

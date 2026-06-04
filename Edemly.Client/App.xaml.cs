@@ -10,7 +10,7 @@ using System.Windows.Media.Imaging;
 using Edemly.Client.Realtime;
 using Edemly.Client.Caching;
 using Edemly.Client.Pages.Settings;
-
+using Edemly.Contracts.Realtime;
 namespace Edemly.Client
 {
     public partial class App : Application
@@ -482,11 +482,6 @@ namespace Edemly.Client
                 MyInfo.Description = userInfo.Description ?? string.Empty;
                 MyInfo.FirstName = userInfo.FirstName ?? string.Empty;
                 MyInfo.LastName = userInfo.LastName ?? string.Empty;
-                MyInfo.Name = $"{MyInfo.FirstName} {MyInfo.LastName}".Trim();
-                if (string.IsNullOrEmpty(MyInfo.Name))
-                {
-                    MyInfo.Name = MyInfo.UserName;
-                }
 
                 if (!string.IsNullOrWhiteSpace(userInfo.PfpUrl))
                 {
@@ -853,7 +848,7 @@ namespace Edemly.Client
             SetCompanyAndApply(null, false);
         }
 
-        private void GlobalIncomingCallHandler(IncomingCallData data)
+        private void GlobalIncomingCallHandler(IncomingCallEventDto data)
         {
             try
             {

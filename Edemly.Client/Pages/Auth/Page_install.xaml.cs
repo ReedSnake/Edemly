@@ -13,7 +13,7 @@ using Edemly.Client.Services;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using Edemly.Client.Lang;
-
+using Edemly.Client.Realtime;
 namespace Edemly.Client.Pages
 {
     public partial class Page_install : Page
@@ -232,7 +232,7 @@ namespace Edemly.Client.Pages
                     return;
                 }
 
-                using var http = new HttpClient { Timeout = TimeSpan.FromSeconds(8) };
+                using var http = new HttpClient { Timeout = HubSettings.ShortOperationTimeout };
                 var url = baseUrl + "/api/admin/companies";
 
                 HttpResponseMessage resp;
