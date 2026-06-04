@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Edemly.Contracts.Calls;
+﻿namespace Edemly.Contracts.Calls;
 
 public class CallDto
 {

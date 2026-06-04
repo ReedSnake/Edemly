@@ -1,14 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Edemly.Contracts.Notes;
 using System.IO;
-using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
-using Edemly.Client.Api;
-
-using Edemly.Contracts.Notes;
 
 namespace Edemly.Client.Api
 {
@@ -18,7 +12,6 @@ namespace Edemly.Client.Api
         {
             try
             {
-                // First check local per-creator file
                 var localPath = GetLocalNotesPath();
 
                 if (File.Exists(localPath))
@@ -65,7 +58,6 @@ namespace Edemly.Client.Api
                 }
                 catch
                 {
-                    // ignore
                 }
 
                 return null;
@@ -95,7 +87,6 @@ namespace Edemly.Client.Api
 
                 if (!notesDict.ContainsKey(userId) && notesDict.Count >= 5)
                 {
-                    // check server-side count endpoint if available
                     try
                     {
                         var resp = await _httpClient.GetAsync(BuildUrl("api/note/count"));
@@ -123,7 +114,6 @@ namespace Edemly.Client.Api
                 Directory.CreateDirectory(Path.GetDirectoryName(localPath)!);
                 await File.WriteAllTextAsync(localPath, newJson);
 
-                // push to server
                 try
                 {
                     var requestBody = new { UserId = userId, NoteText = noteText };

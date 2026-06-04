@@ -1,10 +1,5 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Text.Json;
-using System.Threading.Tasks;
-
 using Edemly.Contracts.Payments;
+using System.Text.Json;
 
 namespace Edemly.Client.Api
 {

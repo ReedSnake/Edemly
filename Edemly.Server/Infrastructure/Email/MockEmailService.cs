@@ -1,19 +1,13 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Edemly.Server.Configuration;
 using System.Collections.Concurrent;
-using Edemly.Server.Configuration;
 
 namespace Edemly.Server.Services
 {
-    /// <summary>
-    /// Заглушка сервісу імейлів для локальної розробки та тестування.
-    /// Замість реальної відправки через Brevo, виводить код у консоль.
-    /// </summary>
     public class MockEmailService : IEmailService
     {
         private readonly BrevoSettings _brevoSettings;
         private readonly ILogger<MockEmailService> _logger;
 
-        // Використовуємо такий самий словник для збереження кодів, як і в реальному сервісі
         private static readonly ConcurrentDictionary<string, VerificationCode> _verificationCodes = new();
 
         public MockEmailService(BrevoSettings brevoSettings, ILogger<MockEmailService> logger)
@@ -72,7 +66,6 @@ namespace Edemly.Server.Services
 
         public Task SendVerificationCodeAsync(string email, string code)
         {
-            // Головна "фішка" заглушки — виводимо код у консоль дуже помітно
             Console.ForegroundColor = ConsoleColor.Yellow;
             Console.WriteLine("\n==================================================");
             Console.WriteLine("   [MOCK EMAIL SERVICE] - ТЕСТОВИЙ РЕЖИМ");

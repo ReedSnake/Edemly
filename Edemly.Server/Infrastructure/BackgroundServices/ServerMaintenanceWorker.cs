@@ -1,24 +1,19 @@
-using Microsoft.AspNetCore.SignalR;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 using Edemly.Server.Configuration;
 using Edemly.Server.Data;
 using Edemly.Server.Data.Entities;
 using Edemly.Server.Hubs;
+using Microsoft.AspNetCore.SignalR;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace Edemly.Server
 {
-    /// <summary>
-    /// Фоновий сервіс для виконання періодичних завдань.
-    /// Виконується незалежно від HTTP запитів.
-    /// </summary>
     public class ServerMaintenanceWorker : BackgroundService
     {
         private readonly ILogger<ServerMaintenanceWorker> _logger;
         private readonly IServiceProvider _serviceProvider;
         private readonly WorkerSettings _settings;
         private readonly IHubContext<MainHub> _hub;
-
 
         private DateTime _lastSessionCleanup = DateTime.MinValue;
         private DateTime _lastReminderCheck = DateTime.MinValue;
@@ -40,7 +35,6 @@ namespace Edemly.Server
         {
             _logger.LogInformation("Worker Service запущено о {Time}", DateTimeOffset.Now);
 
-            // Затримка перед першим виконанням (дає час серверу повністю запуститися)
             await Task.Delay(_settings.StartupDelay, stoppingToken);
 
             while (!stoppingToken.IsCancellationRequested)
@@ -50,7 +44,6 @@ namespace Edemly.Server
                     var now = DateTime.UtcNow;
                     var tasks = new List<Task>();
 
-                    // Виконуємо тільки ті задачі, для яких настав час
                     if (now - _lastSessionCleanup >= _settings.SessionCleanupInterval)
                     {
                         tasks.Add(ExecuteTaskAsync(() => CleanupExpiredSessionsAsync(stoppingToken),
@@ -69,13 +62,11 @@ namespace Edemly.Server
                             () => _lastPaymentCheck = now, "Check payments", stoppingToken));
                     }
 
-                    // Виконуємо всі задачі паралельно
                     if (tasks.Count > 0)
                     {
                         await Task.WhenAll(tasks);
                     }
 
-                    // Чекаємо до наступної перевірки (використовуємо мінімальний інтервал)
                     var checkInterval = TimeSpan.FromMinutes(1);
                     await Task.Delay(checkInterval, stoppingToken);
                 }
@@ -94,9 +85,6 @@ namespace Edemly.Server
             _logger.LogInformation("Worker Service зупинено о {Time}", DateTimeOffset.Now);
         }
 
-        /// <summary>
-        /// Обгортка для виконання задачі з обробкою помилок та оновленням часу останнього виконання.
-        /// </summary>
         private async Task ExecuteTaskAsync(
             Func<Task> taskFunc,
             Action updateLastRun,
@@ -132,10 +120,6 @@ namespace Edemly.Server
             }
         }
 
-        /// <summary>
-        /// Перевірка нагадувань, що потребують обробки.
-        /// Відправляє нагадування, якщо LastTime <= поточний час.
-        /// </summary>
         private async Task CheckPendingRemindersAsync(CancellationToken stoppingToken)
         {
             using var scope = _serviceProvider.CreateScope();
@@ -183,10 +167,6 @@ namespace Edemly.Server
             }
         }
 
-        /// <summary>
-        /// Перевірка платежів зі статусом Pending, що "застрягли".
-        /// Автоматично переводить їх у Failed після таймауту.
-        /// </summary>
         private async Task CheckPendingPaymentsAsync(CancellationToken stoppingToken)
         {
             using var scope = _serviceProvider.CreateScope();
@@ -196,7 +176,6 @@ namespace Edemly.Server
             {
                 var timeoutDate = DateTime.UtcNow.Subtract(_settings.PaymentTimeout);
 
-                // Використовуємо ExecuteUpdateAsync для ефективного оновлення без завантаження в пам'ять
                 var updatedCount = await dbContext.Payments
                     .Where(p => p.Status == PaymentStatus.Pending && p.UpdatedAt < timeoutDate)
                     .ExecuteUpdateAsync(s => s
@@ -212,9 +191,6 @@ namespace Edemly.Server
                 {
                     _logger.LogDebug("Немає застарілих платежів");
                 }
-
-                // TODO: Реалізувати логіку повернення коштів через API платіжної системи
-                // та сповіщення користувачів
             }
             catch (Exception ex)
             {

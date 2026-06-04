@@ -1,17 +1,12 @@
-﻿using System;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Collections.Generic;
-using System.Security.Claims;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.SignalR;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
+﻿using Edemly.Server.Api.Middleware; // ITenantProvider
 using Edemly.Server.Api.Services;
 using Edemly.Server.Data;
 using Edemly.Server.Data.Entities;
 using Edemly.Server.Services;
-using Edemly.Server.Api.Middleware; // ITenantProvider
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.SignalR;
+using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 using System.Text.Json;
 
 namespace Edemly.Server.Hubs
@@ -65,7 +60,6 @@ namespace Edemly.Server.Hubs
         {
             try
             {
-                // Attempt to read user id; if GetUserId throws for unauthenticated, catch and log
                 int? uid = null;
                 try
                 {
@@ -83,7 +77,6 @@ namespace Edemly.Server.Hubs
             await base.OnConnectedAsync();
         }
 
-        // Start a call: read members from resolved DB (tenant preferred), persist call in master DB
         [HubMethodName("StartCall")]
         public async Task StartCallAsync(int chatId, string callUid, string? metadata = null)
         {
@@ -101,7 +94,6 @@ namespace Edemly.Server.Hubs
                 catch (Exception ex)
                 {
                     _logger.LogDebug(ex, "StartCall: failed to parse metadata JSON string");
-                    // treat as plain string if parsing fails by leaving metadataElement null and storing raw string
                 }
             }
 
@@ -126,7 +118,6 @@ namespace Edemly.Server.Hubs
                     Status = CallStatus.Pending // Set to Pending initially
                 };
 
-                // Persist call to master DB to avoid tenant schema mismatch
                 _serverDb.Calls.Add(call);
                 await _serverDb.SaveChangesAsync();
 
@@ -143,26 +134,21 @@ namespace Edemly.Server.Hubs
                 var userStrings = memberIds.Select(id => id.ToString()).ToList();
                 await Clients.Users(userStrings).SendAsync("IncomingCall", payload);
 
-                // Notify the initiator that the call is ringing (calling)
                 await Clients.User(initiatorId.ToString()).SendAsync("Calling", new { CallId = call.Id, CallUid = callUid });
 
-                // Schedule a timeout to mark the call as missed if not accepted within 30 seconds
                 _ = Task.Run(async () =>
                 {
                     try
                     {
                         await Task.Delay(TimeSpan.FromSeconds(30));
 
-                        // Re-read call from master DB
                         var pendingCall = await _serverDb.Calls.FindAsync(call.Id);
                         if (pendingCall != null && pendingCall.Status == CallStatus.Pending)
                         {
-                            // Update the call status to Missed
                             pendingCall.Status = CallStatus.Missed;
                             pendingCall.EndedAt = DateTime.UtcNow;
                             await _serverDb.SaveChangesAsync();
 
-                            // Notify initiator that call was missed / rejected
                             try
                             {
                                 await Clients.User(initiatorId.ToString()).SendAsync("CallRejected", new { CallId = call.Id, UserId = (int?)null, Reason = "No answer" });
@@ -172,7 +158,6 @@ namespace Edemly.Server.Hubs
                                 _logger.LogDebug(ex, "CallHub timeout: failed to notify initiator {InitiatorId}", initiatorId);
                             }
 
-                            // Notify other members that call ended
                             try
                             {
                                 await Clients.Users(userStrings).SendAsync("CallEnded", new { CallId = call.Id, UserId = initiatorId });
@@ -212,7 +197,6 @@ namespace Edemly.Server.Hubs
                     .Select(cm => cm.UserId.ToString())
                     .ToListAsync();
 
-                // Notify all members that the call has been accepted
                 await Clients.Users(memberIds).SendAsync("CallAccepted", new { CallId = callId, UserId = userId });
 
                 call.Status = CallStatus.InProgress;
@@ -241,15 +225,12 @@ namespace Edemly.Server.Hubs
                     .Select(cm => cm.UserId.ToString())
                     .ToListAsync();
 
-                // Persist call Missed/Ended state
                 call.EndedAt = DateTime.UtcNow;
                 call.Status = CallStatus.Ended;
                 await _serverDb.SaveChangesAsync();
 
-                // Notify all members that the call has ended
                 await Clients.Users(memberIds).SendAsync("CallEnded", new { CallId = callId, UserId = userId, Reason = reason });
 
-                // Also send CallRejected to the initiator so they can stop ringing and show message
                 try
                 {
                     await Clients.User(call.InitiatorId.ToString()).SendAsync("CallRejected", new { CallId = callId, UserId = userId, Reason = reason });
@@ -294,7 +275,6 @@ namespace Edemly.Server.Hubs
             }
         }
 
-        // WebRTC signaling passthrough
         [HubMethodName("SendOffer")]
         public async Task SendOfferAsync(int targetUserId, string sdp, string callUid)
         {
@@ -329,14 +309,12 @@ namespace Edemly.Server.Hubs
             var userId = GetUserId();
             _logger.LogDebug("SendAudioChunk: from={From} to={To} callId={CallId} bytes={Len} seq={Seq} ts={Ts}", userId, targetUserId?.ToString() ?? "<all>", callId, chunk?.Length ?? 0, sequenceId, timestampMs);
 
-            // If a specific target is provided, send only to that user
             if (targetUserId.HasValue)
             {
                 await Clients.User(targetUserId.Value.ToString()).SendAsync("AudioChunk", userId, chunk, callId, sequenceId, timestampMs);
                 return;
             }
 
-            // Otherwise broadcast to all members of the call's chat except the sender
             var call = await _serverDb.Calls.FindAsync(callId);
             if (call == null)
             {
@@ -354,7 +332,6 @@ namespace Edemly.Server.Hubs
                         .Select(cm => cm.UserId.ToString())
                         .ToListAsync();
 
-                    // exclude sender
                     var recipients = memberIds.Where(id => id != userId.ToString()).ToList();
                     if (recipients.Count == 0) return;
 
@@ -373,7 +350,6 @@ namespace Edemly.Server.Hubs
 
         private int GetUserId()
         {
-            // Try common claim types: NameIdentifier (preferred), then custom 'userId', then 'sub'
             string? userIdClaim = null;
 
             try

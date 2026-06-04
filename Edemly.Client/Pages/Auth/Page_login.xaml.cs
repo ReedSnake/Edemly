@@ -1,12 +1,11 @@
-﻿using System;
+﻿using Edemly.Client.Lang;
+using Edemly.Client.Services;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Navigation;
 using MessageBox = Edemly.Client.Pages.MessageBox;
-using Edemly.Client.Lang;
-using Edemly.Client.Services;
 
 namespace Edemly.Client
 {
@@ -26,19 +25,19 @@ namespace Edemly.Client
                 HorizontalAlignment = HorizontalAlignment.Left,
                 VerticalAlignment = VerticalAlignment.Top,
                 Margin = new Thickness(8),
-                Width = 120, 
+                Width = 120,
                 Height = 25,
                 Background = Brushes.White,
                 Foreground = Brushes.Black,
                 BorderThickness = new Thickness(0),
-                Padding = new Thickness(16, 10, 16, 10) 
+                Padding = new Thickness(16, 10, 16, 10)
             };
 
             var template = new ControlTemplate(typeof(Button));
             var border = new FrameworkElementFactory(typeof(Border));
             border.SetValue(Border.BackgroundProperty, new TemplateBindingExtension(Button.BackgroundProperty));
             border.SetValue(Border.BorderThicknessProperty, new Thickness(0));
-            border.SetValue(Border.CornerRadiusProperty, new CornerRadius(2)); 
+            border.SetValue(Border.CornerRadiusProperty, new CornerRadius(2));
 
             var contentPresenter = new FrameworkElementFactory(typeof(ContentPresenter));
             contentPresenter.SetValue(ContentPresenter.HorizontalAlignmentProperty, HorizontalAlignment.Center);
@@ -164,6 +163,7 @@ namespace Edemly.Client
                 return false;
             }
         }
+
         private void EmailTextBox_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Enter)

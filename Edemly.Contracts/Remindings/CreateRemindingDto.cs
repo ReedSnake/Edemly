@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Text;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace Edemly.Contracts.Remindings
 {
@@ -24,6 +21,5 @@ namespace Edemly.Contracts.Remindings
         public bool ShowTime { get; set; } = false;
 
         public bool IsCompleted { get; set; } = false;
-
     }
 }

@@ -1,22 +1,17 @@
-﻿using System;
+﻿using Edemly.Client.Lang;
+using Edemly.Client.Services;
 using System.IO;
 using System.Reflection;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Navigation;
 using MessageBox = Edemly.Client.Pages.MessageBox;
-using Edemly.Client.Lang;
-using Edemly.Client.Services;
 
 namespace Edemly.Client
 {
-    /// <summary>
-    /// Логика взаимодействия для Page_registration.xaml
-    /// </summary>
     public partial class Page_registration : Page
     {
         private static readonly Regex UsernameRegex = new Regex(@"^[a-zA-Zа-яА-ЯіІїЇєЄґҐ0-9 _-]+$", RegexOptions.Compiled);
@@ -36,7 +31,7 @@ namespace Edemly.Client
                 Margin = new Thickness(8),
                 Width = 120,
                 Height = 25,
-                Background = Brushes.Transparent, 
+                Background = Brushes.Transparent,
                 BorderThickness = new Thickness(0)
             };
 
@@ -170,7 +165,6 @@ namespace Edemly.Client
 
                 if (success)
                 {
-
                     bool rememberMe = RememberMeCheckBox?.IsChecked == true;
                     NavigationService.Navigate(new Page_verification(email, isRegistration: true, username: fullName, rememberMe: rememberMe));
                 }
@@ -233,19 +227,19 @@ namespace Edemly.Client
         {
             if (isValid)
             {
-                FullNameTextBox.BorderBrush = new SolidColorBrush(Color.FromRgb(11, 69, 57)); 
+                FullNameTextBox.BorderBrush = new SolidColorBrush(Color.FromRgb(11, 69, 57));
                 FullNameTextBox.ToolTip = tooltip;
             }
             else
             {
-                FullNameTextBox.BorderBrush = new SolidColorBrush(Color.FromRgb(220, 53, 69)); 
+                FullNameTextBox.BorderBrush = new SolidColorBrush(Color.FromRgb(220, 53, 69));
                 FullNameTextBox.ToolTip = tooltip;
             }
         }
 
         private void ResetUsernameValidationStyle()
         {
-            FullNameTextBox.BorderBrush = new SolidColorBrush(Color.FromRgb(136, 136, 136)); 
+            FullNameTextBox.BorderBrush = new SolidColorBrush(Color.FromRgb(136, 136, 136));
             FullNameTextBox.ToolTip = null;
         }
 
@@ -266,6 +260,7 @@ namespace Edemly.Client
                 return false;
             }
         }
+
         private void TextBox_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Enter)
@@ -315,7 +310,7 @@ namespace Edemly.Client
                 }
                 else
                 {
-                    content = DefaultLanguage.PoliciesContent; 
+                    content = DefaultLanguage.PoliciesContent;
                 }
 
                 PoliciesContentText.Text = content;

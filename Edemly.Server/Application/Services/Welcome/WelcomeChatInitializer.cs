@@ -1,9 +1,7 @@
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 using Edemly.Server.Api.Services;
 using Edemly.Server.Data;
 using Edemly.Server.Data.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace Edemly.Server.Services
 {

@@ -1,23 +1,15 @@
 #nullable enable
-using System;
-using System.Collections.Generic;
+
+using Edemly.Client.Api;
+using Edemly.Client.Caching;
+using Edemly.Client.Models;
+using Edemly.Client.Realtime;
+using Edemly.Client.UI.Helpers;
 using System.IO;
 using System.Media;
 using System.Reflection;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using Edemly.Client.Api;
-using Edemly.Client.Caching;
-
-using Edemly.Client.Models;
-using Edemly.Client.Pages;
-using Edemly.Client.Realtime;
-using Edemly.Client.UI.Helpers;
 
 namespace Edemly.Client
 {
@@ -45,9 +37,9 @@ namespace Edemly.Client
 
         private readonly Dictionary<int, string> _userNamesCache = new Dictionary<int, string>();
 
-        private readonly Dictionary<int, int> _chatLoadedPages = new Dictionary<int, int>(); 
-        private readonly HashSet<int> _loadingOlderChats = new HashSet<int>(); 
-        private readonly HashSet<int> _noMoreOlderMessages = new HashSet<int>(); 
+        private readonly Dictionary<int, int> _chatLoadedPages = new Dictionary<int, int>();
+        private readonly HashSet<int> _loadingOlderChats = new HashSet<int>();
+        private readonly HashSet<int> _noMoreOlderMessages = new HashSet<int>();
 
         private readonly IHubService _hubService;
         private readonly IApiService _apiService;
@@ -63,7 +55,7 @@ namespace Edemly.Client
 
         private readonly Dictionary<int, (bool IsOnline, DateTime? LastSeenUtc, DateTime ExpiresAtUtc)> _userStatusCache = new();
         private readonly object _statusCacheLock = new object();
-        private readonly TimeSpan _statusTtl = TimeSpan.FromSeconds(60); 
+        private readonly TimeSpan _statusTtl = TimeSpan.FromSeconds(60);
 
         private System.Threading.Timer? _sortDebounceTimer;
         private readonly object _sortLock = new object();
@@ -297,7 +289,6 @@ namespace Edemly.Client
                     return;
                 }
 
-                // ✅ ВИПРАВЛЕННЯ: Завжди завантажуємо час останнього повідомлення з API
                 foreach (var chat in chats)
                 {
                     if (chat.LastMessageTime.HasValue)
@@ -306,7 +297,6 @@ namespace Edemly.Client
                     }
                     else
                     {
-                        // Якщо час не встановлений, використовуємо поточний час
                         _chatLastMessageTime[chat.Id] = DateTime.UtcNow;
                     }
                     _chatTypes[chat.Id] = chat.Type;
@@ -362,13 +352,10 @@ namespace Edemly.Client
 
                 await Task.WhenAll(allTasks);
 
-                // ✅ ВИПРАВЛЕННЯ: Сортуємо одразу після завантаження контактів
                 SortAllChats();
 
-                // After chats loaded, refresh private users' online statuses so headers/buttons reflect current state
                 await RefreshAllPrivateChatStatusesAsync();
 
-                // ✅ ВИПРАВЛЕННЯ: Завантажуємо тексти останніх повідомлень на фоні
                 await LoadLastMessageTextsAsync();
             }
             catch (Exception ex)
@@ -481,7 +468,6 @@ namespace Edemly.Client
                     Edemly.Client.Pages.MessageBox.Show("Failed to send message", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
 
-                // play sound (robust)
                 TryPlayNotificationSound();
             }
             catch (Exception ex)
@@ -492,7 +478,6 @@ namespace Edemly.Client
 
         public void CreateDefaultChat()
         {
-            // Метод залишено порожнім для можливого майбутнього використання
         }
 
         public void UpdateUIElements(
@@ -523,7 +508,6 @@ namespace Edemly.Client
                 _chatHeaderText.Text = CurrentChatContact.Name;
                 _updateChatHeaderCallback?.Invoke(CurrentChatContact);
 
-                // Clear unread marker for current chat when restoring UI
                 try
                 {
                     if (_chatsWithUnreadMessages.Contains(CurrentChatId))
@@ -534,13 +518,11 @@ namespace Edemly.Client
                 }
                 catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[CHAT MANAGER] RestoreUIAsync unread marker clear error: {ex.Message}"); }
 
-                // If we don't have local history for the chat or it is empty, load messages from server
                 try
                 {
                     if (!_chatHistory.TryGetValue(CurrentChatId, out var cached) || cached == null || cached.Count == 0)
                     {
                         await LoadChatMessagesAsync(CurrentChatId, pageSize: INITIAL_MESSAGE_COUNT);
-                        // mark page 1 loaded
                         _chatLoadedPages[CurrentChatId] = 1;
                     }
                 }
@@ -565,7 +547,6 @@ namespace Edemly.Client
             {
                 _lastMessageDate[chatId] = null;
 
-                // ✅ ВИПРАВЛЕННЯ: Встановлюємо режим групового чату
                 if (_chatTypes.TryGetValue(chatId, out var chatType) && chatType == 1)
                 {
                     _messageRenderer.SetGroupChatMode(true);
@@ -579,7 +560,6 @@ namespace Edemly.Client
                 {
                     AddDateSeparatorIfNeeded(chatId, message.SentAt);
 
-                    // ✅ ВИПРАВЛЕННЯ: Завантажуємо імена для груп
                     string? senderName = null;
                     if (chatType == 1 && message.SenderId != CurrentUserId)
                     {
@@ -597,10 +577,6 @@ namespace Edemly.Client
             }
         }
 
-        /// <summary>
-        /// Switches the UI to the given chat and ensures messages are loaded.
-        /// This is provided as the callback passed to CreateChatButton.
-        /// </summary>
         private async Task SwitchToChatAsync(Models.Contact contact, int chatId)
         {
             try
@@ -608,30 +584,25 @@ namespace Edemly.Client
                 if (contact == null) return;
 
                 var previousChatId = CurrentChatId;
-                
-                // ✅ УСТАНОВАЛИВАЕМ CurrentChatId ДО всього остального
+
                 CurrentChatContact = contact;
                 CurrentChatId = chatId;
 
                 System.Diagnostics.Debug.WriteLine($"[SWITCH CHAT] Switching to chat {chatId}, Previous: {previousChatId}, CurrentChatId is now: {CurrentChatId}");
 
-                // ✅ ПЕРЕСОЗДАЁМ ВСЕ КНОПКИ СРАЗУ ПОСЛЕ УСТАНОВКИ CurrentChatId
                 Application.Current.Dispatcher.Invoke(() =>
                 {
                     _chatHeaderText.Text = contact.Name;
                     _updateChatHeaderCallback?.Invoke(contact);
 
-                    // Пересоздаєм всі кнопки - CurrentChatId вже встановлений!
                     SortAllChats();
                 });
 
-                // Clear unread marker
                 if (_chatsWithUnreadMessages.Contains(chatId))
                 {
                     _chatsWithUnreadMessages.Remove(chatId);
                 }
 
-                // Clear current UI and ensure messages loaded
                 Application.Current.Dispatcher.Invoke(() => _messagesPanel.Children.Clear());
 
                 if (!_chatHistory.TryGetValue(chatId, out var local) || local == null || local.Count == 0)
@@ -640,7 +611,6 @@ namespace Edemly.Client
                     _chatLoadedPages[chatId] = 1;
                 }
 
-                // set renderer group mode
                 if (_chatTypes.TryGetValue(chatId, out var ct) && ct == 1)
                     _messageRenderer.SetGroupChatMode(true);
                 else
@@ -654,18 +624,11 @@ namespace Edemly.Client
             }
         }
 
-        /// <summary>
-        /// Public wrapper used by external callers (e.g. App) to switch to a chat.
-        /// Forwards to private SwitchToChatAsync implementation.
-        /// </summary>
         public async Task SwitchToChatPublicAsync(Models.Contact contact, int chatId)
         {
             await SwitchToChatAsync(contact, chatId);
         }
 
-        /// <summary>
-        /// Loads messages for chatId (page 1) into local history and cache.
-        /// </summary>
         private async Task LoadChatMessagesAsync(int chatId, int pageSize = INITIAL_MESSAGE_COUNT)
         {
             try
@@ -673,7 +636,6 @@ namespace Edemly.Client
                 var messages = await _chatLoader.LoadChatMessagesAsync(chatId, page: 1, pageSize: pageSize);
                 if (messages == null) messages = new List<MessageDto>();
 
-                // Ensure chronological order (oldest -> newest)
                 var ordered = messages.OrderBy(m => m.SentAt).ToList();
 
                 _chatHistory[chatId] = ordered;
@@ -690,9 +652,6 @@ namespace Edemly.Client
             }
         }
 
-        /// <summary>
-        /// Adds a date separator before the next message if needed.
-        /// </summary>
         private void AddDateSeparatorIfNeeded(int chatId, DateTime sentAt)
         {
             try
@@ -703,7 +662,6 @@ namespace Edemly.Client
                 if (last.HasValue && last.Value.Date == sentAt.Date)
                     return;
 
-                // create separator and add to UI on dispatcher
                 Application.Current.Dispatcher.Invoke(() =>
                 {
                     var sep = _uiBuilder.CreateDateSeparator(sentAt);
@@ -721,7 +679,7 @@ namespace Edemly.Client
             }
         }
 
-        #endregion
+        #endregion Public Methods
 
         #region Private Methods
 
@@ -733,7 +691,6 @@ namespace Edemly.Client
 
                 if (_chatLastMessage.TryGetValue(chatId, out var lastMessage) && lastMessage != null)
                 {
-                    // Use SentAt as UTC if possible, but don't alter value here
                     last = lastMessage.SentAt;
                 }
 
@@ -783,7 +740,6 @@ namespace Edemly.Client
 
                 if (_chatLastMessage.TryGetValue(chatId, out var lastMessage))
                 {
-                    // Voice / photo / file labels
                     if (lastMessage.Type == 1)
                     {
                         lastMessageText = "Voice Message";
@@ -814,12 +770,10 @@ namespace Edemly.Client
                         lastMessageSender = contact.Name;
                     }
 
-                    // ✅ ДОДАНО: Час останнього повідомлення
                     lastMessageTime = lastMessage.SentAt;
                 }
                 else if (_chatLastMessageTime.TryGetValue(chatId, out var time))
                 {
-                    // Якщо немає lastMessage, але є збережений час
                     lastMessageTime = time;
                 }
 
@@ -972,7 +926,6 @@ namespace Edemly.Client
                         _contacts[user.Id] = contact;
                         _chatToUserMap[chatId] = userId;
 
-                        // Ensure we mark this as a private chat
                         _chatTypes[chatId] = 0;
 
                         await Application.Current.Dispatcher.InvokeAsync(() =>
@@ -1058,7 +1011,6 @@ namespace Edemly.Client
 
             if (_chatLastMessage.TryGetValue(chatId, out var lastMessage))
             {
-                // ✅ ВИПРАВЛЕННЯ: Для голосових повідомлень показуємо "Voice Message"
                 if (lastMessage.Type == 1)
                 {
                     lastMessageText = "Voice Message";
@@ -1105,16 +1057,13 @@ namespace Edemly.Client
         {
             try
             {
-                // Only handle when user scrolls to very top (or near top)
                 if (e.VerticalOffset <= 1)
                 {
                     var chatId = CurrentChatId;
                     if (chatId < 0) return;
 
-                    // If already loading or no more older messages, skip
                     if (_loadingOlderChats.Contains(chatId) || _noMoreOlderMessages.Contains(chatId)) return;
 
-                    // Load next page
                     await LoadOlderMessagesAsync(chatId);
                 }
             }
@@ -1135,7 +1084,6 @@ namespace Edemly.Client
                 int nextPage = 1;
                 if (_chatLoadedPages.TryGetValue(chatId, out var loaded)) nextPage = loaded + 1;
 
-                // measure before
                 double oldOffset = 0;
                 double oldExtent = 0;
                 try { oldOffset = _messagesScrollViewer.VerticalOffset; oldExtent = _messagesScrollViewer.ExtentHeight; } catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[CHAT MANAGER] LoadOlderMessagesAsync offset measure error: {ex.Message}"); }
@@ -1144,15 +1092,12 @@ namespace Edemly.Client
 
                 if (newMessages == null || newMessages.Count == 0)
                 {
-                    // no more older messages
                     _noMoreOlderMessages.Add(chatId);
                     return;
                 }
 
-                // Ensure messages are in chronological order (oldest -> newest)
                 var ordered = newMessages.OrderBy(m => m.SentAt).ToList();
 
-                // prepend avoiding duplicates
                 if (!_chatHistory.TryGetValue(chatId, out var existing))
                 {
                     existing = new List<MessageDto>();
@@ -1162,26 +1107,20 @@ namespace Edemly.Client
                 var toInsert = ordered.Where(m => !existing.Any(em => em.Id == m.Id)).ToList();
                 if (toInsert.Count == 0)
                 {
-                    // nothing new
                     _chatLoadedPages[chatId] = nextPage; // still mark page advanced to avoid refetch loops
                     return;
                 }
 
                 existing.InsertRange(0, toInsert);
 
-                // update loaded page
                 _chatLoadedPages[chatId] = nextPage;
 
-                // Rebuild UI for current chat and preserve scroll position
                 if (chatId == CurrentChatId)
                 {
-                    // rebuild entire view (simplifier and safer with separators)
                     Application.Current.Dispatcher.Invoke(() => { _messagesPanel.Dispatcher.Invoke(() => { }); });
 
-                    // Refresh UI
                     await Application.Current.Dispatcher.InvokeAsync(() => RefreshCurrentChatMessagesAsync());
 
-                    // Allow layout to update
                     await Task.Delay(10);
                     _messagesScrollViewer.UpdateLayout();
 
@@ -1216,7 +1155,6 @@ namespace Edemly.Client
 
             var messages = _chatHistory[CurrentChatId];
 
-            // Встановлюємо режим групового чату якщо потрібно
             if (_chatTypes.TryGetValue(CurrentChatId, out var chatType) && chatType == 1)
             {
                 _messageRenderer.SetGroupChatMode(true);
@@ -1230,7 +1168,6 @@ namespace Edemly.Client
             {
                 AddDateSeparatorIfNeeded(CurrentChatId, message.SentAt);
 
-                // ✅ ВИПРАВЛЕННЯ: Завантажуємо реальні імена для груп
                 string? senderName = null;
                 if (chatType == 1 && message.SenderId != CurrentUserId)
                 {
@@ -1247,18 +1184,13 @@ namespace Edemly.Client
             _messagesScrollViewer.ScrollToEnd();
         }
 
-        /// <summary>
-        /// Отримує ім'я користувача з кешу або API
-        /// </summary>
         private async Task<string> GetUserNameAsync(int userId)
         {
-            // Перевіряємо кеш
             if (_userNamesCache.TryGetValue(userId, out var cachedName))
             {
                 return cachedName;
             }
 
-            // Завантажуємо з API
             try
             {
                 var user = await _apiService.GetUserByIdAsync(userId);
@@ -1276,7 +1208,7 @@ namespace Edemly.Client
             return "Member";
         }
 
-        #endregion
+        #endregion Private Methods
 
         public async Task AddGroupChatAndSwitchAsync(Models.Contact groupContact, int chatId)
         {
@@ -1358,9 +1290,6 @@ namespace Edemly.Client
             _presenceTimer = null;
         }
 
-        /// <summary>
-        /// Update local chat history with edited message (called by UI helpers)
-        /// </summary>
         public void UpdateMessageLocally(MessageDto updatedMessage)
         {
             try
@@ -1391,9 +1320,6 @@ namespace Edemly.Client
             }
         }
 
-        /// <summary>
-        /// Remove message from local history and update chat buttons if needed
-        /// </summary>
         public void RemoveMessageLocally(int chatId, int messageId)
         {
             try

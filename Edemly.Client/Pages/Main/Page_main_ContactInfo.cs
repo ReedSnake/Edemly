@@ -1,15 +1,13 @@
 #nullable disable
-using System;
-using System.Linq;
+
+using Edemly.Client.Lang;
+using Edemly.Client.Pages;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
-
-using Edemly.Client.Pages;
-using Edemly.Client.Lang;
 
 namespace Edemly.Client
 {
@@ -40,6 +38,7 @@ namespace Edemly.Client
                 }
             }
         }
+
         private async void OpenContactInfo()
         {
             if (chatManager?.CurrentChatContact == null) return;
@@ -504,11 +503,11 @@ namespace Edemly.Client
 
                 var result = Pages.MessageBox.ShowQuestion($"Choose action for {userName}:", DefaultLanguage.Information);
 
-                if (result == MessageBoxResult.Yes) 
+                if (result == MessageBoxResult.Yes)
                 {
                     await OpenChatWithUserAsync(member.UserId, user);
                 }
-                else if (result == MessageBoxResult.No) 
+                else if (result == MessageBoxResult.No)
                 {
                     await ViewUserProfileAsync(member.UserId, user);
                 }

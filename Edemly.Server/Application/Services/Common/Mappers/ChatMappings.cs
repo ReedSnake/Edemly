@@ -1,8 +1,5 @@
-using System.Linq.Expressions;
-using Edemly.Contracts.ChatMembers;
-using Edemly.Contracts.Chats;
-using Edemly.Contracts.Messages;
 using Edemly.Server.Data.Entities;
+using System.Linq.Expressions;
 
 namespace Edemly.Server.Api.Services
 {

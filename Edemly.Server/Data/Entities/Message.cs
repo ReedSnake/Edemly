@@ -38,7 +38,6 @@ namespace Edemly.Server.Data.Entities
         [Column("file_name")]
         public string? FileName { get; set; }
 
-        // Navigation properties
         [ForeignKey(nameof(ChatId))]
         public Chat Chat { get; set; } = null!;
 

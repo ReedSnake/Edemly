@@ -1,7 +1,7 @@
-﻿using System.Windows;
+﻿using Edemly.Client.Services;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using Edemly.Client.Services;
 
 namespace Edemly.Client.Pages
 {
@@ -13,7 +13,6 @@ namespace Edemly.Client.Pages
         {
             InitializeComponent();
 
-            // Subscribe to theme changes
             ThemeService.Instance.ThemeChanged += (themeName) => OnThemeChanged();
 
             txtTitle.Text = title;
@@ -34,7 +33,6 @@ namespace Edemly.Client.Pages
 
         private void ConfigureIcon(MessageBoxImage icon)
         {
-            // Знаходимо Border з заголовком через візуальне дерево
             var headerGrid = txtTitle.Parent as Grid;
             var headerBorder = headerGrid?.Parent as Border;
             var mainBorder = this.Content as Border;
@@ -163,6 +161,6 @@ namespace Edemly.Client.Pages
             messageBox.ShowDialog();
         }
 
-        #endregion
+        #endregion Static Show Methods
     }
 }

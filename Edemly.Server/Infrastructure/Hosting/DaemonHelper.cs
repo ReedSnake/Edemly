@@ -1,6 +1,4 @@
 using System.Runtime.InteropServices;
-using System.Diagnostics;
-using System.IO;
 
 public static class DaemonHelper
 {
@@ -19,7 +17,7 @@ public static class DaemonHelper
     public static void Daemonize()
     {
         if (!RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-            return; 
+            return;
 
         int pid = fork();
         if (pid > 0)
@@ -41,4 +39,3 @@ public static class DaemonHelper
         chdir("/");
     }
 }
-

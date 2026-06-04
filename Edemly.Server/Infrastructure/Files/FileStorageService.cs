@@ -1,12 +1,6 @@
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Logging;
-using System;
-using System.IO;
-using System.Threading.Tasks;
 using Edemly.Server.Api.Middleware;
 using Edemly.Server.Data;
 using Microsoft.EntityFrameworkCore;
-using System.Linq;
 
 namespace Edemly.Server.Api.Services
 {
@@ -35,7 +29,6 @@ namespace Edemly.Server.Api.Services
             _serverDb = serverDb;
             _maxFileSize = settings.MaxFileSizeMB * 1024 * 1024;
 
-            // Формуємо public URL
             string baseUrl = settings.BaseUrl ?? string.Empty;
             if (baseUrl.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
                 baseUrl.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
@@ -90,7 +83,6 @@ namespace Edemly.Server.Api.Services
         private string GetFullPath(params string[] parts)
         {
             var webRoot = _environment.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
-            // Виправлено об'єднання шляхів
             var allParts = new[] { webRoot }.Concat(parts).ToArray();
             return Path.Combine(allParts);
         }
@@ -200,7 +192,6 @@ namespace Edemly.Server.Api.Services
                 if (!_tenantProvider.IsTenant)
                 {
                     var segments = relativePath.Split(Path.DirectorySeparatorChar, StringSplitOptions.RemoveEmptyEntries);
-                    // Виправлено: Async call
                     if (segments.Length > 0 && await _serverDb.Companies.AnyAsync(c => c.Name == segments[0]))
                         return (false, "Access denied: master cannot delete tenant files");
                 }
@@ -232,7 +223,6 @@ namespace Edemly.Server.Api.Services
                 if (!_tenantProvider.IsTenant)
                 {
                     var segments = relativePath.Split(Path.DirectorySeparatorChar, StringSplitOptions.RemoveEmptyEntries);
-                    // Виправлено: Async call
                     if (segments.Length > 0 && await _serverDb.Companies.AnyAsync(c => c.Name == segments[0]))
                     {
                         _logger.LogWarning("Access denied: master attempting to access tenant file {Path}", relativePath);
@@ -241,9 +231,8 @@ namespace Edemly.Server.Api.Services
                 }
 
                 var fullPath = Path.Combine(_environment.WebRootPath ?? Directory.GetCurrentDirectory(), _settings.StoragePath, relativePath);
-                
+
                 if (File.Exists(fullPath))
-                    // КРИТИЧНО: Додано FileShare.Read, щоб файл не блокувався
                     return new FileStream(fullPath, FileMode.Open, FileAccess.Read, FileShare.Read);
 
                 return null;
@@ -255,7 +244,6 @@ namespace Edemly.Server.Api.Services
             }
         }
 
-        // Допоміжний метод для парсингу шляху
         private string ParseRelativePath(string fileUrl)
         {
             string path = fileUrl;

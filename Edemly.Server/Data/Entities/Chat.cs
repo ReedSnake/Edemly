@@ -34,7 +34,6 @@ namespace Edemly.Server.Data.Entities
         [Column("last_message_time")]
         public DateTime? LastMessageTime { get; set; }
 
-        // Navigation properties
         public ICollection<ChatMember> ChatMembers { get; set; } = new List<ChatMember>();
         public ICollection<Message> Messages { get; set; } = new List<Message>();
     }

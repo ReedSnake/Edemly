@@ -1,17 +1,10 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Edemly.Server.Data.Entities;
-using Edemly.Server.Services;
+﻿using Edemly.Server.Data.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace Edemly.Server.Data
 {
-    /// <summary>
-    /// Сервіс для ініціалізації бази даних тестовими даними
-    /// </summary>
     public static class DbSeeder
     {
-        /// <summary>
-        /// Створює адміністратора, якщо його ще немає
-        /// </summary>
         public static async Task SeedAdminAsync(IServiceProvider services)
         {
             using var scope = services.CreateScope();
@@ -21,7 +14,6 @@ namespace Edemly.Server.Data
 
             try
             {
-                // Перевіряємо, чи є вже адмін
                 var adminEmail = configuration["AdminEmail"] ?? "admin@edemly.local";
                 var existingAdmin = await context.LoginInfos
                     .FirstOrDefaultAsync(l => l.Email == adminEmail);
@@ -32,7 +24,6 @@ namespace Edemly.Server.Data
                     return;
                 }
 
-                // Створюємо LoginInfo
                 var loginInfo = new LoginInfo
                 {
                     Email = adminEmail,
@@ -41,7 +32,6 @@ namespace Edemly.Server.Data
                 context.LoginInfos.Add(loginInfo);
                 await context.SaveChangesAsync();
 
-                // Створюємо User з усіма деталями
                 var adminUser = new User
                 {
                     Username = "Admin",

@@ -1,31 +1,23 @@
+using Edemly.Server.Configuration;
 using sib_api_v3_sdk.Api;
-using sib_api_v3_sdk.Client;
 using sib_api_v3_sdk.Model;
 using System.Collections.Concurrent;
-using Edemly.Server.Configuration;
 using BrevoConfig = sib_api_v3_sdk.Client.Configuration;
 
 namespace Edemly.Server.Services
 {
-    /// <summary>
-    /// ������ ��� ��������� verification ���� � ���'��
-    /// </summary>
     internal class VerificationCode
     {
         public string Code { get; set; } = string.Empty;
         public DateTime ExpirationTime { get; set; }
     }
 
-    /// <summary>
-    /// ����� ��� �������� email ����� Brevo �� ������ � verification ������
-    /// </summary>
     public class EmailService : IEmailService
     {
         private readonly BrevoSettings _brevoSettings;
         private readonly TransactionalEmailsApi _brevoApi;
         private readonly ILogger<EmailService> _logger;
 
-        // ������� ��� ��������� ���� � ���'�� (normalized email -> ���)
         private static readonly ConcurrentDictionary<string, VerificationCode> _verificationCodes = new();
 
         public EmailService(
@@ -35,7 +27,6 @@ namespace Edemly.Server.Services
             _brevoSettings = brevoSettings;
             _logger = logger;
 
-            // ������������ Brevo API
             BrevoConfig.Default.ApiKey["api-key"] = _brevoSettings.ApiKey;
             _brevoApi = new TransactionalEmailsApi();
         }
@@ -45,14 +36,10 @@ namespace Edemly.Server.Services
             return (email ?? string.Empty).Trim().ToLowerInvariant();
         }
 
-        /// <summary>
-        /// ������ �� ������ verification ��� � ���'��
-        /// </summary>
         public System.Threading.Tasks.Task<string> GenerateCodeAsync(string email)
         {
             var normalized = NormalizeEmail(email);
 
-            // Use Random.Shared for thread-safe random generation
             var code = Random.Shared.Next(100000, 999999).ToString();
             var expiresAt = DateTime.UtcNow.AddMinutes(_brevoSettings.CodeExpirationMinutes);
 
@@ -69,9 +56,6 @@ namespace Edemly.Server.Services
             return System.Threading.Tasks.Task.FromResult(code);
         }
 
-        /// <summary>
-        /// �������� verification ���
-        /// </summary>
         public System.Threading.Tasks.Task<bool> VerifyCodeAsync(string email, string code)
         {
             var normalized = NormalizeEmail(email);
@@ -95,36 +79,28 @@ namespace Edemly.Server.Services
                 return System.Threading.Tasks.Task.FromResult(false);
             }
 
-            // ��������� ��� ���� ������ ��������
             _verificationCodes.TryRemove(normalized, out _);
             _logger.LogInformation("Verification code verified for {Email} (normalized: {NormalizedEmail})", email, normalized);
 
             return System.Threading.Tasks.Task.FromResult(true);
         }
 
-        /// <summary>
-        /// ³�������� verification ��� ����� Brevo
-        /// </summary>
         public async System.Threading.Tasks.Task SendVerificationCodeAsync(string email, string code)
         {
             try
             {
-                // 1. ����������� ����������
                 var sender = new SendSmtpEmailSender(
                     _brevoSettings.SenderName,
                     _brevoSettings.SenderEmail
                 );
 
-                // 2. ����������� ����������
                 var to = new List<SendSmtpEmailTo>
                 {
                     new SendSmtpEmailTo(email)
                 };
 
-                // 3. �������� HTML-��� �����
                 var htmlContent = GenerateEmailHtml(code);
 
-                // 4. ��������� ��'��� �����
                 var sendSmtpEmail = new SendSmtpEmail(
                     sender: sender,
                     to: to,
@@ -132,7 +108,6 @@ namespace Edemly.Server.Services
                     subject: "Verify your Email - " + _brevoSettings.ServiceName
                 );
 
-                // 5. ³���������� ����
                 var result = await _brevoApi.SendTransacEmailAsync(sendSmtpEmail);
 
                 _logger.LogInformation(
@@ -153,28 +128,25 @@ namespace Edemly.Server.Services
             }
         }
 
-        /// <summary>
-        /// ������ HTML ��� verification email
-        /// </summary>
         private string GenerateEmailHtml(string code)
         {
             var logoSrc = _brevoSettings.LogoUrl;
 
             return $@"
-                <html>             
+                <html>
                 <head>
                     <meta charset=""utf-8"">
                 </head>
                 <body style='font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 20px;'>
-    
+
                     <div style='max-width: 580px; margin: 0 auto; background-color: #ffffff; border: 1px solid #e0e0e0; border-radius: 8px; padding: 40px;'>
-        
+
                         <div style='display: flex; align-items: center; gap: 15px;'>
 
                             <table cellpadding=""0"" cellspacing=""0"" border=""0"" style=""border-collapse: collapse;"">
                               <tr>
                                 <td style=""vertical-align: middle;"">
-  
+
                                   <img src=""{logoSrc}"" alt=""Logo"" style=""width: 64px; height: 64px; display: block;"">
 
                                 </td>
@@ -182,7 +154,7 @@ namespace Edemly.Server.Services
                                 <td style=""width: 15px;""></td>
 
                                 <td style=""vertical-align: middle;"">
-  
+
                                   <h1 style=""color: #338f89; margin: 0; font-size: 28px;"">{_brevoSettings.ServiceName}</h1>
 
                                 </td>
@@ -190,11 +162,11 @@ namespace Edemly.Server.Services
                             </table>
 
                         </div>
-        
+
                         <hr style='border: 0; border-top: 1px solid #eeeeee; margin: 20px 0;'>
 
                         <h2 style='color: #333333; margin-top: 0;'>Verify your email address</h2>
-        
+
                         <p style='font-size: 16px; color: #555555; line-height: 1.5;'>
                             You need to verify your email address to continue using your {_brevoSettings.ServiceName} account. Enter the following code to verify your email address:
                         </p>
@@ -202,11 +174,11 @@ namespace Edemly.Server.Services
                         <div style='font-size: 32px; font-weight: bold; color: #111111; letter-spacing: 4px; background-color: #f9f9f9; padding: 20px; border-radius: 5px; text-align: center; margin: 30px 0;'>
                             {code}
                         </div>
-                  
-                        <p style='font-size: 16px; color: #555555; line-height: 1.5; text-align: center;'>                             
+
+                        <p style='font-size: 16px; color: #555555; line-height: 1.5; text-align: center;'>
                             This code is valid for {_brevoSettings.CodeExpirationMinutes} minutes.
                         </p>
-                    
+
                         <p style='font-size: 16px; color: #555555; line-height: 1.5; text-align: center;'>
                             If you did not request a code, simply ignore this email.
                         </p>

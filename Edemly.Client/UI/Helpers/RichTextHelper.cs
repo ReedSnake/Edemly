@@ -1,6 +1,5 @@
 #nullable disable
-using Edemly;
-using System;
+
 using System.Diagnostics;
 using System.Text.RegularExpressions;
 using System.Windows;
@@ -11,9 +10,6 @@ using System.Windows.Media;
 
 namespace Edemly.Client.UI.Helpers
 {
-    /// <summary>
-    /// Допоміжний клас для створення TextBlock з підтримкою посилань, email, телефонів
-    /// </summary>
     public static class RichTextHelper
     {
         private static readonly Regex UrlRegex = new Regex(
@@ -30,9 +26,6 @@ namespace Edemly.Client.UI.Helpers
             @"(\+?\d{1,4}[\s-]?)?\(?\d{1,4}\)?[\s-]?\d{1,4}[\s-]?\d{1,4}[\s-]?\d{0,9}",
             RegexOptions.Compiled);
 
-        /// <summary>
-        /// Створює TextBlock з автоматичним виявленням посилань, email, телефонів
-        /// </summary>
         public static TextBlock CreateRichTextBlock(string text, Brush foregroundBrush, bool allowSelection = true)
         {
             var textBlock = new TextBlock
@@ -45,7 +38,7 @@ namespace Edemly.Client.UI.Helpers
             if (allowSelection)
             {
                 textBlock.Cursor = Cursors.IBeam;
-                
+
                 textBlock.MouseLeftButtonDown += (s, e) =>
                 {
                     if (e.ClickCount == 2)
@@ -95,9 +88,9 @@ namespace Edemly.Client.UI.Helpers
 
             foreach (Match match in EmailRegex.Matches(text))
             {
-                bool overlaps = matches.Any(m => 
+                bool overlaps = matches.Any(m =>
                     match.Index >= m.Start && match.Index < m.Start + m.Length);
-                
+
                 if (!overlaps)
                 {
                     matches.Add((match.Index, match.Length, "email", match.Value));
@@ -109,9 +102,9 @@ namespace Edemly.Client.UI.Helpers
                 var digitsOnly = Regex.Replace(match.Value, @"\D", "");
                 if (digitsOnly.Length >= 9)
                 {
-                    bool overlaps = matches.Any(m => 
+                    bool overlaps = matches.Any(m =>
                         match.Index >= m.Start && match.Index < m.Start + m.Length);
-                    
+
                     if (!overlaps)
                     {
                         matches.Add((match.Index, match.Length, "phone", match.Value));
@@ -170,7 +163,7 @@ namespace Edemly.Client.UI.Helpers
             {
                 e.Handled = true;
                 Clipboard.SetText(value);
-                
+
                 ToolTipService.SetToolTip(hyperlink, "Copied!");
                 var timer = new System.Windows.Threading.DispatcherTimer
                 {
@@ -208,13 +201,13 @@ namespace Edemly.Client.UI.Helpers
 
                     case "email":
                         Clipboard.SetText(value);
-                        MessageBox.Show($"Email copied to clipboard:\n{value}", "Email", 
+                        MessageBox.Show($"Email copied to clipboard:\n{value}", "Email",
                             MessageBoxButton.OK, MessageBoxImage.Information);
                         break;
 
                     case "phone":
                         Clipboard.SetText(value);
-                        MessageBox.Show($"Phone number copied to clipboard:\n{value}", "Phone", 
+                        MessageBox.Show($"Phone number copied to clipboard:\n{value}", "Phone",
                             MessageBoxButton.OK, MessageBoxImage.Information);
                         break;
                 }

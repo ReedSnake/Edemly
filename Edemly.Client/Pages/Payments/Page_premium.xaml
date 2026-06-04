@@ -1,42 +1,42 @@
 ﻿<Page x:Class="Edemly.Client.Page_premium"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:local="clr-namespace:Edemly.Client"
-      mc:Ignorable="d" 
+      mc:Ignorable="d"
       d:DesignHeight="720" d:DesignWidth="1280"
       Title="Edemly Premium">
 
     <Grid>
         <Grid.Background>
             <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                <GradientStop Color="#021A1A" Offset="0.0"/>
-                <GradientStop Color="#052A2A" Offset="0.5"/>
+                <GradientStop Color="#021A1A" Offset="0.0" />
+                <GradientStop Color="#052A2A" Offset="0.5" />
             </LinearGradientBrush>
         </Grid.Background>
 
-        <Rectangle HorizontalAlignment="Stretch" 
-                   Height="Auto" 
-                   Fill="#F6FFFC" 
-                   VerticalAlignment="Stretch" 
-                   Margin="20" 
-                   RadiusX="40" 
+        <Rectangle HorizontalAlignment="Stretch"
+                   Height="Auto"
+                   Fill="#F6FFFC"
+                   VerticalAlignment="Stretch"
+                   Margin="20"
+                   RadiusX="40"
                    RadiusY="40" />
 
         <Grid Margin="40">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="Auto" MinWidth="350"/>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" MinWidth="350" />
             </Grid.ColumnDefinitions>
 
-            <ScrollViewer Grid.Column="0" 
+            <ScrollViewer Grid.Column="0"
                           VerticalScrollBarVisibility="Hidden"
                           HorizontalScrollBarVisibility="Disabled"
                           Padding="10">
                 <StackPanel>
-                    <Button x:Name="BackButton" 
-                            Click="Back_Click" 
+                    <Button x:Name="BackButton"
+                            Click="Back_Click"
                             HorizontalAlignment="Left"
                             Background="Transparent"
                             Foreground="{DynamicResource ThemeBackgroundDarkBrush}"
@@ -59,12 +59,12 @@
                                                     BorderThickness="{TemplateBinding BorderThickness}"
                                                     CornerRadius="4">
                                                 <ContentPresenter HorizontalAlignment="Center"
-                                                                  VerticalAlignment="Center"/>
+                                                                  VerticalAlignment="Center" />
                                             </Border>
                                             <ControlTemplate.Triggers>
                                                 <Trigger Property="IsMouseOver" Value="True">
-                                                    <Setter TargetName="border" Property="CornerRadius" Value="8"/>
-                                                    <Setter TargetName="border" Property="Background" Value="{DynamicResource ThemeBackgroundBrush}"/>
+                                                    <Setter TargetName="border" Property="CornerRadius" Value="8" />
+                                                    <Setter TargetName="border" Property="Background" Value="{DynamicResource ThemeBackgroundBrush}" />
                                                 </Trigger>
                                             </ControlTemplate.Triggers>
                                         </ControlTemplate>
@@ -75,103 +75,103 @@
                     </Button>
 
                     <TextBlock x:Name="MainTitleText"
-                               Text="Edemly Premium — More opportunities for you!" 
+                               Text="Edemly Premium — More opportunities for you!"
                                FontSize="28"
                                FontWeight="Bold"
                                Foreground="{DynamicResource ThemeBackgroundDarkBrush}"
                                TextWrapping="Wrap"
-                               Margin="0,0,0,10"/>
+                               Margin="0,0,0,10" />
 
                     <TextBlock x:Name="DescriptionText"
-                               Text="Want to use Edemly to its full potential? Upgrade to Premium and get advanced planning and organization features!" 
+                               Text="Want to use Edemly to its full potential? Upgrade to Premium and get advanced planning and organization features!"
                                TextWrapping="Wrap"
                                FontSize="16"
                                Foreground="{DynamicResource ThemeBackgroundDarkBrush}"
-                               Margin="0,0,0,20"/>
+                               Margin="0,0,0,20" />
 
                     <TextBlock x:Name="WhatIncludedText"
-                               Text="What is included in Premium?" 
+                               Text="What is included in Premium?"
                                FontSize="20"
                                FontWeight="Bold"
                                Foreground="{DynamicResource ThemeBackgroundDarkBrush}"
-                               Margin="0,0,0,10"/>
+                               Margin="0,0,0,10" />
 
                     <Border Background="{DynamicResource ThemeBorderLightBrush}"
-                            CornerRadius="20" 
+                            CornerRadius="20"
                             Padding="20"
                             Margin="0,0,0,20">
                         <StackPanel>
                             <StackPanel Margin="0,0,0,15">
                                 <TextBlock x:Name="Feature1TitleText"
-                                           FontSize="16" 
-                                           FontWeight="Bold" 
+                                           FontSize="16"
+                                           FontWeight="Bold"
                                            Foreground="{DynamicResource ThemeBackgroundDarkBrush}"
-                                           Text="📝 Unlimited notes"/>
+                                           Text="📝 Unlimited notes" />
                                 <TextBlock x:Name="Feature1DescText"
-                                           Text="The free version offers a limited number of notes. With Premium, you can create as many notes as you need — for work, study, personal matters, and creative ideas." 
+                                           Text="The free version offers a limited number of notes. With Premium, you can create as many notes as you need — for work, study, personal matters, and creative ideas."
                                            FontSize="14"
                                            Foreground="{DynamicResource ThemeBackgroundDarkBrush}"
                                            TextWrapping="Wrap"
-                                           Margin="0,5,0,0"/>
+                                           Margin="0,5,0,0" />
                             </StackPanel>
 
                             <StackPanel Margin="0,0,0,15">
                                 <TextBlock x:Name="Feature2TitleText"
-                                           FontSize="16" 
-                                           FontWeight="Bold" 
+                                           FontSize="16"
+                                           FontWeight="Bold"
                                            Foreground="{DynamicResource ThemeBackgroundDarkBrush}"
-                                           Text="⏰ Advanced reminder system"/>
+                                           Text="⏰ Advanced reminder system" />
                                 <TextBlock x:Name="Feature2DescText"
-                                           Text="Create an unlimited number of reminders with flexible settings." 
+                                           Text="Create an unlimited number of reminders with flexible settings."
                                            FontSize="14"
                                            Foreground="{DynamicResource ThemeBackgroundDarkBrush}"
                                            TextWrapping="Wrap"
-                                           Margin="0,5,0,0"/>
+                                           Margin="0,5,0,0" />
                             </StackPanel>
 
                             <StackPanel Margin="0,0,0,15">
                                 <TextBlock x:Name="Feature3TitleText"
-                                           FontSize="16" 
-                                           FontWeight="Bold" 
+                                           FontSize="16"
+                                           FontWeight="Bold"
                                            Foreground="{DynamicResource ThemeBackgroundDarkBrush}"
-                                           Text="🎨 Exclusive themes"/>
+                                           Text="🎨 Exclusive themes" />
                                 <TextBlock x:Name="Feature3DescText"
-                                           Text="Access premium themes and fine-tune the interface to suit your style." 
+                                           Text="Access premium themes and fine-tune the interface to suit your style."
                                            FontSize="14"
                                            Foreground="{DynamicResource ThemeBackgroundDarkBrush}"
                                            TextWrapping="Wrap"
-                                           Margin="0,5,0,0"/>
+                                           Margin="0,5,0,0" />
                             </StackPanel>
 
                             <StackPanel Margin="0,0,0,0">
                                 <TextBlock x:Name="Feature4TitleText"
-                                           FontSize="16" 
-                                           FontWeight="Bold" 
+                                           FontSize="16"
+                                           FontWeight="Bold"
                                            Foreground="{DynamicResource ThemeBackgroundDarkBrush}"
-                                           Text="⚡ Priority support"/>
+                                           Text="⚡ Priority support" />
                                 <TextBlock x:Name="Feature4DescText"
-                                           Text="Your questions will be handled first — we are always ready to help our users." 
+                                           Text="Your questions will be handled first — we are always ready to help our users."
                                            FontSize="14"
                                            Foreground="{DynamicResource ThemeBackgroundDarkBrush}"
                                            TextWrapping="Wrap"
-                                           Margin="0,5,0,0"/>
+                                           Margin="0,5,0,0" />
                             </StackPanel>
                         </StackPanel>
                     </Border>
 
                     <TextBlock x:Name="NoteText"
-                               Text="*After your subscription ends, you will retain an unlimited number of notes." 
+                               Text="*After your subscription ends, you will retain an unlimited number of notes."
                                FontSize="14"
                                FontStyle="Italic"
                                Foreground="{DynamicResource ThemeBackgroundDarkBrush}"
                                TextWrapping="Wrap"
-                               Margin="0,0,0,20"/>
+                               Margin="0,0,0,20" />
 
                     <Grid>
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="10"/>
-                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="10" />
+                            <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
 
                         <Button x:Name="MonthlyButton"
@@ -184,15 +184,15 @@
                                 Foreground="{DynamicResource ThemeBackgroundBrush}"
                                 Background="{DynamicResource ThemeSecondaryBrush}"
                                 BorderThickness="0"
-                                Cursor="Hand" 
+                                Cursor="Hand"
                                 Margin="0,29,0,-29">
                             <Button.Template>
                                 <ControlTemplate TargetType="Button">
-                                    <Border Background="{TemplateBinding Background}" 
+                                    <Border Background="{TemplateBinding Background}"
                                             CornerRadius="15"
                                             Padding="10">
-                                        <ContentPresenter HorizontalAlignment="Center" 
-                                                          VerticalAlignment="Center"/>
+                                        <ContentPresenter HorizontalAlignment="Center"
+                                                          VerticalAlignment="Center" />
                                     </Border>
                                 </ControlTemplate>
                             </Button.Template>
@@ -208,15 +208,15 @@
                                 Foreground="White"
                                 Background="{DynamicResource ThemePrimaryBrush}"
                                 BorderThickness="0"
-                                Cursor="Hand" 
+                                Cursor="Hand"
                                 Margin="0,29,0,-29">
                             <Button.Template>
                                 <ControlTemplate TargetType="Button">
-                                    <Border Background="{TemplateBinding Background}" 
+                                    <Border Background="{TemplateBinding Background}"
                                             CornerRadius="15"
                                             Padding="10">
-                                        <ContentPresenter HorizontalAlignment="Center" 
-                                                          VerticalAlignment="Center"/>
+                                        <ContentPresenter HorizontalAlignment="Center"
+                                                          VerticalAlignment="Center" />
                                     </Border>
                                 </ControlTemplate>
                             </Button.Template>

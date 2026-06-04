@@ -5,7 +5,6 @@ using System.IO;
 
 namespace Edemly.Server.Data
 {
-    // Design-time factory so EF tools can create CompanyDbContext for migrations
     internal class CompanyDbContextFactory : IDesignTimeDbContextFactory<CompanyDbContext>
     {
         public CompanyDbContext CreateDbContext(string[] args)

@@ -1,11 +1,9 @@
-﻿using System;
+﻿using Edemly.Client.Services;
 using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Navigation;
-using Edemly.Client.Lang;
-using Edemly.Client.Services;
 
 namespace Edemly.Client
 {
@@ -15,10 +13,8 @@ namespace Edemly.Client
         {
             InitializeComponent();
 
-            // Subscribe to theme changes
             ThemeService.Instance.ThemeChanged += (themeName) => OnThemeChanged();
 
-            // Apply current theme
             ApplyThemeToPage();
 
             LoadTexts();
@@ -40,7 +36,6 @@ namespace Edemly.Client
             {
                 var palette = ThemeService.Instance.GetCurrentPalette();
 
-                // Update page background gradient
                 var grid = this.Content as Grid;
                 if (grid != null)
                 {

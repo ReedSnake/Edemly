@@ -1,18 +1,11 @@
 ﻿#nullable enable
-using System;
-using System.Linq;
+
+using Edemly.Client.Models;
+using Edemly.Client.UI.Helpers;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
-
-using Edemly.Client.Models;
-using Edemly.Client.Pages;
-using Edemly.Client.Services;
-using System.Threading.Tasks;
-using System.Collections.Generic;
-using System.Windows.Documents;
-using Edemly.Client.UI.Helpers;
 
 namespace Edemly.Client
 {
@@ -225,13 +218,10 @@ namespace Edemly.Client
             });
         }
 
-        #endregion
+        #endregion SignalR Message Event Handlers
 
         #region Helper Methods for Finding UI Elements
 
-        /// <summary>
-        /// Helper methods for finding message UI elements by message id
-        /// </summary>
         private bool TagMatches(object? tag, int messageId)
         {
             if (tag == null) return false;
@@ -314,10 +304,6 @@ namespace Edemly.Client
             return null;
         }
 
-        /// <summary>
-        /// Finds the TextBlock that likely holds the message text inside a message Border.
-        /// We try to avoid matching time TextBlocks by checking FontSize and TextWrapping or Cursor.
-        /// </summary>
         private TextBlock? FindMessageTextBlock(Border messageBorder)
         {
             if (messageBorder == null) return null;
@@ -362,7 +348,7 @@ namespace Edemly.Client
             return candidate;
         }
 
-        #endregion
+        #endregion Helper Methods for Finding UI Elements
 
         #region UI Helper Methods
 
@@ -567,6 +553,6 @@ namespace Edemly.Client
             }
         }
 
-        #endregion
+        #endregion UI Helper Methods
     }
 }

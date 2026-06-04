@@ -44,7 +44,6 @@ namespace Edemly.Server.Data.Entities
         [Column("is_completed")]
         public bool IsCompleted { get; set; } = false;
 
-        // Navigation property
         [ForeignKey(nameof(UserId))]
         public User User { get; set; } = null!;
     }

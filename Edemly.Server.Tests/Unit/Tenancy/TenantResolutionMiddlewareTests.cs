@@ -1,11 +1,11 @@
+using Edemly.Server.Api.Middleware;
+using Edemly.Server.Data;
+using Edemly.Server.Data.Entities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
-using Edemly.Server.Api.Middleware;
-using Edemly.Server.Data;
-using Edemly.Server.Data.Entities;
 
 namespace Edemly.Server.Tests.Unit.Tenancy;
 

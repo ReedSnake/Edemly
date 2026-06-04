@@ -1,11 +1,9 @@
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
-using Edemly.Server.Data;
-using Edemly.Server.Data.Entities;
-using Edemly.Server.Utils;
 using Edemly.Contracts.Notes;
 using Edemly.Server.Api.Middleware;
+using Edemly.Server.Data;
+using Edemly.Server.Data.Entities;
 using Edemly.Server.Services;
+using Microsoft.EntityFrameworkCore;
 
 namespace Edemly.Server.Api.Services
 {
@@ -231,6 +229,5 @@ namespace Edemly.Server.Api.Services
                 return ServiceResult.Unexpected("Failed to delete note");
             }
         }
-
     }
 }

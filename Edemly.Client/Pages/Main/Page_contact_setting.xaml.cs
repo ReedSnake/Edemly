@@ -1,12 +1,12 @@
 ﻿#nullable disable
-using System;
+
+using Edemly.Client.Lang;
+using Edemly.Client.Models;
+using Edemly.Client.Services;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using Edemly.Client.Models;
-using Edemly.Client.Lang;
-using Edemly.Client.Services;
 
 namespace Edemly.Client
 {
@@ -64,7 +64,7 @@ namespace Edemly.Client
                 }
                 if (DeleteNoteButton != null)
                 {
-                    DeleteNoteButton.Background = new SolidColorBrush(Color.FromRgb(220, 53, 69)); 
+                    DeleteNoteButton.Background = new SolidColorBrush(Color.FromRgb(220, 53, 69));
                 }
 
                 var contactPhotoBorder = this.FindName("ContactPhotoBorder") as Border;

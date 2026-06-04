@@ -1,15 +1,13 @@
 ﻿#nullable disable
-using System;
+
+using Edemly.Client.Lang;
+using Edemly.Client.Services;
 using System.IO;
-using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
-
-using Edemly.Client.Lang;
-using Edemly.Client.Services;
 
 namespace Edemly.Client.UI.Helpers
 {
@@ -36,7 +34,6 @@ namespace Edemly.Client.UI.Helpers
             bool isMyMessage = message.SenderId == _currentUserId;
             _senderName = senderName ?? "";
 
-            // 0 - Text, 1 - Voice, 2 - Video, 3 - Photo, 4 - File, 5 - Document
             if (message.Type == 0) // текст
             {
                 if (isMyMessage)
@@ -74,7 +71,6 @@ namespace Edemly.Client.UI.Helpers
 
             messageBorder.Tag = message.Id;
 
-            // використовуємо RichTextHelper для відображення форматованого тексту
             var messageText = RichTextHelper.CreateRichTextBlock(message.Text, GetMyMessageTextBrush(), allowSelection: true);
             messageText.Margin = new Thickness(0, 0, 0, 5);
 
@@ -116,7 +112,6 @@ namespace Edemly.Client.UI.Helpers
             messageBorder.MouseEnter += (s, e) => { timeText.Opacity = 0.7; };
             messageBorder.MouseLeave += (s, e) => { timeText.Opacity = 0; };
 
-            // додаємо контекстне menu
             AddMessageContextMenu(messageBorder, message);
 
             _messagesPanel.Children.Add(messageBorder);
@@ -138,7 +133,6 @@ namespace Edemly.Client.UI.Helpers
             Border messageBorder = new Border();
             StackPanel messageContainer = new StackPanel();
 
-            // Якщо це груповий чат - додаємо ім'я відправника
             if (_isGroupChat && !string.IsNullOrEmpty(_senderName))
             {
                 TextBlock senderNameText = new TextBlock
@@ -152,7 +146,6 @@ namespace Edemly.Client.UI.Helpers
                 messageContainer.Children.Add(senderNameText);
             }
 
-            // використовуємо RichTextHelper
             var messageText = RichTextHelper.CreateRichTextBlock(message.Text, GetFriendMessageTextBrush(), allowSelection: true);
             messageText.Margin = new Thickness(0, 0, 0, 5);
 
@@ -184,13 +177,11 @@ namespace Edemly.Client.UI.Helpers
             messageBorder.Child = messageContainer;
             messageBorder.Opacity = isHistorical ? 0.8 : 1;
 
-            // ВАЖЛИВО: встановлюємо Tag, щоб можна було знаходити елемент по Id для оновлення/видалення
             messageBorder.Tag = message.Id;
 
             messageBorder.MouseEnter += (s, e) => { timeText.Opacity = 0.7; };
             messageBorder.MouseLeave += (s, e) => { timeText.Opacity = 0; };
 
-            // додаємо контекстне menu
             AddMessageContextMenu(messageBorder, message);
 
             _messagesPanel.Children.Add(messageBorder);
@@ -226,7 +217,6 @@ namespace Edemly.Client.UI.Helpers
 
             StackPanel stackPanel = new StackPanel();
 
-            // зображення
             Image image = new Image
             {
                 MaxWidth = 350,
@@ -235,10 +225,8 @@ namespace Edemly.Client.UI.Helpers
                 Margin = new Thickness(0, 0, 0, 5)
             };
 
-            // асинхронне завантаження зображення
             LoadPhotoAsync(message.ContentUrl, image);
 
-            // текст (може бути під фото)
             if (!string.IsNullOrWhiteSpace(message.Text))
             {
                 TextBlock messageText = new TextBlock
@@ -252,7 +240,6 @@ namespace Edemly.Client.UI.Helpers
                 stackPanel.Children.Add(messageText);
             }
 
-            // час
             TextBlock timeText = new TextBlock
             {
                 Text = isHistorical
@@ -271,7 +258,6 @@ namespace Edemly.Client.UI.Helpers
             messageBorder.MouseEnter += (s, e) => { timeText.Opacity = 0.7; };
             messageBorder.MouseLeave += (s, e) => { timeText.Opacity = 0; };
 
-            // відкриття файлу при кліку
             messageBorder.MouseLeftButtonDown += async (s, e) =>
             {
                 try
@@ -292,7 +278,6 @@ namespace Edemly.Client.UI.Helpers
                 }
             };
 
-            // додаємо контекстне menu
             AddMessageContextMenu(messageBorder, message);
 
             _messagesPanel.Children.Add(messageBorder);
@@ -326,7 +311,6 @@ namespace Edemly.Client.UI.Helpers
 
             StackPanel stackPanel = new StackPanel();
 
-            // якщо груповий - ім'я
             if (_isGroupChat && !string.IsNullOrEmpty(_senderName))
             {
                 TextBlock senderNameText = new TextBlock
@@ -402,7 +386,6 @@ namespace Edemly.Client.UI.Helpers
                 }
             };
 
-            // додаємо контекстне menu
             AddMessageContextMenu(messageBorder, message);
 
             _messagesPanel.Children.Add(messageBorder);
@@ -419,7 +402,7 @@ namespace Edemly.Client.UI.Helpers
             }
         }
 
-        #endregion
+        #endregion Photo Messages
 
         #region File Messages
 
@@ -440,7 +423,6 @@ namespace Edemly.Client.UI.Helpers
 
             StackPanel stackPanel = new StackPanel();
 
-            // іконка + назва файлу
             StackPanel fileInfoPanel = new StackPanel
             {
                 Orientation = Orientation.Horizontal,
@@ -469,7 +451,6 @@ namespace Edemly.Client.UI.Helpers
             fileInfoPanel.Children.Add(fileIcon);
             fileInfoPanel.Children.Add(fileName);
 
-            // підказка
             TextBlock hintText = new TextBlock
             {
                 Text = DefaultLanguage.ClickToOpen, // ✅ ЛОКАЛИЗОВАНО
@@ -479,7 +460,6 @@ namespace Edemly.Client.UI.Helpers
                 Margin = new Thickness(0, 0, 0, 5)
             };
 
-            // час
             TextBlock timeText = new TextBlock
             {
                 Text = isHistorical
@@ -527,7 +507,6 @@ namespace Edemly.Client.UI.Helpers
                 }
             };
 
-            // додаємо контекстне menu
             AddMessageContextMenu(messageBorder, message);
 
             _messagesPanel.Children.Add(messageBorder);
@@ -561,7 +540,6 @@ namespace Edemly.Client.UI.Helpers
 
             StackPanel stackPanel = new StackPanel();
 
-            // якщо груповий - ім'я
             if (_isGroupChat && !string.IsNullOrEmpty(_senderName))
             {
                 TextBlock senderNameText = new TextBlock
@@ -659,7 +637,6 @@ namespace Edemly.Client.UI.Helpers
                 }
             };
 
-            // додаємо контекстне menu
             AddMessageContextMenu(messageBorder, message);
 
             _messagesPanel.Children.Add(messageBorder);
@@ -676,7 +653,7 @@ namespace Edemly.Client.UI.Helpers
             }
         }
 
-        #endregion
+        #endregion File Messages
 
         #region Helper Methods
 
@@ -723,14 +700,10 @@ namespace Edemly.Client.UI.Helpers
             };
         }
 
-        /// <summary>
-        /// додає контекстне меню (Copy, Edit, Delete)
-        /// </summary>
         private void AddMessageContextMenu(Border messageBorder, MessageDto message)
         {
             var contextMenu = new ContextMenu();
 
-            // копіювання: тільки для текстових повідомлень
             if (message.Type == 0 && !string.IsNullOrEmpty(message.Text))
             {
                 var copyItem = new MenuItem
@@ -745,16 +718,13 @@ namespace Edemly.Client.UI.Helpers
                 contextMenu.Items.Add(copyItem);
             }
 
-            // якщо повідомлення моє - додаємо Edit/Delete
             if (message.SenderId == _currentUserId)
             {
-                // якщо є попередній пункт - додаємо роздільник
                 if (contextMenu.Items.Count > 0)
                 {
                     contextMenu.Items.Add(new Separator());
                 }
 
-                // редагувати (тільки для тексту)
                 if (message.Type == 0)
                 {
                     var editItem = new MenuItem
@@ -769,7 +739,6 @@ namespace Edemly.Client.UI.Helpers
                     contextMenu.Items.Add(editItem);
                 }
 
-                // видалити
                 var deleteItem = new MenuItem
                 {
                     Header = DefaultLanguage.DeleteMessage, // ✅ ЛОКАЛІЗОВАНО
@@ -783,16 +752,12 @@ namespace Edemly.Client.UI.Helpers
                 contextMenu.Items.Add(deleteItem);
             }
 
-            // якщо контекстне меню не пусте - прив'язуємо до Border
             if (contextMenu.Items.Count > 0)
             {
                 messageBorder.ContextMenu = contextMenu;
             }
         }
 
-        /// <summary>
-        /// редактор повідомлення
-        /// </summary>
         private async Task EditMessageAsync(MessageDto message)
         {
             try
@@ -812,7 +777,6 @@ namespace Edemly.Client.UI.Helpers
                 grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
                 grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
 
-                // Label
                 var label = new TextBlock
                 {
                     Text = DefaultLanguage.EditMessageLabel, // ✅ ЛОКАЛІЗОВАНО
@@ -822,7 +786,6 @@ namespace Edemly.Client.UI.Helpers
                 Grid.SetRow(label, 0);
                 grid.Children.Add(label);
 
-                // TextBox
                 var textBox = new TextBox
                 {
                     Text = message.Text,
@@ -835,7 +798,6 @@ namespace Edemly.Client.UI.Helpers
                 Grid.SetRow(textBox, 1);
                 grid.Children.Add(textBox);
 
-                // Buttons
                 var buttonPanel = new StackPanel
                 {
                     Orientation = Orientation.Horizontal,
@@ -897,10 +859,8 @@ namespace Edemly.Client.UI.Helpers
                     {
                         message.Text = newText; // Оновлюємо локально
 
-                        // Оновлюємо UI
                         UpdateMessageInUI(message);
 
-                        // Оновлюємо локальну історію у ChatManager щоб повідомлення не з'явилось знову
                         try
                         {
                             App.GlobalChatManager?.UpdateMessageLocally(message);
@@ -920,9 +880,6 @@ namespace Edemly.Client.UI.Helpers
             }
         }
 
-        /// <summary>
-        /// видалення повідомлення
-        /// </summary>
         private async Task DeleteMessageAsync(MessageDto message)
         {
             try
@@ -939,7 +896,6 @@ namespace Edemly.Client.UI.Helpers
                     {
                         RemoveMessageFromUI(message.Id); // Видаляємо з UI
 
-                        // Повідомляємо ChatManager щоб видалити з локальної історії
                         try
                         {
                             App.GlobalChatManager?.RemoveMessageLocally(message.ChatId, message.Id);
@@ -959,16 +915,12 @@ namespace Edemly.Client.UI.Helpers
             }
         }
 
-        #endregion
+        #endregion Helper Methods
 
         #region Update/Delete UI Methods
 
-        /// <summary>
-        /// Оновлює повідомлення в UI.
-        /// </summary>
         public void UpdateMessageInUI(MessageDto updatedMessage)
         {
-            // Безпечне знаходження Border по Tag
             var messageBorder = _messagesPanel.Children
                 .OfType<Border>()
                 .FirstOrDefault(b =>
@@ -981,11 +933,9 @@ namespace Edemly.Client.UI.Helpers
 
             if (messageBorder != null)
             {
-                // Оновлюємо текст повідомлення
                 var messageContainer = messageBorder.Child as Panel;
                 if (messageContainer != null)
                 {
-                    // шукаємо TextBlock, створений RichTextHelper (має Cursor = IBeam, TextWrapping або FontSize 14)
                     TextBlock messageText = null;
 
                     foreach (var tb in messageContainer.Children.OfType<TextBlock>())
@@ -1018,9 +968,6 @@ namespace Edemly.Client.UI.Helpers
             }
         }
 
-        /// <summary>
-        /// Видаляє повідомлення з UI.
-        /// </summary>
         public void RemoveMessageFromUI(int messageId)
         {
             var messageBorder = _messagesPanel.Children
@@ -1039,7 +986,7 @@ namespace Edemly.Client.UI.Helpers
             }
         }
 
-        #endregion // Закриваємо регіон Update/Delete UI Methods
+        #endregion Update/Delete UI Methods
 
         public void UpdateMessagesPanel(StackPanel messagesPanel)
         {
@@ -1047,46 +994,30 @@ namespace Edemly.Client.UI.Helpers
                 ?.SetValue(this, messagesPanel);
         }
 
-        /// <summary>
-        /// Отримати колір для моїх повідомлень (світлий варіант теми)
-        /// </summary>
         private Color GetMyMessageColor()
         {
             var palette = ThemeService.Instance.GetCurrentPalette();
-            // Використовуємо BorderLight як базовий колір для моїх повідомлень
             return palette.BorderLight;
         }
 
-        /// <summary>
-        /// Отримати колір для повідомлень друга (основний колір теми)
-        /// </summary>
         private Color GetFriendMessageColor()
         {
             var palette = ThemeService.Instance.GetCurrentPalette();
             return palette.Primary;
         }
 
-        /// <summary>
-        /// Отримати колір для файлових повідомлень (темний варіант)
-        /// </summary>
         private Color GetFileMessageColor()
         {
             var palette = ThemeService.Instance.GetCurrentPalette();
             return palette.Secondary;
         }
 
-        /// <summary>
-        /// Отримати колір тексту для моїх повідомлень
-        /// </summary>
         private Brush GetMyMessageTextBrush()
         {
             var palette = ThemeService.Instance.GetCurrentPalette();
             return new SolidColorBrush(palette.TextPrimary);
         }
 
-        /// <summary>
-        /// Отримати колір тексту для повідомлень друга
-        /// </summary>
         private Brush GetFriendMessageTextBrush()
         {
             return Brushes.White;

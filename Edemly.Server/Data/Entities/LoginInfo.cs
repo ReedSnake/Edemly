@@ -15,11 +15,9 @@ namespace Edemly.Server.Data.Entities
         [Column("email")]
         public string Email { get; set; } = string.Empty;
 
-
         [Column("is_email_verified")]
         public bool IsEmailVerified { get; set; } = false;
 
-        // Navigation property
         public User? User { get; set; }
     }
 }

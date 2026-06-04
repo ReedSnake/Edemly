@@ -1,6 +1,3 @@
-using Microsoft.AspNetCore.Http;
-using System.Threading.Tasks;
-
 namespace Edemly.Server.Api.Middleware
 {
     public class EnsureUploadsAuthMiddleware
@@ -16,7 +13,6 @@ namespace Edemly.Server.Api.Middleware
         {
             var path = context.Request.Path.Value ?? string.Empty;
 
-            // normalize
             if (path.StartsWith('/')) path = path.Substring(1);
 
             var segments = path.Split('/', System.StringSplitOptions.RemoveEmptyEntries);
@@ -24,7 +20,6 @@ namespace Edemly.Server.Api.Middleware
 
             if (segments.Length > 0)
             {
-                // /uploads/... or /{tenant}/uploads/...
                 if (string.Equals(segments[0], "uploads", System.StringComparison.OrdinalIgnoreCase))
                     isUploadPath = true;
                 else if (segments.Length > 1 && string.Equals(segments[1], "uploads", System.StringComparison.OrdinalIgnoreCase))

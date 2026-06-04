@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -18,7 +15,7 @@ namespace Edemly.Client
 
     public partial class Page_main : Page
     {
-        public ObservableCollection<StickerModel> Stickers { get; set; } = new ObservableCollection<StickerModel>();        
+        public ObservableCollection<StickerModel> Stickers { get; set; } = new ObservableCollection<StickerModel>();
 
         private void LoadStickers()
         {
@@ -123,6 +120,7 @@ namespace Edemly.Client
                 System.Diagnostics.Debug.WriteLine($"[STICKERS] Error loading stickers: {ex.Message}");
             }
         }
+
         private void ToggleStickers_Click(object sender, RoutedEventArgs e)
         {
             if (StickersPanel.Visibility == Visibility.Visible)

@@ -1,14 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Edemly.Client.Api;
 
 namespace Edemly.Client.Services
 {
-    /// <summary>
-    /// Local notes per creator stored in AppData and cached in memory
-    /// </summary>
     public class NotesService
     {
         private readonly IApiService _apiService;
@@ -83,7 +76,6 @@ namespace Edemly.Client.Services
 
                 if (!dict.ContainsKey(userId))
                 {
-                    // If running under a company (tenant) installation - do not enforce the free-plan limit on client
                     var cfg = ConfigService.Instance;
                     var isCompany = cfg.IsInstalled && !string.IsNullOrWhiteSpace(cfg.Company);
 
@@ -163,12 +155,10 @@ namespace Edemly.Client.Services
                 if (_notesCache.TryGetValue(creatorId, out var dict) && dict.ContainsKey(userId))
                     return true; // updating existing note
 
-                // If running under a company (tenant) installation - unlimited notes allowed
                 var cfg = ConfigService.Instance;
                 var isCompany = cfg.IsInstalled && !string.IsNullOrWhiteSpace(cfg.Company);
                 if (isCompany) return true;
 
-                // Ask server or local count
                 var count = await GetNotesCountAsync();
                 return count < MAX_CONTACTS_WITH_NOTES;
             }

@@ -1,22 +1,14 @@
-using Edemly.Client.Api;
 using Edemly.Client.Helpers;
 using Edemly.Contracts.Calls;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Net.Http.Json;
-using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
+
 namespace Edemly.Client.Api
 {
     public partial class ApiService : IApiService, IDisposable
     {
         private readonly HttpClient _httpClient;
-        // Make base url mutable so it can be updated when user selects a company
         private string _baseUrl;
         private string? _authToken;
 
@@ -38,7 +30,6 @@ namespace Edemly.Client.Api
             System.Diagnostics.Debug.WriteLine($"[API SERVICE] Created with baseUrl={_httpClient.BaseAddress}");
         }
 
-        // New: allow updating base URL (e.g. when user chooses a company during install)
         public void SetBaseUrl(string serverUrl)
         {
             if (string.IsNullOrWhiteSpace(serverUrl))
@@ -72,8 +63,6 @@ namespace Edemly.Client.Api
 
         public async Task<string?> GetValidTokenAsync()
         {
-            // If you later implement refresh logic, do it here.
-            // For now just return stored token.
             await Task.CompletedTask;
             return _authToken;
         }
@@ -83,7 +72,6 @@ namespace Edemly.Client.Api
             _httpClient?.Dispose();
         }
 
-        // Helper to safely deserialize JSON and avoid JsonException bubbling up
         private static T? TryDeserialize<T>(string json)
         {
             if (string.IsNullOrWhiteSpace(json)) return default;
@@ -106,10 +94,12 @@ namespace Edemly.Client.Api
                 return default;
             }
         }
+
         private static string BuildUrl(string relativeOrAbsolute)
         {
             return UrlHelper.BuildRelativeUrl(relativeOrAbsolute);
         }
+
         public async Task<List<CallDto>> GetActiveCallsAsync() //I left this here but pls make a separate file if you add more call related stuff to the api later
         {
             try

@@ -1,5 +1,3 @@
-using Edemly.Contracts.Chats;
-
 namespace Edemly.Server.Api.Services
 {
     public interface IChatRealtimeNotifier

@@ -1,14 +1,10 @@
 #nullable disable
-using System;
-using System.IO;
-using System.Threading.Tasks;
+
 using NAudio.Wave;
+using System.IO;
 
 namespace Edemly.Client.UI.Helpers
 {
-    /// <summary>
-    /// Клас для запису голосових повідомлень
-    /// </summary>
     public class VoiceRecorder : IDisposable
     {
         private WaveInEvent _waveIn;
@@ -17,13 +13,12 @@ namespace Edemly.Client.UI.Helpers
         private bool _isRecording = false;
 
         public bool IsRecording => _isRecording;
+
         public event Action<TimeSpan> RecordingTimeUpdated;
+
         private DateTime _recordingStartTime;
         private System.Timers.Timer _updateTimer;
 
-        /// <summary>
-        /// Початок запису
-        /// </summary>
         public void StartRecording()
         {
             if (_isRecording)
@@ -77,9 +72,6 @@ namespace Edemly.Client.UI.Helpers
             }
         }
 
-        /// <summary>
-        /// Зупинка запису
-        /// </summary>
         public string StopRecording()
         {
             if (!_isRecording)
@@ -91,16 +83,16 @@ namespace Edemly.Client.UI.Helpers
             try
             {
                 System.Diagnostics.Debug.WriteLine("[VoiceRecorder] Stopping recording...");
-                
+
                 _isRecording = false;
                 _updateTimer?.Stop();
                 _updateTimer?.Dispose();
                 _updateTimer = null;
 
                 _waveIn?.StopRecording();
-                
+
                 System.Threading.Thread.Sleep(100);
-                
+
                 _waveIn?.Dispose();
                 _waveIn = null;
 
@@ -108,13 +100,13 @@ namespace Edemly.Client.UI.Helpers
                 _writer = null;
 
                 System.Diagnostics.Debug.WriteLine($"[VoiceRecorder] Recording stopped. File: {_outputFilePath}");
-                
+
                 if (File.Exists(_outputFilePath))
                 {
                     var fileInfo = new FileInfo(_outputFilePath);
                     System.Diagnostics.Debug.WriteLine($"[VoiceRecorder] File size: {fileInfo.Length} bytes");
-                    
-                    if (fileInfo.Length > 44) 
+
+                    if (fileInfo.Length > 44)
                     {
                         return _outputFilePath;
                     }
@@ -138,9 +130,6 @@ namespace Edemly.Client.UI.Helpers
             }
         }
 
-        /// <summary>
-        /// Скасування запису
-        /// </summary>
         public void CancelRecording()
         {
             if (!_isRecording)
@@ -177,7 +166,7 @@ namespace Edemly.Client.UI.Helpers
                 if (_writer != null && e.BytesRecorded > 0)
                 {
                     _writer.Write(e.Buffer, 0, e.BytesRecorded);
-                    _writer.Flush(); 
+                    _writer.Flush();
                 }
             }
             catch (Exception ex)

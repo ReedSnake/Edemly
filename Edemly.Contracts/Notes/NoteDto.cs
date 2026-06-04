@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Edemly.Contracts.Notes;
+﻿namespace Edemly.Contracts.Notes;
 
 public class NoteDto
 {
@@ -13,4 +9,4 @@ public class NoteDto
     public int CreatorId { get; set; }
 
     public string Content { get; set; } = string.Empty;
-}   
+}

@@ -1,11 +1,8 @@
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using Edemly.Server.Api.Middleware;
 using Edemly.Server.Data;
 using Edemly.Server.Data.Entities;
 using Edemly.Server.Services;
-using Edemly.Server.Utils;
-using Edemly.Contracts.ChatMembers;
+using Microsoft.EntityFrameworkCore;
 
 namespace Edemly.Server.Api.Services
 {
@@ -295,6 +292,5 @@ namespace Edemly.Server.Api.Services
 
             return false;
         }
-
     }
 }

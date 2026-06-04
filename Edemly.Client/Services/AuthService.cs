@@ -1,12 +1,9 @@
-using System;
+using Edemly.Contracts.Auth;
+using System.Diagnostics;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
-using System.Diagnostics;
-using Edemly.Client.Models;
-using Edemly.Contracts.Auth;
 
 namespace Edemly.Client.Services
 {
@@ -22,7 +19,6 @@ namespace Edemly.Client.Services
                 throw new ArgumentException("serverUrl must be provided", nameof(serverUrl));
 
             _baseUrl = serverUrl.TrimEnd('/');
-            // Ensure BaseAddress ends with '/' so relative paths append after the tenant segment
             var baseAddress = new Uri(_baseUrl.EndsWith("/") ? _baseUrl : _baseUrl + "/");
             _httpClient = new HttpClient
             {
@@ -45,7 +41,6 @@ namespace Edemly.Client.Services
                 var requestPath = "api/auth/get-code";
                 Debug.WriteLine($"[AUTH SERVICE] POST {_httpClient.BaseAddress}{requestPath}");
 
-                // Use relative path without leading slash so BaseAddress (which may include tenant) is preserved
                 var response = await _httpClient.PostAsync(requestPath, content);
 
                 if (response.IsSuccessStatusCode)
@@ -81,9 +76,9 @@ namespace Edemly.Client.Services
                 }
 
                 var responseJson = await response.Content.ReadAsStringAsync();
-                var authResponse = JsonSerializer.Deserialize<AuthResponseDto>(responseJson, new JsonSerializerOptions 
-                { 
-                    PropertyNameCaseInsensitive = true 
+                var authResponse = JsonSerializer.Deserialize<AuthResponseDto>(responseJson, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
                 });
 
                 if (authResponse != null)
@@ -121,9 +116,9 @@ namespace Edemly.Client.Services
                 }
 
                 var responseJson = await response.Content.ReadAsStringAsync();
-                var authResponse = JsonSerializer.Deserialize<AuthResponseDto>(responseJson, new JsonSerializerOptions 
-                { 
-                    PropertyNameCaseInsensitive = true 
+                var authResponse = JsonSerializer.Deserialize<AuthResponseDto>(responseJson, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
                 });
 
                 if (authResponse != null)
@@ -160,9 +155,9 @@ namespace Edemly.Client.Services
                 }
 
                 var responseJson = await response.Content.ReadAsStringAsync();
-                var authResponse = JsonSerializer.Deserialize<AuthResponseDto>(responseJson, new JsonSerializerOptions 
-                { 
-                    PropertyNameCaseInsensitive = true 
+                var authResponse = JsonSerializer.Deserialize<AuthResponseDto>(responseJson, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
                 });
 
                 if (authResponse != null)
@@ -186,7 +181,7 @@ namespace Edemly.Client.Services
                 var authData = LoadAuthData();
                 if (authData != null)
                 {
-                    _httpClient.DefaultRequestHeaders.Authorization = 
+                    _httpClient.DefaultRequestHeaders.Authorization =
                         new AuthenticationHeaderValue("Bearer", authData.Token);
 
                     var requestPath = "api/auth/logout";
@@ -215,7 +210,6 @@ namespace Edemly.Client.Services
                 _configService.SetValue("UserId", authResponse.UserId);
                 _configService.SetValue("Username", authResponse.Username);
                 _configService.SetValue("Email", authResponse.Email);
-
             }
             catch (Exception ex)
             {
@@ -264,11 +258,9 @@ namespace Edemly.Client.Services
                 _configService.SetValue<string?>("Username", null);
                 _configService.SetValue<string?>("Email", null);
 
-                // Also clear runtime tokens in ApiService and caches to avoid using stale tokens
                 try { App.ApiService?.SetAuthToken(string.Empty); } catch (Exception ex) { Debug.WriteLine($"[AUTH SERVICE] Failed to clear ApiService token: {ex.Message}"); }
                 try { App.GlobalProfilePictureCache?.SetAuthToken(null); } catch (Exception ex) { Debug.WriteLine($"[AUTH SERVICE] Failed to clear ProfilePictureCache token: {ex.Message}"); }
                 try { App.GlobalFileCache?.SetAuthToken(null); } catch (Exception ex) { Debug.WriteLine($"[AUTH SERVICE] Failed to clear FileCache token: {ex.Message}"); }
-
             }
             catch (Exception ex)
             {

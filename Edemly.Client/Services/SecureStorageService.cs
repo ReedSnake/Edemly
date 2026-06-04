@@ -1,14 +1,9 @@
-using System;
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
 
 namespace Edemly.Client.Services
 {
-    /// <summary>
-    /// Безпечне зберігання токенів з шифруванням DPAPI (Data Protection API)
-    /// Працює тільки на Windows, використовує машинний ключ
-    /// </summary>
     public class SecureStorageService : ISecureStorageService
     {
         private static SecureStorageService? _instance;
@@ -37,7 +32,6 @@ namespace Edemly.Client.Services
                     return;
                 }
 
-                // Шифруємо токен використовуючи DPAPI
                 var plainBytes = Encoding.UTF8.GetBytes(token);
                 var encryptedBytes = ProtectedData.Protect(
                     plainBytes,
@@ -45,7 +39,6 @@ namespace Edemly.Client.Services
                     DataProtectionScope.CurrentUser // тільки поточний користувач може розшифрувати
                 );
 
-                // Зберігаємо як Base64
                 var base64 = Convert.ToBase64String(encryptedBytes);
                 File.WriteAllText(_tokenFilePath, base64);
             }
@@ -66,7 +59,6 @@ namespace Edemly.Client.Services
                 if (string.IsNullOrWhiteSpace(base64))
                     return null;
 
-                // Розшифровуємо токен
                 var encryptedBytes = Convert.FromBase64String(base64);
                 var plainBytes = ProtectedData.Unprotect(
                     encryptedBytes,
@@ -79,7 +71,6 @@ namespace Edemly.Client.Services
             catch (Exception ex)
             {
                 Console.WriteLine($"Error loading token: {ex.Message}");
-                // Якщо не вдалося розшифрувати - видаляємо файл
                 ClearToken();
                 return null;
             }

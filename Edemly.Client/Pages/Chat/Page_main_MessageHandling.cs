@@ -1,14 +1,12 @@
 ﻿#nullable disable
-using Microsoft.Win32;
-using System;
-using System.Threading.Tasks;
+
+using Edemly.Client.Lang;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using MessageBox = Edemly.Client.Pages.MessageBox;
-using Edemly.Client.Lang;
 
 namespace Edemly.Client
 {
@@ -21,7 +19,6 @@ namespace Edemly.Client
 
             text = text.Trim();
 
-            // Include all placeholder variants used in UI/locales
             return text == DefaultLanguage.TypeMessage
                 || text == DefaultLanguage.Loading
                 || text == "Message..."

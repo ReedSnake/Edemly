@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Edemly.Contracts.Payments
+﻿namespace Edemly.Contracts.Payments
 {
     public class WayForPayCheckResponseDto
     {
@@ -13,7 +9,6 @@ namespace Edemly.Contracts.Payments
         public string? currency { get; set; }
         public string? transactionStatus { get; set; } // "Approved", "Pending", "Declined"
 
-        // ВИПРАВЛЕНО: reasonCode - це число, а не рядок
         public int? reasonCode { get; set; }
 
         public string? reason { get; set; }
@@ -22,7 +17,6 @@ namespace Edemly.Contracts.Payments
         public long createdDate { get; set; }
         public long processingDate { get; set; }
 
-        // Додаткові поля, які може повернути WayForPay
         public string? cardPan { get; set; }
         public string? cardType { get; set; }
         public string? issuerBankCountry { get; set; }

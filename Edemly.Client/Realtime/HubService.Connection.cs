@@ -23,7 +23,6 @@ namespace Edemly.Client.Realtime
 
                 if (_connection != null)
                 {
-                    // Unregister handlers from the old connection before disposing
                     try { UnregisterHandlers(_connection); } catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[HUB] UnregisterHandlers failed: {ex}"); }
                     try { await _connection.DisposeAsync(); } catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[HUB] Dispose old connection failed: {ex}"); }
                     _connection = null;
@@ -34,7 +33,6 @@ namespace Edemly.Client.Realtime
 
                 _connection = HubConnectionFactory.Create(mainHubUrl, token);
 
-                // Also create a separate connection to the call hub endpoint (/call)
                 try
                 {
                     _callConnection = HubConnectionFactory.Create(callHubUrl, token);
@@ -45,17 +43,14 @@ namespace Edemly.Client.Realtime
                     System.Diagnostics.Debug.WriteLine($"[HUB][WARN] Failed to build call connection: {ex}");
                 }
 
-                // Register handlers for the freshly created main connection
                 RegisterHandlers(_connection);
 
-                // Register call-related handlers on call connection if created
                 if (_callConnection != null)
                 {
                     RegisterCallHandlers(_callConnection);
                 }
                 else
                 {
-                    // No dedicated call connection available; register call handlers on the main connection
                     try
                     {
                         RegisterCallHandlers(_connection);
@@ -66,10 +61,8 @@ namespace Edemly.Client.Realtime
                     }
                 }
 
-                // Try WebSockets-first (skip negotiation) with retries; fall back to default negotiated connection if fails
                 bool started = false;
 
-                // Build a WebSockets-first candidate
                 try
                 {
                     var wsCandidate = HubConnectionFactory.Create(mainHubUrl, token, webSocketsOnly: true);
@@ -81,9 +74,7 @@ namespace Edemly.Client.Realtime
                         try { if (_connection != null) { UnregisterHandlers(_connection); await _connection.DisposeAsync(); } } catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[HUB] Failed to dispose previous connection: {ex}"); }
                         _connection = wsCandidate;
                         System.Diagnostics.Debug.WriteLine("[HUB] Using WebSockets-first connection.");
-                        // Ensure handlers are attached to the ws-first connection
                         RegisterHandlers(_connection);
-                        // If there is no dedicated call connection, ensure call handlers are attached to the main connection
                         try
                         {
                             if (_callConnection == null)
@@ -128,13 +119,11 @@ namespace Edemly.Client.Realtime
                         {
                             try { if (_callConnection != null) { UnregisterCallHandlers(_callConnection); await _callConnection.DisposeAsync(); } } catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[HUB] Failed to dispose previous call connection: {ex}"); }
                             _callConnection = wsCallCandidate;
-                            // attach call handlers to the ws-first call connection
                             RegisterCallHandlers(_callConnection);
                         }
                         else
                         {
                             try { await wsCallCandidate.DisposeAsync(); } catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[HUB] Dispose wsCallCandidate failed: {ex}"); }
-                            // try original negotiated _callConnection
                             callStarted = await TryStartWithRetriesAsync(_callConnection, "call-negotiated");
                             if (!callStarted)
                             {
@@ -166,7 +155,6 @@ namespace Edemly.Client.Realtime
             }
         }
 
-        // Ensure a call-specific connection exists and is started. Returns true if ready.
         private async Task<bool> EnsureCallConnectionAsync()
         {
             try
@@ -310,10 +298,8 @@ namespace Edemly.Client.Realtime
 
         private async Task OnConnectionClosedInternalAsync(HubConnection conn, Exception? error)
         {
-            // Only consider main connection for global reconnecting state
             if (!ReferenceEquals(conn, _connection))
             {
-                // For non-main connections, just log and ignore
                 System.Diagnostics.Debug.WriteLine("[HUB] Non-main connection closed (ignored for global state)");
                 return;
             }
@@ -331,7 +317,6 @@ namespace Edemly.Client.Realtime
 
         private Task OnReconnectingInternal(HubConnection conn, Exception? error)
         {
-            // Only consider main connection for global reconnecting state
             if (!ReferenceEquals(conn, _connection))
             {
                 System.Diagnostics.Debug.WriteLine("[HUB] Non-main connection entering reconnecting (ignored)");
@@ -350,7 +335,6 @@ namespace Edemly.Client.Realtime
 
         private Task OnReconnectedInternal(HubConnection conn, string? connectionId)
         {
-            // Only consider main connection for global reconnecting state
             if (!ReferenceEquals(conn, _connection))
             {
                 System.Diagnostics.Debug.WriteLine("[HUB] Non-main connection reconnected (ignored)");

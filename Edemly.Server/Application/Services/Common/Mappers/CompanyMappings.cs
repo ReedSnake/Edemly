@@ -1,4 +1,3 @@
-using Edemly.Contracts.Companies;
 using Edemly.Server.Data.Entities;
 
 namespace Edemly.Server.Api.Services

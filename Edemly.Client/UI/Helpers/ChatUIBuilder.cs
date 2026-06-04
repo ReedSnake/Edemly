@@ -1,6 +1,7 @@
 ﻿#nullable disable
-using System;
-using System.Threading.Tasks;
+
+using Edemly.Client.Lang;
+using Edemly.Client.Services;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -8,23 +9,14 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 
-using Edemly.Client.Lang;
-using Edemly.Client.Services;
-
 namespace Edemly.Client.UI.Helpers
 {
     public class ChatUIBuilder
     {
         private const string DEFAULT_AVATAR_PATH = "pack://application:,,,/Assets/Avatars/default-avatar.png";
 
-        /// <summary>
-        /// Отримати палітру поточної теми
-        /// </summary>
         private ThemePalette GetPalette() => ThemeService.Instance.GetCurrentPalette();
 
-        /// <summary>
-        /// Створює кнопку чату з останнім повідомленням, часом та індикатором непрочитаних
-        /// </summary>
         public Button CreateChatButton(
             Models.Contact contact,
             int chatId,
@@ -61,9 +53,8 @@ namespace Edemly.Client.UI.Helpers
 
             chatGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(50) });
             chatGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-            chatGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto }); 
+            chatGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
 
-            // Avatar container
             Grid avatarContainer = new Grid { Width = 45, Height = 45 };
             Grid.SetColumn(avatarContainer, 0);
 
@@ -84,7 +75,6 @@ namespace Edemly.Client.UI.Helpers
             };
             avatarBorder.Background = avatarBrush;
 
-            // Try synchronous memory cache first to avoid flicker when recreating UI
             try
             {
                 var cache = App.GlobalProfilePictureCache;
@@ -96,13 +86,11 @@ namespace Edemly.Client.UI.Helpers
                     }
                     else
                     {
-                        // fallback to async loader
                         LoadAvatarAsync(avatarBrush, contact.PhotoPath);
                     }
                 }
                 else
                 {
-                    // If no photo path or cache not available, load default or async
                     if (string.IsNullOrEmpty(contact.PhotoPath) || contact.PhotoPath == DEFAULT_AVATAR_PATH)
                     {
                         avatarBrush.ImageSource = new BitmapImage(new Uri(DEFAULT_AVATAR_PATH, UriKind.RelativeOrAbsolute));
@@ -115,13 +103,11 @@ namespace Edemly.Client.UI.Helpers
             }
             catch
             {
-                // ensure default avatar on error
                 try { avatarBrush.ImageSource = new BitmapImage(new Uri(DEFAULT_AVATAR_PATH, UriKind.RelativeOrAbsolute)); } catch { }
             }
 
             avatarContainer.Children.Add(avatarBorder);
 
-            // Online dot
             if (isOnline)
             {
                 Ellipse onlineDot = new Ellipse
@@ -147,7 +133,6 @@ namespace Edemly.Client.UI.Helpers
             };
             Grid.SetColumn(textPanel, 1);
 
-            // Contact name
             TextBlock nameTextBlock = new TextBlock
             {
                 Text = contact.Name,
@@ -210,7 +195,7 @@ namespace Edemly.Client.UI.Helpers
                 {
                     Text = FormatMessageTime(lastMessageTime.Value),
                     FontSize = 10,
-                    Foreground = hasUnread 
+                    Foreground = hasUnread
                         ? new SolidColorBrush(palette.Primary)
                         : new SolidColorBrush(palette.TextSecondary),
                     FontWeight = hasUnread ? FontWeights.Bold : FontWeights.Normal,
@@ -261,34 +246,31 @@ namespace Edemly.Client.UI.Helpers
             return chatButton;
         }
 
-        /// <summary>
-        /// Форматує час повідомлення для відображення в списку чатів
-        /// </summary>
         private string FormatMessageTime(DateTime messageTime)
         {
             var now = DateTime.Now;
             var localTime = messageTime.Kind == DateTimeKind.Utc ? messageTime.ToLocalTime() : messageTime;
-            
+
             if (localTime.Date == now.Date)
             {
                 return localTime.ToString("HH:mm");
             }
-            
+
             if (localTime.Date == now.Date.AddDays(-1))
             {
                 return DefaultLanguage.Yesterday;
             }
-            
+
             if ((now - localTime).TotalDays < 7)
             {
                 return localTime.ToString("ddd");
             }
-            
+
             if (localTime.Year == now.Year)
             {
                 return localTime.ToString("dd MMM");
             }
-            
+
             return localTime.ToString("dd.MM.yy");
         }
 

@@ -37,7 +37,6 @@
         public const string SendAnswer = "SendAnswer";
         public const string SendIceCandidate = "SendIceCandidate";
         public const string SendAudioChunk = "SendAudioChunk";
-
     }
 
     public static class HubSettings

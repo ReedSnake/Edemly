@@ -1,6 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Edemly.Server.Configuration;
 
 namespace Edemly.Server.Data.Entities
 {
@@ -24,7 +23,6 @@ namespace Edemly.Server.Data.Entities
         [Column("expiration_time")]
         public DateTime ExpirationTime { get; set; }
 
-        // Navigation property
         [ForeignKey(nameof(UserId))]
         public User User { get; set; } = null!;
     }

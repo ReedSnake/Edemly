@@ -1,9 +1,5 @@
-using Microsoft.AspNetCore.Http;
-using Microsoft.EntityFrameworkCore;
-using System.Threading.Tasks;
 using Edemly.Server.Data;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.DependencyInjection;
+using Microsoft.EntityFrameworkCore;
 
 namespace Edemly.Server.Api.Middleware
 {
@@ -29,7 +25,6 @@ namespace Edemly.Server.Api.Middleware
 
             try
             {
-                // Resolve DbContext from the current request services to avoid it being created before tenant is resolved.
                 var serverDb = context.RequestServices.GetService<ServerDbContext>();
 
                 if (serverDb == null)
@@ -39,7 +34,6 @@ namespace Edemly.Server.Api.Middleware
                     return;
                 }
 
-                // Try to find company by name (case-insensitive)
                 var firstNormalized = tenantCandidate.TenantName.ToLowerInvariant();
                 var company = await serverDb.Companies
                     .AsNoTracking()
@@ -62,7 +56,6 @@ namespace Edemly.Server.Api.Middleware
 
                     if (tenantCandidate.ShouldRewritePath)
                     {
-                        // Rewrite path to remove tenant prefix so controllers keep same routes
                         var newPath = context.Request.Path.Value!.Substring(tenantCandidate.TenantName.Length + 1);
                         if (string.IsNullOrEmpty(newPath)) newPath = "/";
                         logger.LogInformation("TenantResolution: rewriting path from '{Old}' to '{New}'", context.Request.Path, newPath);
@@ -79,7 +72,6 @@ namespace Edemly.Server.Api.Middleware
             }
             catch (System.Exception ex)
             {
-                // If Companies table doesn't exist or any DB error occurs, treat as no tenant and continue.
                 logger.LogWarning(ex, "Tenant resolution failed - continuing as master (no tenant). Path='{Path}'", context.Request.Path);
                 TenantRequestContext.Clear(context, tenantProvider);
             }

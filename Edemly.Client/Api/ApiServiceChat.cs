@@ -1,14 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http;
+﻿using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
-using Edemly.Contracts.Chats;
-using Edemly.Contracts.ChatMembers;
-using Edemly.Client.Api;
 
 namespace Edemly.Client.Api
 {

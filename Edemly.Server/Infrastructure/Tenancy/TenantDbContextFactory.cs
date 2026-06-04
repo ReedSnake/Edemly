@@ -1,7 +1,6 @@
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Edemly.Server.Data;
 using Edemly.Server.Data.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace Edemly.Server.Services
 {
@@ -18,7 +17,6 @@ namespace Edemly.Server.Services
         {
             var defaultConn = _configuration.GetConnectionString("DefaultConnection");
 
-            // Determine tenant DB name: prefer explicit DbName, otherwise derive from company.Name
             var dbName = company.DbName;
             if (string.IsNullOrWhiteSpace(dbName))
             {

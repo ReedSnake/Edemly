@@ -1,16 +1,15 @@
 ﻿#nullable disable
+
+using Edemly.Client.Api;
+using Edemly.Client.Lang;
+using Edemly.Client.Services;
+using Edemly.Contracts.Remindings;
+using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Media;
 using System.Windows.Shapes;
-using System.Windows.Controls.Primitives;
-using System.Globalization;
-using Edemly.Client.Services;
-using Edemly.Client.Lang;
-using Edemly.Contracts.Remindings;
-using Edemly.Client.Api;
-
-
 
 namespace Edemly.Client
 {
@@ -170,9 +169,6 @@ namespace Edemly.Client
             }
         }
 
-        /// <summary>
-        /// Apply localization to all UI elements
-        /// </summary>
         private void ApplyLocalization()
         {
             if (TodayBtn != null) TodayBtn.Content = DefaultLanguage.TodayButton;
@@ -194,7 +190,7 @@ namespace Edemly.Client
             var dayThuText = Get<TextBlock>("DayThuText");
             var dayFriText = Get<TextBlock>("DayFriText");
             var daySatText = Get<TextBlock>("DaySatText");
-            
+
             if (daySunText != null) daySunText.Text = DefaultLanguage.DaySun;
             if (dayMonText != null) dayMonText.Text = DefaultLanguage.DayMon;
             if (dayTueText != null) dayTueText.Text = DefaultLanguage.DayTue;
@@ -210,7 +206,7 @@ namespace Edemly.Client
             var addTaskCategoryLabel = Get<Label>("AddTaskCategoryLabel");
             var cancelAddTaskBtn = Get<Button>("CancelAddTaskBtn");
             var saveAddTaskBtn = Get<Button>("SaveAddTaskBtn");
-            
+
             if (addTaskPanelTitle != null) addTaskPanelTitle.Text = DefaultLanguage.NewTaskTitle;
             if (addTaskNameLabel != null) addTaskNameLabel.Content = DefaultLanguage.TaskNameLabel;
             if (addTaskDescLabel != null) addTaskDescLabel.Content = DefaultLanguage.TaskDescriptionLabel;
@@ -228,7 +224,7 @@ namespace Edemly.Client
             var editTaskCategoryLabel = Get<Label>("EditTaskCategoryLabel");
             var cancelEditTaskBtn = Get<Button>("CancelEditTaskBtn");
             var saveEditTaskBtn = Get<Button>("SaveEditTaskBtn");
-            
+
             if (editTaskPanelTitle != null) editTaskPanelTitle.Text = DefaultLanguage.EditTaskPanelTitle;
             if (editTaskNameLabel != null) editTaskNameLabel.Content = DefaultLanguage.TaskNameLabel;
             if (editTaskDescLabel != null) editTaskDescLabel.Content = DefaultLanguage.TaskDescriptionLabel;
@@ -292,9 +288,6 @@ namespace Edemly.Client
             if (editCategoryEntertainmentDescText != null) editCategoryEntertainmentDescText.Text = DefaultLanguage.CategoryEntertainmentDesc;
         }
 
-        /// <summary>
-        /// Get localized category name by type
-        /// </summary>
         private string GetLocalizedCategoryName(int type)
         {
             return type switch
@@ -309,9 +302,6 @@ namespace Edemly.Client
             };
         }
 
-        /// <summary>
-        /// Get category type by localized name
-        /// </summary>
         private int GetCategoryTypeByName(string categoryName)
         {
             if (categoryName == DefaultLanguage.CategoryImportant) return 0;
@@ -320,7 +310,7 @@ namespace Edemly.Client
             if (categoryName == DefaultLanguage.CategorySports) return 3;
             if (categoryName == DefaultLanguage.CategoryStudy) return 4;
             if (categoryName == DefaultLanguage.CategoryEntertainment) return 5;
-            return 1; 
+            return 1;
         }
 
         private T Get<T>(string name) where T : class
@@ -541,7 +531,7 @@ namespace Edemly.Client
                             5 => "#FF69B4",
                             _ => "#4A6CF7"
                         };
-                        
+
                         Ellipse dot = new Ellipse
                         {
                             Width = 6,
@@ -607,7 +597,7 @@ namespace Edemly.Client
         {
             var dateForMonth = new DateTime(2024, month, 1);
             var currentLang = ConfigService.Instance?.Language ?? "en";
-            
+
             if (currentLang == "uk")
             {
                 var culture = new CultureInfo("uk-UA");
@@ -697,7 +687,6 @@ namespace Edemly.Client
                 timeBox.Text = task.ShowTime ? task.LastTime.ToString("HH:mm") : "09:00";
             }
 
-            // colors
             string taskColor = task.Type switch
             {
                 0 => "#FF6B6B",
@@ -835,7 +824,7 @@ namespace Edemly.Client
                             Type = task.Type,
                             Name = task.Name,
                             Content = task.Content,
-                            LastTime = dup.LastTime.AddDays(7*i),
+                            LastTime = dup.LastTime.AddDays(7 * i),
                             ShouldNotify = task.ShouldNotify,
                             ShowTime = task.ShowTime,
                             IsCompleted = false
@@ -1330,7 +1319,6 @@ namespace Edemly.Client
                 return;
             }
 
-
             bool hasTime = hasTimeChk?.IsChecked == true;
             int hour = 9, minute = 0;
 
@@ -1370,7 +1358,6 @@ namespace Edemly.Client
                 minute,
                 0);
 
-
             int selectedType = 1;
             if (Get<RadioButton>("EditColorRed")?.IsChecked == true) selectedType = 0;
             if (Get<RadioButton>("EditColorBlue")?.IsChecked == true) selectedType = 1;
@@ -1400,9 +1387,11 @@ namespace Edemly.Client
         }
 
         private void CancelAddTaskBtn_Click(object sender, RoutedEventArgs e) => HideAddTaskPanel();
+
         private void CloseAddPanelBtn_Click(object sender, RoutedEventArgs e) => HideAddTaskPanel();
 
         private void CancelEditTaskBtn_Click(object sender, RoutedEventArgs e) => HideEditTaskPanel();
+
         private void CloseEditPanelBtn_Click(object sender, RoutedEventArgs e) => HideEditTaskPanel();
 
         private void FilterButton_Click(object sender, RoutedEventArgs e)
@@ -1496,8 +1485,14 @@ namespace Edemly.Client
         }
 
         private void BackButton_Click(object sender, RoutedEventArgs e) => NavigationService.GoBack();
-        private void TodayBtn_Click(object sender, RoutedEventArgs e) { _currentDate = DateTime.Today; _ = UpdateCalendarAsync(); SelectDate(DateTime.Today); }
-        private void PrevMonthBtn_Click(object sender, RoutedEventArgs e) { _currentDate = _currentDate.AddMonths(-1); _ = UpdateCalendarAsync(); }
-        private void NextMonthBtn_Click(object sender, RoutedEventArgs e) { _currentDate = _currentDate.AddMonths(1); _ = UpdateCalendarAsync(); }
+
+        private void TodayBtn_Click(object sender, RoutedEventArgs e)
+        { _currentDate = DateTime.Today; _ = UpdateCalendarAsync(); SelectDate(DateTime.Today); }
+
+        private void PrevMonthBtn_Click(object sender, RoutedEventArgs e)
+        { _currentDate = _currentDate.AddMonths(-1); _ = UpdateCalendarAsync(); }
+
+        private void NextMonthBtn_Click(object sender, RoutedEventArgs e)
+        { _currentDate = _currentDate.AddMonths(1); _ = UpdateCalendarAsync(); }
     }
 }

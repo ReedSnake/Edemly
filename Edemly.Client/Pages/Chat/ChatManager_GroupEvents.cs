@@ -1,15 +1,9 @@
 ﻿#nullable enable
-using System;
-using System.Linq;
+
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-
-using Edemly.Client.Models;
-using Edemly.Client.Services;
-using System.Threading.Tasks;
-using System.Collections.Generic;
 
 namespace Edemly.Client
 {
@@ -57,9 +51,6 @@ namespace Edemly.Client
             });
         }
 
-        /// <summary>
-        /// Обробник оновлення групи (назва, опис, іконка)
-        /// </summary>
         private async void OnGroupUpdated(int chatId, string? name, string? description, string? iconUrl)
         {
             await Application.Current.Dispatcher.InvokeAsync(async () =>
@@ -68,7 +59,6 @@ namespace Edemly.Client
                 {
                     System.Diagnostics.Debug.WriteLine($"[CHAT MANAGER] Group updated: chatId={chatId}, name={name}, iconUrl={iconUrl}");
 
-                    // Перевіряємо чи це групова контакт
                     if (!_groupContacts.TryGetValue(chatId, out var contact))
                     {
                         System.Diagnostics.Debug.WriteLine($"[CHAT MANAGER] Group contact {chatId} not found locally");
@@ -77,7 +67,6 @@ namespace Edemly.Client
 
                     bool needsUiUpdate = false;
 
-                    // Оновлюємо назву якщо надано
                     if (!string.IsNullOrEmpty(name) && contact.Name != name)
                     {
                         contact.Name = name;
@@ -85,10 +74,8 @@ namespace Edemly.Client
                         System.Diagnostics.Debug.WriteLine($"[CHAT MANAGER] Updated group name to: {name}");
                     }
 
-                    // Оновлюємо іконку якщо надано
                     if (!string.IsNullOrEmpty(iconUrl) && contact.PhotoPath != iconUrl)
                     {
-                        // Інвалідуємо старий кеш
                         if (!string.IsNullOrEmpty(contact.PhotoPath))
                         {
                             try
@@ -101,7 +88,6 @@ namespace Edemly.Client
                         contact.PhotoPath = iconUrl;
                         needsUiUpdate = true;
 
-                        // Примусово завантажуємо нове зображення
                         try
                         {
                             await App.GlobalProfilePictureCache.ForceDownloadAsync(iconUrl);
@@ -114,13 +100,10 @@ namespace Edemly.Client
                         System.Diagnostics.Debug.WriteLine($"[CHAT MANAGER] Updated group icon to: {iconUrl}");
                     }
 
-                    // Оновлюємо UI якщо були зміни
                     if (needsUiUpdate)
                     {
-                        // Оновлюємо кнопку чату в списку
                         UpdateChatButton(chatId);
 
-                        // Якщо це поточний відкритий чат - оновлюємо заголовок
                         if (CurrentChatId == chatId && CurrentChatContact != null)
                         {
                             if (!string.IsNullOrEmpty(name))
@@ -145,9 +128,6 @@ namespace Edemly.Client
             });
         }
 
-        /// <summary>
-        /// ✅ НОВИЙ ОБРОБНИК: Оновлення профілю користувача
-        /// </summary>
         private async void OnProfileUpdated(int userId, string newPfpUrl)
         {
             await Application.Current.Dispatcher.InvokeAsync(async () =>
@@ -156,10 +136,8 @@ namespace Edemly.Client
                 {
                     System.Diagnostics.Debug.WriteLine($"[CHAT MANAGER] Profile updated for user {userId}: {newPfpUrl}");
 
-                    // Find contact for this user
                     if (!_contacts.TryGetValue(userId, out var contact))
                     {
-                        // Contact not found locally — try to create it from API if we have a chat mapping
                         var relatedChatIds = _chatToUserMap.Where(kv => kv.Value == userId).Select(kv => kv.Key).ToList();
 
                         if (relatedChatIds.Count > 0)
@@ -194,7 +172,6 @@ namespace Edemly.Client
                     {
                         var oldUrl = contact.PhotoPath;
 
-                        // Invalidate old cache (if exists)
                         if (!string.IsNullOrEmpty(oldUrl) && oldUrl != newPfpUrl)
                         {
                             try
@@ -207,7 +184,6 @@ namespace Edemly.Client
                             }
                         }
 
-                        // Force download new picture and update cache (best-effort)
                         BitmapImage? bmp = null;
                         if (!string.IsNullOrEmpty(newPfpUrl))
                         {
@@ -221,15 +197,12 @@ namespace Edemly.Client
                             }
                         }
 
-                        // Update contact model
                         contact.PhotoPath = newPfpUrl;
 
-                        // Find all chatIds for this user (there may be more than one)
                         var chatIds = _chatToUserMap.Where(x => x.Value == userId).Select(x => x.Key).ToList();
 
                         foreach (var chatId in chatIds)
                         {
-                            // Rebuild button so the new avatar loads (CreateChatButton will call cache)
                             try
                             {
                                 UpdateChatButton(chatId);
@@ -239,14 +212,12 @@ namespace Edemly.Client
                                 System.Diagnostics.Debug.WriteLine($"[CHAT MANAGER] Failed to update chat button {chatId}: {ex.Message}");
                             }
 
-                            // If this is the currently open chat, update header
                             if (CurrentChatId == chatId && CurrentChatContact?.UserId == userId)
                             {
                                 CurrentChatContact.PhotoPath = newPfpUrl;
                                 _updateChatHeaderCallback?.Invoke(CurrentChatContact);
                             }
 
-                            // If we have a freshly downloaded bitmap, also apply it directly to the existing chat button(s)
                             if (bmp != null)
                             {
                                 try
@@ -254,10 +225,8 @@ namespace Edemly.Client
                                     var chatButton = _chatsPanel.Children.OfType<Button>().FirstOrDefault(b => b.Tag is int id && id == chatId);
                                     if (chatButton != null)
                                     {
-                                        // The button content is a Grid created in ChatUIBuilder. We try to find the avatar Border and its ImageBrush
                                         if (chatButton.Content is Grid grid)
                                         {
-                                            // avatar container expected in column 0
                                             foreach (var child in grid.Children)
                                             {
                                                 if (child is Grid avatarContainer)
@@ -282,10 +251,8 @@ namespace Edemly.Client
                     }
                     else
                     {
-                        // If contact not known yet, try to refresh caches later or when chat is opened
                         System.Diagnostics.Debug.WriteLine($"[CHAT MANAGER] Contact {userId} not found in local contacts and no related chats to create one from");
 
-                        // Still attempt to invalidate any cache keyed by the new URL (in case server replaced content at same URL)
                         if (!string.IsNullOrEmpty(newPfpUrl))
                         {
                             try
@@ -313,14 +280,12 @@ namespace Edemly.Client
 
                 Application.Current.Dispatcher.Invoke(() =>
                 {
-                    // Find all chats for this user and update buttons
                     var chatIds = _chatToUserMap.Where(kv => kv.Value == userId).Select(kv => kv.Key).ToList();
                     foreach (var chatId in chatIds)
                     {
                         UpdateChatButtonOnline(chatId, isOnline);
                     }
 
-                    // Также обновите заголовок, если текущий контакт
                     if (CurrentChatContact != null && CurrentChatContact.UserId == userId)
                     {
                         _updateChatHeaderCallback?.Invoke(CurrentChatContact);
@@ -333,6 +298,6 @@ namespace Edemly.Client
             }
         }
 
-        #endregion
+        #endregion SignalR Group Event Handlers
     }
 }

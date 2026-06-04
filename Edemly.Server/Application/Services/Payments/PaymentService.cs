@@ -1,10 +1,9 @@
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
+using Edemly.Contracts.Payments;
 using Edemly.Server.Api.Middleware;
 using Edemly.Server.Data;
 using Edemly.Server.Data.Entities;
 using Edemly.Server.Services;
-using Edemly.Contracts.Payments;
+using Microsoft.EntityFrameworkCore;
 
 namespace Edemly.Server.Api.Services
 {
@@ -162,6 +161,5 @@ namespace Edemly.Server.Api.Services
                 return ServiceResult.Unexpected("Failed to upgrade subscription");
             }
         }
-
     }
 }

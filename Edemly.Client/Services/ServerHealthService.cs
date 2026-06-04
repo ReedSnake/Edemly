@@ -1,13 +1,8 @@
-using System;
-using System.Net.Http;
-using System.Threading;
-using System.Threading.Tasks;
 using Edemly.Client.Realtime;
+using System.Net.Http;
+
 namespace Edemly.Client.Services
 {
-    /// <summary>
-    /// Сервіс для перевірки доступності сервера
-    /// </summary>
     public class ServerHealthService : IDisposable
     {
         private readonly string _serverUrl;
@@ -32,9 +27,6 @@ namespace Edemly.Client.Services
             IsServerAvailable = false;
         }
 
-        /// <summary>
-        /// Запускає періодичну перевірку доступності сервера
-        /// </summary>
         public void StartHealthCheck()
         {
             if (_healthCheckTimer != null)
@@ -44,19 +36,14 @@ namespace Edemly.Client.Services
 
             System.Diagnostics.Debug.WriteLine("[SERVER HEALTH] Starting health check...");
 
-            // Перша перевірка відразу
             _ = CheckServerHealthAsync();
 
-            // Потім перевіряємо кожні 3 секунди
             _healthCheckTimer = new Timer(async _ =>
             {
                 await CheckServerHealthAsync();
             }, null, HubSettings.ConnectionCheckInitialDelay, HubSettings.ConnectionCheckInitialDelay);
         }
 
-        /// <summary>
-        /// Зупиняє перевірку доступності сервера
-        /// </summary>
         public void StopHealthCheck()
         {
             if (_healthCheckTimer != null)
@@ -67,9 +54,6 @@ namespace Edemly.Client.Services
             }
         }
 
-        /// <summary>
-        /// Перевіряє доступність сервера один раз
-        /// </summary>
         public async Task<bool> CheckServerHealthAsync()
         {
             if (_isChecking || _disposed)
@@ -81,20 +65,17 @@ namespace Edemly.Client.Services
 
             try
             {
-                // Пробуємо зробити запит до кореневого URL сервера
                 var response = await _httpClient.GetAsync(_serverUrl);
-                
+
                 bool isAvailable = response.IsSuccessStatusCode;
-                
-                // Оновлюємо стан якщо він змінився
+
                 if (isAvailable != _lastKnownState)
                 {
                     _lastKnownState = isAvailable;
                     IsServerAvailable = isAvailable;
-                    
+
                     System.Diagnostics.Debug.WriteLine($"[SERVER HEALTH] Server state changed: {(isAvailable ? "AVAILABLE ?" : "UNAVAILABLE ?")}");
-                    
-                    // Викликаємо подію зміни стану
+
                     OnServerAvailabilityChanged(isAvailable);
                 }
 
@@ -103,8 +84,7 @@ namespace Edemly.Client.Services
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"[SERVER HEALTH] Health check failed: {ex.Message}");
-                
-                // Сервер недоступний
+
                 if (_lastKnownState != false)
                 {
                     _lastKnownState = false;

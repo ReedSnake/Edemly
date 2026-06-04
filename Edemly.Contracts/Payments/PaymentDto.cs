@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Edemly.Contracts.Payments
+﻿namespace Edemly.Contracts.Payments
 {
     public class PaymentDto
     {

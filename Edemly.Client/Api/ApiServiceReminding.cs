@@ -1,14 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
+using Edemly.Contracts.Remindings;
 using System.Net.Http;
-using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
-using Edemly.Client.Api;
-
-using Edemly.Contracts.Remindings;
 
 namespace Edemly.Client.Api
 {

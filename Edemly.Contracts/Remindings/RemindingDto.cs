@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Edemly.Contracts.Remindings
+﻿namespace Edemly.Contracts.Remindings
 {
     public class RemindingDto
     {
@@ -18,5 +14,4 @@ namespace Edemly.Contracts.Remindings
 
         public bool IsCompleted { get; set; }
     }
-
 }

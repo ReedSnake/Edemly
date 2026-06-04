@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
 
@@ -45,7 +43,6 @@ namespace Edemly.Client.Services
             set => SetValue("SaveCredentials", value);
         }
 
-        // Installation metadata
         public bool IsInstalled
         {
             get => GetValue("IsInstalled", false);
@@ -70,7 +67,6 @@ namespace Edemly.Client.Services
             set => SetValue("ExePath", value);
         }
 
-        // Background image path for wallpaper
         public string BackgroundImagePath
         {
             get => GetValue("BackgroundImagePath", string.Empty);
@@ -136,7 +132,6 @@ namespace Edemly.Client.Services
                         return typedValue;
                     }
 
-                    // try convert
                     return (T)Convert.ChangeType(value, typeof(T));
                 }
                 catch

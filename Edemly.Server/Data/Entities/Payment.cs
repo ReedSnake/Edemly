@@ -34,7 +34,6 @@ namespace Edemly.Server.Data.Entities
         [Column("transaction_id")]
         public string? TransactionId { get; set; }
 
-        // Navigation property
         [ForeignKey(nameof(UserId))]
         public User User { get; set; } = null!;
     }

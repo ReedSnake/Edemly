@@ -12,7 +12,6 @@ namespace Edemly.Client.Realtime
             {
                 var cts = new CancellationTokenSource(HubSettings.ShortOperationTimeout);
 
-
                 if (metadata is not string)
                 {
                     await conn.InvokeAsync(HubMethods.StartCall, chatId, callUid, metadata, cts.Token);
@@ -79,8 +78,6 @@ namespace Edemly.Client.Realtime
 
             try
             {
-                // Use SendAsync (fire-and-forget) instead of InvokeAsync to avoid waiting for a server response
-                // which may time out and throw TaskCanceledException under flaky networks.
                 var sendTask = conn.SendAsync(HubMethods.EndCall, callId);
                 sendTask.ContinueWith(t =>
                 {
@@ -161,7 +158,6 @@ namespace Edemly.Client.Realtime
             try
             {
                 var sendTask = conn.SendAsync(HubMethods.SendAudioChunk, targetUserId, chunk, callId, sequenceId, timestampMs);
-                // Observe faulted task to log errors
                 sendTask.ContinueWith(t =>
                 {
                     try
@@ -177,6 +173,7 @@ namespace Edemly.Client.Realtime
                 System.Diagnostics.Debug.WriteLine($"[HUB] SendAudioChunkAsync failed: {ex.Message}");
             }
         }
+
         private async Task<HubConnection?> GetReadyCallConnectionAsync()
         {
             if (!await EnsureCallConnectionAsync())

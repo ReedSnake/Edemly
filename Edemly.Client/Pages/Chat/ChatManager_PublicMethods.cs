@@ -1,17 +1,11 @@
 ﻿#nullable enable
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+
+using Edemly.Client.UI.Helpers;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
-
-using Edemly.Client.Models;
-using Edemly.Client.Pages;
-using Edemly.Client.UI.Helpers;
 
 namespace Edemly.Client
 {
@@ -351,9 +345,6 @@ namespace Edemly.Client
             }
         }
 
-        /// <summary>
-        /// Оновлює іконку групи та перебудовує кнопку чату
-        /// </summary>
         public void UpdateGroupIcon(int chatId, string newIconUrl)
         {
             try
@@ -391,6 +382,6 @@ namespace Edemly.Client
             }
         }
 
-        #endregion
+        #endregion Public UI Methods
     }
 }

@@ -1,19 +1,16 @@
-﻿using System;
+﻿using Edemly.Client.Lang;
+using Edemly.Client.Realtime;
+using Edemly.Client.Services;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
-using System.Linq;
+using System.Net.Http;
 using System.Reflection;
-using System.Diagnostics;
+using System.Text.Json;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Navigation;
-using System.Net.Http;
-using System.Text.Json;
-using Edemly.Client.Services;
-using System.Threading.Tasks;
-using System.Collections.Generic;
-using Edemly.Client.Lang;
-using Edemly.Client.Realtime;
+
 namespace Edemly.Client.Pages
 {
     public partial class Page_install : Page
@@ -137,7 +134,6 @@ namespace Edemly.Client.Pages
                 UpdateCompanyPersonalLabel();
             }
         }
-
 
         private void CancelButton_Click(object sender, RoutedEventArgs e)
         {

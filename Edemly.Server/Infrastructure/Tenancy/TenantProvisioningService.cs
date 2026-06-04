@@ -1,9 +1,6 @@
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
-using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 using Edemly.Server.Data;
 using Edemly.Server.Data.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace Edemly.Server.Api.Services
 {
@@ -20,39 +17,30 @@ namespace Edemly.Server.Api.Services
             _logger = logger;
         }
 
-        // Create tenant: add to Companies and create physical database if missing
         public async Task<Company> CreateCompanyAsync(string name, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(name)) throw new ArgumentException("name is required", nameof(name));
 
             var safeName = MakeSafeName(name);
 
-            // check existing
             var exists = await _serverDb.Companies.AnyAsync(c => c.Name == safeName, cancellationToken);
             if (exists) throw new InvalidOperationException("Company already exists");
 
-            // Build DB name
             var dbName = GetTenantDbName(safeName);
 
-            // Save company record
             var company = new Company { Name = safeName, DbName = dbName };
             _serverDb.Companies.Add(company);
             await _serverDb.SaveChangesAsync(cancellationToken);
 
-            // Create physical database if not exists
             var defaultConn = _configuration.GetConnectionString("DefaultConnection")
                 ?? throw new InvalidOperationException("DefaultConnection missing");
 
             try
             {
-                // For MySQL - replace database in connection string
                 var connBuilder = new MySqlConnector.MySqlConnectionStringBuilder(defaultConn);
 
-                // Do NOT force a specific database name for server-level connection; Aiven may not expose 'mysql' DB
-                // Use empty Database so connection is at server level
                 connBuilder.Database = string.Empty;
 
-                // Use server connection to check/create database
                 var serverConnString = connBuilder.ToString();
 
                 using var serverConn = new MySqlConnector.MySqlConnection(serverConnString);
@@ -60,7 +48,6 @@ namespace Edemly.Server.Api.Services
 
                 _logger.LogInformation("Checking existence of tenant database '{DbName}'", dbName);
 
-                // Check if database exists
                 using (var cmd = serverConn.CreateCommand())
                 {
                     cmd.CommandText = "SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = @db";
@@ -74,7 +61,6 @@ namespace Edemly.Server.Api.Services
                         try
                         {
                             using var createCmd = serverConn.CreateCommand();
-                            // Use IF NOT EXISTS to make creation idempotent and avoid race errors
                             createCmd.CommandText = $"CREATE DATABASE IF NOT EXISTS `{dbName}` CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;";
                             await createCmd.ExecuteNonQueryAsync(cancellationToken);
 
@@ -82,14 +68,11 @@ namespace Edemly.Server.Api.Services
                         }
                         catch (Exception exCreate)
                         {
-                            // Log detailed error - helps debugging Aiven permissions or SQL errors
                             _logger.LogError(exCreate, "Failed to create database '{DbName}'. Host={Host}, Port={Port}", dbName, connBuilder.Server, connBuilder.Port);
 
-                            // rethrow so caller knows creation failed
                             throw;
                         }
 
-                        // re-check existence
                         using (var verifyCmd = serverConn.CreateCommand())
                         {
                             verifyCmd.CommandText = "SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = @db";
@@ -107,12 +90,10 @@ namespace Edemly.Server.Api.Services
             }
             catch (Exception ex)
             {
-                // If DB creation failed, leave company record in master but log and propagate
                 _logger.LogError(ex, "Error while creating physical database for company {Company}. Company record saved with DbName {DbName}", safeName, dbName);
                 throw;
             }
 
-            // Apply migrations to the newly created database
             try
             {
                 var optionsBuilder = new DbContextOptionsBuilder<CompanyDbContext>();
@@ -156,7 +137,6 @@ namespace Edemly.Server.Api.Services
             return await _serverDb.Companies.OrderBy(c => c.Name).ToListAsync(cancellationToken);
         }
 
-        // Add email into tenant database
         public async Task AddEmailsToTenantAsync(int companyId, List<string> emails, CancellationToken cancellationToken = default)
         {
             if (emails == null || emails.Count == 0)
@@ -200,7 +180,6 @@ namespace Edemly.Server.Api.Services
             await tenantCtx.SaveChangesAsync(cancellationToken);
         }
 
-        // Ensure physical database exists and migrations applied for given company
         public async Task EnsureTenantDatabaseAsync(Company company, CancellationToken cancellationToken = default)
         {
             if (company == null) throw new ArgumentNullException(nameof(company));
@@ -210,7 +189,6 @@ namespace Edemly.Server.Api.Services
             var defaultConn = _configuration.GetConnectionString("DefaultConnection")
                 ?? throw new InvalidOperationException("DefaultConnection missing");
 
-            // Create DB if missing
             try
             {
                 var connBuilder = new MySqlConnector.MySqlConnectionStringBuilder(defaultConn)
@@ -231,7 +209,6 @@ namespace Edemly.Server.Api.Services
                     {
                         _logger.LogInformation("Tenant DB {Db} missing ? creating", dbName);
                         using var createCmd = serverConn.CreateCommand();
-                        // Use IF NOT EXISTS for idempotency
                         createCmd.CommandText = $"CREATE DATABASE IF NOT EXISTS `{dbName}` CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;";
                         await createCmd.ExecuteNonQueryAsync(cancellationToken);
                         _logger.LogInformation("Tenant DB {Db} created", dbName);
@@ -248,7 +225,6 @@ namespace Edemly.Server.Api.Services
                 throw;
             }
 
-            // Apply migrations
             try
             {
                 var optionsBuilder = new DbContextOptionsBuilder<CompanyDbContext>();

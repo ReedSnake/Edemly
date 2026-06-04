@@ -1,5 +1,5 @@
-using Microsoft.EntityFrameworkCore;
 using Edemly.Server.Data.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace Edemly.Server.Data
 {
@@ -9,7 +9,6 @@ namespace Edemly.Server.Data
         {
         }
 
-        // DbSets
         public DbSet<User> Users { get; set; } = null!;
         public DbSet<LoginInfo> LoginInfos { get; set; } = null!;
         public DbSet<Session> Sessions { get; set; } = null!;
@@ -21,7 +20,6 @@ namespace Edemly.Server.Data
         public DbSet<Payment> Payments { get; set; } = null!;
         public DbSet<Call> Calls { get; set; } = null!; // added
 
-        // Master list of companies (tenants)
         public DbSet<Company> Companies { get; set; } = null!;
         public DbSet<Email> Emails { get; set; } = null!;
 
@@ -29,7 +27,6 @@ namespace Edemly.Server.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            // Configure unique indexes
             modelBuilder.Entity<LoginInfo>()
                 .HasIndex(l => l.Email)
                 .IsUnique();
@@ -50,7 +47,6 @@ namespace Edemly.Server.Data
                 .HasIndex(s => s.UserId)
                 .IsUnique();
 
-            // Configure relationships for Note (two foreign keys to User)
             modelBuilder.Entity<Note>()
                 .HasOne(n => n.User)
                 .WithMany(u => u.NotesAboutUser)
@@ -63,7 +59,6 @@ namespace Edemly.Server.Data
                 .HasForeignKey(n => n.CreatorId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // Configure enum conversions to strings
             modelBuilder.Entity<User>()
                 .Property(u => u.SubscriptionStatus)
                 .HasConversion<string>()
@@ -89,18 +84,14 @@ namespace Edemly.Server.Data
                 .HasConversion<string>()
                 .HasMaxLength(20);
 
-            // MySQL specific configurations
             modelBuilder.Entity<Payment>()
                 .Property(p => p.Amount)
                 .HasPrecision(10, 2);
 
-            // Companies table
             modelBuilder.Entity<Company>()
                 .HasIndex(c => c.Name)
                 .IsUnique();
 
-            // Calls table
-            // Map Call entity to the table name used by the migration (lowercase 'call')
             modelBuilder.Entity<Call>().ToTable("call");
 
             modelBuilder.Entity<Call>()
@@ -108,7 +99,6 @@ namespace Edemly.Server.Data
                 .HasConversion<string>()
                 .HasMaxLength(20);
 
-            // Email table
             modelBuilder.Entity<Email>().ToTable("email");
         }
     }

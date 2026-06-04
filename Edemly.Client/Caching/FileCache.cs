@@ -1,20 +1,15 @@
 #nullable disable
-using System;
+
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Security.Cryptography;
 using System.Text;
-using System.Threading.Tasks;
-using System.Diagnostics;
 
 namespace Edemly.Client.Caching
 {
-    /// <summary>
-    /// Cache for downloaded files.
-    /// Supports per-scope disk cache folder (company or personal).
-    /// </summary>
     public class FileCache : IDisposable
     {
         private readonly ConcurrentDictionary<string, string> _filePathCache;
@@ -22,19 +17,20 @@ namespace Edemly.Client.Caching
         private readonly HttpClient _httpClient;
         private readonly string _serverBaseUrl; // normalized base URL with trailing slash
 
-        // Token provider and fallback static token
         private readonly Func<Task<string?>>? _tokenProvider;
         private string? _staticToken;
 
-        // Coalesce concurrent downloads
         private readonly ConcurrentDictionary<string, Task<string>> _downloadTasks = new();
 
-        // Events
         public event Action<string>? DownloadStarted;
+
         public event Action<string, string>? DownloadCompleted; // (fileUrl, localPath)
+
         public event Action<string, Exception>? DownloadFailed;
 
-        public FileCache(string serverBaseUrl, string cacheScope = "personal") : this(serverBaseUrl, null, cacheScope) { }
+        public FileCache(string serverBaseUrl, string cacheScope = "personal") : this(serverBaseUrl, null, cacheScope)
+        {
+        }
 
         public FileCache(string serverBaseUrl, Func<Task<string?>>? tokenProvider, string cacheScope = "personal")
         {
@@ -56,9 +52,6 @@ namespace Edemly.Client.Caching
             _tokenProvider = tokenProvider;
         }
 
-        /// <summary>
-        /// Set or clear a static Bearer token. Use this if you don't have a token provider.
-        /// </summary>
         public void SetAuthToken(string? bearerToken)
         {
             _staticToken = string.IsNullOrWhiteSpace(bearerToken) ? null : bearerToken;
@@ -98,15 +91,11 @@ namespace Edemly.Client.Caching
             return _staticToken;
         }
 
-        // wrapper to call provider safely (keeps naming consistent)
         private async Task<string?> _token_provider_wrapperAsync()
         {
             return await _tokenProvider!();
         }
 
-        /// <summary>
-        /// Get or download file to local cache
-        /// </summary>
         public async Task<string> GetOrDownloadAsync(string fileUrl, string originalFileName)
         {
             if (string.IsNullOrEmpty(fileUrl))
@@ -114,7 +103,6 @@ namespace Edemly.Client.Caching
 
             var cacheKey = GetCacheKey(fileUrl);
 
-            // 1. try in-memory
             try
             {
                 if (_filePathCache.TryGetValue(cacheKey, out var cachedPath) && File.Exists(cachedPath))
@@ -127,7 +115,6 @@ namespace Edemly.Client.Caching
                 Debug.WriteLine($"[FileCache] Memory cache check failed: {ex.Message}");
             }
 
-            // 2. try disk
             var diskPath = FindDiskCachePath(cacheKey);
             if (diskPath != null && File.Exists(diskPath))
             {
@@ -135,7 +122,6 @@ namespace Edemly.Client.Caching
                 return diskPath;
             }
 
-            // 3. download
             var task = _download_tasks_get(cacheKey, fileUrl, originalFileName);
             try
             {
@@ -275,7 +261,6 @@ namespace Edemly.Client.Caching
                 var files = dir.GetFiles(cacheKey + ".*");
                 if (files.Length > 0)
                 {
-                    // return the newest file (most recently written)
                     var newest = files.OrderByDescending(f => f.LastWriteTimeUtc).First();
                     return newest.FullName;
                 }
@@ -315,7 +300,6 @@ namespace Edemly.Client.Caching
                 requestUrl = _serverBaseUrl + requestUrl;
             }
 
-            // attach auth token when available
             string? token = await ResolveTokenAsync();
             var request = new HttpRequestMessage(HttpMethod.Get, requestUrl);
             if (!string.IsNullOrEmpty(token))
@@ -329,12 +313,10 @@ namespace Edemly.Client.Caching
                 return (data, contentType);
             }
 
-            // not success - log body for diagnostics
             var body = string.Empty;
             try { body = await resp.Content.ReadAsStringAsync(); } catch (Exception ex) { Debug.WriteLine($"[FileCache] Failed to read error response body: {ex.Message}"); }
             Debug.WriteLine($"[FileCache] Download failed {resp.StatusCode} for '{requestUrl}'. Body: {body}");
 
-            // If Unauthorized and provider can refresh, retry once
             if (resp.StatusCode == System.Net.HttpStatusCode.Unauthorized && _tokenProvider != null)
             {
                 try
@@ -429,7 +411,7 @@ namespace Edemly.Client.Caching
             }
         }
 
-        #endregion
+        #endregion Private helpers
 
         public void Dispose()
         {

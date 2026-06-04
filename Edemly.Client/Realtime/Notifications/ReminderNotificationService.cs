@@ -1,6 +1,5 @@
 ﻿using CommunityToolkit.WinUI.Notifications;
 
-
 namespace Edemly.Client.Realtime.Notifications
 {
     public class ReminderNotificationService

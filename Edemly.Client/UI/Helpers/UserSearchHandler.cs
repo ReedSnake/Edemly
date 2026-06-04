@@ -1,12 +1,9 @@
 #nullable disable
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+
+using Edemly.Client.Api;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using Edemly.Client.Api;
-
 
 namespace Edemly.Client.UI.Helpers
 {
@@ -23,7 +20,6 @@ namespace Edemly.Client.UI.Helpers
             _uiBuilder = new ChatUIBuilder();
         }
 
-        // New constructor that uses App.ApiService
         public UserSearchHandler(int currentUserId)
         {
             _apiService = App.ApiService ?? throw new InvalidOperationException("App.ApiService is not initialized");

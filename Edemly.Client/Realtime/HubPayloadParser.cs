@@ -31,6 +31,7 @@ namespace Edemly.Client.Realtime
                 return default;
             }
         }
+
         public static bool TryDeserialize<T>(object? data, string eventName, out T? result)
         {
             result = Deserialize<T>(data, eventName);

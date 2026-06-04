@@ -1,44 +1,44 @@
 ﻿<Page x:Class="Edemly.Client.Page_verification"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:local="clr-namespace:Edemly.Client"
       xmlns:lang="clr-namespace:Edemly.Client.Lang"
-      mc:Ignorable="d" 
+      mc:Ignorable="d"
       d:DesignHeight="720" d:DesignWidth="1280"
       Title="Page_verification">
 
     <Grid RenderTransformOrigin="0.5,0.5">
         <Grid.RenderTransform>
-            <TranslateTransform/>
-        </Grid.RenderTransform >
-        
+            <TranslateTransform />
+        </Grid.RenderTransform>
+
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="0.4*"/>
-            <ColumnDefinition Width="0.6*"/>
+            <ColumnDefinition Width="0.4*" />
+            <ColumnDefinition Width="0.6*" />
         </Grid.ColumnDefinitions>
 
         <Grid.Background>
             <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                <GradientStop Color="#021A1A" Offset="0.0"/>
-                <GradientStop Color="#052A2A" Offset="0.5"/>
+                <GradientStop Color="#021A1A" Offset="0.0" />
+                <GradientStop Color="#052A2A" Offset="0.5" />
             </LinearGradientBrush>
         </Grid.Background>
 
         <Image Grid.Column="0" Grid.ColumnSpan="2"
                HorizontalAlignment="Left"
                VerticalAlignment="Stretch"
-               Source="/Assets/PageIllustrations/verification-primary.png" 
+               Source="/Assets/PageIllustrations/verification-primary.png"
                Stretch="UniformToFill"
                MaxWidth="1157"
                RenderTransformOrigin="0.5,0.5">
             <Image.RenderTransform>
                 <TransformGroup>
-                    <ScaleTransform ScaleX="1"/>
-                    <SkewTransform/>
-                    <RotateTransform/>
-                    <TranslateTransform/>
+                    <ScaleTransform ScaleX="1" />
+                    <SkewTransform />
+                    <RotateTransform />
+                    <TranslateTransform />
                 </TransformGroup>
             </Image.RenderTransform>
         </Image>
@@ -46,55 +46,55 @@
         <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="250,0,100,0">
 
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,0,0,30">
-                <Image Source="/Assets/Branding/logo.png" 
-                       Width="64" 
-                       Height="53" 
-                       VerticalAlignment="Center"/>
-                <TextBlock Text="Edemly" 
+                <Image Source="/Assets/Branding/logo.png"
+                       Width="64"
+                       Height="53"
+                       VerticalAlignment="Center" />
+                <TextBlock Text="Edemly"
                            Foreground="{DynamicResource ThemeBorderLightBrush}"
-                           FontSize="36" 
+                           FontSize="36"
                            VerticalAlignment="Center"
-                           Margin="20,0,0,0"/>
+                           Margin="20,0,0,0" />
             </StackPanel>
 
-            <TextBlock Text="{x:Static lang:DefaultLanguage.VerificationTitle}" 
+            <TextBlock Text="{x:Static lang:DefaultLanguage.VerificationTitle}"
                        Foreground="{DynamicResource ThemeBorderLightBrush}"
-                       FontSize="40" 
+                       FontSize="40"
                        FontWeight="Bold"
                        HorizontalAlignment="Left"
-                       Margin="0,0,0,20"/>
+                       Margin="0,0,0,20" />
 
-            <TextBlock Text="{x:Static lang:DefaultLanguage.VerificationDescription}" 
-                       Foreground="LightGray" 
-                       FontSize="16" 
+            <TextBlock Text="{x:Static lang:DefaultLanguage.VerificationDescription}"
+                       Foreground="LightGray"
+                       FontSize="16"
                        FontFamily="Century Gothic"
                        TextWrapping="Wrap"
                        HorizontalAlignment="Left"
                        Margin="0,0,0,30"
-                       Width="400"/>
+                       Width="400" />
 
             <StackPanel HorizontalAlignment="Left" Width="300" Margin="0,0,0,20">
 
-                <TextBlock HorizontalAlignment="Left" 
-                           Margin="0,0,0,20" 
-                           Foreground="{DynamicResource ThemeBorderLightBrush}" 
-                           FontSize="14" 
+                <TextBlock HorizontalAlignment="Left"
+                           Margin="0,0,0,20"
+                           Foreground="{DynamicResource ThemeBorderLightBrush}"
+                           FontSize="14"
                            FontFamily="Century Gothic"
                            MouseLeftButtonDown="ResendText_MouseLeftButtonDown">
-                    <Run Text="{x:Static lang:DefaultLanguage.ResendPrompt}"/>
-                    <LineBreak/>
-                    <Run Text="{x:Static lang:DefaultLanguage.ResendAction}" Foreground="{DynamicResource ThemePrimaryLightBrush}" FontWeight="Bold" Cursor="Hand"/>
+                    <Run Text="{x:Static lang:DefaultLanguage.ResendPrompt}" />
+                    <LineBreak />
+                    <Run Text="{x:Static lang:DefaultLanguage.ResendAction}" Foreground="{DynamicResource ThemePrimaryLightBrush}" FontWeight="Bold" Cursor="Hand" />
                 </TextBlock>
 
-                <TextBox x:Name="CodeTextBox" 
-                         Height="45" 
-                         FontSize="16" 
-                         FontFamily="Century Gothic" 
-                         Background="Transparent" 
+                <TextBox x:Name="CodeTextBox"
+                         Height="45"
+                         FontSize="16"
+                         FontFamily="Century Gothic"
+                         Background="Transparent"
                          Foreground="{DynamicResource ThemeBackgroundBrush}"
-                         BorderBrush="{DynamicResource ThemeBackgroundBrush}" 
-                         BorderThickness="1.5" 
-                         Padding="15,0,0,0" 
+                         BorderBrush="{DynamicResource ThemeBackgroundBrush}"
+                         BorderThickness="1.5"
+                         Padding="15,0,0,0"
                          MaxLength="6"
                          Margin="0,0,0,20"
                          KeyDown="CodeTextBox_KeyDown">
@@ -103,13 +103,13 @@
                             <Setter Property="Template">
                                 <Setter.Value>
                                     <ControlTemplate TargetType="TextBox">
-                                        <Border x:Name="border" 
-                                                Background="{TemplateBinding Background}" 
-                                                BorderBrush="{TemplateBinding BorderBrush}" 
-                                                BorderThickness="{TemplateBinding BorderThickness}" 
+                                        <Border x:Name="border"
+                                                Background="{TemplateBinding Background}"
+                                                BorderBrush="{TemplateBinding BorderBrush}"
+                                                BorderThickness="{TemplateBinding BorderThickness}"
                                                 CornerRadius="10">
-                                            <ScrollViewer x:Name="PART_ContentHost" 
-                                                          VerticalAlignment="Center" Width="299"/>
+                                            <ScrollViewer x:Name="PART_ContentHost"
+                                                          VerticalAlignment="Center" Width="299" />
                                         </Border>
                                     </ControlTemplate>
                                 </Setter.Value>
@@ -118,15 +118,15 @@
                     </TextBox.Style>
                 </TextBox>
 
-                <Button x:Name="VerifyButton" 
-                        Content="{x:Static lang:DefaultLanguage.VerifyButton}" 
-                        Height="45" 
-                        Background="White" 
+                <Button x:Name="VerifyButton"
+                        Content="{x:Static lang:DefaultLanguage.VerifyButton}"
+                        Height="45"
+                        Background="White"
                         Foreground="{DynamicResource ThemeSecondaryBrush}"
 
-                        FontSize="16" 
-                        FontFamily="Century Gothic" 
-                        BorderThickness="0" 
+                        FontSize="16"
+                        FontFamily="Century Gothic"
+                        BorderThickness="0"
                         Click="VerifyButton_Click"
                         Margin="0,0,0,20">
                     <Button.Style>
@@ -134,12 +134,12 @@
                             <Setter Property="Template">
                                 <Setter.Value>
                                     <ControlTemplate TargetType="Button">
-                                        <Border x:Name="border" 
-                                                Background="{TemplateBinding Background}" 
-                                                BorderBrush="{TemplateBinding BorderBrush}" 
-                                                BorderThickness="{TemplateBinding BorderThickness}" 
+                                        <Border x:Name="border"
+                                                Background="{TemplateBinding Background}"
+                                                BorderBrush="{TemplateBinding BorderBrush}"
+                                                BorderThickness="{TemplateBinding BorderThickness}"
                                                 CornerRadius="10">
-                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
                                         </Border>
                                     </ControlTemplate>
                                 </Setter.Value>
@@ -148,13 +148,13 @@
                     </Button.Style>
                 </Button>
 
-                <TextBlock HorizontalAlignment="Center" 
+                <TextBlock HorizontalAlignment="Center"
                            Foreground="{DynamicResource ThemeBorderLightBrush}"
-                           FontSize="14" 
+                           FontSize="14"
                            FontFamily="Century Gothic"
                            MouseLeftButtonDown="BackToLoginText_MouseLeftButtonDown">
-                    <Run Text="{x:Static lang:DefaultLanguage.BackToLoginText}"/>
-                    <Run Text="{x:Static lang:DefaultLanguage.BackToLoginAction}" Foreground="{DynamicResource ThemePrimaryLightBrush}" FontWeight="Bold" Cursor="Hand"/>
+                    <Run Text="{x:Static lang:DefaultLanguage.BackToLoginText}" />
+                    <Run Text="{x:Static lang:DefaultLanguage.BackToLoginAction}" Foreground="{DynamicResource ThemePrimaryLightBrush}" FontWeight="Bold" Cursor="Hand" />
                 </TextBlock>
             </StackPanel>
         </StackPanel>

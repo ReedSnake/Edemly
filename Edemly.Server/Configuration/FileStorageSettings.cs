@@ -1,8 +1,5 @@
 namespace Edemly.Server.Configuration
 {
-    /// <summary>
-    /// Налаштування для локального файлового сховища
-    /// </summary>
     public class FileStorageSettings
     {
         public string StoragePath { get; set; } = "uploads";

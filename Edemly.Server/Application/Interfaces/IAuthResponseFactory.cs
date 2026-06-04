@@ -1,6 +1,6 @@
-using Microsoft.EntityFrameworkCore;
 using Edemly.Contracts.Auth;
 using Edemly.Server.Data.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace Edemly.Server.Api.Services
 {

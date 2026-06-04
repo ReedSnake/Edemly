@@ -3,9 +3,6 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Edemly.Server.Services
 {
-    /// <summary>
-    /// Сутність для зберігання verification кодів для email
-    /// </summary>
     [Table("email_codes")]
     public class EmailCode
     {

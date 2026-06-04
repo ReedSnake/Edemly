@@ -1,11 +1,11 @@
-using System.Net.Http.Json;
-using System.Text.Json;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Edemly.Contracts.Chats;
 using Edemly.Contracts.Messages;
 using Edemly.Server.Data;
 using Edemly.Server.Data.Entities;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using System.Net.Http.Json;
+using System.Text.Json;
 
 namespace Edemly.Server.Tests.Utilities;
 

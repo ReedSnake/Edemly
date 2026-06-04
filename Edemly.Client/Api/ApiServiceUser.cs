@@ -1,16 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
-using Edemly.Client.Api;
-
-using Edemly.Contracts.Users;
 
 namespace Edemly.Client.Api
 {
@@ -105,9 +95,6 @@ namespace Edemly.Client.Api
                 {
                     var trimmedName = name.Trim();
 
-                    // Accept single-name updates (first name only). Do not require last name.
-                    // If an empty string is passed, we'll send an empty first name (clearing it on server)
-                    // If a multi-word name is passed, use the first token as FirstName (ignore surname).
                     if (string.IsNullOrEmpty(trimmedName))
                     {
                         updateData.FirstName = string.Empty;
@@ -118,7 +105,6 @@ namespace Edemly.Client.Api
                         updateData.FirstName = nameParts.Length > 0 ? nameParts[0] : trimmedName;
                     }
 
-                    // Do not send LastName (server won't be updated). Use null so serializer will omit it.
                     updateData.LastName = null;
                     hasChanges = true;
                 }

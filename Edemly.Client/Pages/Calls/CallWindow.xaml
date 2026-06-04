@@ -10,12 +10,12 @@
 
         <Grid x:Name="ListViewGrid">
             <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
-            <TextBlock Text="Active calls" FontSize="16" FontWeight="Bold" Margin="8" Foreground="#FF0B4539"/>
+            <TextBlock Text="Active calls" FontSize="16" FontWeight="Bold" Margin="8" Foreground="#FF0B4539" />
 
             <ScrollViewer Grid.Row="1" Margin="8" VerticalScrollBarVisibility="Hidden">
                 <Border CornerRadius="20" Background="{DynamicResource ThemePrimaryLightBrush}" Height="273">
@@ -24,36 +24,36 @@
             </ScrollViewer>
 
             <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="8">
-                <Button x:Name="RefreshListButton" 
-        Content="Refresh" 
-        Width="147" 
-        Margin="4" 
+                <Button x:Name="RefreshListButton"
+        Content="Refresh"
+        Width="147"
+        Margin="4"
         Click="RefreshListButton_Click" Height="36">
                     <Button.Template>
                         <ControlTemplate TargetType="Button">
                             <Border Background="{DynamicResource ThemeSecondaryBrush}" CornerRadius="6">
-                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
                             </Border>
                         </ControlTemplate>
                     </Button.Template>
                     <Button.Foreground>
-                        <SolidColorBrush Color="#FFE4FFFA"/>
+                        <SolidColorBrush Color="#FFE4FFFA" />
                     </Button.Foreground>
                 </Button>
-                <Button x:Name="CloseButton" 
-                Content="Close" 
-                Width="119" 
-                Margin="4" 
+                <Button x:Name="CloseButton"
+                Content="Close"
+                Width="119"
+                Margin="4"
                 Click="CloseButton_Click" Height="36">
                     <Button.Template>
                         <ControlTemplate TargetType="Button">
                             <Border Background="{DynamicResource ThemeSecondaryBrush}" CornerRadius="6">
-                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
                             </Border>
                         </ControlTemplate>
                     </Button.Template>
                     <Button.Foreground>
-                        <SolidColorBrush Color="#FFE4FFFA"/>
+                        <SolidColorBrush Color="#FFE4FFFA" />
                     </Button.Foreground>
                 </Button>
             </StackPanel>
@@ -77,33 +77,33 @@
             </StackPanel>
         </Border>
 
-        <Border x:Name="DialingPanel" 
+        <Border x:Name="DialingPanel"
         Background="{DynamicResource ThemeBackgroundDarkBrush}"
-        CornerRadius="8" 
-        Padding="10" 
-        VerticalAlignment="Top" 
-        HorizontalAlignment="Center" 
-        Margin="8" 
-        Visibility="Collapsed" 
+        CornerRadius="8"
+        Padding="10"
+        VerticalAlignment="Top"
+        HorizontalAlignment="Center"
+        Margin="8"
+        Visibility="Collapsed"
         Panel.ZIndex="9000">
             <StackPanel Orientation="Vertical" Width="420">
                 <TextBlock x:Name="DialingText" Text="Calling..." FontSize="14" FontWeight="Bold" Foreground="White" TextWrapping="Wrap" />
                 <TextBlock x:Name="DialingCountdown" Text="30s" Foreground="White" Margin="0,8,0,8" />
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                    <Button x:Name="CancelCallButton" 
-                Content="Cancel" 
-                Width="80" 
-                Margin="4" 
-                Click="CancelCallButton_Click"> 
+                    <Button x:Name="CancelCallButton"
+                Content="Cancel"
+                Width="80"
+                Margin="4"
+                Click="CancelCallButton_Click">
                         <Button.Template>
                             <ControlTemplate TargetType="Button">
                                 <Border Background="#FFE4FFFA" CornerRadius="2">
-                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
                                 </Border>
                             </ControlTemplate>
                         </Button.Template>
                         <Button.Foreground>
-                            <SolidColorBrush Color="#FF0B4539"/>
+                            <SolidColorBrush Color="#FF0B4539" />
                         </Button.Foreground>
                     </Button>
                 </StackPanel>
@@ -112,9 +112,9 @@
 
         <Grid x:Name="CallViewGrid" Visibility="Collapsed">
             <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
             <TextBlock x:Name="CallTitle" Text="Call" FontSize="16" FontWeight="Bold" Margin="8" />
@@ -125,36 +125,36 @@
             </StackPanel>
 
             <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center" Margin="8">
-                <Button x:Name="MuteButton" 
-                Content="Mute" 
-                Width="80" 
-                Margin="6" 
-                Click="MuteButton_Click">   
+                <Button x:Name="MuteButton"
+                Content="Mute"
+                Width="80"
+                Margin="6"
+                Click="MuteButton_Click">
                     <Button.Template>
                         <ControlTemplate TargetType="Button">
                             <Border Background="{DynamicResource ThemeSecondaryBrush}" CornerRadius="2">
-                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
                             </Border>
                         </ControlTemplate>
                     </Button.Template>
                     <Button.Foreground>
-                        <SolidColorBrush Color="#FFE4FFFA"/>
+                        <SolidColorBrush Color="#FFE4FFFA" />
                     </Button.Foreground>
                 </Button>
-                <Button x:Name="EndCallButton" 
-                Content="End" 
-                Width="80" 
-                Margin="6" 
-                Click="EndCallButton_Click">    
+                <Button x:Name="EndCallButton"
+                Content="End"
+                Width="80"
+                Margin="6"
+                Click="EndCallButton_Click">
                     <Button.Template>
                         <ControlTemplate TargetType="Button">
                             <Border Background="{DynamicResource ThemeSecondaryBrush}" CornerRadius="2">
-                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
                             </Border>
                         </ControlTemplate>
                     </Button.Template>
                     <Button.Foreground>
-                        <SolidColorBrush Color="#FFE4FFFA"/>
+                        <SolidColorBrush Color="#FFE4FFFA" />
                     </Button.Foreground>
                 </Button>
             </StackPanel>

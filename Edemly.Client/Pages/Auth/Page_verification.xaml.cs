@@ -1,19 +1,15 @@
-﻿using System;
+﻿using Edemly.Client.Lang;
+using Edemly.Client.Services;
+using Edemly.Contracts.Auth;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Navigation;
-using Edemly.Contracts.Auth;
 using MessageBox = Edemly.Client.Pages.MessageBox;
-using Edemly.Client.Lang;
-using Edemly.Client.Services;
 
 namespace Edemly.Client
 {
-    /// <summary>
-    /// Логика взаємодії для Page_verification.xaml
-    /// </summary>
     public partial class Page_verification : Page
     {
         private readonly string _userEmail;

@@ -22,7 +22,6 @@ namespace Edemly.Server.Data.Entities
         [Column("content", TypeName = "text")]
         public string Content { get; set; } = string.Empty;
 
-        // Navigation properties
         [ForeignKey(nameof(UserId))]
         public User User { get; set; } = null!;
 

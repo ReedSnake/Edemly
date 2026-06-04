@@ -1,3 +1,9 @@
+using Edemly.Server.Api.Controllers.Payments;
+using Edemly.Server.Api.Middleware;
+using Edemly.Server.Api.Services;
+using Edemly.Server.Data;
+using Edemly.Server.Data.Entities;
+using Edemly.Server.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.Sqlite;
@@ -5,12 +11,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
-using Edemly.Server.Api.Controllers.Payments;
-using Edemly.Server.Api.Middleware;
-using Edemly.Server.Api.Services;
-using Edemly.Server.Data;
-using Edemly.Server.Data.Entities;
-using Edemly.Server.Services;
 
 namespace Edemly.Server.Tests.Unit.Payments;
 

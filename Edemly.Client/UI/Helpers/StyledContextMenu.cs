@@ -1,22 +1,15 @@
 #nullable disable
-using System;
+
+using Edemly.Client.Lang;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using System.Windows.Media.Animation;
 using System.Windows.Media.Effects;
-using Edemly.Client.Lang;
 
 namespace Edemly.Client.UI.Helpers
 {
-    /// <summary>
-    /// Створює красиві стилізовані контекстні меню та діалоги у стилі додатку
-    /// </summary>
     public static class StyledContextMenu
     {
-        /// <summary>
-        /// Створює стилізоване контекстне меню
-        /// </summary>
         public static ContextMenu Create()
         {
             var contextMenu = new ContextMenu
@@ -36,9 +29,6 @@ namespace Edemly.Client.UI.Helpers
             return contextMenu;
         }
 
-        /// <summary>
-        /// Додає стилізований елемент меню
-        /// </summary>
         public static MenuItem AddItem(ContextMenu menu, string icon, string text, Action onClick, bool isDanger = false)
         {
             var item = new MenuItem
@@ -60,9 +50,6 @@ namespace Edemly.Client.UI.Helpers
             return item;
         }
 
-        /// <summary>
-        /// Додає роздільник
-        /// </summary>
         public static void AddSeparator(ContextMenu menu)
         {
             var separator = new Separator
@@ -95,7 +82,7 @@ namespace Edemly.Client.UI.Helpers
                 Text = text,
                 FontSize = 14,
                 FontWeight = FontWeights.Medium,
-                Foreground = isDanger 
+                Foreground = isDanger
                     ? new SolidColorBrush(Color.FromRgb(220, 53, 69))
                     : new SolidColorBrush((Color)ColorConverter.ConvertFromString("#031C1C")),
                 VerticalAlignment = VerticalAlignment.Center
@@ -152,21 +139,17 @@ namespace Edemly.Client.UI.Helpers
             borderFactory.AppendChild(contentPresenter);
             template.VisualTree = borderFactory;
 
-            // Hover trigger
             var hoverTrigger = new Trigger { Property = MenuItem.IsHighlightedProperty, Value = true };
-            hoverTrigger.Setters.Add(new Setter(Border.BackgroundProperty, 
-                isDanger 
+            hoverTrigger.Setters.Add(new Setter(Border.BackgroundProperty,
+                isDanger
                     ? new SolidColorBrush(Color.FromArgb(30, 220, 53, 69))
-                    : new SolidColorBrush((Color)ColorConverter.ConvertFromString("#E6FFFD")), 
+                    : new SolidColorBrush((Color)ColorConverter.ConvertFromString("#E6FFFD")),
                 "Border"));
             template.Triggers.Add(hoverTrigger);
 
             return template;
         }
 
-        /// <summary>
-        /// Створює красивий діалог підтвердження
-        /// </summary>
         public static Window CreateConfirmDialog(
             string title,
             string message,
@@ -267,9 +250,6 @@ namespace Edemly.Client.UI.Helpers
             return dialog;
         }
 
-        /// <summary>
-        /// Створює стилізовану кнопку
-        /// </summary>
         public static Button CreateStyledButton(string text, bool isPrimary, bool isDanger = false)
         {
             var button = new Button
@@ -322,7 +302,6 @@ namespace Edemly.Client.UI.Helpers
             borderFactory.AppendChild(contentPresenter);
             template.VisualTree = borderFactory;
 
-            // Hover trigger
             var hoverTrigger = new Trigger { Property = Button.IsMouseOverProperty, Value = true };
             if (isDanger)
             {

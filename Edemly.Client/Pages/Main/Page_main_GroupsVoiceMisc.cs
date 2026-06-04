@@ -1,17 +1,15 @@
 ﻿#nullable disable
-using Microsoft.Win32;
-using System;
-using System.Collections.Generic;
+
+using Edemly.Client.Lang;
+using Edemly.Client.Pages;
+using Edemly.Client.UI.Helpers;
 using System.IO;
-using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using MessageBox = Edemly.Client.Pages.MessageBox;
-using Edemly.Client.Pages;
-using Edemly.Client.Lang; 
-using Edemly.Client.UI.Helpers;
+
 namespace Edemly.Client
 {
     public partial class Page_main : Page
@@ -70,7 +68,7 @@ namespace Edemly.Client
 
             if (string.IsNullOrWhiteSpace(groupName))
             {
-                MessageBox.ShowWarning(DefaultLanguage.GroupNameEmpty, DefaultLanguage.Validation); 
+                MessageBox.ShowWarning(DefaultLanguage.GroupNameEmpty, DefaultLanguage.Validation);
                 return;
             }
 
@@ -97,7 +95,7 @@ namespace Edemly.Client
 
                 if (groupChat == null)
                 {
-                    MessageBox.ShowError(DefaultLanguage.FailedCreateGroup, DefaultLanguage.ErrorTitle); 
+                    MessageBox.ShowError(DefaultLanguage.FailedCreateGroup, DefaultLanguage.ErrorTitle);
                     return;
                 }
 
@@ -127,7 +125,7 @@ namespace Edemly.Client
             {
                 System.Diagnostics.Debug.WriteLine($"[GROUP] Error creating group: {ex.Message}");
                 System.Diagnostics.Debug.WriteLine($"[GROUP] Stack trace: {ex.StackTrace}");
-                MessageBox.ShowError($"{DefaultLanguage.FailedCreateGroup}: {ex.Message}", DefaultLanguage.ErrorTitle); 
+                MessageBox.ShowError($"{DefaultLanguage.FailedCreateGroup}: {ex.Message}", DefaultLanguage.ErrorTitle);
             }
             finally
             {
@@ -144,7 +142,7 @@ namespace Edemly.Client
             {
                 if (ParticipantSearchTextBox == null) return;
 
-                if (ParticipantSearchTextBox.Text == DefaultLanguage.SearchUsers) 
+                if (ParticipantSearchTextBox.Text == DefaultLanguage.SearchUsers)
                 {
                     ParticipantSearchTextBox.Text = "";
                     ParticipantSearchTextBox.Foreground = Brushes.Black;
@@ -177,7 +175,7 @@ namespace Edemly.Client
 
                 if (string.IsNullOrWhiteSpace(ParticipantSearchTextBox.Text))
                 {
-                    ParticipantSearchTextBox.Text = DefaultLanguage.SearchUsers; 
+                    ParticipantSearchTextBox.Text = DefaultLanguage.SearchUsers;
                     ParticipantSearchTextBox.Foreground = Brushes.Gray;
                     ParticipantSearchTextBox.FontStyle = FontStyles.Italic;
 
@@ -211,7 +209,7 @@ namespace Edemly.Client
             var searchText = ParticipantSearchTextBox.Text;
             System.Diagnostics.Debug.WriteLine($"[GROUP] Search text changed: '{searchText}'");
 
-            if (string.IsNullOrWhiteSpace(searchText) || searchText == DefaultLanguage.SearchUsers) 
+            if (string.IsNullOrWhiteSpace(searchText) || searchText == DefaultLanguage.SearchUsers)
             {
                 ParticipantsPanel.Children.Clear();
                 System.Diagnostics.Debug.WriteLine("[GROUP] Cleared participants panel");
@@ -366,7 +364,7 @@ namespace Edemly.Client
         {
             if (chatManager.CurrentChatId < 0)
             {
-                MessageBox.ShowWarning(DefaultLanguage.SelectChat, DefaultLanguage.ErrorTitle); 
+                MessageBox.ShowWarning(DefaultLanguage.SelectChat, DefaultLanguage.ErrorTitle);
                 return;
             }
 
@@ -385,7 +383,7 @@ namespace Edemly.Client
                         var currentText = MessageTextBox.Text ?? string.Empty;
                         _messageTextBeforeRecording = IsPlaceholderText(currentText) ? string.Empty : currentText;
                         MessageTextBox.IsEnabled = false;
-                        MessageTextBox.Text = DefaultLanguage.Loading; 
+                        MessageTextBox.Text = DefaultLanguage.Loading;
                         MessageTextBox.Foreground = Brushes.Gray;
                         MessageTextBox.FontStyle = FontStyles.Italic;
                     }
@@ -401,7 +399,7 @@ namespace Edemly.Client
                 catch (Exception ex)
                 {
                     System.Diagnostics.Debug.WriteLine($"[VOICE] Failed to start recording: {ex.Message}");
-                    MessageBox.ShowError($"{DefaultLanguage.Error}: {ex.Message}", DefaultLanguage.ErrorTitle); 
+                    MessageBox.ShowError($"{DefaultLanguage.Error}: {ex.Message}", DefaultLanguage.ErrorTitle);
 
                     _isRecording = false;
                     SendButton.Content = "🎤";
@@ -452,7 +450,7 @@ namespace Edemly.Client
                 catch (Exception ex)
                 {
                     System.Diagnostics.Debug.WriteLine($"[VOICE] Failed to stop recording: {ex.Message}");
-                    MessageBox.ShowError($"{DefaultLanguage.Error}: {ex.Message}", DefaultLanguage.ErrorTitle); 
+                    MessageBox.ShowError($"{DefaultLanguage.Error}: {ex.Message}", DefaultLanguage.ErrorTitle);
 
                     _isRecording = false;
                     ResetSendButtonForCurrentMessageInput();
@@ -474,7 +472,7 @@ namespace Edemly.Client
                 if (!File.Exists(audioPath))
                 {
                     System.Diagnostics.Debug.WriteLine($"[VOICE] File does not exist: {audioPath}");
-                    MessageBox.ShowError(DefaultLanguage.DownloadFailed, DefaultLanguage.ErrorTitle); 
+                    MessageBox.ShowError(DefaultLanguage.DownloadFailed, DefaultLanguage.ErrorTitle);
                     return;
                 }
 
@@ -486,7 +484,7 @@ namespace Edemly.Client
                 if (!uploadResult.Success)
                 {
                     System.Diagnostics.Debug.WriteLine($"[VOICE] Upload failed: {uploadResult.Error}");
-                    MessageBox.ShowError(string.Format(DefaultLanguage.UploadFailed, uploadResult.Error), DefaultLanguage.ErrorTitle); 
+                    MessageBox.ShowError(string.Format(DefaultLanguage.UploadFailed, uploadResult.Error), DefaultLanguage.ErrorTitle);
                     return;
                 }
 
@@ -518,7 +516,7 @@ namespace Edemly.Client
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"[VOICE] Error sending voice message: {ex.Message}");
-                MessageBox.ShowError($"{DefaultLanguage.Error}: {ex.Message}", DefaultLanguage.ErrorTitle); 
+                MessageBox.ShowError($"{DefaultLanguage.Error}: {ex.Message}", DefaultLanguage.ErrorTitle);
             }
             finally
             {
@@ -650,7 +648,7 @@ namespace Edemly.Client
             {
                 if (chatManager == null || chatManager.CurrentChatId < 0)
                 {
-                    MessageBox.ShowWarning(DefaultLanguage.SelectChat, DefaultLanguage.StartCall); 
+                    MessageBox.ShowWarning(DefaultLanguage.SelectChat, DefaultLanguage.StartCall);
                     return;
                 }
 
@@ -663,7 +661,7 @@ namespace Edemly.Client
                     }
                 }
 
-                var result = MessageBox.ShowQuestion(DefaultLanguage.LogoutConfirm, DefaultLanguage.StartCall); 
+                var result = MessageBox.ShowQuestion(DefaultLanguage.LogoutConfirm, DefaultLanguage.StartCall);
                 if (result != MessageBoxResult.Yes) return;
 
                 var callUid = Guid.NewGuid().ToString("N");
@@ -701,7 +699,7 @@ namespace Edemly.Client
             }
             catch (Exception ex)
             {
-                MessageBox.ShowError($"{DefaultLanguage.CallFailed}: {ex.Message}", DefaultLanguage.ErrorTitle); 
+                MessageBox.ShowError($"{DefaultLanguage.CallFailed}: {ex.Message}", DefaultLanguage.ErrorTitle);
             }
         }
     }

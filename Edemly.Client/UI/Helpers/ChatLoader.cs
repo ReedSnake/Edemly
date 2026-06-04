@@ -1,15 +1,10 @@
 #nullable enable
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
-using Edemly.Client.Models;
 
-using System.Reflection;
 using Edemly.Client.Api;
 using Edemly.Client.Caching;
+using System.ComponentModel;
+using System.Reflection;
+using System.Runtime.CompilerServices;
 
 namespace Edemly.Client.UI.Helpers
 {
@@ -19,32 +14,25 @@ namespace Edemly.Client.UI.Helpers
         private readonly IApiService _apiService;
         private const string DEFAULT_AVATAR_PATH = "pack://application:,,,/Assets/Avatars/default-avatar.png";
 
-        // Existing constructor (kept for compatibility)
         public ChatLoader(IApiService apiService, ChatCache cache)
         {
             _apiService = apiService ?? throw new ArgumentNullException(nameof(apiService));
             _cache = cache;
         }
 
-        // New constructor: use global App.ApiService so callers don't need to pass it
         public ChatLoader(ChatCache cache)
         {
             _apiService = App.ApiService ?? throw new InvalidOperationException("App.ApiService is not initialized");
             _cache = cache ?? throw new ArgumentNullException(nameof(cache));
         }
 
-        /// <summary>
-        /// ��������� ����������� � �����
-        /// </summary>
         public async Task<UserDto?> GetUserWithCacheAsync(int userId)
         {
-            // �������� ���������� ���
             if (_cache.TryGetUser(userId, out var cachedUser))
             {
                 return cachedUser;
             }
 
-            // ���� ���� � ����, ����������� � API
             var user = await _apiService.GetUserByIdAsync(userId);
             if (user != null)
             {
@@ -60,7 +48,6 @@ namespace Edemly.Client.UI.Helpers
 
             try
             {
-                // Try to read FirstName/LastName via reflection in case DTO was extended
                 var t = user.GetType();
                 var fnProp = t.GetProperty("FirstName", BindingFlags.Public | BindingFlags.Instance);
                 var lnProp = t.GetProperty("LastName", BindingFlags.Public | BindingFlags.Instance);
@@ -74,36 +61,29 @@ namespace Edemly.Client.UI.Helpers
             }
             catch { }
 
-            // Fallback to Username
             return string.IsNullOrEmpty(user.Username) ? string.Empty : user.Username;
         }
 
-        /// <summary>
-        /// ��������� ����������� ���� � �����
-        /// </summary>
         public async Task<List<MessageDto>> LoadChatMessagesAsync(int chatId, int page = 1, int pageSize = 50)
         {
             try
             {
-                // ���� �� ����� �������, ���������� ���
                 if (page == 1 && _cache.TryGetMessages(chatId, out var cachedMessages))
                 {
                     return cachedMessages;
                 }
 
-                // ����������� � API
                 var messages = await _apiService.GetChatMessagesAsync(chatId, page, pageSize);
 
                 if (messages.Count > 0)
                 {
                     messages = messages.OrderBy(m => m.SentAt).ToList();
-                    
-                    // ������ ����� ����� �������
+
                     if (page == 1)
                     {
                         _cache.AddMessages(chatId, messages);
                     }
-                    
+
                     return messages;
                 }
 
@@ -115,14 +95,10 @@ namespace Edemly.Client.UI.Helpers
             }
         }
 
-        /// <summary>
-        /// ��������� ���� ��� � �����������
-        /// </summary>
         public async Task<(Models.Contact contact, int chatId)?> LoadSingleChatAsync(ChatDto chat, int currentUserId)
         {
             try
             {
-                // For private chats (Type = 0)
                 if (chat.Type == 0)
                 {
                     var members = await _apiService.GetChatMembersAsync(chat.Id);
@@ -157,7 +133,6 @@ namespace Edemly.Client.UI.Helpers
                 }
                 else
                 {
-                    // For group chats
                     var photoPath = string.IsNullOrEmpty(chat.IconUrl) ? DEFAULT_AVATAR_PATH : chat.IconUrl;
                     var contact = new Models.Contact(
                         chat.Id,
@@ -177,14 +152,10 @@ namespace Edemly.Client.UI.Helpers
             return null;
         }
 
-        /// <summary>
-        /// ������� ������������ �������� ��� ������ ���� ���������
-        /// </summary>
         public async Task<Dictionary<int, List<ChatMemberDto>>> LoadChatMembersBatchAsync(List<int> chatIds)
         {
             var result = new Dictionary<int, List<ChatMemberDto>>();
 
-            // ���������� ����������� �������� ��� ��� ����
             var tasks = chatIds.Select(chatId => GetMembersForChatAsync(chatId)).ToArray();
 
             var results = await Task.WhenAll(tasks);
@@ -210,15 +181,11 @@ namespace Edemly.Client.UI.Helpers
             }
         }
 
-        /// <summary>
-        /// ������� ������������ ������������ � �����
-        /// </summary>
         public async Task<Dictionary<int, UserDto>> LoadUsersBatchAsync(List<int> userIds)
         {
             var result = new Dictionary<int, UserDto>();
             var uniqueUserIds = userIds.Distinct().ToList();
 
-            // �������� ���������� ���
             var uncachedUserIds = new List<int>();
             foreach (var userId in uniqueUserIds)
             {
@@ -232,14 +199,12 @@ namespace Edemly.Client.UI.Helpers
                 }
             }
 
-            // ����������� ����� ��� ������������, ���� ���� � ����
             if (uncachedUserIds.Count > 0)
             {
                 var tasks = uncachedUserIds.Select(userId => GetUserAsync(userId)).ToArray();
 
                 var results = await Task.WhenAll(tasks);
 
-                // ������ ����� ������������ �� ���� �� ����������
                 var newUsers = results.Where(r => r.Item2 != null).Select(r => r.Item2!).ToList();
                 if (newUsers.Count > 0)
                 {

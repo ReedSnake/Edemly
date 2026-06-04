@@ -25,7 +25,6 @@ namespace Edemly.Server.Data.Entities
         [Column("last_online")]
         public DateTime? LastOnline { get; set; }
 
-        // User details fields (перенесені з UserDetails)
         [MaxLength(100)]
         [Column("first_name")]
         public string? FirstName { get; set; }
@@ -57,7 +56,6 @@ namespace Edemly.Server.Data.Entities
         [Column("subscription_expiration")]
         public DateTime? SubscriptionExpiration { get; set; }
 
-        // Navigation properties
         [ForeignKey(nameof(LoginInfoId))]
         public LoginInfo LoginInfo { get; set; } = null!;
 

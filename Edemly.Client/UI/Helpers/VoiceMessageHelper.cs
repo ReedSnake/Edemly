@@ -1,28 +1,22 @@
 #nullable disable
-using System;
-using System.IO;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Animation;
 
-using NAudio.Wave;
-using System.Windows.Threading;
-using System.Windows.Data;
-using System.Windows.Markup;
 using Edemly.Client.Lang;
 using Edemly.Client.Services;
+using NAudio.Wave;
+using System.IO;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Input;
+using System.Windows.Markup;
+using System.Windows.Media;
+using System.Windows.Media.Animation;
+using System.Windows.Threading;
 
 namespace Edemly.Client.UI.Helpers
 {
-    /// <summary>
-    /// Допоміжний клас для рендерингу голосових повідомлень
-    /// </summary>
     public static class VoiceMessageHelper
     {
-        // Shared playback resources so only one audio can be played at a time
         private static IWavePlayer _waveOut;
         private static AudioFileReader _audioFile;
         private static DispatcherTimer _playbackTimer;
@@ -33,7 +27,6 @@ namespace Edemly.Client.UI.Helpers
         private static int _currentMessageId = -1;
         private static bool _isUserDragging = false;
 
-        // Cached parsed template for sliders (parsed once)
         private static ControlTemplate _cachedSliderTemplate;
         private static readonly object _templateLock = new object();
 
@@ -54,8 +47,7 @@ namespace Edemly.Client.UI.Helpers
         private static Border BuildVoiceMessageBorder(MessageDto message, bool isMine, StackPanel messagesPanel, int currentUserId, bool isHistorical, string senderName, bool isGroupChat)
         {
             var palette = ThemeService.Instance.GetCurrentPalette();
-            
-            // Colors depending on side and theme
+
             var bg = isMine ? palette.BorderLight : palette.Primary;
             var playBtnBg = isMine ? palette.Primary : palette.BorderLight;
             var playBtnFg = isMine ? Brushes.White : new SolidColorBrush(palette.Primary);
@@ -91,10 +83,8 @@ namespace Edemly.Client.UI.Helpers
 
             StackPanel stackPanel = new StackPanel { Orientation = Orientation.Horizontal };
 
-            // Play/pause button
             Button playButton = CreateCircularButton(playBtnBg, playBtnFg);
 
-            // Slider and time
             Slider positionSlider = CreateCustomSlider();
             ApplySliderColors(positionSlider, progressColor);
 
@@ -106,10 +96,8 @@ namespace Edemly.Client.UI.Helpers
                 VerticalAlignment = VerticalAlignment.Center
             };
 
-            // Wire up play/pause
             playButton.Click += async (s, e) => await HandlePlayPauseAsync(message, playButton, positionSlider, timeText, messageBorder);
 
-            // Slider drag handling
             positionSlider.PreviewMouseDown += (s, e) => { _isUserDragging = true; };
             positionSlider.PreviewMouseUp += async (s, e) =>
             {
@@ -124,7 +112,6 @@ namespace Edemly.Client.UI.Helpers
                 }
             };
 
-            // Info panel
             StackPanel infoPanel = new StackPanel { VerticalAlignment = VerticalAlignment.Center };
             TextBlock voiceLabel = new TextBlock
             {
@@ -219,8 +206,7 @@ namespace Edemly.Client.UI.Helpers
                 FocusVisualStyle = null
             };
 
-// parse template once
-if (_cachedSliderTemplate == null)
+            if (_cachedSliderTemplate == null)
             {
                 lock (_templateLock)
                 {
@@ -229,8 +215,8 @@ if (_cachedSliderTemplate == null)
                         string sliderTemplateXaml = @"
 <ControlTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
                xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
-               TargetType='Slider'> <Grid Height='24' VerticalAlignment='Center'> <Border x:Name='BaseTrack' Height='4' VerticalAlignment='Center' CornerRadius='2' 
-         Background='#D0D0D0' BorderThickness='0' Focusable='False'/> <Grid> <Border x:Name='ProgressTrack' Height='4' VerticalAlignment='Center' CornerRadius='2' 
+               TargetType='Slider'> <Grid Height='24' VerticalAlignment='Center'> <Border x:Name='BaseTrack' Height='4' VerticalAlignment='Center' CornerRadius='2'
+         Background='#D0D0D0' BorderThickness='0' Focusable='False'/> <Grid> <Border x:Name='ProgressTrack' Height='4' VerticalAlignment='Center' CornerRadius='2'
            Background='#808080' HorizontalAlignment='Left' Width='0' BorderThickness='0' Focusable='False'/> <Track x:Name='PART_Track' VerticalAlignment='Center' Focusable='False'>
 <Track.DecreaseRepeatButton> <RepeatButton Command='Slider.DecreaseLarge' Background='Transparent'
                      BorderThickness='0' BorderBrush='Transparent' IsTabStop='False'/>
@@ -243,7 +229,7 @@ if (_cachedSliderTemplate == null)
 </Thumb.Template> </Thumb>
 </Track.Thumb> </Track> </Grid> </Grid> </ControlTemplate>";
 
-            _cachedSliderTemplate = (ControlTemplate)XamlReader.Parse(sliderTemplateXaml);
+                        _cachedSliderTemplate = (ControlTemplate)XamlReader.Parse(sliderTemplateXaml);
                     }
                 }
             }
@@ -254,17 +240,13 @@ if (_cachedSliderTemplate == null)
             }
 
             return slider;
-
-}
-
+        }
 
         private static void ApplySliderColors(Slider slider, Brush progressBrush)
         {
             if (slider == null) return;
-            // Foreground used for thumb background in some templates
             slider.Foreground = progressBrush;
 
-            // Try to set ProgressTrack background
             try
             {
                 if (slider.Template != null)
@@ -283,23 +265,19 @@ if (_cachedSliderTemplate == null)
         {
             try
             {
-                // If clicking play for a different message, stop current
                 if (_currentMessageId != -1 && _currentMessageId != message.Id)
                 {
                     StopAudio();
                 }
 
-                // If this is the currently playing message
                 if (_currentMessageId == message.Id && _waveOut != null && _waveOut.PlaybackState == PlaybackState.Playing)
                 {
-                    // Pause
                     _waveOut.Pause();
                     playButton.Content = "\u25B6"; // play symbol
                     playButton.Tag = "paused";
                     return;
                 }
 
-                // If paused for this message -> resume
                 if (_currentMessageId == message.Id && _waveOut != null && _waveOut.PlaybackState == PlaybackState.Paused)
                 {
                     _waveOut.Play();
@@ -308,7 +286,6 @@ if (_cachedSliderTemplate == null)
                     return;
                 }
 
-                // Start new playback
                 var filePath = await App.GlobalFileCache.GetOrDownloadAsync(message.ContentUrl, "voice.wav");
                 if (string.IsNullOrEmpty(filePath) || !File.Exists(filePath))
                 {
@@ -316,31 +293,26 @@ if (_cachedSliderTemplate == null)
                     return;
                 }
 
-                // Initialize audio playback
                 _audioFile = new AudioFileReader(filePath);
                 _waveOut = new WaveOutEvent();
                 _waveOut.Init(_audioFile);
 
-                // Setup UI references
                 _currentPlayingBorder = messageBorder;
                 _currentPlayButton = playButton;
                 _currentSlider = slider;
                 _currentTimeText = timeText;
                 _currentMessageId = message.Id;
 
-                // Set slider maximum to duration
                 var total = _audioFile.TotalTime.TotalSeconds;
                 slider.Minimum = 0;
                 slider.Maximum = Math.Max(1, total);
 
-                // If user requested start position
                 if (startAtSeconds.HasValue)
                 {
                     var pos = Math.Min(startAtSeconds.Value, _audioFile.TotalTime.TotalSeconds);
                     _audioFile.CurrentTime = TimeSpan.FromSeconds(pos);
                 }
 
-                // Start timer for UI updates
                 if (_playbackTimer == null)
                 {
                     _playbackTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(200) };
@@ -348,7 +320,6 @@ if (_cachedSliderTemplate == null)
                 }
                 _playbackTimer.Start();
 
-                // Start playback
                 _waveOut.PlaybackStopped += OnPlaybackStopped;
                 _waveOut.Play();
 
@@ -376,7 +347,6 @@ if (_cachedSliderTemplate == null)
                 _currentSlider.Value = Math.Min(_currentSlider.Maximum, current.TotalSeconds);
                 _currentTimeText.Text = FormatTime(current) + " / " + FormatTime(total);
 
-                // Update the progress track width manually
                 if (total.TotalSeconds > 0 && _currentSlider.ActualWidth > 0 && _currentSlider.Template != null)
                 {
                     try
@@ -423,7 +393,6 @@ if (_cachedSliderTemplate == null)
                     {
                         _currentSlider.Value = 0;
 
-                        // reset progress track width if template exists
                         try
                         {
                             if (_currentSlider.Template != null)
@@ -470,7 +439,6 @@ if (_cachedSliderTemplate == null)
                     _audioFile = null;
                 }
 
-                // attempt to reset UI progress track before clearing references
                 try
                 {
                     if (_currentSlider != null && _currentSlider.Template != null)
@@ -511,9 +479,6 @@ if (_cachedSliderTemplate == null)
             return string.Format("{0:D2}:{1:D2}", (int)t.TotalMinutes, t.Seconds);
         }
 
-        /// <summary>
-        /// ? НОВИЙ МЕТОД: Додає контекстне меню для голосових повідомлень
-        /// </summary>
         private static void AddVoiceMessageContextMenu(Border messageBorder, MessageDto message, int currentUserId)
         {
             var contextMenu = new ContextMenu();
@@ -522,7 +487,7 @@ if (_cachedSliderTemplate == null)
             {
                 var deleteItem = new MenuItem
                 {
-                    Header = DefaultLanguage.DeleteMessage, 
+                    Header = DefaultLanguage.DeleteMessage,
                     FontSize = 13,
                     Foreground = new SolidColorBrush(Color.FromRgb(220, 53, 69))
                 };
@@ -533,16 +498,13 @@ if (_cachedSliderTemplate == null)
             }
         }
 
-        /// <summary>
-        /// ? НОВИЙ МЕТОД: Видалення голосового повідомлення
-        /// </summary>
         private static async Task DeleteVoiceMessageAsync(MessageDto message)
         {
             try
             {
                 var result = Edemly.Client.Pages.MessageBox.ShowQuestion(
-                    DefaultLanguage.ConfirmDeleteMessage, 
-                    DefaultLanguage.ContactDeleteConfirmTitle); 
+                    DefaultLanguage.ConfirmDeleteMessage,
+                    DefaultLanguage.ContactDeleteConfirmTitle);
 
                 if (result == MessageBoxResult.Yes)
                 {
@@ -550,23 +512,19 @@ if (_cachedSliderTemplate == null)
 
                     if (!success)
                     {
-                        Edemly.Client.Pages.MessageBox.ShowError(DefaultLanguage.FailedDeleteMessage, DefaultLanguage.ErrorTitle); 
+                        Edemly.Client.Pages.MessageBox.ShowError(DefaultLanguage.FailedDeleteMessage, DefaultLanguage.ErrorTitle);
                     }
                 }
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"Error deleting voice message: {ex.Message}");
-                Edemly.Client.Pages.MessageBox.ShowError($"{DefaultLanguage.Error}: {ex.Message}", DefaultLanguage.ErrorTitle); 
+                Edemly.Client.Pages.MessageBox.ShowError($"{DefaultLanguage.Error}: {ex.Message}", DefaultLanguage.ErrorTitle);
             }
         }
 
-        /// <summary>
-        /// Prefetch audio duration in background and update UI so it doesn't stay "00:00 / 00:00" after creation
-        /// </summary>
         private static void PrefetchDuration(MessageDto message, Slider slider, TextBlock timeText)
         {
-            // Fire-and-forget task - we just want to update UI when available
             Task.Run(async () =>
             {
                 try
@@ -575,12 +533,10 @@ if (_cachedSliderTemplate == null)
                     if (string.IsNullOrEmpty(filePath) || !File.Exists(filePath))
                         return;
 
-                    // Use AudioFileReader to get duration without starting playback
                     using (var afr = new AudioFileReader(filePath))
                     {
                         var total = afr.TotalTime;
 
-                        // Update UI
                         Application.Current.Dispatcher.Invoke(() =>
                         {
                             try
@@ -596,7 +552,6 @@ if (_cachedSliderTemplate == null)
                                     timeText.Text = "00:00 / " + FormatTime(total);
                                 }
 
-                                // Ensure progress track is reset
                                 try
                                 {
                                     if (slider != null && slider.Template != null)

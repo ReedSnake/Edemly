@@ -1,9 +1,4 @@
 #nullable disable
-using Edemly;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
 
 namespace Edemly.Client.Caching
 {
@@ -83,7 +78,7 @@ namespace Edemly.Client.Caching
             }
         }
 
-        #endregion
+        #endregion Chat Cache
 
         #region Messages Cache
 
@@ -201,7 +196,7 @@ namespace Edemly.Client.Caching
             }
         }
 
-        #endregion
+        #endregion Messages Cache
 
         #region User Cache
 
@@ -266,7 +261,7 @@ namespace Edemly.Client.Caching
             }
         }
 
-        #endregion
+        #endregion User Cache
 
         #region Cache Management
 
@@ -377,7 +372,7 @@ namespace Edemly.Client.Caching
             }
         }
 
-        #endregion
+        #endregion Cache Management
 
         public void Dispose()
         {

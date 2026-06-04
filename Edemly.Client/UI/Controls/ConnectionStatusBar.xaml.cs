@@ -1,9 +1,8 @@
-﻿using System;
+﻿using Edemly.Client.Lang;
+using Edemly.Client.Services;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using Edemly.Client.Lang;
-using Edemly.Client.Services;
 
 namespace Edemly.Client.Controls
 {
@@ -15,7 +14,6 @@ namespace Edemly.Client.Controls
             InitializeComponent();
             Hide();
 
-            // Subscribe to theme changes
             ThemeService.Instance.ThemeChanged += (themeName) => OnThemeChanged();
         }
 

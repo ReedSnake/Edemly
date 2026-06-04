@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Edemly.Contracts.Notes;
+﻿namespace Edemly.Contracts.Notes;
 
 public class NoteResponseDto
 {

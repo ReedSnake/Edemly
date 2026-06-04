@@ -1,5 +1,4 @@
 #nullable disable
-using System.Collections.Generic;
 
 namespace Edemly.Client.Models
 {
@@ -12,7 +11,7 @@ namespace Edemly.Client.Models
         public string Email { get; set; }
         public string Phone { get; set; }
         public string PhotoPath { get; set; }
-        
+
         public string Note { get; set; }
 
         public Contact(int userId, string name, string email, string phone = "", string photoPath = "")

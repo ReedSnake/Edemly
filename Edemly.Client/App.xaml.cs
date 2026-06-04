@@ -1,50 +1,42 @@
-using System;
-using System.Linq;
-using System.Windows;
-using Edemly.Client.Services;
 using CommunityToolkit.WinUI.Notifications;
-using System.Diagnostics;
 using Edemly.Client.Api;
-using System.Globalization;
-using System.Windows.Media.Imaging;
-using Edemly.Client.Realtime;
 using Edemly.Client.Caching;
 using Edemly.Client.Pages.Settings;
+using Edemly.Client.Realtime;
+using Edemly.Client.Services;
 using Edemly.Contracts.Realtime;
+using System.Diagnostics;
+using System.Globalization;
+using System.Windows;
+using System.Windows.Media.Imaging;
+
 namespace Edemly.Client
 {
     public partial class App : Application
     {
         private const string AppId = "Edemly.MainApp";
-        // Глобальні сервіси
         public static IApiService ApiService { get; private set; } = null!;
         public static IAuthService AuthService { get; private set; } = null!;
         public static IHubService HubService { get; private set; } = null!;
         public static NotesService? NotesService { get; private set; }
 
-        // Глобальні кеші
         public static ChatCache GlobalChatCache { get; private set; } = new ChatCache();
         public static ProfilePictureCache GlobalProfilePictureCache { get; private set; } = null!;
         public static FileCache GlobalFileCache { get; private set; } = null!;
 
-        // Глобальний ChatManager
         public static ChatManager? GlobalChatManager { get; set; }
 
-        // ConnectionStatusBar reference
         public static Edemly.Client.Controls.ConnectionStatusBar? StatusBar { get; set; }
 
-        // Дані користувача
         public static int? CurrentUserId { get; set; }
         public static string? CurrentUserEmail { get; set; }
         public static string? CurrentUserName { get; set; }
         public static string? CurrentUserPhotoUrl { get; set; }
         public static string? AuthToken { get; set; }
 
-        // Кеш для швидкого доступу до чатів (для Toast notifications)
         private static readonly Dictionary<int, (ChatDto chat, List<ChatMemberDto> members)> _chatDataCache = new();
         private static readonly object _chatCacheLock = new object();
 
-        // Store base server url (without tenant) to allow switching company at runtime
         public static string BaseServerUrlNoCompany { get; private set; } = string.Empty;
 
         public static string? CurrentUsername
@@ -58,7 +50,6 @@ namespace Edemly.Client
 
         protected override void OnStartup(StartupEventArgs e)
         {
-            // Ensure language is loaded from config before MainWindow or pages are created.
             if (e.Args.Length < 1 || string.IsNullOrWhiteSpace(e.Args[0]))
             {
                 MessageBox.Show(
@@ -77,7 +68,6 @@ namespace Edemly.Client
                 if (string.IsNullOrWhiteSpace(savedLang))
                     savedLang = "en";
 
-                // Load translation files and persist choice in config
                 try
                 {
                     LanguageService.Instance.LoadLanguage(savedLang);
@@ -87,7 +77,6 @@ namespace Edemly.Client
                     Debug.WriteLine($"[APP] LoadLanguage failed: {ex}");
                 }
 
-                // Load and apply theme
                 try
                 {
                     ThemeService.Instance.LoadAndApplyTheme();
@@ -97,7 +86,6 @@ namespace Edemly.Client
                     Debug.WriteLine($"[APP] LoadAndApplyTheme failed: {ex}");
                 }
 
-                // Set thread cultures to match chosen language where possible
                 try
                 {
                     CultureInfo cultureInfo;
@@ -118,7 +106,6 @@ namespace Edemly.Client
 
                 System.Diagnostics.Debug.WriteLine($"[APP] Language set to: {LanguageService.Instance.CurrentLanguage}");
 
-                // Apply saved wallpaper (if any) so it's available immediately to pages using DynamicResource BackgroundImage
                 try
                 {
                     var bgPath = ConfigService.Instance?.BackgroundImagePath;
@@ -143,7 +130,6 @@ namespace Edemly.Client
                     }
                     else
                     {
-                        // ensure key exists (App.xaml already sets x:Null) - keep as is
                     }
                 }
                 catch (Exception ex)
@@ -181,7 +167,6 @@ namespace Edemly.Client
 
             base.OnStartup(e);
 
-            // Global unhandled exception handlers to capture crashes and log them
             this.DispatcherUnhandledException += (sender, args) =>
             {
                 try
@@ -199,7 +184,6 @@ namespace Edemly.Client
                 {
                     var ex = args.ExceptionObject as Exception;
                     Debug.WriteLine($"[APP][UNHANDLED] DomainUnhandledException: {ex}");
-                    // Show message on UI thread if possible
                     Current?.Dispatcher?.BeginInvoke(new Action(() =>
                     {
                         try { MessageBox.Show($"Fatal error: {ex?.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error); } catch (Exception ex2) { Debug.WriteLine($"[APP][UNHANDLED] Failed to show fatal error dialog: {ex2}"); }
@@ -218,7 +202,6 @@ namespace Edemly.Client
                 catch (Exception ex) { Debug.WriteLine($"[APP][UNOBSERVED] Failed to handle unobserved task exception: {ex}"); }
             };
 
-            // Read server base URL from first command line arg only. Make it required.
             string? serverUrl = null;
             string? tenantArg = null;
 
@@ -226,22 +209,17 @@ namespace Edemly.Client
             {
                 var argsList = Environment.GetCommandLineArgs();
 
-                // Expect the first argument after executable path to be the server URL
                 if (argsList.Length > 1)
                 {
-                    // find first non-switch token to be server URL
                     for (int i = 1; i < argsList.Length; i++)
                     {
                         var raw = argsList[i].Trim();
                         if (string.IsNullOrEmpty(raw)) continue;
 
-                        // treat switches starting with '-' or '/' as flags
                         if (raw.StartsWith("--") || raw.StartsWith("-"))
                         {
-                            // check tenant/company flag
                             if (raw.StartsWith("--tenant", StringComparison.OrdinalIgnoreCase) || raw.StartsWith("--company", StringComparison.OrdinalIgnoreCase))
                             {
-                                // If written as --tenant=value
                                 var parts = raw.Split(new[] { '=' }, 2);
                                 if (parts.Length == 2)
                                 {
@@ -249,7 +227,6 @@ namespace Edemly.Client
                                 }
                                 else
                                 {
-                                    // next arg is value
                                     if (i + 1 < argsList.Length)
                                     {
                                         tenantArg = argsList[i + 1].Trim().Trim('"');
@@ -260,16 +237,13 @@ namespace Edemly.Client
                                 continue;
                             }
 
-                            // unknown flag - skip
                             continue;
                         }
 
-                        // otherwise treat as server URL if not set yet
                         if (serverUrl == null)
                         {
                             var candidate = raw;
 
-                            // If user passed without scheme (like "edemly.me" or "www.edemly.me"), prepend https://
                             if (!candidate.Contains("://"))
                             {
                                 candidate = "https://" + candidate;
@@ -304,10 +278,8 @@ namespace Edemly.Client
 
             System.Diagnostics.Debug.WriteLine($"[APP] Using server URL: {serverUrl}");
 
-            // After parsing serverUrl
             BaseServerUrlNoCompany = serverUrl!; // save base
 
-            // If tenantArg provided via --tenant or --company, store it into config so subsequent service creation uses it
             try
             {
                 if (!string.IsNullOrWhiteSpace(tenantArg))
@@ -326,7 +298,6 @@ namespace Edemly.Client
                 Debug.WriteLine($"[APP] ConfigService update error: {ex}");
             }
 
-            // Determine actual API base depending on installation/company
             var cfg2 = ConfigService.Instance;
             string apiBase = BaseServerUrlNoCompany;
             if (cfg2.IsInstalled && !string.IsNullOrWhiteSpace(cfg2.Company) && !string.Equals(cfg2.Company, "Personal", StringComparison.OrdinalIgnoreCase))
@@ -338,7 +309,6 @@ namespace Edemly.Client
             AuthService = new AuthService(apiBase);
             HubService = new HubService(apiBase);
 
-            // Subscribe to incoming call events from concrete HubService and forward to UI
             try
             {
                 var concreteHub = (((HubService as HubService)));
@@ -352,7 +322,6 @@ namespace Edemly.Client
                 Debug.WriteLine($"[APP] Failed to subscribe incoming call handler: {ex}");
             }
 
-            // Diagnostic: log event subscription
             try
             {
                 System.Diagnostics.Debug.WriteLine("[APP] Subscribing to HubService.ConnectionStateChanged");
@@ -364,9 +333,7 @@ namespace Edemly.Client
                 System.Diagnostics.Debug.WriteLine($"[APP] Failed to subscribe to HubService.ConnectionStateChanged: {ex.Message}");
             }
 
-            // Use cache scope based on selected company (empty = personal)
             var cacheScope = string.IsNullOrWhiteSpace(cfg2.Company) ? "personal" : cfg2.Company.Trim();
-            // Provide a live token provider that reads current App.AuthToken (or SecureStorage)
             GlobalProfilePictureCache = new ProfilePictureCache(apiBase, () => Task.FromResult(AuthToken), cacheScope);
             GlobalFileCache = new FileCache(apiBase, () => Task.FromResult(AuthToken), cacheScope);
 
@@ -384,7 +351,6 @@ namespace Edemly.Client
 
             HubService.ConnectionStateChanged += OnConnectionStateChanged;
 
-            // Create and show main window explicitly (only after successful initialization)
             try
             {
                 var mainWindow = new MainWindow();
@@ -394,7 +360,6 @@ namespace Edemly.Client
             catch (Exception ex)
             {
                 Debug.WriteLine($"[APP] Failed to create MainWindow: {ex}");
-                // If we fail to create the main window, ensure app exits
                 Shutdown();
             }
         }
@@ -417,7 +382,6 @@ namespace Edemly.Client
                     }
                     else
                     {
-                        // Determine if the hub is actively reconnecting
                         bool isReconnecting = false;
                         try
                         {
@@ -499,7 +463,6 @@ namespace Edemly.Client
         {
             try
             {
-                // wait briefly for HubService to become available and connected
                 int waited = 0;
                 while (HubService == null && waited < 5000)
                 {
@@ -509,7 +472,6 @@ namespace Edemly.Client
 
                 if (HubService == null) return;
 
-                // If not connected, try to connect using current token
                 try
                 {
                     if (!HubService.IsConnected && !string.IsNullOrEmpty(AuthToken))
@@ -529,16 +491,13 @@ namespace Edemly.Client
                     Debug.WriteLine($"[APP] EnsureHubConnectedAndRestoreCallsAsync failed: {ex}");
                 }
 
-                // Query active calls from API and open CallWindow if needed
                 try
                 {
                     var calls = await ApiService.GetActiveCallsAsync();
                     if (calls != null && calls.Count > 0)
                     {
-                        // open the CallWindow on the UI thread
                         Current.Dispatcher.Invoke(() =>
                         {
-                            // If a CallWindow already exists, activate it instead of creating a duplicate
                             var existing = System.Windows.Application.Current.Windows.OfType<Pages.CallWindow>().FirstOrDefault();
                             if (existing != null)
                             {
@@ -598,7 +557,6 @@ namespace Edemly.Client
 
             GlobalChatCache.ClearAll();
 
-            // Clear and remove profile/file caches when user logs out
             try { GlobalProfilePictureCache?.ClearAll(); } catch (Exception ex) { Debug.WriteLine($"[APP] ClearAll ProfilePictureCache failed: {ex}"); }
             try { GlobalFileCache?.ClearAll(); } catch (Exception ex) { Debug.WriteLine($"[APP] ClearAll FileCache failed: {ex}"); }
 
@@ -771,7 +729,6 @@ namespace Edemly.Client
         {
             try
             {
-                // normalize company -> empty means personal
                 var cfg = ConfigService.Instance;
                 if (string.IsNullOrWhiteSpace(company) || string.Equals(company, "Personal", StringComparison.OrdinalIgnoreCase))
                 {
@@ -785,15 +742,12 @@ namespace Edemly.Client
                 cfg.IsInstalled = markInstalled;
                 cfg.Save();
 
-                // Dispose old services
                 try { (HubService as IDisposable)?.Dispose(); } catch (Exception ex) { Debug.WriteLine($"[APP] Dispose HubService failed: {ex}"); }
                 try { (ApiService as IDisposable)?.Dispose(); } catch (Exception ex) { Debug.WriteLine($"[APP] Dispose ApiService failed: {ex}"); }
 
-                // Dispose and clear old caches
                 try { GlobalProfilePictureCache?.Dispose(); } catch (Exception ex) { Debug.WriteLine($"[APP] Dispose ProfilePictureCache failed: {ex}"); }
                 try { GlobalFileCache?.Dispose(); } catch (Exception ex) { Debug.WriteLine($"[APP] Dispose FileCache failed: {ex}"); }
 
-                // Clear in-memory chat cache and any cached chat data used for Toasts
                 try
                 {
                     GlobalChatCache?.ClearAll();
@@ -805,14 +759,11 @@ namespace Edemly.Client
                 }
                 catch (Exception ex) { Debug.WriteLine($"[APP] ClearAll caches failed: {ex}"); }
 
-                // Clear notes cache if any
                 try { NotesService?.ClearCache(); } catch (Exception ex) { Debug.WriteLine($"[APP] NotesService.ClearCache failed: {ex}"); }
 
-                // Dispose and clear ChatManager (UI-level) if exists to avoid stale references
                 try { GlobalChatManager?.Dispose(); } catch (Exception ex) { Debug.WriteLine($"[APP] GlobalChatManager.Dispose failed: {ex}"); }
                 GlobalChatManager = null;
 
-                // Build new base
                 string apiBase = BaseServerUrlNoCompany;
                 if (cfg.IsInstalled && !string.IsNullOrWhiteSpace(cfg.Company))
                 {
@@ -824,13 +775,11 @@ namespace Edemly.Client
                 HubService = new HubService(apiBase);
 
                 var cacheScope = string.IsNullOrWhiteSpace(cfg.Company) ? "personal" : cfg.Company.Trim();
-                // Ensure profile cache uses live token provider
                 GlobalProfilePictureCache = new ProfilePictureCache(apiBase, () => Task.FromResult(AuthToken), cacheScope);
                 GlobalFileCache = new FileCache(apiBase, () => Task.FromResult(AuthToken), cacheScope);
 
                 System.Diagnostics.Debug.WriteLine($"[APP] Switched company to '{cfg.Company ?? "(personal)"}', apiBase={apiBase}, cacheScope={cacheScope}");
 
-                // If we already have auth token, set it on ApiService and reconnect hub
                 if (!string.IsNullOrEmpty(AuthToken))
                 {
                     ApiService.SetAuthToken(AuthToken);
@@ -858,7 +807,6 @@ namespace Edemly.Client
                 {
                     try
                     {
-                        // find existing CallWindow or create new one
                         var existing = System.Windows.Application.Current.Windows.OfType<Pages.CallWindow>().FirstOrDefault();
                         if (existing == null)
                         {
@@ -872,7 +820,6 @@ namespace Edemly.Client
                         else
                         {
                             Debug.WriteLine("[APP] Found existing CallWindow");
-                            // ensure handlers are registered and window visible
                             existing.RegisterHubHandlers();
                             if (!existing.IsVisible)
                             {

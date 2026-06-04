@@ -1,14 +1,11 @@
+using Edemly.Server.Configuration;
+using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using Microsoft.IdentityModel.Tokens;
-using Edemly.Server.Configuration;
 
 namespace Edemly.Server.Services
 {
-    /// <summary>
-    /// ����� ��� ��������� �� �������� JWT �������
-    /// </summary>
     public class JwtService : IJwtService
     {
         private readonly JwtSettings _jwtSettings;

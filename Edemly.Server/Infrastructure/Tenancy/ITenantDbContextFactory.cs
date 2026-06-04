@@ -1,6 +1,5 @@
-using Edemly.Server.Data.Entities;
 using Edemly.Server.Data;
-using Microsoft.EntityFrameworkCore;
+using Edemly.Server.Data.Entities;
 
 namespace Edemly.Server.Services
 {

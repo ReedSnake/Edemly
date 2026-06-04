@@ -1,7 +1,7 @@
-using System.Linq.Expressions;
 using Edemly.Contracts.Notes;
 using Edemly.Contracts.Remindings;
 using Edemly.Server.Data.Entities;
+using System.Linq.Expressions;
 
 namespace Edemly.Server.Api.Services
 {

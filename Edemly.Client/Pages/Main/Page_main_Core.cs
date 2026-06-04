@@ -1,25 +1,14 @@
 #nullable disable
-using Microsoft.Win32;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
+
+using Edemly.Client.Lang;
+using Edemly.Client.Services;
+using Edemly.Client.UI.Helpers;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Animation;
-using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
-using System.Xml.Serialization;
 using MessageBox = Edemly.Client.Pages.MessageBox;
-
-using Edemly.Client.Pages;
-using Edemly.Client.Lang;
-using Edemly.Client.Services;
-using Edemly.Client.UI.Helpers;
 
 namespace Edemly.Client
 {
@@ -86,7 +75,8 @@ namespace Edemly.Client
 
             MessageTextBox.KeyDown += MessageTextBox_PreviewKeyDown;
 
-            MessageTextBox.GotFocus += (s, e) => {
+            MessageTextBox.GotFocus += (s, e) =>
+            {
                 if (IsPlaceholderText(MessageTextBox.Text))
                 {
                     MessageTextBox.Text = "";
@@ -95,7 +85,8 @@ namespace Edemly.Client
                 }
             };
 
-            MessageTextBox.LostFocus += (s, e) => {
+            MessageTextBox.LostFocus += (s, e) =>
+            {
                 if (string.IsNullOrWhiteSpace(MessageTextBox.Text))
                 {
                     SetMessagePlaceholder();
@@ -131,9 +122,6 @@ namespace Edemly.Client
             InitializeAsync();
         }
 
-        /// <summary>
-        /// Apply localization to all UI elements
-        /// </summary>
         private void ApplyLocalization()
         {
             try
@@ -228,9 +216,6 @@ namespace Edemly.Client
             }
         }
 
-        /// <summary>
-        /// Update participant count text with localization
-        /// </summary>
         private void UpdateParticipantCountText()
         {
             if (ParticipantCountText != null)
@@ -239,9 +224,6 @@ namespace Edemly.Client
             }
         }
 
-        /// <summary>
-        /// Refresh placeholder texts with current localization
-        /// </summary>
         private void RefreshPlaceholders()
         {
             try
@@ -258,8 +240,8 @@ namespace Edemly.Client
                 if (SearchTextBox != null)
                 {
                     var currentText = SearchTextBox.Text?.Trim() ?? "";
-                    if (string.IsNullOrWhiteSpace(currentText) || 
-                        currentText == "Search..." || 
+                    if (string.IsNullOrWhiteSpace(currentText) ||
+                        currentText == "Search..." ||
                         currentText == "Пошук...")
                     {
                         SearchTextBox.Text = DefaultLanguage.SearchPlaceholder;
@@ -270,8 +252,8 @@ namespace Edemly.Client
                 if (ParticipantSearchTextBox != null)
                 {
                     var currentText = ParticipantSearchTextBox.Text?.Trim() ?? "";
-                    if (string.IsNullOrWhiteSpace(currentText) || 
-                        currentText == "Search users..." || 
+                    if (string.IsNullOrWhiteSpace(currentText) ||
+                        currentText == "Search users..." ||
                         currentText == "Пошук користувачів...")
                     {
                         ParticipantSearchTextBox.Text = DefaultLanguage.SearchUsers;
@@ -388,7 +370,7 @@ namespace Edemly.Client
             }
             catch (Exception ex)
             {
-                MessageBox.ShowError(string.Format(DefaultLanguage.ErrorOccurred + ": {0}", ex.Message), DefaultLanguage.ErrorTitle); 
+                MessageBox.ShowError(string.Format(DefaultLanguage.ErrorOccurred + ": {0}", ex.Message), DefaultLanguage.ErrorTitle);
             }
         }
 
@@ -513,7 +495,7 @@ namespace Edemly.Client
         {
             if (string.IsNullOrEmpty(App.AuthToken))
             {
-                MessageBox.ShowError(DefaultLanguage.ErrorOccurred, DefaultLanguage.ErrorTitle); 
+                MessageBox.ShowError(DefaultLanguage.ErrorOccurred, DefaultLanguage.ErrorTitle);
                 return;
             }
 
@@ -522,12 +504,12 @@ namespace Edemly.Client
                 bool connected = await App.HubService.ConnectAsync(App.AuthToken);
                 if (!connected)
                 {
-                    MessageBox.ShowWarning(DefaultLanguage.ConnectionLost, DefaultLanguage.ErrorTitle); 
+                    MessageBox.ShowWarning(DefaultLanguage.ConnectionLost, DefaultLanguage.ErrorTitle);
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.ShowError($"{DefaultLanguage.Error}: {ex.Message}", DefaultLanguage.ErrorTitle); 
+                MessageBox.ShowError($"{DefaultLanguage.Error}: {ex.Message}", DefaultLanguage.ErrorTitle);
             }
         }
 
@@ -539,7 +521,7 @@ namespace Edemly.Client
             }
             catch (Exception ex)
             {
-                MessageBox.ShowError($"{DefaultLanguage.Error}: {ex.Message}", DefaultLanguage.ErrorTitle); 
+                MessageBox.ShowError($"{DefaultLanguage.Error}: {ex.Message}", DefaultLanguage.ErrorTitle);
             }
         }
 

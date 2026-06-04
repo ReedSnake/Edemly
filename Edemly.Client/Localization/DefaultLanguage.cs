@@ -6,13 +6,11 @@ namespace Edemly.Client.Lang
     {
         private static LanguageService Lang => LanguageService.Instance;
 
-        // Headings / buttons
         public static string AppTitle => Lang.GetText("app", "title", "Edemly");
         public static string LoginButton => Lang.GetText("page_login", "login_button", "Login");
         public static string RegisterButton => Lang.GetText("page_login", "register_button", "Register");
         public static string LogoutButton => Lang.GetText("app", "logout_button", "Logout");
 
-        // Common
         public static string Sending => Lang.GetText("common", "sending", "Sending...");
         public static string PleaseEnterEmail => Lang.GetText("common", "please_enter_email", "Please enter email");
         public static string PleaseEnterValidEmail => Lang.GetText("common", "please_enter_valid_email", "Please enter a valid email address");
@@ -35,7 +33,6 @@ namespace Edemly.Client.Lang
         public static string NoResults => Lang.GetText("common", "no_results", "No results found");
         public static string Retry => Lang.GetText("common", "retry", "Retry");
 
-        // Page Login
         public static string WelcomeTitle => Lang.GetText("page_login", "welcome_title", "Hello!");
         public static string WelcomeSubtitle => Lang.GetText("page_login", "welcome_subtitle", "Welcome back");
         public static string LoginEmailLabel => Lang.GetText("page_login", "email_label", "Email");
@@ -44,18 +41,15 @@ namespace Edemly.Client.Lang
         public static string SignUp => Lang.GetText("page_login", "sign_up", "Sign up");
         public static string RememberMe => Lang.GetText("page_login", "remember_me", "Remember me");
 
-        // Placeholders
         public static string UsernamePlaceholder => Lang.GetText("page_login", "username_placeholder", "Enter username");
         public static string PasswordPlaceholder => Lang.GetText("page_login", "password_placeholder", "Enter password");
         public static string EmailPlaceholder => Lang.GetText("page_login", "email_placeholder", "Enter email");
 
-        // Notification
         public static string LoginSuccess => Lang.GetText("page_login", "login_success", "Successfully logged in!");
         public static string LoginFailed => Lang.GetText("page_login", "login_failed", "Login failed. Please check your credentials.");
         public static string RegistrationSuccess => Lang.GetText("page_registration", "registration_success", "Registration successful!");
         public static string ErrorOccurred => Lang.GetText("app", "error_occurred", "An error occurred. Please try again.");
 
-        // Page Install
         public static string InstallTitle => Lang.GetText("page_install", "title", "Edemly Installation");
         public static string InstallDescription => Lang.GetText("page_install", "description", "Configure initial settings before using Edemly. You can change these later in Settings.");
         public static string LanguageLabel => Lang.GetText("page_install", "language_label", "Language");
@@ -74,7 +68,6 @@ namespace Edemly.Client.Lang
         public static string CompaniesErrorFallback => Lang.GetText("page_install", "companies_error_fallback", "Error loading companies. Using Personal mode.");
         public static string ShortcutCreateFailed => Lang.GetText("page_install", "shortcut_create_failed", "Failed to create desktop shortcut.");
 
-        // Page Settings
         public static string SettingsTitle => Lang.GetText("page_settings", "settings_title", "Settings");
         public static string SelectProfilePhotoTitle => Lang.GetText("page_settings", "select_profile_photo", "Select profile photo");
         public static string Uploading => Lang.GetText("page_settings", "uploading", "Uploading...");
@@ -91,14 +84,12 @@ namespace Edemly.Client.Lang
         public static string WarningTitle => Lang.GetText("page_settings", "warning_title", "Warning");
         public static string SaveButton => Lang.GetText("page_settings", "save_button", "Save");
 
-        // Language names and theme labels
         public static string LanguageEnglishName => Lang.GetText("page_settings", "lang_english", "English");
         public static string LanguageUkrainianName => Lang.GetText("page_settings", "lang_ukrainian", "Ukrainian");
         public static string SelectLanguageLabel => Lang.GetText("page_settings", "select_language_label", "Select language:");
         public static string ThemeSettings => Lang.GetText("page_settings", "theme_settings", "Theme settings:");
         public static string ThemeColor => Lang.GetText("page_settings", "theme_color", "Theme color");
 
-        // Page Registration
         public static string RegistrationTitleLine1 => Lang.GetText("page_registration", "title_line1", "Create");
         public static string RegistrationTitleLine2 => Lang.GetText("page_registration", "title_line2", "Your Account");
         public static string UserNameLabel => Lang.GetText("page_registration", "user_name_label", "User Name");
@@ -109,19 +100,16 @@ namespace Edemly.Client.Lang
         public static string AlreadyHaveAccount => Lang.GetText("page_registration", "already_have_account", "Already have an account? ");
         public static string SignIn => Lang.GetText("page_registration", "sign_in", "Sign in");
 
-        // Policies text and buttons
         public static string PoliciesTitle => Lang.GetText("page_registration", "policies_title", "Terms of Service and Privacy Policy");
         public static string PoliciesClose => Lang.GetText("page_registration", "policies_close", "Close");
         public static string PoliciesAccept => Lang.GetText("page_registration", "policies_accept", "Accept");
         public static string PoliciesContent => Lang.GetText("page_registration", "policies_content", "");
 
-        // Registration specific messages
         public static string PleaseEnterUsername => Lang.GetText("page_registration", "please_enter_username", "Please enter your username");
         public static string UsernameLength => Lang.GetText("page_registration", "username_length", "Username must be between 3 and 50 characters");
         public static string UsernameInvalid => Lang.GetText("page_registration", "username_invalid", "Username can only contain letters, numbers, underscores and hyphens");
         public static string PleaseAgreeTerms => Lang.GetText("page_registration", "please_agree_terms", "Please agree to the Terms of Service and Privacy Policy");
 
-        // Page Verification
         public static string PleaseEnterValidCode => Lang.GetText("page_verification", "please_enter_valid_code", "Please enter a valid 6-digit code");
         public static string Verifying => Lang.GetText("page_verification", "verifying", "Verifying...");
         public static string RegistrationFailedMessage => Lang.GetText("page_verification", "registration_failed", "Registration failed. User might already exist or code is invalid.");
@@ -130,7 +118,6 @@ namespace Edemly.Client.Lang
         public static string FailedResendCode => Lang.GetText("page_verification", "failed_resend_code", "Failed to resend code");
         public static string VerifyButton => Lang.GetText("page_verification", "verify_button", "Verify");
 
-        // New verification UI strings
         public static string VerificationTitle => Lang.GetText("page_verification", "title", "Verification Code");
         public static string VerificationDescription => Lang.GetText("page_verification", "description", "Please enter the 6-digit verification code that was sent to your email address.");
         public static string ResendPrompt => Lang.GetText("page_verification", "resend_prompt", "Didn't receive the code?");
@@ -138,7 +125,6 @@ namespace Edemly.Client.Lang
         public static string BackToLoginText => Lang.GetText("page_verification", "back_to_login", "Back to");
         public static string BackToLoginAction => Lang.GetText("page_verification", "back_to_login_action", "Login");
 
-        // Page About
         public static string AboutTitle => Lang.GetText("page_about", "title", "About Edemly");
         public static string AboutGreeting => Lang.GetText("page_about", "greeting", "Hi, dear user!");
         public static string AboutWelcome => Lang.GetText("page_about", "welcome", "We are the Edemly team, and we are happy to welcome you to our messenger!");
@@ -156,7 +142,6 @@ namespace Edemly.Client.Lang
         public static string AboutClosing => Lang.GetText("page_about", "closing", "We create Edemly with you in mind. Every feature is designed to make your life easier and more organized.");
         public static string AboutThanks => Lang.GetText("page_about", "thanks", "Thank you for choosing us!");
 
-        // Page Premium
         public static string PremiumTitle => Lang.GetText("page_premium", "title", "Edemly Premium");
         public static string PremiumMainTitle => Lang.GetText("page_premium", "main_title", "Edemly Premium — More opportunities for you!");
         public static string PremiumDescription => Lang.GetText("page_premium", "description", "Want to use Edemly to its full potential? Upgrade to Premium and get advanced planning and organization features!");
@@ -177,7 +162,6 @@ namespace Edemly.Client.Lang
         public static string PremiumPaymentFailed => Lang.GetText("page_premium", "payment_failed", "Failed to start payment");
         public static string PremiumOpenPageError => Lang.GetText("page_premium", "open_page_error", "Failed to open payment page: {0}");
 
-        // Page Contact Settings
         public static string ContactSettingsTitle => Lang.GetText("page_contact_settings", "title", "Contact Settings");
         public static string ContactPhoneNotSpecified => Lang.GetText("page_contact_settings", "phone_not_specified", "Not specified");
         public static string ContactEmailNotSpecified => Lang.GetText("page_contact_settings", "email_not_specified", "No email");
@@ -203,7 +187,6 @@ namespace Edemly.Client.Lang
         public static string ContactDeleteNoteErrorDetails => Lang.GetText("page_contact_settings", "delete_note_error_details", "Failed to delete note: {0}");
         public static string ContactPhotoLoadError => Lang.GetText("page_contact_settings", "photo_load_error", "Error loading photo: {0}");
 
-        // Page Group Settings
         public static string GroupIcon => Lang.GetText("page_group_settings", "group_icon", "Group Icon");
         public static string ChangeIcon => Lang.GetText("page_group_settings", "change_icon", "📷 Change Icon");
         public static string GroupName => Lang.GetText("page_group_settings", "group_name", "Group Name");
@@ -232,50 +215,43 @@ namespace Edemly.Client.Lang
         public static string UserIdText => Lang.GetText("page_group_settings", "user_id", "User #{0}");
         public static string LoadingText => Lang.GetText("page_group_settings", "loading", "Loading...");
 
-        // Page Calendar
         public static string CalendarTitle => Lang.GetText("page_calendar", "calendar_title", "Calendar");
         public static string TasksHeader => Lang.GetText("page_calendar", "tasks_header", "TASKS");
         public static string TodaysTasks => Lang.GetText("page_calendar", "todays_tasks", "TODAY'S TASKS");
         public static string TasksForDate => Lang.GetText("page_calendar", "tasks_for_date", "TASKS FOR {0}");
         public static string PastTasksFor => Lang.GetText("page_calendar", "past_tasks_for", "TASKS FOR {0} (PAST)");
-        
-        // Calendar Filter Buttons
+
         public static string FilterAll => Lang.GetText("page_calendar", "filter_all", "All");
         public static string FilterActive => Lang.GetText("page_calendar", "filter_active", "Active");
         public static string FilterCompleted => Lang.GetText("page_calendar", "filter_completed", "Completed");
         public static string FilterUpcoming => Lang.GetText("page_calendar", "filter_upcoming", "Upcoming");
         public static string ShowLabel => Lang.GetText("page_calendar", "show_label", "Show:");
-        
-        // Calendar Task Labels
+
         public static string NoTasks => Lang.GetText("page_calendar", "no_tasks", "No tasks");
         public static string NoUpcomingTasks => Lang.GetText("page_calendar", "no_upcoming_tasks", "No upcoming tasks");
         public static string Today => Lang.GetText("page_calendar", "today", "Today");
-        
-        // Calendar Category Labels
+
         public static string CategoryImportant => Lang.GetText("page_calendar", "category_important", "Important");
         public static string CategoryWork => Lang.GetText("page_calendar", "category_work", "Work");
         public static string CategoryPersonal => Lang.GetText("page_calendar", "category_personal", "Personal");
         public static string CategorySports => Lang.GetText("page_calendar", "category_sports", "Sports");
         public static string CategoryStudy => Lang.GetText("page_calendar", "category_study", "Study");
         public static string CategoryEntertainment => Lang.GetText("page_calendar", "category_entertainment", "Entertainment");
-        
-        // Calendar Category Descriptions
+
         public static string CategoryImportantDesc => Lang.GetText("page_calendar", "category_important_desc", "Priority tasks");
         public static string CategoryWorkDesc => Lang.GetText("page_calendar", "category_work_desc", "Work tasks");
         public static string CategoryPersonalDesc => Lang.GetText("page_calendar", "category_personal_desc", "Personal matters");
         public static string CategorySportsDesc => Lang.GetText("page_calendar", "category_sports_desc", "Training, activity");
         public static string CategoryStudyDesc => Lang.GetText("page_calendar", "category_study_desc", "Learning tasks");
         public static string CategoryEntertainmentDesc => Lang.GetText("page_calendar", "category_entertainment_desc", "Rest, hobbies");
-        
-        // Calendar Buttons
+
         public static string AddTaskButton => Lang.GetText("page_calendar", "add_task_button", "Add Task");
         public static string TodayButton => Lang.GetText("page_calendar", "today_button", "TODAY");
         public static string PrevMonthButton => Lang.GetText("page_calendar", "prev_month_button", "←");
         public static string NextMonthButton => Lang.GetText("page_calendar", "next_month_button", "→");
         public static string SaveTaskButton => Lang.GetText("page_calendar", "save_button", "SAVE");
         public static string CancelTaskButton => Lang.GetText("page_calendar", "cancel_button", "CANCEL");
-        
-        // Calendar Task Dialogs
+
         public static string NewTaskTitle => Lang.GetText("page_calendar", "new_task_title", "NEW TASK");
         public static string EditTaskPanelTitle => Lang.GetText("page_calendar", "edit_task_panel_title", "EDIT TASK");
         public static string AddTaskTitle => Lang.GetText("page_calendar", "add_task_title", "Add New Task");
@@ -289,38 +265,33 @@ namespace Edemly.Client.Lang
         public static string SelectTimeLabel => Lang.GetText("page_calendar", "select_time_label", "Select time");
         public static string SelectColorLabel => Lang.GetText("page_calendar", "select_color_label", "Select color");
         public static string TimeTooltip => Lang.GetText("page_calendar", "time_tooltip", "Enter time in 24-hour format (00:00 - 23:59)");
-        
-        // Calendar Task Validation
+
         public static string EnterTaskName => Lang.GetText("page_calendar", "enter_task_name", "Enter task name!");
         public static string EnterTimeLabel => Lang.GetText("page_calendar", "enter_time_label", "Please enter time!");
         public static string InvalidTimeFormat => Lang.GetText("page_calendar", "invalid_time_format", "Please enter time in format HH:mm (00:00 - 23:59)");
         public static string CannotAddPastDate => Lang.GetText("page_calendar", "cannot_add_past_date", "Cannot add tasks to past dates! Please select today or a future date.");
         public static string CannotEditPastDate => Lang.GetText("page_calendar", "cannot_edit_past_date", "Cannot edit tasks for past dates.");
         public static string CannotDuplicatePastDate => Lang.GetText("page_calendar", "cannot_duplicate_past_date", "Cannot duplicate tasks to past dates! Please select today or a future date.");
-        
-        // Calendar Context Menu
+
         public static string ContextMenuEdit => Lang.GetText("page_calendar", "context_menu_edit", "✎ Edit");
         public static string ContextMenuView => Lang.GetText("page_calendar", "context_menu_view", "👁 View");
         public static string ContextMenuDuplicate => Lang.GetText("page_calendar", "context_menu_duplicate", "⎘ Duplicate");
         public static string ContextMenuDelete => Lang.GetText("page_calendar", "context_menu_delete", "🗑️ Delete");
-        
-        // Calendar Duplicate Dialog
+
         public static string DuplicateTaskTitle => Lang.GetText("page_calendar", "duplicate_task_title", "Duplicate Task");
         public static string DuplicateTargetDate => Lang.GetText("page_calendar", "duplicate_target_date", "Choose target date (or pick repeating):");
         public static string DuplicateOnce => Lang.GetText("page_calendar", "duplicate_once", "Once");
         public static string DuplicateDaily => Lang.GetText("page_calendar", "duplicate_daily", "Daily");
         public static string DuplicateWeekly => Lang.GetText("page_calendar", "duplicate_weekly", "Weekly");
         public static string DuplicateMonthly => Lang.GetText("page_calendar", "duplicate_monthly", "Monthly");
-        
-        // Calendar Messages
+
         public static string DeleteTaskConfirm => Lang.GetText("page_calendar", "delete_task_confirm", "Delete this task?");
         public static string Confirm => Lang.GetText("page_calendar", "confirm", "Confirm");
         public static string InvalidDate => Lang.GetText("page_calendar", "invalid_date", "Invalid Date");
         public static string PastTask => Lang.GetText("page_calendar", "past_task", "Past Task");
         public static string PastTaskMessage => Lang.GetText("page_calendar", "past_task_message", "Cannot edit tasks in the past. You can only view or delete them.");
         public static string InformationTitle => Lang.GetText("page_calendar", "information_title", "Information");
-        
-        // Calendar Days of Week
+
         public static string DaySun => Lang.GetText("page_calendar", "day_sun", "Sun");
         public static string DayMon => Lang.GetText("page_calendar", "day_mon", "Mon");
         public static string DayTue => Lang.GetText("page_calendar", "day_tue", "Tue");
@@ -328,15 +299,12 @@ namespace Edemly.Client.Lang
         public static string DayThu => Lang.GetText("page_calendar", "day_thu", "Thu");
         public static string DayFri => Lang.GetText("page_calendar", "day_fri", "Fri");
         public static string DaySat => Lang.GetText("page_calendar", "day_sat", "Sat");
-        
-        // Delete repeating task
+
         public static string DeleteRepeatingTask => Lang.GetText("page_calendar", "delete_repeating_task", "Delete Repeating Task");
         public static string DeleteRepeatingTaskDescription => Lang.GetText("page_calendar", "delete_repeating_task_description", "This task is part of a repeating series. What would you like to delete?");
         public static string DeleteOnlyThis => Lang.GetText("page_calendar", "delete_only_this", "Delete only this task");
         public static string DeleteAllFuture => Lang.GetText("page_calendar", "delete_all_future", "Delete this and all future tasks");
 
-
-        //Messages / Chat
         public static string VoiceMessage => Lang.GetText("messages", "voice_message", "Voice Message");
         public static string Photo => Lang.GetText("messages", "photo", "Photo");
         public static string File => Lang.GetText("messages", "file", "File");
@@ -358,7 +326,6 @@ namespace Edemly.Client.Lang
         public static string LastSeen => Lang.GetText("messages", "last_seen", "Last seen {0}");
         public static string SelectChat => Lang.GetText("messages", "select_chat", "Select a chat to start messaging");
 
-        // Main Page / Menu 
         public static string MyPlanner => Lang.GetText("page_main", "my_planner", "My Planner");
         public static string Contacts => Lang.GetText("page_main", "contacts", "Contacts");
         public static string Chats => Lang.GetText("page_main", "chats", "Chats");
@@ -410,7 +377,6 @@ namespace Edemly.Client.Lang
         public static string CallTooltip => Lang.GetText("page_main", "call_tooltip", "Start call");
         public static string CreateGroupTooltip => Lang.GetText("page_main", "create_group_tooltip", "Create Group");
 
-        // NEW: Call Window
         public static string IncomingCall => Lang.GetText("call", "incoming_call", "Incoming Call");
         public static string OutgoingCall => Lang.GetText("call", "outgoing_call", "Outgoing Call");
         public static string CallEnded => Lang.GetText("call", "call_ended", "Call Ended");
@@ -425,18 +391,15 @@ namespace Edemly.Client.Lang
         public static string CallFailed => Lang.GetText("call", "call_failed", "Call failed");
         public static string NoActiveCall => Lang.GetText("call", "no_active_call", "No active call");
 
-        //Connection Status
         public static string Connected => Lang.GetText("connection", "connected", "Connected");
         public static string Disconnected => Lang.GetText("connection", "disconnected", "Disconnected");
         public static string Reconnecting => Lang.GetText("connection", "reconnecting", "Reconnecting...");
         public static string ConnectionLost => Lang.GetText("connection", "connection_lost", "Connection lost");
 
-        // Validation 
         public static string Validation => Lang.GetText("validation", "validation", "Validation");
         public static string Required => Lang.GetText("validation", "required", "This field is required");
         public static string InvalidFormat => Lang.GetText("validation", "invalid_format", "Invalid format");
 
-        // File types
         public static string SelectFile => Lang.GetText("files", "select_file", "Select File");
         public static string SelectImage => Lang.GetText("files", "select_image", "Select Image");
         public static string AllFiles => Lang.GetText("files", "all_files", "All Files");
@@ -445,12 +408,10 @@ namespace Edemly.Client.Lang
         public static string UploadFailed => Lang.GetText("files", "upload_failed", "Failed to upload file: {0}");
         public static string DownloadFailed => Lang.GetText("files", "download_failed", "Failed to download file: {0}");
 
-        // Search
         public static string SearchUsers => Lang.GetText("search", "search_users", "Search users...");
         public static string NoUsersFound => Lang.GetText("search", "no_users_found", "No users found");
         public static string StartTypingToSearch => Lang.GetText("search", "start_typing", "Start typing to search");
 
-        // Date/Time formatting
         public static string Yesterday => Lang.GetText("datetime", "yesterday", "Yesterday");
         public static string JustNow => Lang.GetText("datetime", "just_now", "Just now");
         public static string MinutesAgo => Lang.GetText("datetime", "minutes_ago", "{0} minutes ago");

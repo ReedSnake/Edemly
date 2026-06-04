@@ -1,7 +1,7 @@
-using System.Net;
-using Microsoft.Extensions.DependencyInjection;
 using Edemly.Server.Data;
 using Edemly.Server.Tests.Infrastructure;
+using Microsoft.Extensions.DependencyInjection;
+using System.Net;
 
 namespace Edemly.Server.Tests.Integration.Health;
 

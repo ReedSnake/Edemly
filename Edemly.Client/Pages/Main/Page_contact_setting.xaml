@@ -1,10 +1,10 @@
 ﻿<Page x:Class="Edemly.Client.Page_contact_setting"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:local="clr-namespace:Edemly.Client"
-      mc:Ignorable="d" 
+      mc:Ignorable="d"
       d:DesignHeight="720" d:DesignWidth="1280"
       Title="Contact Settings"
       Background="#057272">
@@ -12,8 +12,8 @@
     <Grid>
         <Grid.Background>
             <LinearGradientBrush StartPoint="1,1" EndPoint="0,0">
-                <GradientStop Color="#004040" Offset="0.7"/>
-                <GradientStop Color="#057272" Offset="0.0"/>
+                <GradientStop Color="#004040" Offset="0.7" />
+                <GradientStop Color="#057272" Offset="0.0" />
             </LinearGradientBrush>
         </Grid.Background>
 
@@ -25,16 +25,16 @@
 
         <Border Grid.Column="0"
                 Background="#F6FFFC"
-                CornerRadius="40" 
+                CornerRadius="40"
                 Margin="35,36,0,34">
-            <ScrollViewer VerticalScrollBarVisibility="Hidden" 
-                          HorizontalScrollBarVisibility="Disabled" 
+            <ScrollViewer VerticalScrollBarVisibility="Hidden"
+                          HorizontalScrollBarVisibility="Disabled"
                           Margin="18,6,4,0">
                 <Grid Height="598">
                     <Grid Margin="20,20,20,0" VerticalAlignment="Top">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
 
                         <Button x:Name="BackButton"
@@ -64,12 +64,12 @@
                                 BorderThickness="{TemplateBinding BorderThickness}"
                                 CornerRadius="4">
                                                     <ContentPresenter HorizontalAlignment="Center"
-                                              VerticalAlignment="Center"/>
+                                              VerticalAlignment="Center" />
                                                 </Border>
                                                 <ControlTemplate.Triggers>
                                                     <Trigger Property="IsMouseOver" Value="True">
-                                                        <Setter TargetName="border" Property="CornerRadius" Value="8"/>
-                                                        <Setter TargetName="border" Property="Background" Value="#E6F3F3"/>
+                                                        <Setter TargetName="border" Property="CornerRadius" Value="8" />
+                                                        <Setter TargetName="border" Property="Background" Value="#E6F3F3" />
                                                     </Trigger>
                                                 </ControlTemplate.Triggers>
                                             </ControlTemplate>
@@ -80,19 +80,19 @@
                         </Button>
                     </Grid>
 
-                    <StackPanel Margin="0,70,0,20" 
-                                HorizontalAlignment="Center" 
+                    <StackPanel Margin="0,70,0,20"
+                                HorizontalAlignment="Center"
                                 VerticalAlignment="Top">
-                        <Border Width="120" Height="120" 
-                                CornerRadius="60" 
-                                Margin="0,0,0,20" 
+                        <Border Width="120" Height="120"
+                                CornerRadius="60"
+                                Margin="0,0,0,20"
                                 HorizontalAlignment="Center"
                                 BorderBrush="#CCCCCC"
                                 BorderThickness="2"
                                 ClipToBounds="True">
                             <Border.Background>
-                                <ImageBrush x:Name="ContactPhotoBackground" 
-                                           Stretch="UniformToFill"/>
+                                <ImageBrush x:Name="ContactPhotoBackground"
+                                           Stretch="UniformToFill" />
                             </Border.Background>
                         </Border>
 
@@ -101,30 +101,30 @@
                                    FontWeight="Bold"
                                    Foreground="{DynamicResource ThemeSecondaryBrush}"
                                    TextAlignment="Center"
-                                   Margin="0,0,0,20"/>
+                                   Margin="0,0,0,20" />
 
-                        <StackPanel Orientation="Horizontal" 
-                                    HorizontalAlignment="Center" 
+                        <StackPanel Orientation="Horizontal"
+                                    HorizontalAlignment="Center"
                                     Margin="0,0,0,10">
-                            <TextBlock Text="📞" 
-                                       FontSize="18" 
-                                       Margin="0,0,8,0"/>
+                            <TextBlock Text="📞"
+                                       FontSize="18"
+                                       Margin="0,0,8,0" />
                             <TextBlock x:Name="PhoneTextBox"
                                        FontSize="16"
                                        Foreground="#222"
-                                       VerticalAlignment="Center"/>
+                                       VerticalAlignment="Center" />
                         </StackPanel>
 
-                        <StackPanel Orientation="Horizontal" 
-                                    HorizontalAlignment="Center" 
+                        <StackPanel Orientation="Horizontal"
+                                    HorizontalAlignment="Center"
                                     Margin="0,0,0,30">
-                            <TextBlock Text="✉️" 
-                                       FontSize="18" 
-                                       Margin="0,0,8,0"/>
+                            <TextBlock Text="✉️"
+                                       FontSize="18"
+                                       Margin="0,0,8,0" />
                             <TextBlock x:Name="EmailTextBox"
                                        FontSize="16"
                                        Foreground="#222"
-                                       VerticalAlignment="Center"/>
+                                       VerticalAlignment="Center" />
                         </StackPanel>
 
                         <!-- Notes Section -->
@@ -134,16 +134,16 @@
                                        FontSize="18"
                                        FontWeight="Bold"
                                        Foreground="{DynamicResource ThemeSecondaryBrush}"
-                                       Margin="0,0,0,5"/>
+                                       Margin="0,0,0,5" />
                             <TextBlock x:Name="NotesPrivateText"
                                        Text="*only you can see this information"
                                        FontSize="12"
                                        Foreground="#CDCDCD"
-                                       Margin="0,2,0,15"/>
+                                       Margin="0,2,0,15" />
 
-                            <StackPanel x:Name="NotesPanel" Margin="0,0,0,10"/>
-                            <Border x:Name="AddNoteSection" 
-                            Background="{DynamicResource ThemeBorderLightBrush}"                                    
+                            <StackPanel x:Name="NotesPanel" Margin="0,0,0,10" />
+                            <Border x:Name="AddNoteSection"
+                            Background="{DynamicResource ThemeBorderLightBrush}"
                                     CornerRadius="10"
                                     Padding="12"
                                     Height="162">
@@ -152,14 +152,14 @@
                                      FontSize="13"
                                      TextWrapping="Wrap"
                                      AcceptsReturn="True"
-                                     MaxLines="5" 
+                                     MaxLines="5"
                                      BorderThickness="1"
                                      BorderBrush="#0B4539"
                                      Padding="8"
-                                     Margin="0,0,0,8" 
+                                     Margin="0,0,0,8"
                                      Width="408" />
 
-                                    <StackPanel Orientation="Horizontal" 
+                                    <StackPanel Orientation="Horizontal"
                                                 HorizontalAlignment="Right">
                                         <Button x:Name="DeleteNoteButton"
                                                 Content="Delete"
@@ -174,22 +174,22 @@
                                                 Visibility="Collapsed">
                                             <Button.Style>
                                                 <Style TargetType="{x:Type Button}">
-                                                    <Setter Property="Background" Value="#FF5252"/>
+                                                    <Setter Property="Background" Value="#FF5252" />
                                                     <Setter Property="Template">
                                                         <Setter.Value>
                                                             <ControlTemplate TargetType="{x:Type Button}">
                                                                 <Border Background="{TemplateBinding Background}"
                                                                         CornerRadius="8"
                                                                         Padding="{TemplateBinding Padding}">
-                                                                    <ContentPresenter HorizontalAlignment="Center" 
-                                                                                      VerticalAlignment="Center"/>
+                                                                    <ContentPresenter HorizontalAlignment="Center"
+                                                                                      VerticalAlignment="Center" />
                                                                 </Border>
                                                             </ControlTemplate>
                                                         </Setter.Value>
                                                     </Setter>
                                                     <Style.Triggers>
                                                         <Trigger Property="IsMouseOver" Value="True">
-                                                            <Setter Property="Background" Value="#D32F2F"/>
+                                                            <Setter Property="Background" Value="#D32F2F" />
                                                         </Trigger>
                                                     </Style.Triggers>
                                                 </Style>
@@ -207,22 +207,22 @@
                                                 Cursor="Hand">
                                             <Button.Style>
                                                 <Style TargetType="{x:Type Button}">
-                                                    <Setter Property="Background" Value="#0B4539"/>
+                                                    <Setter Property="Background" Value="#0B4539" />
                                                     <Setter Property="Template">
                                                         <Setter.Value>
                                                             <ControlTemplate TargetType="{x:Type Button}">
                                                                 <Border Background="{TemplateBinding Background}"
                                                                         CornerRadius="8"
                                                                         Padding="{TemplateBinding Padding}">
-                                                                    <ContentPresenter HorizontalAlignment="Center" 
-                                                                                      VerticalAlignment="Center"/>
+                                                                    <ContentPresenter HorizontalAlignment="Center"
+                                                                                      VerticalAlignment="Center" />
                                                                 </Border>
                                                             </ControlTemplate>
                                                         </Setter.Value>
                                                     </Setter>
                                                     <Style.Triggers>
                                                         <Trigger Property="IsMouseOver" Value="True">
-                                                            <Setter Property="Background" Value="#0D47A1"/>
+                                                            <Setter Property="Background" Value="#0D47A1" />
                                                         </Trigger>
                                                     </Style.Triggers>
                                                 </Style>
@@ -237,7 +237,7 @@
                                        Foreground="#FF5252"
                                        FontSize="12"
                                        Margin="0,10,0,0"
-                                       Visibility="Collapsed"/>
+                                       Visibility="Collapsed" />
                         </StackPanel>
                     </StackPanel>
                 </Grid>
@@ -245,13 +245,13 @@
         </Border>
 
         <Border Grid.Column="2"
-                CornerRadius="40" 
+                CornerRadius="40"
                 ClipToBounds="True"
                 Background="Transparent"
                 Margin="0,27,10,23">
             <Grid>
-                <Image Source="/Assets/PageIllustrations/contact-panel.png" 
-                       Stretch="Fill" Margin="-9,-4,6,0"/>
+                <Image Source="/Assets/PageIllustrations/contact-panel.png"
+                       Stretch="Fill" Margin="-9,-4,6,0" />
             </Grid>
         </Border>
     </Grid>

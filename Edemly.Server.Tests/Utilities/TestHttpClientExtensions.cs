@@ -1,5 +1,5 @@
-using System.Net.Http.Headers;
 using Edemly.Contracts.Auth;
+using System.Net.Http.Headers;
 
 namespace Edemly.Server.Tests.Utilities;
 

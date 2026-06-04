@@ -1,19 +1,15 @@
 #nullable disable
-using System;
-using System.Collections.Generic;
+
+using Edemly.Client.Api;
+using Edemly.Client.Lang;
+using Edemly.Client.Models;
+using Edemly.Client.Services;
+using Microsoft.Win32;
+using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using Microsoft.Win32;
-using Edemly.Client.Models;
-
-using System.Linq;
-using System.Threading.Tasks;
-using System.IO;
-using Edemly.Client.Lang;
-using Edemly.Client.Services;
-using Edemly.Client.Api;
 
 namespace Edemly.Client.Pages
 {
@@ -30,8 +26,8 @@ namespace Edemly.Client.Pages
         private string _originalGroupDescription = string.Empty;
         private string _originalIconUrl = string.Empty;
 
-        private string _pendingIconPath = null; 
-        private string _newIconUrl = null; 
+        private string _pendingIconPath = null;
+        private string _newIconUrl = null;
         private bool _iconChanged = false;
 
         public Page_group_settings(Contact groupContact, int chatId)
@@ -266,9 +262,6 @@ namespace Edemly.Client.Pages
             }
         }
 
-        /// <summary>
-        /// Завантажує та показує превью локального файлу іконки
-        /// </summary>
         private void ShowIconPreview(string filePath)
         {
             try

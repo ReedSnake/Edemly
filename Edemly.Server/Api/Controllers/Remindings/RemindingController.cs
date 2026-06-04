@@ -1,7 +1,7 @@
+using Edemly.Contracts.Remindings;
+using Edemly.Server.Api.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Edemly.Server.Api.Services;
-using Edemly.Contracts.Remindings;
 
 namespace Edemly.Server.Api.Controllers.Remindings
 {

@@ -26,7 +26,6 @@ namespace Edemly.Server.Data.Entities
         [Column("joined_at")]
         public DateTime JoinedAt { get; set; }
 
-        // Navigation properties
         [ForeignKey(nameof(UserId))]
         public User User { get; set; } = null!;
 

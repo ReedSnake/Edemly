@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Text.Json;
@@ -18,7 +16,6 @@ namespace Edemly.Client.Services
         {
             _translations = new Dictionary<string, Dictionary<string, string>>();
 
-            // Завантажуємо збережену мову або використовуємо English за замовчуванням
             var savedLanguage = ConfigService.Instance.Language;
             _currentLanguage = savedLanguage;
             LoadLanguage(savedLanguage);
@@ -41,7 +38,6 @@ namespace Edemly.Client.Services
                     _translations = loadedTranslations;
                     _currentLanguage = languageCode;
 
-                    // Зберігаємо вибір мови через ConfigService
                     ConfigService.Instance.Language = languageCode;
 
                     return true;

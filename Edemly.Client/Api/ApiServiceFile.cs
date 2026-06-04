@@ -1,15 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Edemly.Contracts.Files;
 using System.IO;
-using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Net.Http.Json;
-using System.Text;
-using System.Text.Json;
-using System.Threading.Tasks;
-using Edemly.Client.Api;
-using Edemly.Contracts.Files;
 
 namespace Edemly.Client.Api
 {
@@ -61,7 +53,6 @@ namespace Edemly.Client.Api
 
                 string requestUrl;
 
-                // If absolute HTTP(S) or pack URI, use as-is. Otherwise use BuildUrl to combine with BaseAddress.
                 if (pfpUrl.StartsWith("http", StringComparison.OrdinalIgnoreCase) || pfpUrl.StartsWith("pack://", StringComparison.OrdinalIgnoreCase))
                 {
                     requestUrl = pfpUrl;
@@ -95,7 +86,6 @@ namespace Edemly.Client.Api
                 var fileStream = File.OpenRead(filePath);
                 var streamContent = new StreamContent(fileStream);
 
-                // Определяем content type по расширению
                 var extension = Path.GetExtension(filePath).ToLower();
                 var contentType = extension switch
                 {
@@ -110,10 +100,9 @@ namespace Edemly.Client.Api
 
                 var url = BuildUrl("api/Chat/upload-icon");
                 System.Diagnostics.Debug.WriteLine($"[API] POST {url} (multipart) for chat {chatId}");
-                
+
                 var response = await _httpClient.PostAsync(url, content);
 
-                // Освобождаем ресурсы после отправки
                 streamContent.Dispose();
                 fileStream.Dispose();
                 content.Dispose();
@@ -122,7 +111,7 @@ namespace Edemly.Client.Api
                 {
                     var json = await response.Content.ReadAsStringAsync();
                     System.Diagnostics.Debug.WriteLine($"[API] UploadGroupIconAsync response: {json}");
-                    
+
                     var result = TryDeserialize<UploadProfilePictureResponseDto>(json);
 
                     if (result != null && !string.IsNullOrEmpty(result.Url))
@@ -156,7 +145,6 @@ namespace Edemly.Client.Api
                 var fileName = Path.GetFileName(filePath);
                 var extension = Path.GetExtension(filePath).ToLower();
 
-                // determine content type
                 string contentType = extension switch
                 {
                     ".jpg" or ".jpeg" => "image/jpeg",

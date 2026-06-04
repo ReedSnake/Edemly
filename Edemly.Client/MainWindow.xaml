@@ -8,15 +8,14 @@
         Background="#F5F5F5">
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
+        <controls:ConnectionStatusBar x:Name="ConnectionStatusBar" Grid.Row="0" HorizontalAlignment="Stretch" Panel.ZIndex="100" />
 
-        <controls:ConnectionStatusBar x:Name="ConnectionStatusBar" Grid.Row="0" HorizontalAlignment="Stretch" Panel.ZIndex="100"/>
-
-        <Frame x:Name="MainFrame" 
+        <Frame x:Name="MainFrame"
              Grid.Row="1"
-             NavigationUIVisibility="Hidden"/>
+             NavigationUIVisibility="Hidden" />
     </Grid>
 </Window>

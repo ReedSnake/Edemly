@@ -1,7 +1,4 @@
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
-using System.Text;
+using Edemly.Server.Api.Middleware;
 using Edemly.Server.Api.Services;
 using Edemly.Server.Configuration;
 using Edemly.Server.Data;
@@ -9,7 +6,10 @@ using Edemly.Server.Hubs;
 using Edemly.Server.Infrastructure.Realtime;
 using Edemly.Server.Services;
 using Edemly.Server.Utils;
-using Edemly.Server.Api.Middleware;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 namespace Edemly.Server
 {
@@ -22,8 +22,6 @@ namespace Edemly.Server
 
         private static async Task MainAsync(string[] args)
         {
-            // Перевірка чи це EF Core tools через ProcessName
-            //DaemonHelper.Daemonize();
             var processName = System.Diagnostics.Process.GetCurrentProcess().ProcessName;
             bool isEfTools = processName.Contains("ef", StringComparison.OrdinalIgnoreCase) ||
                             processName.Contains("dotnet-ef", StringComparison.OrdinalIgnoreCase) ||
@@ -31,7 +29,6 @@ namespace Edemly.Server
                                 arg.Contains("EntityFrameworkCore", StringComparison.OrdinalIgnoreCase) ||
                                 arg.Contains("ef.dll", StringComparison.OrdinalIgnoreCase));
 
-            // Якщо EF Tools — просто виходимо, порт не потрібен
             if (isEfTools)
             {
                 return;
@@ -47,26 +44,21 @@ namespace Edemly.Server
                 return;
             }
 
-            // Allow overriding public base URL via config or environment
             string? publicBaseUrl = builder.Configuration["PublicBaseUrl"]
                 ?? Environment.GetEnvironmentVariable("EDEMLY_PUBLIC_URL");
 
             if (!string.IsNullOrWhiteSpace(publicBaseUrl))
             {
-                // normalize
                 if (publicBaseUrl.EndsWith('/')) publicBaseUrl = publicBaseUrl.TrimEnd('/');
             }
 
-            // Register provider for other services
             builder.Services.AddSingleton<IPublicUrlProvider>(new PublicUrlProvider(publicBaseUrl));
 
-            // Налаштування Kestrel для використання переданого порту
             builder.WebHost.ConfigureKestrel(serverOptions =>
             {
                 serverOptions.ListenAnyIP(port);
             });
 
-            // Конфігурація JWT
             var jwtSettings = builder.Configuration.GetSection("Jwt").Get<JwtSettings>()
                 ?? throw new InvalidOperationException("JWT settings are not configured");
 
@@ -76,13 +68,11 @@ namespace Edemly.Server
 
             builder.Services.AddSingleton(jwtSettings);
 
-            // Конфігурація Brevo
             var brevoSettings = builder.Configuration.GetSection("Brevo").Get<BrevoSettings>()
                 ?? throw new InvalidOperationException("Brevo settings are not configured");
 
             builder.Services.AddSingleton(brevoSettings);
 
-            // Конфігурація File Storage (замість MinIO)
             var fileStorageSettings = builder.Configuration.GetSection("FileStorage").Get<FileStorageSettings>()
                 ?? new FileStorageSettings();
 
@@ -90,7 +80,6 @@ namespace Edemly.Server
 
             builder.Services.AddSingleton<ChatCacheRegistry>();
 
-            // Додаємо DbContext з MySQL
             var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
                 ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found");
 
@@ -110,28 +99,21 @@ namespace Edemly.Server
                 )
             );
 
-            // Tenant provider & middleware
             builder.Services.AddScoped<ITenantProvider, TenantProvider>();
 
-            // Register tenant provisioning service
             builder.Services.AddScoped<TenantProvisioningService>();
 
-            // Register tenant DB context factory
             builder.Services.AddSingleton<ITenantDbContextFactory, TenantDbContextFactory>();
 
-            // Реєстрація сервісів
             builder.Services.AddScoped<IJwtService, JwtService>();
-            // --- Смарт-реєстрація Email Service ---
             var brevoKey = builder.Configuration["Brevo:ApiKey"];
             if (string.IsNullOrWhiteSpace(brevoKey) || brevoKey == "MOCK_MODE")
             {
-                // Якщо ключа немає або включено Mock-режим — підкидаємо заглушку
                 builder.Services.AddScoped<IEmailService, MockEmailService>();
                 Console.WriteLine("[INFO] Email Service: Робота в тестовому режимі (Mock). Коди будуть виводитись у консоль.");
             }
             else
             {
-                // Якщо є справжній ключ — використовуємо Brevo
                 builder.Services.AddScoped<IEmailService, EmailService>();
                 Console.WriteLine("[INFO] Email Service: Підключено реальний API (Brevo).");
             }
@@ -149,11 +131,9 @@ namespace Edemly.Server
             builder.Services.AddScoped<IPermissionService, PermissionService>();
             builder.Services.AddScoped<IFileStorageService, FileStorageService>();
             builder.Services.AddHttpClient<WayForPayService>();
-            
-            // Singleton сервіс для відстеження онлайн-статусу
+
             builder.Services.AddSingleton<Services.UserPresenceService>();
 
-            // Додаємо Authentication з JWT
             builder.Services.AddAuthentication(options =>
             {
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -173,7 +153,6 @@ namespace Edemly.Server
                     ClockSkew = TimeSpan.Zero
                 };
 
-                // Для SignalR - дозволяємо отримувати токен через query string
                 options.Events = new JwtBearerEvents
                 {
                     OnMessageReceived = context =>
@@ -181,8 +160,7 @@ namespace Edemly.Server
                         var accessToken = context.Request.Query["access_token"];
                         var path = context.HttpContext.Request.Path;
 
-                        // Accept token for main SignalR hub and call hub negotiations
-                        if (!string.IsNullOrEmpty(accessToken) && (path.StartsWithSegments("/hubs") || path.StartsWithSegments("/main") || path.StartsWithSegments("/call")) )
+                        if (!string.IsNullOrEmpty(accessToken) && (path.StartsWithSegments("/hubs") || path.StartsWithSegments("/main") || path.StartsWithSegments("/call")))
                         {
                             context.Token = accessToken;
                         }
@@ -194,10 +172,8 @@ namespace Edemly.Server
 
             builder.Services.AddAuthorization();
 
-            // Додаємо Controllers для REST API
             builder.Services.AddControllers();
 
-            // Додаємо SignalR
             var signalRSettings = builder.Configuration.GetSection("SignalR").Get<SignalRSettings>()
                 ?? new SignalRSettings();
 
@@ -206,10 +182,8 @@ namespace Edemly.Server
                 options.EnableDetailedErrors = signalRSettings.EnableDetailedErrors;
             });
 
-            // Register custom IUserIdProvider to map JWT claim to SignalR user identifier
             builder.Services.AddSingleton<Microsoft.AspNetCore.SignalR.IUserIdProvider, Hubs.JwtUserIdProvider>();
 
-            // Додаємо CORS - дозволяємо будь-який origin
             builder.Services.AddCors(options =>
             {
                 options.AddPolicy("DefaultPolicy", policy =>
@@ -220,13 +194,11 @@ namespace Edemly.Server
                 });
             });
 
-            // Swagger/OpenAPI
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new() { Title = "Edemly API", Version = "v1" });
 
-                // Додаємо JWT в Swagger для тестування API
                 c.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
                 {
                     Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
@@ -252,13 +224,11 @@ namespace Edemly.Server
                 });
             });
 
-            // Worker Service для фонових завдань
             builder.Services.AddHostedService<ServerMaintenanceWorker>();
             builder.Services.AddScoped<WelcomeChatInitializer>();
 
             var app = builder.Build();
 
-            // Ініціалізація бази даних та seeding при старті
             using (var scope = app.Services.CreateScope())
             {
                 var dbContext = scope.ServiceProvider.GetRequiredService<ServerDbContext>();
@@ -271,12 +241,10 @@ namespace Edemly.Server
                 {
                     if (useDatabaseMigrations)
                     {
-                        // Перевіряємо чи можна підключитися до бази даних
                         var canConnect = await dbContext.Database.CanConnectAsync();
 
                         if (canConnect)
                         {
-                            // Застосовуємо міграції якщо є незастосовані
                             var pendingMigrations = await dbContext.Database.GetPendingMigrationsAsync();
 
                             if (pendingMigrations.Any())
@@ -296,17 +264,14 @@ namespace Edemly.Server
 
                     if (seedDatabase)
                     {
-                        // Seed admin користувача
                         await DbSeeder.SeedAdminAsync(scope.ServiceProvider);
 
-                        // Ініціалізація привітального чату
                         var welcomeChatInitializer = scope.ServiceProvider.GetRequiredService<WelcomeChatInitializer>();
                         await welcomeChatInitializer.InitializeWelcomeChatAsync();
                     }
 
                     if (useDatabaseMigrations)
                     {
-                        // Automatic tenant migrations: iterate companies and apply migrations to each tenant DB
                         try
                         {
                             var provisioning = scope.ServiceProvider.GetRequiredService<TenantProvisioningService>();
@@ -351,21 +316,17 @@ namespace Edemly.Server
                 }
             }
 
-            // Configure HTTP request pipeline
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
 
-            // CORS
             app.UseCors("DefaultPolicy");
 
-            // static files
             app.UseStaticFiles();
             app.UseDefaultFiles();
 
-            // NOW your tenant middleware - run BEFORE routing so path rewrite happens before endpoint matching
             app.UseMiddleware<TenantResolutionMiddleware>();
 
             app.UseRouting();
@@ -373,10 +334,8 @@ namespace Edemly.Server
             app.UseAuthentication();
             app.UseAuthorization();
 
-            // Ensure uploads auth middleware must run after authentication so context.User is populated
             app.UseMiddleware<EnsureUploadsAuthMiddleware>();
 
-            // controllers AFTER rewrite
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
@@ -384,13 +343,9 @@ namespace Edemly.Server
                 endpoints.MapHub<CallHub>("/call");
             });
 
-
             app.Run();
         }
 
-        /// <summary>
-        /// Показати інструкцію використання
-        /// </summary>
         private static void ShowUsage()
         {
             Console.WriteLine("Usage: Edemly.Server [port]");

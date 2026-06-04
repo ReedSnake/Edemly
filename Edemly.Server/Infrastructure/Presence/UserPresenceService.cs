@@ -1,16 +1,12 @@
-using System.Collections.Concurrent;
 using Edemly.Server.Models;
+using System.Collections.Concurrent;
 
 namespace Edemly.Server.Services
 {
-    /// <summary>
-    /// Сервіс для управління онлайн-статусом користувачів
-    /// </summary>
     public class UserPresenceService
     {
         private readonly ConcurrentDictionary<int, UserOnlineStatus> _userStatuses = new();
         private readonly ConcurrentDictionary<string, int> _connectionToUser = new();
-        // Мапа userId -> set of connectionIds
         private readonly ConcurrentDictionary<int, HashSet<string>> _userConnections = new();
 
         public void SetUserOnline(int userId, string connectionId)
@@ -42,9 +38,6 @@ namespace Edemly.Server.Services
             _connectionToUser.TryAdd(connectionId, userId);
         }
 
-        /// <summary>
-        /// Удалить соединение. Возвращает кортеж: (isStillOnline, userIdIfKnown)
-        /// </summary>
         public (bool StillOnline, int? UserId) SetUserOffline(string connectionId)
         {
             if (_connectionToUser.TryRemove(connectionId, out var userId))
@@ -55,11 +48,9 @@ namespace Edemly.Server.Services
 
                     if (connections.Count > 0)
                     {
-                        // Пользователь все еще имеет другие активные соединения
                         return (true, userId);
                     }
 
-                    // Удаляем запись о соединениях
                     _userConnections.TryRemove(userId, out _);
                 }
 

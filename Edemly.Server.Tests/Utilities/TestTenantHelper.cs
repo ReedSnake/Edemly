@@ -1,8 +1,7 @@
-using Microsoft.Extensions.DependencyInjection;
-using Edemly.Server.Data;
 using Edemly.Server.Data.Entities;
 using Edemly.Server.Services;
 using Edemly.Server.Tests.Infrastructure;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Edemly.Server.Tests.Utilities;
 

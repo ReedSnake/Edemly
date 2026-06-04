@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Edemly.Contracts.Files
+﻿namespace Edemly.Contracts.Files
 {
     public class UploadProfilePictureResponseDto
     {

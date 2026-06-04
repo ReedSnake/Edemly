@@ -1,6 +1,5 @@
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
 using Edemly.Server.Api.Services;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Edemly.Server.Api.Controllers
 {

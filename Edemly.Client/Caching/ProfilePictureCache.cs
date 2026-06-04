@@ -1,22 +1,17 @@
 ﻿#nullable disable
-using System;
+
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Security.Cryptography;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media.Imaging;
-using System.Diagnostics;
-using System.Linq;
 
 namespace Edemly.Client.Caching
 {
-    /// <summary>
-    /// Глобальний кеш для фото профілів
-    /// </summary>
     public class ProfilePictureCache : IDisposable
     {
         private readonly ConcurrentDictionary<string, BitmapImage> _memoryCache;
@@ -26,28 +21,24 @@ namespace Edemly.Client.Caching
         private const int MAX_MEMORY_CACHE_SIZE = 50;
         private readonly object _cacheLock = new object();
 
-        // Coalesce concurrent downloads for same URL
         private readonly ConcurrentDictionary<string, Task<BitmapImage>> _downloadTasks = new();
 
-        // Events for UI or diagnostics
         public event Action<string>? DownloadStarted;
+
         public event Action<string, BitmapImage>? DownloadCompleted;
+
         public event Action<string, Exception>? DownloadFailed;
 
         public string CacheScope { get; }
 
-        // Token provider used to obtain the current Bearer token (can perform refresh)
         private readonly Func<Task<string?>>? _tokenProvider;
-        // Fallback static token if consumer sets token via SetAuthToken
         private string? _staticToken;
 
-        // Existing ctor (keeps creating its own HttpClient)
         public ProfilePictureCache(string serverBaseUrl, string cacheScope = "personal")
             : this(serverBaseUrl, null, cacheScope)
         {
         }
 
-        // New ctor: allow injecting a token provider (preferred for refresh support)
         public ProfilePictureCache(string serverBaseUrl, Func<Task<string?>>? tokenProvider, string cacheScope = "personal")
         {
             _memoryCache = new ConcurrentDictionary<string, BitmapImage>();
@@ -65,16 +56,11 @@ namespace Edemly.Client.Caching
 
             _httpClient = new HttpClient();
 
-            // Normalize base URL: ensure scheme present and trailing slash
             _serverBaseUrl = NormalizeBaseUrl(serverBaseUrl);
 
             _tokenProvider = tokenProvider;
         }
 
-        /// <summary>
-        /// Set or clear a static Bearer token. Use this if you don't have a token provider.
-        /// For automatic refresh, pass a tokenProvider when constructing the cache.
-        /// </summary>
         public void SetAuthToken(string? bearerToken)
         {
             _staticToken = string.IsNullOrWhiteSpace(bearerToken) ? null : bearerToken;
@@ -100,9 +86,6 @@ namespace Edemly.Client.Caching
             return url;
         }
 
-        /// <summary>
-        /// Отримати фото профілю з кешу або завантажити
-        /// </summary>
         public async Task<BitmapImage> GetOrDownloadAsync(string pfpUrl)
         {
             if (string.IsNullOrEmpty(pfpUrl))
@@ -130,7 +113,6 @@ namespace Edemly.Client.Caching
                 catch (Exception ex)
                 {
                     Debug.WriteLine($"[ProfilePictureCache] LoadImageFromDisk failed for {diskPath}: {ex.Message}");
-                    // Fall through to re-download
                 }
             }
 
@@ -159,7 +141,6 @@ namespace Edemly.Client.Caching
 
                 var ext = ExtensionFromContentType(contentType) ?? GetExtensionFromUrl(pfpUrl) ?? ".jpg";
 
-                // Use stable filename for first-time download
                 var diskPath = GetDiskCachePath(cacheKey, ext);
 
                 await SaveToDiskAsync(diskPath, data);
@@ -181,10 +162,6 @@ namespace Edemly.Client.Caching
             }
         }
 
-        /// <summary>
-        /// Примусово завантажити свіжу копію з сервера (ігноруючи кеш)
-        /// Використовуйте після отримання повідомлення про оновлення профілю.
-        /// </summary>
         public async Task<BitmapImage> ForceDownloadAsync(string pfpUrl)
         {
             if (string.IsNullOrEmpty(pfpUrl))
@@ -199,7 +176,6 @@ namespace Edemly.Client.Caching
 
                 var ext = ExtensionFromContentType(contentType) ?? GetExtensionFromUrl(pfpUrl) ?? ".jpg";
 
-                // Create a new unique disk filename to avoid OS-level caching issues and keep atomic swap
                 var uniqueName = $"{cacheKey}_{DateTime.UtcNow.Ticks}{ext}";
                 var diskPathNew = Path.Combine(_diskCachePath, uniqueName);
 
@@ -208,11 +184,9 @@ namespace Edemly.Client.Caching
                 var image = LoadImageFromBytes(data);
                 if (image != null)
                 {
-                    // Replace memory cache entry for this key
                     _memoryCache.TryRemove(cacheKey, out _);
                     AddToMemoryCache(cacheKey, image);
 
-                    // Remove older disk variants for this cacheKey, keep the new file
                     try
                     {
                         var all = GetAllDiskCachePaths(cacheKey);
@@ -245,9 +219,6 @@ namespace Edemly.Client.Caching
             return null;
         }
 
-        /// <summary>
-        /// Кешувати локальний файл в кеш
-        /// </summary>
         public async Task<BitmapImage> CacheLocalFileAsync(string filePath)
         {
             try
@@ -274,9 +245,6 @@ namespace Edemly.Client.Caching
             }
         }
 
-        /// <summary>
-        /// Видалити кеш для певного URL (з пам'яті та диску)
-        /// </summary>
         public void InvalidateCache(string pfpUrl)
         {
             if (string.IsNullOrEmpty(pfpUrl))
@@ -299,9 +267,6 @@ namespace Edemly.Client.Caching
             }
         }
 
-        /// <summary>
-        /// Повне очищення кешу (пам'ять + диск)
-        /// </summary>
         public void ClearAll()
         {
             lock (_cacheLock)
@@ -364,7 +329,6 @@ namespace Edemly.Client.Caching
                 var files = dir.GetFiles(cacheKey + "*.*");
                 if (files.Length > 0)
                 {
-                    // return the newest file (most recently written)
                     var newest = files.OrderByDescending(f => f.LastWriteTimeUtc).First();
                     return newest.FullName;
                 }
@@ -418,13 +382,10 @@ namespace Edemly.Client.Caching
             if (string.IsNullOrWhiteSpace(url))
                 throw new ArgumentException("url is null or empty", nameof(url));
 
-            // Try parse the URL first
             if (Uri.TryCreate(url, UriKind.RelativeOrAbsolute, out var uri) && uri.IsAbsoluteUri)
             {
-                // HTTP/HTTPS -> use HttpClient (attach token per-request)
                 if (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps)
                 {
-                    // attempt and a single retry on 401 if token provider can refresh
                     string? token = await ResolveTokenAsync();
                     Debug.WriteLine($"[ProfilePictureCache] Downloading absolute URL '{uri}' - token present: {(string.IsNullOrEmpty(token) ? "no" : "yes (masked)")}");
                     var request = new HttpRequestMessage(HttpMethod.Get, uri);
@@ -439,13 +400,11 @@ namespace Edemly.Client.Caching
                         return (data, contentType);
                     }
 
-                    // If 401 and provider available, try to refresh token once
                     if (resp.StatusCode == System.Net.HttpStatusCode.Unauthorized && _tokenProvider != null)
                     {
                         var body = await SafeReadResponseBodyAsync(resp);
                         Debug.WriteLine($"[ProfilePictureCache] 401 received for '{uri}'. Response body: {body}");
 
-                        // call provider again to allow refresh and retry once
                         var refreshedToken = await ResolveTokenAsync();
                         if (!string.IsNullOrEmpty(refreshedToken) && refreshedToken != token)
                         {
@@ -467,13 +426,11 @@ namespace Edemly.Client.Caching
                         resp.EnsureSuccessStatusCode(); // will throw with 401
                     }
 
-                    // For other errors surface details for diagnostics
                     var respBody = await SafeReadResponseBodyAsync(resp);
                     Debug.WriteLine($"[ProfilePictureCache] Download failed {resp.StatusCode} for '{uri}'. Body: {respBody}");
                     resp.EnsureSuccessStatusCode(); // will throw
                 }
 
-                // Pack URIs -> load from application resources
                 if (uri.Scheme == "pack")
                 {
                     try
@@ -494,7 +451,6 @@ namespace Edemly.Client.Caching
                     }
                 }
 
-                // File URIs -> read from disk
                 if (uri.Scheme == Uri.UriSchemeFile)
                 {
                     var path = uri.LocalPath;
@@ -503,11 +459,9 @@ namespace Edemly.Client.Caching
                     return (data, null);
                 }
 
-                // Unknown absolute scheme
                 throw new InvalidOperationException($"Unsupported URI scheme: {uri.Scheme}");
             }
 
-            // If not absolute: treat as relative to server base URL
             string requestUrl = url;
             if (requestUrl.StartsWith("/")) requestUrl = requestUrl.TrimStart('/');
             requestUrl = _serverBaseUrl + requestUrl;
@@ -557,7 +511,6 @@ namespace Edemly.Client.Caching
             Debug.WriteLine($"[ProfilePictureCache] Download failed {respFinal.StatusCode} for '{requestUrl}'. Body: {bodyFinal}");
             respFinal.EnsureSuccessStatusCode();
 
-            // unreachable, but compiler requires return
             return (null, null);
         }
 
@@ -609,7 +562,6 @@ namespace Edemly.Client.Caching
 
         private async Task SaveToDiskAsync(string path, byte[] data)
         {
-            // Write via temp file then replace to avoid partial reads
             try
             {
                 var dir = Path.GetDirectoryName(path);
@@ -619,7 +571,6 @@ namespace Edemly.Client.Caching
                 var tmpPath = path + ".tmp";
                 await File.WriteAllBytesAsync(tmpPath, data);
 
-                // Replace existing atomically when possible
                 try
                 {
                     if (File.Exists(path))
@@ -643,7 +594,6 @@ namespace Edemly.Client.Caching
             try
             {
                 var bitmap = new BitmapImage();
-                // Force WPF to ignore its internal image cache for this URI
                 bitmap.CreateOptions = BitmapCreateOptions.IgnoreImageCache | BitmapCreateOptions.PreservePixelFormat;
                 bitmap.BeginInit();
                 bitmap.CacheOption = BitmapCacheOption.OnLoad;
@@ -666,7 +616,6 @@ namespace Edemly.Client.Caching
                 var bitmap = new BitmapImage();
                 using (var stream = new MemoryStream(imageData))
                 {
-                    // When loading from stream this helps ensure no internal cache artifacts
                     bitmap.CreateOptions = BitmapCreateOptions.IgnoreImageCache | BitmapCreateOptions.PreservePixelFormat;
                     bitmap.BeginInit();
                     bitmap.CacheOption = BitmapCacheOption.OnLoad;
@@ -697,10 +646,6 @@ namespace Edemly.Client.Caching
             _memoryCache.TryAdd(cacheKey, image);
         }
 
-        /// <summary>
-        /// Try get cached image synchronously from memory cache. Returns true if found.
-        /// This avoids waiting for disk IO or network when UI recreates elements.
-        /// </summary>
         public bool TryGetFromMemory(string pfpUrl, out BitmapImage? image)
         {
             image = null;
@@ -713,7 +658,7 @@ namespace Edemly.Client.Caching
             catch (Exception ex) { Debug.WriteLine($"[ProfilePictureCache] TryGetFromMemory failed: {ex.Message}"); return false; }
         }
 
-        #endregion
+        #endregion Private Methods
 
         public void Dispose()
         {

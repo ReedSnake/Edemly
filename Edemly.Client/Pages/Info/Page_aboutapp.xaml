@@ -1,10 +1,10 @@
 ﻿<Page x:Class="Edemly.Client.Page_aboutapp"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:local="clr-namespace:Edemly.Client"
-      mc:Ignorable="d" 
+      mc:Ignorable="d"
       d:DesignHeight="720" d:DesignWidth="1280"
       Title="About Edemly"
       Background="#004040">
@@ -12,33 +12,33 @@
     <Grid>
         <Grid.Background>
             <LinearGradientBrush StartPoint="1,1" EndPoint="0,0">
-                <GradientStop Color="#004040" Offset="0.7"/>
-                <GradientStop Color="#057272" Offset="0.0"/>
+                <GradientStop Color="#004040" Offset="0.7" />
+                <GradientStop Color="#057272" Offset="0.0" />
             </LinearGradientBrush>
         </Grid.Background>
 
-        <Rectangle HorizontalAlignment="Stretch" 
-                   VerticalAlignment="Stretch" 
-                   Fill="#F6FFFC" 
-                   Margin="40,20,40,20" 
-                   RadiusX="40" 
+        <Rectangle HorizontalAlignment="Stretch"
+                   VerticalAlignment="Stretch"
+                   Fill="#F6FFFC"
+                   Margin="40,20,40,20"
+                   RadiusX="40"
                    RadiusY="40" />
 
         <Grid Margin="40,20,40,20">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
 
             <Grid Grid.Column="0">
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
 
-                <Button x:Name="BackButton" 
+                <Button x:Name="BackButton"
                         Grid.Row="0"
-                        Click="Back_Click" 
+                        Click="Back_Click"
                         Margin="30,13,0,0"
                         HorizontalAlignment="Left"
                         VerticalAlignment="Top"
@@ -64,12 +64,12 @@
                                                 BorderThickness="{TemplateBinding BorderThickness}"
                                                 CornerRadius="4">
                                             <ContentPresenter HorizontalAlignment="Center"
-                                                              VerticalAlignment="Center"/>
+                                                              VerticalAlignment="Center" />
                                         </Border>
                                         <ControlTemplate.Triggers>
                                             <Trigger Property="IsMouseOver" Value="True">
-                                                <Setter TargetName="border" Property="CornerRadius" Value="8"/>
-                                                <Setter TargetName="border" Property="Background" Value="#E6F3F3"/>
+                                                <Setter TargetName="border" Property="CornerRadius" Value="8" />
+                                                <Setter TargetName="border" Property="Background" Value="#E6F3F3" />
                                             </Trigger>
                                         </ControlTemplate.Triggers>
                                     </ControlTemplate>
@@ -85,129 +85,129 @@
                               Margin="40,18,40,8">
                     <StackPanel>
                         <TextBlock x:Name="GreetingText"
-                                   Text="Hi, dear user!" 
-                                   FontSize="28" 
-                                   FontWeight="Bold" 
+                                   Text="Hi, dear user!"
+                                   FontSize="28"
+                                   FontWeight="Bold"
                                    Foreground="{DynamicResource ThemeBackgroundDarkBrush}"
-                                   Margin="0,0,0,20"/>
+                                   Margin="0,0,0,20" />
 
                         <TextBlock x:Name="WelcomeText"
                                    Text="We are the Edemly team, and we are happy to welcome you to our messenger!"
-                                   FontSize="16" 
+                                   FontSize="16"
                                    Foreground="{DynamicResource ThemeBackgroundDarkBrush}"
                                    TextWrapping="Wrap"
-                                   Margin="0,0,0,20"/>
+                                   Margin="0,0,0,20" />
 
                         <TextBlock x:Name="GoalText"
                                    Text="Our goal is to create a space where communication and planning complement each other organically. We believe that modern people need not just another messenger, but a tool that helps them not only stay connected, but also manage their time effectively."
-                                   FontSize="16" 
+                                   FontSize="16"
                                   Foreground="{DynamicResource ThemeBackgroundDarkBrush}"
                                    TextWrapping="Wrap"
-                                   Margin="0,0,0,40"/>
+                                   Margin="0,0,0,40" />
 
                         <TextBlock x:Name="FaqTitleText"
-                                   Text="FAQs:" 
-                                   FontSize="24" 
-                                   FontWeight="Bold" 
+                                   Text="FAQs:"
+                                   FontSize="24"
+                                   FontWeight="Bold"
                                    Foreground="{DynamicResource ThemeBackgroundDarkBrush}"
-                                   Margin="0,0,0,20"/>
+                                   Margin="0,0,0,20" />
 
                         <Border CornerRadius="10" Margin="0,0,0,10" Background="{DynamicResource ThemeBorderLightBrush}" Padding="15">
-                            <Expander x:Name="expanderContact" 
-                                      FontSize="18" 
+                            <Expander x:Name="expanderContact"
+                                      FontSize="18"
                                       Foreground="{DynamicResource ThemeBackgroundDarkBrush}"
                                       FontWeight="SemiBold"
                                       IsExpanded="False"
                                       BorderThickness="0">
                                 <Expander.Header>
                                     <TextBlock x:Name="FaqContactQuestionText"
-                                               Text="How do I add a new contact?" 
+                                               Text="How do I add a new contact?"
                                                Foreground="{DynamicResource ThemeBackgroundDarkBrush}"
-                                               FontWeight="SemiBold" 
-                                               FontSize="18"/>
+                                               FontWeight="SemiBold"
+                                               FontSize="18" />
                                 </Expander.Header>
 
                                 <TextBlock x:Name="FaqContactAnswerText"
-                                           Text="Use the search function in the main menu. Enter the user's name or email address, and you can start chatting." 
-                                           FontSize="16" 
+                                           Text="Use the search function in the main menu. Enter the user's name or email address, and you can start chatting."
+                                           FontSize="16"
                                            Foreground="{DynamicResource ThemeBackgroundDarkBrush}"
                                            TextWrapping="Wrap"
-                                           Margin="0,10,0,0"/>
+                                           Margin="0,10,0,0" />
                             </Expander>
                         </Border>
 
                         <Border CornerRadius="10" Margin="0,0,0,10" Background="{DynamicResource ThemeBorderLightBrush}" Padding="15">
-                            <Expander x:Name="expanderTheme" 
-                                      FontSize="18" 
+                            <Expander x:Name="expanderTheme"
+                                      FontSize="18"
                                       Foreground="{DynamicResource ThemeBackgroundDarkBrush}"
                                       FontWeight="SemiBold"
                                       IsExpanded="False"
                                       BorderThickness="0">
                                 <Expander.Header>
                                     <TextBlock x:Name="FaqThemeQuestionText"
-                                               Text="How do I customize the theme?" 
+                                               Text="How do I customize the theme?"
                                                Foreground="{DynamicResource ThemeBackgroundDarkBrush}"
-                                               FontWeight="SemiBold" 
-                                               FontSize="18"/>
+                                               FontWeight="SemiBold"
+                                               FontSize="18" />
                                 </Expander.Header>
 
                                 <TextBlock x:Name="FaqThemeAnswerText"
-                                           Text="Go to the main menu and select 'Settings.' There you will find various design options to suit your taste." 
-                                           FontSize="16" 
-                                           Foreground="{DynamicResource ThemeBackgroundDarkBrush}" 
+                                           Text="Go to the main menu and select 'Settings.' There you will find various design options to suit your taste."
+                                           FontSize="16"
+                                           Foreground="{DynamicResource ThemeBackgroundDarkBrush}"
                                            TextWrapping="Wrap"
-                                           Margin="0,10,0,0"/>
+                                           Margin="0,10,0,0" />
                             </Expander>
                         </Border>
 
                         <Border CornerRadius="10" Margin="0,0,0,10" Background="{DynamicResource ThemeBorderLightBrush}" Padding="15">
-                            <Expander x:Name="expanderScheduler" 
-                                      FontSize="18" 
+                            <Expander x:Name="expanderScheduler"
+                                      FontSize="18"
                                       Foreground="{DynamicResource ThemeBackgroundDarkBrush}"
                                       FontWeight="SemiBold"
                                       IsExpanded="False"
                                       BorderThickness="0">
                                 <Expander.Header>
                                     <TextBlock x:Name="FaqSchedulerQuestionText"
-                                               Text="How does the task scheduler work?" 
+                                               Text="How does the task scheduler work?"
                                                Foreground="{DynamicResource ThemeBackgroundDarkBrush}"
-                                               FontWeight="SemiBold" 
-                                               FontSize="18"/>
+                                               FontWeight="SemiBold"
+                                               FontSize="18" />
                                 </Expander.Header>
 
                                 <TextBlock x:Name="FaqSchedulerAnswerText"
-                                           Text="You can create tasks and set deadlines. All tasks are synchronized with your calendar so you can see the full picture of your activities." 
-                                           FontSize="16" 
+                                           Text="You can create tasks and set deadlines. All tasks are synchronized with your calendar so you can see the full picture of your activities."
+                                           FontSize="16"
                                            Foreground="{DynamicResource ThemeBackgroundDarkBrush}"
                                            TextWrapping="Wrap"
-                                           Margin="0,10,0,0"/>
+                                           Margin="0,10,0,0" />
                             </Expander>
                         </Border>
 
                         <Border CornerRadius="10" Margin="0,0,0,20" Background="{DynamicResource ThemeBorderLightBrush}" Padding="15">
-                            <Expander x:Name="expanderSupport" 
-                                      FontSize="18" 
+                            <Expander x:Name="expanderSupport"
+                                      FontSize="18"
                                       Foreground="{DynamicResource ThemeBackgroundDarkBrush}"
                                       FontWeight="SemiBold"
                                       IsExpanded="False"
                                       BorderThickness="0">
                                 <Expander.Header>
                                     <TextBlock x:Name="FaqSupportQuestionText"
-                                               Text="How do I contact support?" 
+                                               Text="How do I contact support?"
                                                Foreground="{DynamicResource ThemeBackgroundDarkBrush}"
-                                               FontWeight="SemiBold" 
-                                               FontSize="18"/>
+                                               FontWeight="SemiBold"
+                                               FontSize="18" />
                                 </Expander.Header>
 
                                 <TextBlock x:Name="FaqSupportAnswerText"
-                                           FontSize="16" 
+                                           FontSize="16"
                                            Foreground="{DynamicResource ThemeBackgroundDarkBrush}"
                                            TextWrapping="Wrap"
                                            Margin="0,10,0,0">
-                                    <Run x:Name="SupportAnswerRun" Text="If you have any questions or problems, please contact us using the form: "/>
-                                    <Hyperlink NavigateUri="https://docs.google.com/forms/d/e/1FAIpQLSdeL8Op6FNEp8r7vSrzEjooGSJfk8tPqKFfNoR8gPEHN9EOqA/viewform?usp=dialog" 
+                                    <Run x:Name="SupportAnswerRun" Text="If you have any questions or problems, please contact us using the form: " />
+                                    <Hyperlink NavigateUri="https://docs.google.com/forms/d/e/1FAIpQLSdeL8Op6FNEp8r7vSrzEjooGSJfk8tPqKFfNoR8gPEHN9EOqA/viewform?usp=dialog"
                                                RequestNavigate="Hyperlink_RequestNavigate">
-                                        <Run x:Name="SupportLinkRun" Text="Click here"/>
+                                        <Run x:Name="SupportLinkRun" Text="Click here" />
                                     </Hyperlink>
                                 </TextBlock>
                             </Expander>
@@ -215,17 +215,17 @@
 
                         <TextBlock x:Name="ClosingText"
                                    Text="We create Edemly with you in mind. Every feature is designed to make your life easier and more organized."
-                                   FontSize="16" 
+                                   FontSize="16"
                                    Foreground="{DynamicResource ThemeBackgroundDarkBrush}"
                                    TextWrapping="Wrap"
-                                   Margin="0,0,0,20"/>
+                                   Margin="0,0,0,20" />
 
                         <TextBlock x:Name="ThanksText"
-                                   Text="Thank you for choosing us!" 
-                                   FontSize="18" 
-                                   FontWeight="Bold" 
-                                   Foreground="{DynamicResource ThemeBackgroundDarkBrush}" 
-                                   Margin="0,0,0,20"/>
+                                   Text="Thank you for choosing us!"
+                                   FontSize="18"
+                                   FontWeight="Bold"
+                                   Foreground="{DynamicResource ThemeBackgroundDarkBrush}"
+                                   Margin="0,0,0,20" />
                     </StackPanel>
                 </ScrollViewer>
             </Grid>

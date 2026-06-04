@@ -1,22 +1,18 @@
 #nullable disable
+
+using Edemly.Client.Api;
+using Edemly.Client.Lang;
+using Edemly.Client.Services;
 using Microsoft.Win32;
-using System;
 using System.Globalization;
 using System.IO;
-using System.Net.Http;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
-using Edemly.Client.Lang;
-using Edemly.Client.Pages;
-using Edemly.Client.Services;
 using MessageBox = Edemly.Client.Pages.MessageBox;
-using Edemly.Client.Api;
 
 namespace Edemly.Client
 {
@@ -409,10 +405,15 @@ namespace Edemly.Client
         }
 
         private bool IsValidName(string name) => !string.IsNullOrWhiteSpace(name) && name.Length >= 2;
-        private bool IsValidPhone(string phone) { if (string.IsNullOrWhiteSpace(phone)) return true; return Regex.IsMatch(phone, @"^\+?[0-9\s\-\(\)]+$"); }
+
+        private bool IsValidPhone(string phone)
+        { if (string.IsNullOrWhiteSpace(phone)) return true; return Regex.IsMatch(phone, @"^\+?[0-9\s\-\(\)]+$"); }
 
         private void PhoneNumberTextBox_TextChanged(object sender, TextChangedEventArgs e) => CheckForChanges();
-        private void NameTextBox_TextChanged(object sender, TextChangedEventArgs e) { UpdateInitials(); CheckForChanges(); }
+
+        private void NameTextBox_TextChanged(object sender, TextChangedEventArgs e)
+        { UpdateInitials(); CheckForChanges(); }
+
         private void AboutTextBox_TextChanged(object sender, TextChangedEventArgs e) => CheckForChanges();
 
         private void CheckForChanges()
@@ -448,6 +449,7 @@ namespace Edemly.Client
         }
 
         private void EnglishRadioButton_Checked(object sender, RoutedEventArgs e) => ChangeLanguage("en");
+
         private void UkrainianRadioButton_Checked(object sender, RoutedEventArgs e) => ChangeLanguage("uk");
 
         private void ChangeLanguage(string languageCode)
@@ -499,10 +501,15 @@ namespace Edemly.Client
         }
 
         private void DefaultThemeColor_MouseDown(object sender, MouseButtonEventArgs e) => ChangeTheme("Default");
+
         private void BlueThemeColor_MouseDown(object sender, MouseButtonEventArgs e) => ChangeTheme("Blue");
+
         private void PinkThemeColor_MouseDown(object sender, MouseButtonEventArgs e) => ChangeTheme("Pink");
+
         private void OrangeThemeColor_MouseDown(object sender, MouseButtonEventArgs e) => ChangeTheme("Orange");
+
         private void PurpleThemeColor_MouseDown(object sender, MouseButtonEventArgs e) => ChangeTheme("Purple");
+
         private void RedThemeColor_MouseDown(object sender, MouseButtonEventArgs e) => ChangeTheme("Red");
 
         private void ChangeTheme(string themeName)
@@ -673,48 +680,78 @@ namespace Edemly.Client
         {
             SetAppBackgroundImage(null);
         }
+
         private void Wallpaper2_MouseDown(object sender, MouseButtonEventArgs e)
         {
             SetAppBackgroundImage("pack://application:,,,/Assets/Backgrounds/profile-blue.png");
         }
+
         private void Wallpaper3_MouseDown(object sender, MouseButtonEventArgs e)
         {
             SetAppBackgroundImage("pack://application:,,,/Assets/Backgrounds/profile-pink.png");
         }
+
         private void Wallpaper4_MouseDown(object sender, MouseButtonEventArgs e)
         {
             SetAppBackgroundImage("pack://application:,,,/Assets/Backgrounds/profile-orange.png");
         }
+
         private void Wallpaper5_MouseDown(object sender, MouseButtonEventArgs e)
         {
             SetAppBackgroundImage("pack://application:,,,/Assets/Backgrounds/profile-green.png");
         }
+
         private void Wallpaper6_MouseDown(object sender, MouseButtonEventArgs e)
         {
             SetAppBackgroundImage("pack://application:,,,/Assets/Backgrounds/profile-black.png");
         }
+
         private void Wallpaper7_MouseDown(object sender, MouseButtonEventArgs e)
         {
             SetAppBackgroundImage("pack://application:,,,/Assets/Backgrounds/profile-violet.png");
         }
+
         private void Wallpaper8_MouseDown(object sender, MouseButtonEventArgs e)
         {
             SetAppBackgroundImage("pack://application:,,,/Assets/Backgrounds/profile-red.png");
         }
 
-        private void Color1_MouseDown(object sender, MouseButtonEventArgs e) { }
-        private void Color2_MouseDown(object sender, MouseButtonEventArgs e) { }
-        private void Color3_MouseDown(object sender, MouseButtonEventArgs e) { }
-        private void Color4_MouseDown(object sender, MouseButtonEventArgs e) { }
-        private void Color5_MouseDown(object sender, MouseButtonEventArgs e) { }
-        private void Color6_MouseDown(object sender, MouseButtonEventArgs e) { }
-        private void Color7_MouseDown(object sender, MouseButtonEventArgs e) { }
-        private void SelectThemeColor(string colorHex) { }
-        private void ResetColorSelection() { }
+        private void Color1_MouseDown(object sender, MouseButtonEventArgs e)
+        { }
 
-        private void PhoneNumberTextBox_PreviewTextInput(object sender, TextCompositionEventArgs e) { }
-        private void PhoneNumberTextBox_PreviewKeyDown(object sender, KeyEventArgs e) { }
-        private void PhoneNumberTextBox_Pasting(object sender, DataObjectPastingEventArgs e) { }
+        private void Color2_MouseDown(object sender, MouseButtonEventArgs e)
+        { }
+
+        private void Color3_MouseDown(object sender, MouseButtonEventArgs e)
+        { }
+
+        private void Color4_MouseDown(object sender, MouseButtonEventArgs e)
+        { }
+
+        private void Color5_MouseDown(object sender, MouseButtonEventArgs e)
+        { }
+
+        private void Color6_MouseDown(object sender, MouseButtonEventArgs e)
+        { }
+
+        private void Color7_MouseDown(object sender, MouseButtonEventArgs e)
+        { }
+
+        private void SelectThemeColor(string colorHex)
+        { }
+
+        private void ResetColorSelection()
+        { }
+
+        private void PhoneNumberTextBox_PreviewTextInput(object sender, TextCompositionEventArgs e)
+        { }
+
+        private void PhoneNumberTextBox_PreviewKeyDown(object sender, KeyEventArgs e)
+        { }
+
+        private void PhoneNumberTextBox_Pasting(object sender, DataObjectPastingEventArgs e)
+        { }
+
         private void WallpapersScrollViewer_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
         {
             if (sender is ScrollViewer scrollViewer)
@@ -733,6 +770,7 @@ namespace Edemly.Client
         }
 
         private void AvatarImage_SizeChanged(object sender, SizeChangedEventArgs e) => UpdateAvatarClip();
+
         private void AvatarBorder_SizeChanged(object sender, SizeChangedEventArgs e) => UpdateAvatarClip();
 
         private void UpdateAvatarClip()
@@ -753,6 +791,5 @@ namespace Edemly.Client
             }
             catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[PAGE_SETTINGS] UpdateAvatarClip failed: {ex}"); }
         }
-
     }
 }

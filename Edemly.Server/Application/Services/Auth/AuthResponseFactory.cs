@@ -1,9 +1,8 @@
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Edemly.Contracts.Auth;
 using Edemly.Server.Configuration;
 using Edemly.Server.Data.Entities;
 using Edemly.Server.Services;
+using Microsoft.EntityFrameworkCore;
 
 namespace Edemly.Server.Api.Services
 {
@@ -38,7 +37,6 @@ namespace Edemly.Server.Api.Services
             }
             catch
             {
-                // Ignore detached update issues and continue with session/token generation.
             }
 
             var sessions = dbContext.Set<Session>();

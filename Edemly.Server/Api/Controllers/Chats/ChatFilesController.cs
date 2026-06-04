@@ -1,6 +1,6 @@
+using Edemly.Server.Api.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Edemly.Server.Api.Services;
 
 namespace Edemly.Server.Api.Controllers.Chats
 {

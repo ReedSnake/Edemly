@@ -1,8 +1,7 @@
+using Edemly.Server.Api.Services;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.StaticFiles;
-using Edemly.Server.Api.Services;
 
 namespace Edemly.Server.Api.Controllers.Files
 {

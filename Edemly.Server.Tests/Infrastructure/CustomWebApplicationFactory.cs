@@ -1,3 +1,7 @@
+using Edemly.Server.Data;
+using Edemly.Server.Data.Entities;
+using Edemly.Server.Services;
+using Edemly.Server.Tests.Utilities;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Data.Sqlite;
@@ -7,11 +11,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
-using Edemly.Server;
-using Edemly.Server.Data;
-using Edemly.Server.Data.Entities;
-using Edemly.Server.Services;
-using Edemly.Server.Tests.Utilities;
 
 namespace Edemly.Server.Tests.Infrastructure;
 

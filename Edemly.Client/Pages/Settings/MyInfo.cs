@@ -1,7 +1,4 @@
-using System;
-using System.Threading.Tasks;
 using Edemly.Client.Api;
-using Edemly.Client.Models;
 
 namespace Edemly.Client.Pages.Settings
 {
@@ -16,9 +13,6 @@ namespace Edemly.Client.Pages.Settings
         public static string LastName { get; set; } = string.Empty;
         public static int currentChatIdNotification { get; set; } = -1;
 
-        /// <summary>
-        /// Завантажує інформацію користувача з сервера
-        /// </summary>
         public static async Task<bool> LoadFromServerAsync(IApiService apiService)
         {
             try
@@ -46,9 +40,6 @@ namespace Edemly.Client.Pages.Settings
             }
         }
 
-        /// <summary>
-        /// Очищає всі дані
-        /// </summary>
         public static void Clear()
         {
             Email = string.Empty;

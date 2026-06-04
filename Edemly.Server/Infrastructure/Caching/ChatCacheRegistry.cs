@@ -7,6 +7,7 @@ namespace Edemly.Server.Utils
         private readonly Dictionary<int, Dictionary<(int page, int size), string>> _registry = new();
 
         public static string GetCacheKey(int chatId, int page, int pageSize) => $"chat:{chatId}:messages:page:{page}:size:{pageSize}";
+
         public static string GetLastMessageCacheKey(int chatId) => $"chat:{chatId}:last-message";
 
         public void RegisterKey(int chatId, int page, int pageSize)

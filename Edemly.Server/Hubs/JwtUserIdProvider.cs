@@ -1,13 +1,8 @@
-using System.Linq;
-using System.Security.Claims;
 using Microsoft.AspNetCore.SignalR;
+using System.Security.Claims;
 
 namespace Edemly.Server.Hubs
 {
-    /// <summary>
-    /// Maps SignalR user identifier to JWT claim. Prefers standard NameIdentifier, then custom 'userId', then 'sub'.
-    /// Ensures Clients.User(...) works when tokens contain different claim names.
-    /// </summary>
     public class JwtUserIdProvider : IUserIdProvider
     {
         public string? GetUserId(HubConnectionContext connection)

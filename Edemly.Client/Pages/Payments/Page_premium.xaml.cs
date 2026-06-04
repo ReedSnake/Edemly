@@ -1,30 +1,26 @@
-﻿using System;
+﻿using Edemly.Client.Lang;
+using Edemly.Client.Services;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using Edemly.Client.Lang;
-using Edemly.Client.Services;
 using MessageBox = Edemly.Client.Pages.MessageBox;
 
 namespace Edemly.Client
 {
     public partial class Page_premium : Page
     {
-        private const decimal MonthlyAmount = 79.90m; 
-        private const decimal YearlyAmount = 790.00m; 
+        private const decimal MonthlyAmount = 79.90m;
+        private const decimal YearlyAmount = 790.00m;
 
         public Page_premium()
         {
             InitializeComponent();
 
-            // Subscribe to theme changes
             ThemeService.Instance.ThemeChanged += (themeName) => OnThemeChanged();
 
-            // Apply current theme
             ApplyThemeToPage();
 
             LoadTexts();
@@ -46,7 +42,6 @@ namespace Edemly.Client
             {
                 var palette = ThemeService.Instance.GetCurrentPalette();
 
-                // Update page background gradient
                 var grid = this.Content as Grid;
                 if (grid != null)
                 {
@@ -60,7 +55,6 @@ namespace Edemly.Client
                     grid.Background = gradientBrush;
                 }
 
-                // Update buttons
                 if (MonthlyButton != null)
                 {
                     MonthlyButton.Background = new SolidColorBrush(palette.Primary);
@@ -137,7 +131,6 @@ namespace Edemly.Client
                     return;
                 }
 
-                // Initiate payment on server
                 var res = await apiConcrete.InitiatePaymentAsync(amount);
                 if (!res.Success || string.IsNullOrEmpty(res.Html))
                 {
@@ -145,7 +138,6 @@ namespace Edemly.Client
                     return;
                 }
 
-                // Save HTML to temp file and open
                 var tmp = Path.Combine(Path.GetTempPath(), $"edemly_payment_{Guid.NewGuid():N}.html");
                 await File.WriteAllTextAsync(tmp, res.Html, Encoding.UTF8);
 

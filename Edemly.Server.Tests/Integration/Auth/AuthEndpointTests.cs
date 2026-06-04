@@ -1,13 +1,13 @@
-using System.Net;
-using System.Net.Http.Json;
-using System.Text.Json;
 using Edemly.Contracts.Auth;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Edemly.Server.Data;
 using Edemly.Server.Tests.Infrastructure;
 using Edemly.Server.Tests.TestData;
 using Edemly.Server.Tests.Utilities;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using System.Net;
+using System.Net.Http.Json;
+using System.Text.Json;
 
 namespace Edemly.Server.Tests.Integration.Auth;
 

@@ -1,11 +1,10 @@
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.Logging;
+using Edemly.Server.Api.Middleware;
 using Edemly.Server.Data;
 using Edemly.Server.Data.Entities;
-using Edemly.Server.Utils;
-using Edemly.Server.Api.Middleware;
 using Edemly.Server.Services;
+using Edemly.Server.Utils;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace Edemly.Server.Api.Services
 {
@@ -300,6 +299,5 @@ namespace Edemly.Server.Api.Services
         {
             _chatCacheRegistry.ClearChat(chatId, _memoryCache);
         }
-
     }
 }

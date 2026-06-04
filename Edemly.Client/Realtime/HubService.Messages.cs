@@ -14,7 +14,6 @@ namespace Edemly.Client.Realtime
 
             try
             {
-                // log payload for debugging
                 try
                 {
                     var json = System.Text.Json.JsonSerializer.Serialize(message);
@@ -28,7 +27,6 @@ namespace Edemly.Client.Realtime
             }
             catch (Exception ex)
             {
-                // Detailed logging to help diagnose why messages aren't delivered
                 try
                 {
                     var state = _connection?.State.ToString() ?? "<null>";
@@ -127,7 +125,6 @@ namespace Edemly.Client.Realtime
             try
             {
                 var cts = new CancellationTokenSource(HubSettings.ShortOperationTimeout);
-                // Pass the argument directly to ensure SignalR binds it to the server method parameter correctly
                 var result = await _connection.InvokeAsync<object>(HubMethods.GetUserStatus, userId, cts.Token);
                 if (result == null) return null;
 
@@ -138,14 +135,11 @@ namespace Edemly.Client.Realtime
             }
             catch (Exception ex)
             {
-                // Some HubException types may come from server or client assemblies not referenced here.
-                // Avoid referencing Microsoft.AspNetCore.SignalR.Client.HubException directly to keep compilation safe.
                 try
                 {
                     var fullType = ex.GetType()?.FullName ?? ex.GetType()?.Name ?? "<unknown>";
                     System.Diagnostics.Debug.WriteLine($"[HUB SERVICE] QueryUserStatusAsync exception type={fullType}; message={ex.Message}");
 
-                    // If it's a server-side HubException, its runtime type name usually contains 'HubException'
                     if ((ex.GetType()?.Name ?? string.Empty).IndexOf("HubException", StringComparison.OrdinalIgnoreCase) >= 0)
                     {
                         System.Diagnostics.Debug.WriteLine("[HUB SERVICE] Server-side HubException: " + ex.Message);

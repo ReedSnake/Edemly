@@ -1,9 +1,7 @@
-﻿using System.Security.Cryptography;
-using System.Text;
-using System.Text.Json;
+﻿using Edemly.Contracts.Payments;
 using Edemly.Server.Data.Entities;
-using Microsoft.AspNetCore.Http; // Не забудь цей using
-using Edemly.Contracts.Payments;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace Edemly.Server.Api.Services
 {
@@ -16,7 +14,6 @@ namespace Edemly.Server.Api.Services
         private readonly ILogger<WayForPayService> _logger;
         private readonly IPaymentService _paymentService;
 
-        // Додаємо нові залежності
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IConfiguration _config;
         private readonly IPublicUrlProvider _publicUrlProvider;
@@ -44,12 +41,8 @@ namespace Edemly.Server.Api.Services
             _testMode = config.GetValue<bool>("WayForPay:TestMode", false);
         }
 
-        /// <summary>
-        /// Динамічно визначає DomainName та ReturnUrl на основі поточного запиту
-        /// </summary>
         private (string DomainName, string ReturnUrl) ResolveUrls()
         {
-            // 1. Спроба взяти актуальний хост та порт з поточного HTTP-запиту
             var request = _httpContextAccessor.HttpContext?.Request;
             if (request != null)
             {
@@ -57,7 +50,6 @@ namespace Edemly.Server.Api.Services
                 return (dynamicDomain, $"{dynamicDomain}/api/payment/return");
             }
 
-            // 2. Фолбек на конфіг, якщо HTTP контексту немає
             var domainFromConfig = _config["WayForPay:DomainName"];
             if (!string.IsNullOrWhiteSpace(domainFromConfig))
             {
@@ -65,7 +57,6 @@ namespace Edemly.Server.Api.Services
                 return (domainFromConfig, returnUrl);
             }
 
-            // 3. Фолбек на PublicUrlProvider
             var publicUrl = _publicUrlProvider?.GetPublicBaseUrl();
             if (!string.IsNullOrWhiteSpace(publicUrl) && Uri.TryCreate(publicUrl, UriKind.Absolute, out var u))
             {
@@ -76,9 +67,6 @@ namespace Edemly.Server.Api.Services
             throw new InvalidOperationException("Cannot resolve DomainName. No HTTP context, config, or public URL available.");
         }
 
-        /// <summary>
-        /// Генерація HTML форми оплати з автосабмітом
-        /// </summary>
         public async Task<(bool Success, string? Error, string? FormHtml)> GeneratePaymentFormAsync(
             int userId,
             decimal amount,
@@ -92,12 +80,10 @@ namespace Edemly.Server.Api.Services
                 if (!createResult.Success)
                     return (false, createResult.Error, null);
 
-                // Отримуємо динамічні URL саме в момент генерації форми
                 var (domainName, returnUrl) = ResolveUrls();
 
                 if (_testMode)
                 {
-                    // Передаємо динамічний returnUrl у тестову форму
                     var testForm = GenerateTestPaymentForm(orderId, amount, userId, returnUrl);
                     _logger.LogInformation("TEST MODE: Payment form generated for User {UserId}, OrderId: {OrderId}", userId, orderId);
                     return (true, null, testForm);
@@ -167,7 +153,6 @@ namespace Edemly.Server.Api.Services
             return (result.Success, result.Success ? null : result.Message);
         }
 
-        // ЗВЕРНИ УВАГУ: Додано параметр returnUrl
         private string GenerateTestPaymentForm(string orderId, decimal amount, int userId, string returnUrl)
         {
             return $@"
@@ -251,17 +236,17 @@ namespace Edemly.Server.Api.Services
                         const form = document.createElement('form');
                         form.method = 'POST';
                         form.action = '{returnUrl}'; // Динамічний URL
-            
+
                         const input = document.createElement('input');
                         input.type = 'hidden';
                         input.name = 'orderReference';
                         input.value = '{orderId}';
-            
+
                         const statusInput = document.createElement('input');
                         statusInput.type = 'hidden';
                         statusInput.name = 'testSuccess';
                         statusInput.value = success.toString();
-            
+
                         form.appendChild(input);
                         form.appendChild(statusInput);
                         document.body.appendChild(form);
@@ -274,8 +259,6 @@ namespace Edemly.Server.Api.Services
 
         public async Task<(bool Success, string? Error, bool IsPaid)> CheckPaymentStatusAsync(string orderId)
         {
-            // Метод залишається без змін, оскільки він не залежить від URL
-            // ... твій існуючий код ...
             return (true, null, true); // Заглушка для прикладу
         }
 

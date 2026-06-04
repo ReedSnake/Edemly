@@ -1,18 +1,13 @@
-using System;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Collections.Generic;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.SignalR;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.Logging;
+using Edemly.Server.Api.Middleware; // ITenantProvider
 using Edemly.Server.Api.Services;
 using Edemly.Server.Data;
 using Edemly.Server.Data.Entities;
 using Edemly.Server.Services;
 using Edemly.Server.Utils;
-using Edemly.Server.Api.Middleware; // ITenantProvider
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.SignalR;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace Edemly.Server.Hubs
 {
@@ -70,18 +65,14 @@ namespace Edemly.Server.Hubs
                 throw new HubException("User is not a member of this chat");
             }
 
-            // Create message directly in the determined DB (tenant or master)
             DbContext ctx = ResolveDbContext(out var isTenant);
             try
             {
-                // Ensure chat exists. If chat not found, log warning and throw.
                 var chat = await ctx.Set<Chat>().FirstOrDefaultAsync(c => c.Id == messageDto.ChatId);
                 if (chat == null)
                 {
                     _logger.LogWarning("SendMessage: Chat {ChatId} not found. Creating placeholder chat.", messageDto.ChatId);
 
-                    // Create a placeholder group chat so message can be stored and clients will receive chat overview later.
-                    // Note: This will create a new chat with a new Id; we then associate message with that chat.
                     var placeholder = new Chat
                     {
                         Name = $"Chat {messageDto.ChatId}",
@@ -93,7 +84,6 @@ namespace Edemly.Server.Hubs
                     await ctx.SaveChangesAsync();
 
                     chat = placeholder;
-                    // Update member list: do not auto-add members here as we don't know them in hub context.
                     _logger.LogInformation("Placeholder chat created with Id {NewChatId} for missing chat {OldChatRef}", chat.Id, messageDto.ChatId);
                 }
 
@@ -112,7 +102,6 @@ namespace Edemly.Server.Hubs
                 await ctx.SaveChangesAsync();
                 _cacheRegistry.ClearChat(msg.ChatId, _cache);
 
-                // Update chat last message time so clients will show updated chat ordering and preview
                 try
                 {
                     chat.LastMessageTime = msg.SentAt;
@@ -126,7 +115,6 @@ namespace Edemly.Server.Hubs
 
                 var messageToSend = MessageMappings.ToDto(msg);
 
-                // If we created a placeholder chat, some member ids may be invalid. Recompute recipients from actual chat id.
                 var recipients = chatMemberUserIds;
                 if (chat.Id != messageDto.ChatId)
                 {
@@ -155,7 +143,6 @@ namespace Edemly.Server.Hubs
 
             var validationResult = await ValidateMessageAccessAsync(messageDto.ChatId, messageDto.Id, userId, requireSender: true);
 
-            // Update message directly in resolved DB
             DbContext ctx = ResolveDbContext(out var isTenant);
             try
             {
@@ -204,7 +191,6 @@ namespace Edemly.Server.Hubs
                 await ctx.SaveChangesAsync();
                 _cacheRegistry.ClearChat(chatId, _cache);
 
-                // Send two separate typed arguments so clients using typed handlers receive them correctly
                 await Clients.Users(validationResult.ChatMemberIds).SendAsync("ReceiveMessageDelete", messageId, chatId);
             }
             finally
@@ -326,9 +312,6 @@ namespace Edemly.Server.Hubs
             }
         }
 
-        /// <summary>
-        /// Notification when group created
-        /// </summary>
         [HubMethodName("NotifyGroupCreated")]
         public async Task NotifyGroupCreatedAsync(int chatId, List<int> memberIds)
         {
@@ -347,17 +330,11 @@ namespace Edemly.Server.Hubs
             }
         }
 
-        /// <summary>
-        /// Query user status
-        /// </summary>
         public Models.UserOnlineStatus? GetUserStatus(int userId)
         {
             return _presenceService.GetUserStatus(userId);
         }
 
-        /// <summary>
-        /// Notify profile update to all clients
-        /// </summary>
         [HubMethodName("NotifyProfileUpdated")]
         public async Task NotifyProfileUpdatedAsync(int userId, string newPfpUrl)
         {
@@ -376,9 +353,6 @@ namespace Edemly.Server.Hubs
             }
         }
 
-        /// <summary>
-        /// Notify group update to all group members
-        /// </summary>
         [HubMethodName("NotifyGroupUpdated")]
         public async Task NotifyGroupUpdatedAsync(int chatId, string? name, string? description, string? iconUrl)
         {
@@ -386,9 +360,8 @@ namespace Edemly.Server.Hubs
             {
                 _logger.LogInformation("NotifyGroupUpdated called for chat {ChatId}", chatId);
 
-                // Get all members of the chat
                 var memberIds = await GetChatMemberIdsAsync(chatId);
-                
+
                 if (memberIds == null || !memberIds.Any())
                 {
                     _logger.LogWarning("No members found for chat {ChatId}", chatId);
@@ -398,7 +371,6 @@ namespace Edemly.Server.Hubs
                 var payload = new { chatId = chatId, name = name, description = description, iconUrl = iconUrl };
                 _logger.LogDebug("Broadcasting GroupUpdated to {Count} members: {Payload}", memberIds.Count, System.Text.Json.JsonSerializer.Serialize(payload));
 
-                // Send to all group members (including the sender)
                 await Clients.Users(memberIds).SendAsync("GroupUpdated", payload);
             }
             catch (Exception e)

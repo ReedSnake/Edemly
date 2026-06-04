@@ -1,4 +1,3 @@
-using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -16,9 +15,9 @@ namespace Edemly.Client.UI.Behaviors
                 new PropertyMetadata(false, OnEnableSmoothScrollingChanged));
 
         public static void SetEnableSmoothScrolling(DependencyObject element, bool value) => element.SetValue(EnableSmoothScrollingProperty, value);
+
         public static bool GetEnableSmoothScrolling(DependencyObject element) => (bool)element.GetValue(EnableSmoothScrollingProperty);
 
-        // This attached property holds the animated vertical offset value on the ScrollViewer instance
         public static readonly DependencyProperty AnimatedVerticalOffsetProperty =
             DependencyProperty.RegisterAttached(
                 "AnimatedVerticalOffset",
@@ -27,6 +26,7 @@ namespace Edemly.Client.UI.Behaviors
                 new PropertyMetadata(0.0, OnAnimatedVerticalOffsetChanged));
 
         public static void SetAnimatedVerticalOffset(DependencyObject element, double value) => element.SetValue(AnimatedVerticalOffsetProperty, value);
+
         public static double GetAnimatedVerticalOffset(DependencyObject element) => (double)element.GetValue(AnimatedVerticalOffsetProperty);
 
         private static void OnEnableSmoothScrollingChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
@@ -49,20 +49,15 @@ namespace Edemly.Client.UI.Behaviors
         {
             if (sender is not ScrollViewer sv) return;
 
-            // Prevent default bubbling
             e.Handled = true;
 
-            // Invert delta to match ScrollToVerticalOffset direction
             double delta = -e.Delta;
 
-            // Make scrolling slower / smoother: divide delta
             double factor = 3.5; // increase for slower scroll
             double target = sv.VerticalOffset + (delta / factor);
 
-            // Clamp
             target = Math.Max(0, Math.Min(sv.ScrollableHeight, target));
 
-            // Animate attached property on the ScrollViewer instance
             var animation = new DoubleAnimation
             {
                 To = target,

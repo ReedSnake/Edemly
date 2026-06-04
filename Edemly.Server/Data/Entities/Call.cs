@@ -1,4 +1,3 @@
-using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -46,7 +45,6 @@ namespace Edemly.Server.Data.Entities
         [Column("Status")]
         public CallStatus Status { get; set; }
 
-        // Navigation properties (за умови, що вони потрібні)
         [ForeignKey(nameof(ChatId))]
         public Chat? Chat { get; set; }
 

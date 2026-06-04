@@ -1,7 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Edemly.Server.Api.Middleware;
 using Edemly.Server.Data;
-using Edemly.Server.Api.Middleware;
 using Edemly.Server.Services;
+using Microsoft.EntityFrameworkCore;
 
 namespace Edemly.Server.Utils
 {

@@ -1,9 +1,10 @@
 using Edemly.Client.Helpers;
 using Edemly.Client.Realtime.Notifications;
 using Edemly.Client.Services;
+using Edemly.Contracts.Realtime;
 using Microsoft.AspNetCore.SignalR.Client;
 using System.Windows;
-using Edemly.Contracts.Realtime;
+
 namespace Edemly.Client.Realtime
 {
     public partial class HubService : IHubService
@@ -16,49 +17,54 @@ namespace Edemly.Client.Realtime
         private bool _isReconnecting;
 
         private bool _allowReconnect = true;
-        // Track per-connection registration to ensure handlers are attached to each HubConnection instance
         private readonly System.Collections.Generic.HashSet<HubConnection> _handlersRegisteredSet = new System.Collections.Generic.HashSet<HubConnection>();
         private readonly System.Collections.Generic.HashSet<HubConnection> _callHandlersRegisteredSet = new System.Collections.Generic.HashSet<HubConnection>();
         private readonly object _stateLock = new object();
         private string? _lastAccessToken;
 
-        // Message events
         public event Action<MessageDto>? MessageReceived;
+
         public event Action<MessageDto>? MessageUpdated;
+
         public event Action<int, int>? MessageDeleted;
+
         public event Action<bool>? ConnectionStateChanged;
+
         public event Action<int>? GroupCreated;
+
         public event Action<int, string?, string?, string?>? GroupUpdated; // chatId, name, description, iconUrl
+
         public event Action<int, bool, DateTime?>? UserStatusChanged;
+
         public event Action<int, string>? ProfileUpdated; // ДОДАНО
 
-        // Call events
         public event Action<IncomingCallEventDto>? IncomingCallReceived;
+
         public event Action<int, int>? CallAcceptedReceived; // callId, userId
+
         public event Action<int, int, string?>? CallRejectedReceived; // callId, userId, reason
+
         public event Action<int, int>? CallEndedReceived; // callId, userId
+
         public event Action<SignalDataDto>? OfferReceived;
+
         public event Action<SignalDataDto>? AnswerReceived;
+
         public event Action<SignalIceDto>? IceCandidateReceived;
 
-        // New: calling indicator for initiator
         public event Action<int, string?>? CallingReceived; // callId, callUid
 
-        // Audio streaming events - now include sequenceId and timestamp (ms since epoch)
         public event Action<int, byte[], int, long, long>? AudioChunkReceived; // fromUserId, chunk, callId, sequenceId, timestampMs
 
         public bool IsConnected => _connection?.State == HubConnectionState.Connected;
 
-        // New: expose whether call-specific connection is connected (useful for diagnostics)
         public bool IsCallConnected => _callConnection?.State == HubConnectionState.Connected;
 
-        // New: expose whether client is currently in reconnecting state
         public bool IsReconnecting => _isReconnecting;
 
         private readonly ToastNotificationService _toastNotificationService = new();
         private readonly ReminderNotificationService _reminderNotificationService = new();
 
-        // Internal lifecycle handlers that are aware of which connection raised the event
         private string BuildHubUrl(string hubName)
         {
             return UrlHelper.BuildHubUrl(
@@ -74,6 +80,7 @@ namespace Edemly.Client.Realtime
 
             _serverUrl = UrlHelper.NormalizeBaseUrl(serverUrl);
         }
+
         private void OnConnectionStateChanged(bool isConnected)
         {
             try
@@ -81,12 +88,10 @@ namespace Edemly.Client.Realtime
                 var dispatcher = Application.Current?.Dispatcher;
                 if (dispatcher == null)
                 {
-                    // No dispatcher available - invoke directly
                     ConnectionStateChanged?.Invoke(isConnected);
                     return;
                 }
 
-                // If dispatcher is shutting down, avoid Invoke/BeginInvoke
                 if (dispatcher.HasShutdownStarted || dispatcher.HasShutdownFinished)
                 {
                     ConnectionStateChanged?.Invoke(isConnected);
@@ -99,7 +104,6 @@ namespace Edemly.Client.Realtime
                 }
                 else
                 {
-                    // Use BeginInvoke to avoid blocking calling thread and avoid TaskCanceledException
                     dispatcher.BeginInvoke(new Action(() =>
                     {
                         try
@@ -115,7 +119,6 @@ namespace Edemly.Client.Realtime
             }
             catch (TaskCanceledException)
             {
-                // Dispatcher is being shut down - ignore
             }
             catch (Exception ex)
             {
@@ -140,7 +143,6 @@ namespace Edemly.Client.Realtime
             _callHandlersRegisteredSet.Clear();
 
             StopConnectionCheckTimer();
-            // Run disconnect on threadpool to avoid blocking UI thread
             try
             {
                 Task.Run(async () =>

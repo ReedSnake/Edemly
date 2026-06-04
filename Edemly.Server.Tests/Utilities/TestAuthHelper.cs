@@ -1,10 +1,10 @@
-using System.Collections.Concurrent;
-using System.Net.Http.Json;
-using Microsoft.Extensions.DependencyInjection;
 using Edemly.Contracts.Auth;
 using Edemly.Server.Services;
 using Edemly.Server.Tests.Infrastructure;
 using Edemly.Server.Tests.TestData;
+using Microsoft.Extensions.DependencyInjection;
+using System.Collections.Concurrent;
+using System.Net.Http.Json;
 
 namespace Edemly.Server.Tests.Utilities;
 
