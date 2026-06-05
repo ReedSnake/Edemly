@@ -4,7 +4,7 @@ namespace Edemly.Client.Models
 {
     public class Contact
     {
-        private const string DEFAULT_AVATAR_PATH = "pack://application:,,,/Assets/Avatars/default-avatar.png";
+        public const string DefaultAvatarPath = "pack://application:,,,/Assets/Avatars/default-avatar.png";
 
         public int UserId { get; set; }
         public string Name { get; set; }
@@ -35,7 +35,7 @@ namespace Edemly.Client.Models
             Name = ResolveDisplayName(name, Username, FirstName, LastName);
             Email = Normalize(email);
             Phone = Normalize(phone);
-            PhotoPath = string.IsNullOrEmpty(photoPath) ? DEFAULT_AVATAR_PATH : photoPath;
+            PhotoPath = string.IsNullOrEmpty(photoPath) ? DefaultAvatarPath : photoPath;
             Note = string.Empty;
         }
 

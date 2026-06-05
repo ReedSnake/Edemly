@@ -140,7 +140,7 @@ namespace Edemly.Client.Application.Chats
             }
 
             var groupPhotoPath = string.IsNullOrEmpty(chat.IconUrl)
-                ? "pack://application:,,,/Assets/Avatars/default-avatar.png"
+                ? Models.Contact.DefaultAvatarPath
                 : chat.IconUrl;
 
             var groupName = string.IsNullOrWhiteSpace(chat.Name)

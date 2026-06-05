@@ -3,7 +3,6 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
 
 namespace Edemly.Client.Pages.Main
 {
@@ -100,7 +99,7 @@ namespace Edemly.Client.Pages.Main
 
             System.Diagnostics.Debug.WriteLine($"[CHAT HEADER] Showing header for: {contact.Name}, path: {contact.PhotoPath}");
 
-            ChatHeaderText.Text = contact.Name;
+            ChatHeaderText.Text = contact.DisplayName ?? contact.Name;
             ChatHeaderText.Margin = new Thickness(0);
             ChatHeaderAvatarBorder.Visibility = Visibility.Visible;
             ChatHeaderText.Visibility = Visibility.Visible;
@@ -150,103 +149,79 @@ namespace Edemly.Client.Pages.Main
 
         private async void OnProfileUpdated(int userId, string newPfpUrl)
         {
-            await System.Windows.Application.Current.Dispatcher.InvokeAsync(async () =>
-            {
-                try
-                {
-                    System.Diagnostics.Debug.WriteLine($"[PAGE_MAIN] Profile updated for user {userId}: {newPfpUrl}");
-
-                    try
-                    {
-                        var cache = App.GlobalProfilePictureCache;
-                        if (cache != null)
-                        {
-                            string oldUrl = null;
-
-                            if (_chatController?.CurrentChatContact != null && _chatController.CurrentChatContact.UserId == userId)
-                            {
-                                oldUrl = _chatController.CurrentChatContact.PhotoPath;
-                            }
-
-                            if (!string.IsNullOrEmpty(oldUrl) && oldUrl != newPfpUrl)
-                            {
-                                try { cache.InvalidateCache(oldUrl); } catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[PAGE_MAIN] InvalidateCache failed: {ex}"); }
-                            }
-
-                            if (!string.IsNullOrEmpty(newPfpUrl))
-                            {
-                                try { await cache.ForceDownloadAsync(newPfpUrl); } catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[PAGE_MAIN] ForceDownloadAsync failed: {ex}"); }
-                            }
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        System.Diagnostics.Debug.WriteLine($"[PAGE_MAIN] Prefetch failed: {ex.Message}");
-                    }
-
-                    if (isContactInfoOpen &&
-                        _chatController?.CurrentChatContact != null &&
-                        _chatController.CurrentChatContact.UserId == userId)
-                    {
-                        System.Diagnostics.Debug.WriteLine("[PAGE_MAIN] Updating Contact Info photo");
-
-                        var bitmap = string.IsNullOrEmpty(newPfpUrl) ? null : await App.GlobalProfilePictureCache.GetOrDownloadAsync(newPfpUrl);
-                        if (bitmap != null)
-                        {
-                            ContactPhotoBackground.ImageSource = bitmap;
-                        }
-                    }
-
-                    if (_chatController?.CurrentChatContact != null &&
-                        _chatController.CurrentChatContact.UserId == userId)
-                    {
-                        System.Diagnostics.Debug.WriteLine("[PAGE_MAIN] Updating chat header photo");
-                        await SetHeaderAvatarAsync(newPfpUrl);
-                    }
-
-                    System.Diagnostics.Debug.WriteLine("[PAGE_MAIN] Profile update processed in Page_main");
-                }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine($"[PAGE_MAIN] Error processing profile update: {ex.Message}");
-                }
-            });
-        }
-
-        private async Task SetHeaderAvatarAsync(string photoPath)
-        {
             try
             {
-                if (string.IsNullOrEmpty(photoPath) ||
-                    photoPath == "pack://application:,,,/Assets/Avatars/default-avatar.png")
-                {
-                    System.Diagnostics.Debug.WriteLine("[CHAT HEADER] Using default avatar");
-                    ChatHeaderAvatarBackground.ImageSource = new BitmapImage(
-                        new Uri("pack://application:,,,/Assets/Avatars/default-avatar.png", UriKind.RelativeOrAbsolute));
-                    return;
-                }
+                await System.Windows.Application.Current.Dispatcher.InvokeAsync(() => { });
+                await ProcessProfileUpdatedAsync(userId, newPfpUrl);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[PAGE_MAIN] Error processing profile update: {ex.Message}");
+            }
+        }
 
-                System.Diagnostics.Debug.WriteLine($"[CHAT HEADER] Loading from cache: {photoPath}");
-                var bitmap = await App.GlobalProfilePictureCache.GetOrDownloadAsync(photoPath);
+        private async Task ProcessProfileUpdatedAsync(int userId, string newPfpUrl)
+        {
+            System.Diagnostics.Debug.WriteLine($"[PAGE_MAIN] Profile updated for user {userId}: {newPfpUrl}");
+            var normalizedPhotoPath = string.IsNullOrWhiteSpace(newPfpUrl)
+                ? Models.Contact.DefaultAvatarPath
+                : newPfpUrl;
 
-                if (bitmap != null)
+            if (_chatController?.CurrentChatContact != null &&
+                _chatController.CurrentChatContact.UserId == userId)
+            {
+                _chatController.CurrentChatContact.PhotoPath = normalizedPhotoPath;
+            }
+
+            try
+            {
+                var cache = App.GlobalProfilePictureCache;
+                if (cache != null)
                 {
-                    System.Diagnostics.Debug.WriteLine("[CHAT HEADER] Avatar loaded successfully");
-                    ChatHeaderAvatarBackground.ImageSource = bitmap;
-                }
-                else
-                {
-                    System.Diagnostics.Debug.WriteLine("[CHAT HEADER] Failed to load, using default");
-                    ChatHeaderAvatarBackground.ImageSource = new BitmapImage(
-                        new Uri("pack://application:,,,/Assets/Avatars/default-avatar.png", UriKind.RelativeOrAbsolute));
+                    string oldUrl = null;
+
+                    if (_chatController?.CurrentChatContact != null && _chatController.CurrentChatContact.UserId == userId)
+                    {
+                        oldUrl = _chatController.CurrentChatContact.PhotoPath;
+                    }
+
+                    if (!string.IsNullOrEmpty(oldUrl) && oldUrl != newPfpUrl)
+                    {
+                        try { cache.InvalidateCache(oldUrl); } catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[PAGE_MAIN] InvalidateCache failed: {ex}"); }
+                    }
+
+                    if (!string.IsNullOrEmpty(newPfpUrl))
+                    {
+                        try { await cache.ForceDownloadAsync(newPfpUrl); } catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[PAGE_MAIN] ForceDownloadAsync failed: {ex}"); }
+                    }
                 }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[CHAT HEADER] Error loading avatar: {ex.Message}");
-                ChatHeaderAvatarBackground.ImageSource = new BitmapImage(
-                    new Uri("pack://application:,,,/Assets/Avatars/default-avatar.png", UriKind.RelativeOrAbsolute));
+                System.Diagnostics.Debug.WriteLine($"[PAGE_MAIN] Prefetch failed: {ex.Message}");
             }
+
+            if (isContactInfoOpen &&
+                _chatController?.CurrentChatContact != null &&
+                _chatController.CurrentChatContact.UserId == userId)
+            {
+                System.Diagnostics.Debug.WriteLine("[PAGE_MAIN] Updating Contact Info photo");
+                await PageMainAvatarHelper.SetImageSourceAsync(ContactPhotoBackground, normalizedPhotoPath, "[PAGE_MAIN] Contact info");
+            }
+
+            if (_chatController?.CurrentChatContact != null &&
+                _chatController.CurrentChatContact.UserId == userId)
+            {
+                System.Diagnostics.Debug.WriteLine("[PAGE_MAIN] Updating chat header photo");
+                await SetHeaderAvatarAsync(normalizedPhotoPath);
+            }
+
+            System.Diagnostics.Debug.WriteLine("[PAGE_MAIN] Profile update processed in Page_main");
+        }
+
+        private async Task SetHeaderAvatarAsync(string photoPath)
+        {
+            await PageMainAvatarHelper.SetImageSourceAsync(ChatHeaderAvatarBackground, photoPath, "[CHAT HEADER]");
         }
     }
 }

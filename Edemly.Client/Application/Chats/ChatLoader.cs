@@ -9,7 +9,6 @@ namespace Edemly.Client.Application.Chats
     {
         private readonly ChatCache _cache;
         private readonly IApiService _apiService;
-        private const string DEFAULT_AVATAR_PATH = "pack://application:,,,/Assets/Avatars/default-avatar.png";
 
         public ChatLoader(IApiService apiService, ChatCache cache)
         {
@@ -93,7 +92,7 @@ namespace Edemly.Client.Application.Chats
                 }
                 else
                 {
-                    var photoPath = string.IsNullOrEmpty(chat.IconUrl) ? DEFAULT_AVATAR_PATH : chat.IconUrl;
+                    var photoPath = string.IsNullOrEmpty(chat.IconUrl) ? Models.Contact.DefaultAvatarPath : chat.IconUrl;
                     var contact = Models.Contact.CreateGroup(chat.Id, chat.Name, photoPath);
 
                     return (contact, chat.Id);

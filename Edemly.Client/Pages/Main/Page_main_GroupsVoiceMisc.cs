@@ -23,7 +23,7 @@ namespace Edemly.Client.Pages.Main
             GroupNameTextBox.Text = string.Empty;
             ParticipantsPanel.Children.Clear();
             _selectedParticipants.Clear();
-            UpdateParticipantCount();
+            UpdateParticipantCountText();
 
             CreateGroupOverlay.Visibility = Visibility.Visible;
             CreateGroupDialog.Visibility = Visibility.Visible;
@@ -50,14 +50,6 @@ namespace Edemly.Client.Pages.Main
             if (ParticipantsPanel != null) ParticipantsPanel.Children.Clear();
 
             _selectedParticipants.Clear();
-        }
-
-        private void UpdateParticipantCount()
-        {
-            if (ParticipantCountText != null)
-            {
-                ParticipantCountText.Text = string.Format(DefaultLanguage.ParticipantsSelected, _selectedParticipants.Count);
-            }
         }
 
         private async void ConfirmCreateGroup_Click(object sender, RoutedEventArgs e)
@@ -102,7 +94,7 @@ namespace Edemly.Client.Pages.Main
                 CloseCreateGroupDialog();
 
                 var photoPath = string.IsNullOrEmpty(groupChat.IconUrl)
-                    ? "pack://application:,,,/Assets/Avatars/default-avatar.png"
+                    ? Models.Contact.DefaultAvatarPath
                     : groupChat.IconUrl;
 
                 var groupContact = Models.Contact.CreateGroup(groupChat.Id, groupChat.Name, photoPath);
@@ -262,13 +254,13 @@ namespace Edemly.Client.Pages.Main
             checkBox.Checked += (s, e) =>
             {
                 _selectedParticipants.Add(user.Id);
-                UpdateParticipantCount();
+                UpdateParticipantCountText();
             };
 
             checkBox.Unchecked += (s, e) =>
             {
                 _selectedParticipants.Remove(user.Id);
-                UpdateParticipantCount();
+                UpdateParticipantCountText();
             };
 
             Grid.SetColumn(checkBox, 0);
