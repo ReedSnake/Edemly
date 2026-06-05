@@ -1,9 +1,8 @@
 using System.Net.Http;
-using System.Text;
-using System.Text.Json;
+
 namespace Edemly.Client.Api
 {
-    public partial class ApiService : IApiService, IDisposable
+    public partial class ApiService
     {
         public async Task<UserInfoDto> GetUserInfoAsync()
         {
@@ -80,70 +79,6 @@ namespace Edemly.Client.Api
             {
                 System.Diagnostics.Debug.WriteLine($"[API] GetUserByIdAsync failed: {ex.Message}");
                 return null;
-            }
-        }
-
-        public async Task<bool> UpdateUserInfoAsync(string? phoneNumber, string? description, string? pfpUrl, string? name)
-        {
-            try
-            {
-                var updateData = new UpdateUserDto();
-                bool hasChanges = false;
-
-                if (name != null)
-                {
-                    var trimmedName = name.Trim();
-
-                    if (string.IsNullOrEmpty(trimmedName))
-                    {
-                        updateData.FirstName = string.Empty;
-                    }
-                    else
-                    {
-                        var nameParts = trimmedName.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-                        updateData.FirstName = nameParts.Length > 0 ? nameParts[0] : trimmedName;
-                    }
-
-                    updateData.LastName = null;
-                    hasChanges = true;
-                }
-
-                if (!string.IsNullOrWhiteSpace(phoneNumber))
-                {
-                    updateData.PhoneNumber = phoneNumber;
-                    hasChanges = true;
-                }
-
-                if (!string.IsNullOrWhiteSpace(pfpUrl))
-                {
-                    updateData.PfpUrl = pfpUrl;
-                    hasChanges = true;
-                }
-
-                if (!hasChanges)
-                {
-                    return false;
-                }
-
-                var json = JsonSerializer.Serialize(updateData, new JsonSerializerOptions
-                {
-                    DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
-                });
-
-                var content = new StringContent(json, Encoding.UTF8, "application/json");
-                var rel = "api/user/update";
-                var url = BuildUrl(rel);
-                var response = await _httpClient.PutAsync(url, content);
-
-                return response.IsSuccessStatusCode;
-            }
-            catch (ArgumentException)
-            {
-                throw;
-            }
-            catch (Exception)
-            {
-                return false;
             }
         }
     }

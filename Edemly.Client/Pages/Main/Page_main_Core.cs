@@ -168,8 +168,14 @@ namespace Edemly.Client.Pages.Main
 
                 var contactInfoTitle = this.FindName("ContactInfoTitle") as TextBlock;
                 if (contactInfoTitle != null) contactInfoTitle.Text = DefaultLanguage.ContactInfo;
-                var nameLabelText = this.FindName("NameLabelText") as TextBlock;
-                if (nameLabelText != null) nameLabelText.Text = DefaultLanguage.NameLabel;
+                var displayNameLabelText = this.FindName("DisplayNameLabelText") as TextBlock;
+                if (displayNameLabelText != null) displayNameLabelText.Text = DefaultLanguage.NameLabel;
+                var usernameLabelText = this.FindName("UsernameLabelText") as TextBlock;
+                if (usernameLabelText != null) usernameLabelText.Text = DefaultLanguage.UserNameLabel;
+                var firstNameLabelText = this.FindName("FirstNameLabelText") as TextBlock;
+                if (firstNameLabelText != null) firstNameLabelText.Text = DefaultLanguage.SettingsFirstNameLabel;
+                var lastNameLabelText = this.FindName("LastNameLabelText") as TextBlock;
+                if (lastNameLabelText != null) lastNameLabelText.Text = DefaultLanguage.SettingsLastNameLabel;
                 var emailLabelText = this.FindName("EmailLabelText") as TextBlock;
                 if (emailLabelText != null) emailLabelText.Text = DefaultLanguage.EmailLabel;
                 var phoneLabelText = this.FindName("PhoneLabelText") as TextBlock;
@@ -179,6 +185,9 @@ namespace Edemly.Client.Pages.Main
                 var personalNotesPrivate = this.FindName("PersonalNotesPrivate") as TextBlock;
                 if (personalNotesPrivate != null) personalNotesPrivate.Text = DefaultLanguage.NotesPrivate;
                 if (NoNotesText != null) NoNotesText.Text = DefaultLanguage.NoNotes;
+                if (SaveContactNoteButton != null) SaveContactNoteButton.Content = DefaultLanguage.ContactAddNoteButton;
+                if (DeleteContactNoteButton != null) DeleteContactNoteButton.Content = DefaultLanguage.ContactDeleteNoteButton;
+                if (EditContactButton != null) EditContactButton.ToolTip = DefaultLanguage.ContactUpdateNoteButton;
                 var closeContactInfoButton = this.FindName("CloseContactInfoButton") as Button;
                 if (closeContactInfoButton != null) closeContactInfoButton.Content = DefaultLanguage.Close;
 

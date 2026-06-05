@@ -31,21 +31,20 @@
             <Setter Property="Margin" Value="0,0,20,0" />
         </Style>
 
-        <Style x:Key="SettingsIconTextStyle" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="16" />
-            <Setter Property="VerticalAlignment" Value="Center" />
-            <Setter Property="Margin" Value="0,0,8,0" />
+        <Style x:Key="SettingsFieldGroupStyle" TargetType="StackPanel">
+            <Setter Property="VerticalAlignment" Value="Top" />
         </Style>
 
-        <Style x:Key="SettingsFieldPanelStyle" TargetType="StackPanel">
-            <Setter Property="Orientation" Value="Horizontal" />
-            <Setter Property="VerticalAlignment" Value="Center" />
+        <Style x:Key="SettingsFieldLabelStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Foreground" Value="{DynamicResource ThemeTextSecondaryBrush}" />
+            <Setter Property="Margin" Value="0,0,0,6" />
         </Style>
 
         <Style x:Key="SettingsBackButtonStyle"
                TargetType="Button"
                BasedOn="{StaticResource IconButtonStyle}">
-            <Setter Property="Content" Value="←" />
+            <Setter Property="Content" Value="в†ђ" />
             <Setter Property="Width" Value="39" />
             <Setter Property="Height" Value="39" />
             <Setter Property="Background" Value="Transparent" />
@@ -276,7 +275,7 @@
                                                        Opacity="0" />
 
                                                 <TextBlock x:Name="AvatarInitials"
-                                                           Text="ВА"
+                                                           Text="EA"
                                                            Foreground="{DynamicResource ThemeOnPrimaryTextBrush}"
                                                            FontSize="32"
                                                            FontWeight="Bold"
@@ -302,15 +301,17 @@
                                         <Grid.RowDefinitions>
                                             <RowDefinition Height="Auto" />
                                             <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
                                         </Grid.RowDefinitions>
 
                                         <StackPanel Grid.Column="0"
                                                     Grid.Row="0"
-                                                    Style="{StaticResource SettingsFieldPanelStyle}"
+                                                    Style="{StaticResource SettingsFieldGroupStyle}"
                                                     Margin="0,0,15,15">
 
-                                            <TextBlock Text="📞"
-                                                       Style="{StaticResource SettingsIconTextStyle}" />
+                                            <TextBlock Text="{x:Static lang:DefaultLanguage.PhoneLabel}"
+                                                       Style="{StaticResource SettingsFieldLabelStyle}" />
 
                                             <Border Style="{StaticResource InputBorderStyle}"
                                                     Width="220">
@@ -329,55 +330,94 @@
 
                                         <StackPanel Grid.Column="1"
                                                     Grid.Row="0"
-                                                    Style="{StaticResource SettingsFieldPanelStyle}"
+                                                    Style="{StaticResource SettingsFieldGroupStyle}"
                                                     Margin="15,0,0,15">
 
-                                            <TextBlock Text="👤"
-                                                       Style="{StaticResource SettingsIconTextStyle}" />
-
-                                            <Border Style="{StaticResource InputBorderStyle}"
-                                                    Width="220">
-
-                                                <TextBox x:Name="NameTextBox"
-                                                         Style="{StaticResource InputTextBoxStyle}"
-                                                         Foreground="{DynamicResource ThemeTextPrimaryBrush}"
-                                                         TextChanged="NameTextBox_TextChanged" />
-                                            </Border>
-                                        </StackPanel>
-
-                                        <StackPanel Grid.Column="0"
-                                                    Grid.Row="1"
-                                                    Style="{StaticResource SettingsFieldPanelStyle}"
-                                                    Margin="0,0,15,0">
-
-                                            <TextBlock Text="@"
-                                                       Style="{StaticResource SettingsIconTextStyle}" />
+                                            <TextBlock Text="{x:Static lang:DefaultLanguage.UserNameLabel}"
+                                                       Style="{StaticResource SettingsFieldLabelStyle}" />
 
                                             <Border Style="{StaticResource InputBorderStyle}"
                                                     Width="220">
 
                                                 <TextBox x:Name="UsernameTextBox"
                                                          Style="{StaticResource InputTextBoxStyle}"
-                                                         Foreground="{DynamicResource ThemeTextSecondaryBrush}"
-                                                         IsReadOnly="True" />
+                                                         Foreground="{DynamicResource ThemeTextPrimaryBrush}"
+                                                         TextChanged="UsernameTextBox_TextChanged" />
+                                            </Border>
+                                        </StackPanel>
+
+                                        <StackPanel Grid.Column="0"
+                                                    Grid.Row="1"
+                                                    Style="{StaticResource SettingsFieldGroupStyle}"
+                                                    Margin="0,0,15,15">
+
+                                            <TextBlock Text="{x:Static lang:DefaultLanguage.SettingsFirstNameLabel}"
+                                                       Style="{StaticResource SettingsFieldLabelStyle}" />
+
+                                            <Border Style="{StaticResource InputBorderStyle}"
+                                                    Width="220">
+
+                                                <TextBox x:Name="FirstNameTextBox"
+                                                         Style="{StaticResource InputTextBoxStyle}"
+                                                         Foreground="{DynamicResource ThemeTextPrimaryBrush}"
+                                                         TextChanged="FirstNameTextBox_TextChanged" />
                                             </Border>
                                         </StackPanel>
 
                                         <StackPanel Grid.Column="1"
                                                     Grid.Row="1"
-                                                    Style="{StaticResource SettingsFieldPanelStyle}"
-                                                    Margin="15,0,0,0">
+                                                    Style="{StaticResource SettingsFieldGroupStyle}"
+                                                    Margin="15,0,0,15">
 
-                                            <TextBlock Text="✉️"
-                                                       Style="{StaticResource SettingsIconTextStyle}" />
+                                            <TextBlock Text="{x:Static lang:DefaultLanguage.SettingsLastNameLabel}"
+                                                       Style="{StaticResource SettingsFieldLabelStyle}" />
 
                                             <Border Style="{StaticResource InputBorderStyle}"
                                                     Width="220">
+
+                                                <TextBox x:Name="LastNameTextBox"
+                                                         Style="{StaticResource InputTextBoxStyle}"
+                                                         Foreground="{DynamicResource ThemeTextPrimaryBrush}"
+                                                         TextChanged="LastNameTextBox_TextChanged" />
+                                            </Border>
+                                        </StackPanel>
+
+                                        <StackPanel Grid.Column="0"
+                                                    Grid.Row="2"
+                                                    Grid.ColumnSpan="2"
+                                                    Style="{StaticResource SettingsFieldGroupStyle}"
+                                                    Margin="0,0,0,15">
+
+                                            <TextBlock Text="{x:Static lang:DefaultLanguage.EmailLabel}"
+                                                       Style="{StaticResource SettingsFieldLabelStyle}" />
+
+                                            <Border Style="{StaticResource InputBorderStyle}">
 
                                                 <TextBox x:Name="EmailTextBox"
                                                          Style="{StaticResource InputTextBoxStyle}"
                                                          Foreground="{DynamicResource ThemeTextSecondaryBrush}"
                                                          IsReadOnly="True" />
+                                            </Border>
+                                        </StackPanel>
+
+                                        <StackPanel Grid.Column="0"
+                                                    Grid.Row="3"
+                                                    Grid.ColumnSpan="2"
+                                                    Style="{StaticResource SettingsFieldGroupStyle}">
+
+                                            <TextBlock Text="{x:Static lang:DefaultLanguage.DescriptionLabel}"
+                                                       Style="{StaticResource SettingsFieldLabelStyle}" />
+
+                                            <Border Style="{StaticResource InputBorderStyle}"
+                                                    Height="100">
+
+                                                <TextBox x:Name="AboutTextBox"
+                                                         Style="{StaticResource InputTextBoxStyle}"
+                                                         Foreground="{DynamicResource ThemeTextPrimaryBrush}"
+                                                         AcceptsReturn="True"
+                                                         TextWrapping="Wrap"
+                                                         VerticalScrollBarVisibility="Auto"
+                                                         TextChanged="AboutTextBox_TextChanged" />
                                             </Border>
                                         </StackPanel>
                                     </Grid>
@@ -465,7 +505,7 @@
 
                                 <StackPanel Margin="0,0,0,15">
                                     <TextBlock x:Name="ThemeColorLabel"
-                                               Text="Колір теми"
+                                               Text="РљРѕР»С–СЂ С‚РµРјРё"
                                                Style="{StaticResource SettingsSectionLabelStyle}" />
 
                                     <WrapPanel Orientation="Horizontal"

@@ -1,7 +1,6 @@
 #nullable disable
 
 using Edemly.Client.Application.Localization;
-using Edemly.Client.Pages;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -47,45 +46,9 @@ namespace Edemly.Client.Pages.Main
             ContactInfoPanel.Visibility = Visibility.Visible;
 
             var contact = _chatController.CurrentChatContact;
-            ContactInfoName.Text = contact.Name ?? string.Empty;
-            ContactInfoEmail.Text = contact.Email ?? string.Empty;
-            ContactInfoPhone.Text = string.IsNullOrEmpty(contact.Phone) ?
-                DefaultLanguage.ContactPhoneNotSpecified : contact.Phone;
-
-            try
-            {
-                if (!string.IsNullOrEmpty(contact.PhotoPath) &&
-                    contact.PhotoPath != "pack://application:,,,/Assets/Avatars/default-avatar.png")
-                {
-                    System.Diagnostics.Debug.WriteLine($"[CONTACT INFO] Loading photo from: {contact.PhotoPath}");
-
-                    var bitmap = await App.GlobalProfilePictureCache.GetOrDownloadAsync(contact.PhotoPath);
-
-                    if (bitmap != null)
-                    {
-                        ContactPhotoBackground.ImageSource = bitmap;
-                        System.Diagnostics.Debug.WriteLine($"[CONTACT INFO] Photo loaded successfully");
-                    }
-                    else
-                    {
-                        System.Diagnostics.Debug.WriteLine($"[CONTACT INFO] Failed to load photo, using default");
-                        ContactPhotoBackground.ImageSource = new BitmapImage(
-                            new Uri("pack://application:,,,/Assets/Avatars/default-avatar.png", UriKind.RelativeOrAbsolute));
-                    }
-                }
-                else
-                {
-                    System.Diagnostics.Debug.WriteLine($"[CONTACT INFO] Using default avatar");
-                    ContactPhotoBackground.ImageSource = new BitmapImage(
-                        new Uri("pack://application:,,,/Assets/Avatars/default-avatar.png", UriKind.RelativeOrAbsolute));
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"[CONTACT INFO] Error loading photo: {ex.Message}");
-                ContactPhotoBackground.ImageSource = new BitmapImage(
-                    new Uri("pack://application:,,,/Assets/Avatars/default-avatar.png", UriKind.RelativeOrAbsolute));
-            }
+            await RefreshCurrentContactDetailsAsync(contact);
+            PopulateContactInfo(contact);
+            await LoadContactPhotoAsync(contact);
 
             await LoadContactNotesAsync();
 
@@ -100,6 +63,84 @@ namespace Edemly.Client.Pages.Main
             };
 
             ContactInfoTransform.BeginAnimation(TranslateTransform.XProperty, animation);
+        }
+
+        private async Task RefreshCurrentContactDetailsAsync(Models.Contact contact)
+        {
+            try
+            {
+                if (_chatController?.IsCurrentChatGroup() == true)
+                {
+                    return;
+                }
+
+                var user = await App.ApiService.GetUserByIdAsync(contact.UserId);
+                if (user == null)
+                {
+                    return;
+                }
+
+                contact.Username = user.Username ?? contact.Username;
+                contact.FirstName = user.FirstName ?? contact.FirstName;
+                contact.LastName = user.LastName ?? contact.LastName;
+                contact.Email = user.Email ?? contact.Email;
+                contact.Phone = user.PhoneNumber ?? contact.Phone;
+                contact.PhotoPath = string.IsNullOrWhiteSpace(user.PfpUrl) ? contact.PhotoPath : user.PfpUrl;
+                contact.Name = Models.Contact.ResolveDisplayName(contact.Name, contact.Username, contact.FirstName, contact.LastName);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[CONTACT INFO] Failed to refresh contact details: {ex.Message}");
+            }
+        }
+
+        private void PopulateContactInfo(Models.Contact contact)
+        {
+            ContactInfoName.Text = contact.DisplayName ?? string.Empty;
+            ContactInfoUsername.Text = GetContactValueOrFallback(contact.Username, DefaultLanguage.ContactNameUnknown);
+            ContactInfoFirstName.Text = GetContactValueOrFallback(contact.FirstName, DefaultLanguage.ContactNameUnknown);
+            ContactInfoLastName.Text = GetContactValueOrFallback(contact.LastName, DefaultLanguage.ContactNameUnknown);
+            ContactInfoEmail.Text = GetContactValueOrFallback(contact.Email, DefaultLanguage.ContactEmailNotSpecified);
+            ContactInfoPhone.Text = GetContactValueOrFallback(contact.Phone, DefaultLanguage.ContactPhoneNotSpecified);
+        }
+
+        private async Task LoadContactPhotoAsync(Models.Contact contact)
+        {
+            try
+            {
+                if (!string.IsNullOrEmpty(contact.PhotoPath) &&
+                    contact.PhotoPath != "pack://application:,,,/Assets/Avatars/default-avatar.png")
+                {
+                    System.Diagnostics.Debug.WriteLine($"[CONTACT INFO] Loading photo from: {contact.PhotoPath}");
+
+                    var bitmap = await App.GlobalProfilePictureCache.GetOrDownloadAsync(contact.PhotoPath);
+
+                    if (bitmap != null)
+                    {
+                        ContactPhotoBackground.ImageSource = bitmap;
+                        System.Diagnostics.Debug.WriteLine("[CONTACT INFO] Photo loaded successfully");
+                        return;
+                    }
+
+                    System.Diagnostics.Debug.WriteLine("[CONTACT INFO] Failed to load photo, using default");
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine("[CONTACT INFO] Using default avatar");
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[CONTACT INFO] Error loading photo: {ex.Message}");
+            }
+
+            ContactPhotoBackground.ImageSource = new BitmapImage(
+                new Uri("pack://application:,,,/Assets/Avatars/default-avatar.png", UriKind.RelativeOrAbsolute));
+        }
+
+        private static string GetContactValueOrFallback(string value, string fallback)
+        {
+            return string.IsNullOrWhiteSpace(value) ? fallback : value;
         }
 
         private void CloseContactInfo()
@@ -150,69 +191,10 @@ namespace Edemly.Client.Pages.Main
 
         private void EditContactButton_Click(object sender, RoutedEventArgs e)
         {
-            if (_chatController.CurrentChatContact != null)
+            if (_chatController?.CurrentChatContact != null)
             {
-                CloseContactInfo();
-                NavigationService.Navigate(new Page_contact_setting(_chatController.CurrentChatContact));
-            }
-        }
-
-        private async Task LoadContactNotesAsync()
-        {
-            Note1Border.Visibility = Visibility.Collapsed;
-            Note2Border.Visibility = Visibility.Collapsed;
-            Note3Border.Visibility = Visibility.Collapsed;
-            Note4Border.Visibility = Visibility.Collapsed;
-            Note5Border.Visibility = Visibility.Collapsed;
-            NoNotesText.Visibility = Visibility.Visible;
-
-            if (_chatController?.CurrentChatContact == null)
-            {
-                System.Diagnostics.Debug.WriteLine("[CONTACT INFO] CurrentChatContact is null");
-                return;
-            }
-
-            try
-            {
-                int retries = 0;
-                while (App.NotesService == null && retries < 10)
-                {
-                    System.Diagnostics.Debug.WriteLine($"[CONTACT INFO] Waiting for NotesService initialization... Retry {retries + 1}");
-                    await Task.Delay(100);
-                    retries++;
-                }
-
-                if (App.NotesService == null)
-                {
-                    System.Diagnostics.Debug.WriteLine("[CONTACT INFO] NotesService is still null after waiting!");
-                    NoNotesText.Text = DefaultLanguage.ContactNotesServiceError;
-                    return;
-                }
-
-                var currentContactUserId = _chatController.CurrentChatContact.UserId;
-                System.Diagnostics.Debug.WriteLine($"[CONTACT INFO] Loading note for user {currentContactUserId}...");
-
-                var note = await App.NotesService.GetNoteAsync(currentContactUserId);
-                _chatController.TrySetCurrentChatNote(currentContactUserId, note ?? string.Empty);
-
-                if (!string.IsNullOrWhiteSpace(note))
-                {
-                    ContactInfoNote1.Text = note;
-                    Note1Border.Visibility = Visibility.Visible;
-                    NoNotesText.Visibility = Visibility.Collapsed;
-
-                    System.Diagnostics.Debug.WriteLine($"[CONTACT INFO] Note loaded and displayed: {note}");
-                }
-                else
-                {
-                    System.Diagnostics.Debug.WriteLine($"[CONTACT INFO] No note found for user {_chatController.CurrentChatContact.UserId}");
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"[CONTACT INFO] Error loading contact note: {ex.Message}");
-                System.Diagnostics.Debug.WriteLine($"[CONTACT INFO] Stack trace: {ex.StackTrace}");
-                NoNotesText.Text = DefaultLanguage.Error;
+                ContactNoteEditor.Focus();
+                ContactNoteEditor.SelectAll();
             }
         }
 
@@ -526,13 +508,14 @@ namespace Edemly.Client.Pages.Main
 
                 CloseGroupInfo();
 
-                var contact = new Models.Contact(
-                    userId,
-                    user?.Username ?? string.Format(DefaultLanguage.UserIdText, userId),
-                    user?.Email ?? "",
-                    user?.PhoneNumber ?? "",
-                    user?.PfpUrl ?? "pack://application:,,,/Assets/Avatars/default-avatar.png"
-                );
+                var contact = user != null
+                    ? Models.Contact.FromUserDto(user)
+                    : new Models.Contact(
+                        userId,
+                        string.Format(DefaultLanguage.UserIdText, userId),
+                        string.Empty,
+                        string.Empty,
+                        "pack://application:,,,/Assets/Avatars/default-avatar.png");
 
                 var chatResult = await App.ApiService.CreateOrGetPrivateChatAsync(userId);
                 if (chatResult == null)
@@ -547,30 +530,6 @@ namespace Edemly.Client.Pages.Main
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"[GROUP INFO] Error opening chat: {ex.Message}");
-                MessageBox.ShowError($"{DefaultLanguage.Error}: {ex.Message}", DefaultLanguage.ErrorTitle);
-            }
-        }
-
-        private async Task ViewUserProfileAsync(int userId, UserDto user)
-        {
-            try
-            {
-                CloseGroupInfo();
-
-                var contact = new Models.Contact(
-                    userId,
-                    user?.Username ?? string.Format(DefaultLanguage.UserIdText, userId),
-                    user?.Email ?? "",
-                    user?.PhoneNumber ?? "",
-                    user?.PfpUrl ?? "pack://application:,,,/Assets/Avatars/default-avatar.png"
-                );
-
-                NavigationService.Navigate(new Page_contact_setting(contact));
-                System.Diagnostics.Debug.WriteLine($"[GROUP INFO] Opened profile for {user?.Username}");
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"[GROUP INFO] Error viewing profile: {ex.Message}");
                 MessageBox.ShowError($"{DefaultLanguage.Error}: {ex.Message}", DefaultLanguage.ErrorTitle);
             }
         }

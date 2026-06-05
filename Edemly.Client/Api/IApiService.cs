@@ -1,6 +1,7 @@
 using Edemly.Contracts.Calls;
 using Edemly.Contracts.Payments;
 using Edemly.Contracts.Remindings;
+using Edemly.Client.Application.Profiles;
 namespace Edemly.Client.Api
 {
     public interface IApiService
@@ -21,7 +22,7 @@ namespace Edemly.Client.Api
 
         Task<UserInfoDto> GetUserInfoAsync();
 
-        Task<bool> UpdateUserInfoAsync(string? phoneNumber, string? description, string? pfpUrl, string? name);
+        Task<(bool Success, string? Error)> UpdateUserInfoAsync(UserProfileUpdateRequest request);
 
         Task<(bool Success, string? Url, string? Error)> UploadProfilePictureAsync(string filePath);
 

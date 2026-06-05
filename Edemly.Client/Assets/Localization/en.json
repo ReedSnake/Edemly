@@ -79,6 +79,7 @@
     "shortcut_create_failed": "Failed to create desktop shortcut."
   },
   "page_settings": {
+    "settings_title": "Settings",
     "select_profile_photo": "Select profile photo",
     "uploading": "Uploading...",
     "change_photo": "Change Photo",
@@ -93,6 +94,8 @@
     "error_title": "Error",
     "warning_title": "Warning",
     "save_button": "Save",
+    "first_name_label": "First Name",
+    "last_name_label": "Last Name",
     "lang_english": "English",
     "lang_ukrainian": "Ukrainian",
     "select_language_label": "Select language:",

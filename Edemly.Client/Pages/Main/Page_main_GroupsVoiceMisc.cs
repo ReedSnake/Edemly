@@ -105,13 +105,7 @@ namespace Edemly.Client.Pages.Main
                     ? "pack://application:,,,/Assets/Avatars/default-avatar.png"
                     : groupChat.IconUrl;
 
-                var groupContact = new Models.Contact(
-                    groupChat.Id,
-                    groupChat.Name,
-                    "",
-                    "",
-                    photoPath
-                );
+                var groupContact = Models.Contact.CreateGroup(groupChat.Id, groupChat.Name, photoPath);
 
                 System.Diagnostics.Debug.WriteLine($"[GROUP] Created contact for group: {groupContact.Name}");
 

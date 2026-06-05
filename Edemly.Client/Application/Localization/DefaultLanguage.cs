@@ -82,6 +82,8 @@ namespace Edemly.Client.Application.Localization
         public static string ErrorTitle => Lang.GetText("page_settings", "error_title", "Error");
         public static string WarningTitle => Lang.GetText("page_settings", "warning_title", "Warning");
         public static string SaveButton => Lang.GetText("page_settings", "save_button", "Save");
+        public static string SettingsFirstNameLabel => Lang.GetText("page_settings", "first_name_label", "First Name");
+        public static string SettingsLastNameLabel => Lang.GetText("page_settings", "last_name_label", "Last Name");
 
         public static string LanguageEnglishName => Lang.GetText("page_settings", "lang_english", "English");
         public static string LanguageUkrainianName => Lang.GetText("page_settings", "lang_ukrainian", "Ukrainian");

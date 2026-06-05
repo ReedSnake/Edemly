@@ -493,14 +493,7 @@ namespace Edemly.Client.Presentation.Controllers.Chats
                     return Task.CompletedTask;
                 }
 
-                var photoPath = string.IsNullOrEmpty(user.PfpUrl) ? DEFAULT_AVATAR_PATH : user.PfpUrl;
-                var contact = new Models.Contact(
-                    user.Id,
-                    user.Username,
-                    user.Email ?? string.Empty,
-                    user.PhoneNumber ?? string.Empty,
-                    photoPath
-                );
+                var contact = Models.Contact.FromUserDto(user);
 
                 lock (_contacts)
                 {
@@ -536,13 +529,7 @@ namespace Edemly.Client.Presentation.Controllers.Chats
                     ? $"Group {chat.Id}"
                     : chat.Name;
 
-                var contact = new Models.Contact(
-                    chat.Id,
-                    groupName,
-                    "",
-                    "",
-                    photoPath
-                );
+                var contact = Models.Contact.CreateGroup(chat.Id, groupName, photoPath);
 
                 lock (_groupContacts)
                 {
@@ -575,14 +562,7 @@ namespace Edemly.Client.Presentation.Controllers.Chats
                     var user = await _chatLoader.GetUserWithCacheAsync(userId);
                     if (user != null)
                     {
-                        var photoPath = string.IsNullOrEmpty(user.PfpUrl) ? DEFAULT_AVATAR_PATH : user.PfpUrl;
-                        var contact = new Models.Contact(
-                            user.Id,
-                            user.Username,
-                            user.Email ?? "",
-                            user.PhoneNumber ?? "",
-                            photoPath
-                        );
+                        var contact = Models.Contact.FromUserDto(user);
 
                         _contacts[user.Id] = contact;
                         _chatToUserMap[chatId] = userId;
@@ -613,14 +593,7 @@ namespace Edemly.Client.Presentation.Controllers.Chats
                 }
                 else
                 {
-                    var photoPath = string.IsNullOrEmpty(user.PfpUrl) ? DEFAULT_AVATAR_PATH : user.PfpUrl;
-                    contact = new Models.Contact(
-                        user.Id,
-                        user.Username,
-                        user.Email ?? string.Empty,
-                        user.PhoneNumber ?? string.Empty,
-                        photoPath
-                    );
+                    contact = Models.Contact.FromUserDto(user);
                     _contacts[user.Id] = contact;
                 }
 

@@ -9,6 +9,8 @@ namespace Edemly.Server.Api.Services
         {
             Id = user.Id,
             Username = user.Username ?? string.Empty,
+            FirstName = user.FirstName ?? string.Empty,
+            LastName = user.LastName ?? string.Empty,
             Email = user.LoginInfo.Email,
             PhoneNumber = user.PhoneNumber ?? string.Empty,
             PfpUrl = user.PfpUrl ?? string.Empty,
@@ -19,6 +21,8 @@ namespace Edemly.Server.Api.Services
         {
             Id = user.Id,
             Username = user.Username ?? string.Empty,
+            FirstName = user.FirstName ?? string.Empty,
+            LastName = user.LastName ?? string.Empty,
             PfpUrl = user.PfpUrl ?? string.Empty,
             Description = user.Description ?? string.Empty
         };
@@ -48,6 +52,8 @@ namespace Edemly.Server.Api.Services
             {
                 Id = user.Id,
                 Username = user.Username ?? string.Empty,
+                FirstName = user.FirstName ?? string.Empty,
+                LastName = user.LastName ?? string.Empty,
                 Email = user.LoginInfo?.Email ?? string.Empty,
                 PhoneNumber = user.PhoneNumber ?? string.Empty,
                 PfpUrl = user.PfpUrl ?? string.Empty,

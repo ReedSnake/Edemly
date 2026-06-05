@@ -606,13 +606,49 @@
                     <StackPanel Grid.Row="2"
                                 Orientation="Vertical"
                                 Margin="15,0">
-                        <TextBlock x:Name="NameLabelText"
+                        <TextBlock x:Name="DisplayNameLabelText"
                                    Style="{StaticResource FieldLabelTextStyle}"
                                    Text="Name"
                                    Margin="0,10,0,5" />
 
                         <Border Style="{StaticResource InfoValueBorderStyle}">
                             <TextBlock x:Name="ContactInfoName"
+                                       Style="{StaticResource InfoValueTextStyle}"
+                                       Text=""
+                                       MouseDown="ContactInfoText_MouseDown"
+                                       Cursor="IBeam" />
+                        </Border>
+
+                        <TextBlock x:Name="UsernameLabelText"
+                                   Style="{StaticResource FieldLabelTextStyle}"
+                                   Text="User Name" />
+
+                        <Border Style="{StaticResource InfoValueBorderStyle}">
+                            <TextBlock x:Name="ContactInfoUsername"
+                                       Style="{StaticResource InfoValueTextStyle}"
+                                       Text=""
+                                       MouseDown="ContactInfoText_MouseDown"
+                                       Cursor="IBeam" />
+                        </Border>
+
+                        <TextBlock x:Name="FirstNameLabelText"
+                                   Style="{StaticResource FieldLabelTextStyle}"
+                                   Text="First Name" />
+
+                        <Border Style="{StaticResource InfoValueBorderStyle}">
+                            <TextBlock x:Name="ContactInfoFirstName"
+                                       Style="{StaticResource InfoValueTextStyle}"
+                                       Text=""
+                                       MouseDown="ContactInfoText_MouseDown"
+                                       Cursor="IBeam" />
+                        </Border>
+
+                        <TextBlock x:Name="LastNameLabelText"
+                                   Style="{StaticResource FieldLabelTextStyle}"
+                                   Text="Last Name" />
+
+                        <Border Style="{StaticResource InfoValueBorderStyle}">
+                            <TextBlock x:Name="ContactInfoLastName"
                                        Style="{StaticResource InfoValueTextStyle}"
                                        Text=""
                                        MouseDown="ContactInfoText_MouseDown"
@@ -667,40 +703,48 @@
                                        Text="" />
                         </Border>
 
-                        <Border x:Name="Note2Border" Style="{StaticResource CollapsedNoteBorderStyle}">
-                            <TextBlock x:Name="ContactInfoNote2"
-                                       Style="{StaticResource NoteValueTextStyle}"
-                                       Text="" />
-                        </Border>
-
-                        <Border x:Name="Note3Border" Style="{StaticResource CollapsedNoteBorderStyle}">
-                            <TextBlock x:Name="ContactInfoNote3"
-                                       Style="{StaticResource NoteValueTextStyle}"
-                                       Text="" />
-                        </Border>
-
-                        <Border x:Name="Note4Border" Style="{StaticResource CollapsedNoteBorderStyle}">
-                            <TextBlock x:Name="ContactInfoNote4"
-                                       Style="{StaticResource NoteValueTextStyle}"
-                                       Text="" />
-                        </Border>
-
-                        <Border x:Name="Note5Border"
-                                Style="{StaticResource CollapsedNoteBorderStyle}"
-                                Margin="0,0,0,20">
-                            <TextBlock x:Name="ContactInfoNote5"
-                                       Style="{StaticResource NoteValueTextStyle}"
-                                       Text="" />
-                        </Border>
-
                         <TextBlock x:Name="NoNotesText"
                                    Style="{StaticResource MutedTextStyle}"
                                    Text="No notes added yet"
                                    FontStyle="Italic"
                                    Opacity="0.5"
                                    HorizontalAlignment="Center"
-                                   Margin="0,10,0,20"
+                                   Margin="0,10,0,12"
                                    Visibility="Visible" />
+
+                        <Border Style="{StaticResource InfoValueBorderStyle}"
+                                Margin="0,0,0,10">
+                            <TextBox x:Name="ContactNoteEditor"
+                                     Style="{StaticResource MultilineTextBoxStyle}"
+                                     AcceptsReturn="True"
+                                     TextWrapping="Wrap"
+                                     MinHeight="110"
+                                     BorderThickness="0"
+                                     Background="Transparent" />
+                        </Border>
+
+                        <StackPanel Orientation="Horizontal"
+                                    HorizontalAlignment="Right"
+                                    Margin="0,0,0,8">
+                            <Button x:Name="DeleteContactNoteButton"
+                                    Style="{StaticResource DeleteNoteButtonStyle}"
+                                    Content="Delete"
+                                    Margin="0,0,8,0"
+                                    Visibility="Collapsed"
+                                    Click="DeleteContactNoteButton_Click" />
+
+                            <Button x:Name="SaveContactNoteButton"
+                                    Style="{StaticResource AddNoteButtonStyle}"
+                                    Content="Add Note"
+                                    Click="SaveContactNoteButton_Click" />
+                        </StackPanel>
+
+                        <TextBlock x:Name="ContactNoteLimitWarning"
+                                   Style="{StaticResource SmallMutedTextStyle}"
+                                   Foreground="{DynamicResource ThemeDangerBrush}"
+                                   Margin="0,4,0,0"
+                                   Text=""
+                                   Visibility="Collapsed" />
                     </StackPanel>
 
                     <Button x:Name="CloseContactInfoButton"

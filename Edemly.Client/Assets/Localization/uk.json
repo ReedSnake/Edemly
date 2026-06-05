@@ -79,6 +79,7 @@
     "shortcut_create_failed": "Не вдалося створити ярлик на робочому столі."
   },
   "page_settings": {
+    "settings_title": "Налаштування",
     "select_profile_photo": "Оберіть фото профілю",
     "uploading": "Завантаження...",
     "change_photo": "Змінити фото",
@@ -93,6 +94,8 @@
     "error_title": "Помилка",
     "warning_title": "Увага",
     "save_button": "Зберегти",
+    "first_name_label": "Ім'я",
+    "last_name_label": "Прізвище",
     "lang_english": "English",
     "lang_ukrainian": "Українська",
     "select_language_label": "Оберіть мову:",

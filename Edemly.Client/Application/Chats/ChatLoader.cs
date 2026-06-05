@@ -2,7 +2,6 @@
 
 using Edemly.Client.Api;
 using Edemly.Client.Infrastructure.Caching;
-using System.Reflection;
 
 namespace Edemly.Client.Application.Chats
 {
@@ -32,28 +31,6 @@ namespace Edemly.Client.Application.Chats
             }
 
             return user;
-        }
-
-        private static string GetDisplayNameFromUser(UserDto user)
-        {
-            if (user == null) return string.Empty;
-
-            try
-            {
-                var t = user.GetType();
-                var fnProp = t.GetProperty("FirstName", BindingFlags.Public | BindingFlags.Instance);
-                var lnProp = t.GetProperty("LastName", BindingFlags.Public | BindingFlags.Instance);
-
-                var first = fnProp != null ? fnProp.GetValue(user) as string : null;
-                var last = lnProp != null ? lnProp.GetValue(user) as string : null;
-
-                var full = $"{first?.Trim()} {last?.Trim()}".Trim();
-                if (!string.IsNullOrEmpty(full))
-                    return full;
-            }
-            catch { }
-
-            return string.IsNullOrEmpty(user.Username) ? string.Empty : user.Username;
         }
 
         public async Task<List<MessageDto>> LoadChatMessagesAsync(int chatId, int page = 1, int pageSize = 50)
@@ -107,17 +84,8 @@ namespace Edemly.Client.Application.Chats
                         var user = await GetUserWithCacheAsync(otherMember.UserId);
                         if (user != null)
                         {
-                            var photoPath = string.IsNullOrEmpty(user.PfpUrl) ? DEFAULT_AVATAR_PATH : user.PfpUrl;
-
-                            var displayName = GetDisplayNameFromUser(user);
-
-                            var contact = new Models.Contact(
-                                user.Id,
-                                displayName,
-                                $"{user.Username}@user.com",
-                                "",
-                                photoPath
-                            );
+                            var displayName = Models.Contact.ResolveDisplayName(string.Empty, user.Username);
+                            var contact = Models.Contact.FromUserDto(user, displayName);
 
                             return (contact, chat.Id);
                         }
@@ -126,13 +94,7 @@ namespace Edemly.Client.Application.Chats
                 else
                 {
                     var photoPath = string.IsNullOrEmpty(chat.IconUrl) ? DEFAULT_AVATAR_PATH : chat.IconUrl;
-                    var contact = new Models.Contact(
-                        chat.Id,
-                        chat.Name,
-                        "",
-                        "",
-                        photoPath
-                    );
+                    var contact = Models.Contact.CreateGroup(chat.Id, chat.Name, photoPath);
 
                     return (contact, chat.Id);
                 }

@@ -136,16 +136,7 @@ namespace Edemly.Client.Application.Chats
                     return null;
                 }
 
-                var photoPath = string.IsNullOrEmpty(user.PfpUrl)
-                    ? "pack://application:,,,/Assets/Avatars/default-avatar.png"
-                    : user.PfpUrl;
-
-                return new Models.Contact(
-                    user.Id,
-                    user.Username,
-                    user.Email ?? string.Empty,
-                    user.PhoneNumber ?? string.Empty,
-                    photoPath);
+                return Models.Contact.FromUserDto(user);
             }
 
             var groupPhotoPath = string.IsNullOrEmpty(chat.IconUrl)
@@ -156,7 +147,7 @@ namespace Edemly.Client.Application.Chats
                 ? $"Group {chat.Id}"
                 : chat.Name;
 
-            return new Models.Contact(chat.Id, groupName, string.Empty, string.Empty, groupPhotoPath);
+            return Models.Contact.CreateGroup(chat.Id, groupName, groupPhotoPath);
         }
 
         private static async Task SwitchToChatDirectAsync(ChatWorkspaceController chatController, Models.Contact contact, int chatId)

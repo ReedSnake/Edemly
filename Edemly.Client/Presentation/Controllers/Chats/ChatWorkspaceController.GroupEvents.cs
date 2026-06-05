@@ -133,13 +133,7 @@ namespace Edemly.Client.Presentation.Controllers.Chats
                                 var user = await _apiService.GetUserByIdAsync(userId);
                                 if (user != null)
                                 {
-                                    var photoPath = string.IsNullOrEmpty(user.PfpUrl) ? DEFAULT_AVATAR_PATH : user.PfpUrl;
-                                    contact = new Models.Contact(
-                                        user.Id,
-                                        user.Username,
-                                        user.Email ?? string.Empty,
-                                        user.PhoneNumber ?? string.Empty,
-                                        photoPath);
+                                    contact = Models.Contact.FromUserDto(user);
 
                                     lock (_contacts)
                                     {
