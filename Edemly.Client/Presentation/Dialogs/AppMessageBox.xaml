@@ -1,0 +1,88 @@
+<common:ThemedWindow x:Class="Edemly.Client.Presentation.Dialogs.AppMessageBox"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:common="clr-namespace:Edemly.Client.Presentation.Common"
+        Title="AppMessageBox"
+        Height="220"
+        Width="450"
+        WindowStartupLocation="CenterScreen"
+        WindowStyle="None"
+        ResizeMode="NoResize"
+        Background="Transparent"
+        AllowsTransparency="True"
+        Topmost="True">
+
+    <Border Background="{DynamicResource ThemeSurfaceBrush}"
+            BorderBrush="{DynamicResource ThemePrimaryBrush}"
+            BorderThickness="2"
+            CornerRadius="12"
+            Effect="{StaticResource MessageBoxShadowEffect}">
+
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="50" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="70" />
+            </Grid.RowDefinitions>
+
+            <Border Grid.Row="0"
+                    Background="{DynamicResource ThemePrimaryBrush}"
+                    CornerRadius="10,10,0,0">
+
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="50" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock x:Name="txtIcon"
+                               Grid.Column="0"
+                               FontSize="24"
+                               VerticalAlignment="Center"
+                               HorizontalAlignment="Center" />
+
+                    <TextBlock x:Name="txtTitle"
+                               Grid.Column="1"
+                               Text="Message"
+                               Foreground="{DynamicResource ThemeOnPrimaryTextBrush}"
+                               FontSize="18"
+                               FontWeight="SemiBold"
+                               VerticalAlignment="Center"
+                               Margin="5,0,15,0" />
+                </Grid>
+            </Border>
+
+            <ScrollViewer Grid.Row="1"
+                          VerticalScrollBarVisibility="Auto"
+                          HorizontalScrollBarVisibility="Disabled">
+
+                <TextBlock x:Name="txtMessage"
+                           Text="Your message here"
+                           TextWrapping="Wrap"
+                           HorizontalAlignment="Left"
+                           Margin="25,20"
+                           FontSize="14"
+                           LineHeight="22"
+                           Foreground="{DynamicResource ThemeTextPrimaryBrush}" />
+            </ScrollViewer>
+
+            <StackPanel Grid.Row="2"
+                        Orientation="Horizontal"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Margin="0,0,0,15">
+
+                <Button x:Name="btnOk"
+                        Style="{StaticResource PrimaryDialogButtonStyle}"
+                        Content="OK"
+                        Click="BtnOk_Click" />
+
+                <Button x:Name="btnCancel"
+                        Style="{StaticResource SecondaryDialogButtonStyle}"
+                        Content="Cancel"
+                        Visibility="Collapsed"
+                        Click="BtnCancel_Click" />
+            </StackPanel>
+        </Grid>
+    </Border>
+</common:ThemedWindow>

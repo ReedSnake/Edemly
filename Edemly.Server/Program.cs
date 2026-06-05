@@ -130,6 +130,7 @@ namespace Edemly.Server
             builder.Services.AddScoped<IPaymentService, PaymentService>();
             builder.Services.AddScoped<IPermissionService, PermissionService>();
             builder.Services.AddScoped<IFileStorageService, FileStorageService>();
+            builder.Services.AddScoped<ICompanyService, CompanyService>();
             builder.Services.AddHttpClient<WayForPayService>();
 
             builder.Services.AddSingleton<Services.UserPresenceService>();

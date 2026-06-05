@@ -1,8 +1,7 @@
-﻿using Edemly.Contracts.Files;
+using Edemly.Contracts.Files;
 using System.IO;
 using System.Net.Http;
 using System.Net.Http.Headers;
-
 namespace Edemly.Client.Api
 {
     public partial class ApiService : IApiService, IDisposable

@@ -1,60 +1,18 @@
-﻿using Edemly.Client.Services;
+using Edemly.Client.Application.Services;
+using Edemly.Client.Presentation.Common;
 using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Media;
 using System.Windows.Navigation;
-
-namespace Edemly.Client
+namespace Edemly.Client.Pages.Info
 {
-    public partial class Page_aboutapp : Page
+    public partial class Page_aboutapp : ThemedPage
     {
         public Page_aboutapp()
         {
             InitializeComponent();
 
-            ThemeService.Instance.ThemeChanged += (themeName) => OnThemeChanged();
-
-            ApplyThemeToPage();
-
             LoadTexts();
-        }
-
-        private void OnThemeChanged()
-        {
-            try
-            {
-                ApplyThemeToPage();
-                System.Diagnostics.Debug.WriteLine("[PAGE_ABOUTAPP] Theme changed");
-            }
-            catch { }
-        }
-
-        private void ApplyThemeToPage()
-        {
-            try
-            {
-                var palette = ThemeService.Instance.GetCurrentPalette();
-
-                var grid = this.Content as Grid;
-                if (grid != null)
-                {
-                    var gradientBrush = new LinearGradientBrush
-                    {
-                        StartPoint = new Point(1, 1),
-                        EndPoint = new Point(0, 0)
-                    };
-                    gradientBrush.GradientStops.Add(new GradientStop(palette.BackgroundDark, 0.7));
-                    gradientBrush.GradientStops.Add(new GradientStop(palette.Primary, 0.0));
-                    grid.Background = gradientBrush;
-                }
-
-                System.Diagnostics.Debug.WriteLine($"[PAGE_ABOUTAPP] Theme applied: {ThemeService.Instance.CurrentTheme}");
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"[PAGE_ABOUTAPP] ApplyThemeToPage error: {ex.Message}");
-            }
         }
 
         private void LoadTexts()

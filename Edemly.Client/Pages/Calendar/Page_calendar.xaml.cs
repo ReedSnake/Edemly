@@ -1,8 +1,9 @@
-﻿#nullable disable
+#nullable disable
 
 using Edemly.Client.Api;
-using Edemly.Client.Lang;
-using Edemly.Client.Services;
+using Edemly.Client.Application.Localization;
+using Edemly.Client.Application.Services;
+using Edemly.Client.Presentation.Common;
 using Edemly.Contracts.Remindings;
 using System.Globalization;
 using System.Windows;
@@ -11,9 +12,9 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Media;
 using System.Windows.Shapes;
 
-namespace Edemly.Client
+namespace Edemly.Client.Pages.Calendar
 {
-    public partial class Page_calendar : Page
+    public partial class Page_calendar : ThemedPage
     {
         private static readonly Dictionary<int, (string Color, string Category)> _remindingTypeMap =
         new()
@@ -25,10 +26,6 @@ namespace Edemly.Client
             { 4, ("#9B59B6", DefaultLanguage.CategoryStudy) },
             { 5, ("#FF69B4", DefaultLanguage.CategoryEntertainment) }
         };
-
-        private static readonly Dictionary<string, int> _getRemindingTypeByCategory =
-            _remindingTypeMap.ToDictionary(x => x.Value.Category, x => x.Key);
-
         private Popup _dayTasksPopup;
 
         private DateTime _currentDate;
@@ -66,107 +63,29 @@ namespace Edemly.Client
 
             _currentFilter = DefaultLanguage.FilterAll;
 
-            ThemeService.Instance.ThemeChanged += (themeName) => OnThemeChanged();
-
-            ApplyThemeToPage();
-
             _ = UpdateCalendarAsync();
             UpdateTasksList();
             UpdateFilterButtonsStyle(_currentFilter);
         }
 
-        private void OnThemeChanged()
+        protected override void ApplyTheme()
         {
-            try
+            if (Content is Grid grid)
             {
-                ApplyThemeToPage();
-                UpdateFilterButtonsStyle(_currentFilter);
-                _ = UpdateCalendarAsync();
-                UpdateTasksList();
+                grid.SetResourceReference(Panel.BackgroundProperty, "PageBackgroundBrush");
+
+                foreach (var rectangle in grid.Children.OfType<Rectangle>().Where(r => r.Name != "OverlayBackground"))
+                    rectangle.SetResourceReference(Shape.FillProperty, "ThemeSurfaceBrush");
             }
-            catch { }
-        }
 
-        private void ApplyThemeToPage()
-        {
-            try
-            {
-                var palette = ThemeService.Instance.GetCurrentPalette();
+            OverlayBackground?.SetResourceReference(Shape.FillProperty, "ThemeOverlayBrush");
 
-                var grid = this.Content as Grid;
-                if (grid != null)
-                {
-                    var gradientBrush = new LinearGradientBrush
-                    {
-                        StartPoint = new Point(1, 1),
-                        EndPoint = new Point(0, 0)
-                    };
-                    gradientBrush.GradientStops.Add(new GradientStop(palette.BackgroundDark, 0.7));
-                    gradientBrush.GradientStops.Add(new GradientStop(palette.Primary, 0.0));
-                    grid.Background = gradientBrush;
+            UpdateFilterButtonsStyle(_currentFilter);
 
-                    foreach (var child in grid.Children)
-                    {
-                        if (child is Rectangle rect)
-                        {
-                            rect.Fill = new SolidColorBrush(palette.Background);
-                        }
-                    }
-                }
+            _ = UpdateCalendarAsync();
+            UpdateTasksList(_selectedDateForTask);
 
-                var monthText = Get<TextBlock>("MonthText");
-                var yearText = Get<TextBlock>("YearText");
-                var tasksHeader = Get<TextBlock>("TasksHeader");
-                var showFilterLabel = Get<TextBlock>("ShowFilterLabel");
-
-                if (monthText != null) monthText.Foreground = new SolidColorBrush(palette.Secondary);
-                if (yearText != null) yearText.Foreground = new SolidColorBrush(palette.Secondary);
-                if (tasksHeader != null) tasksHeader.Foreground = new SolidColorBrush(palette.Secondary);
-                if (showFilterLabel != null) showFilterLabel.Foreground = new SolidColorBrush(palette.Secondary);
-
-                if (TodayBtn != null)
-                {
-                    TodayBtn.Background = new SolidColorBrush(palette.Secondary);
-                }
-
-                var addTaskBtn = Get<Button>("AddTaskBtn");
-                if (addTaskBtn != null)
-                {
-                    addTaskBtn.Foreground = new SolidColorBrush(palette.Secondary);
-                }
-
-                var backBtn = Get<Button>("BackButton");
-                if (backBtn != null)
-                {
-                    backBtn.Foreground = new SolidColorBrush(palette.Secondary);
-                }
-
-                var prevBtn = Get<Button>("PrevMonthBtn");
-                var nextBtn = Get<Button>("NextMonthBtn");
-                if (prevBtn != null) prevBtn.Foreground = new SolidColorBrush(palette.Secondary);
-                if (nextBtn != null) nextBtn.Foreground = new SolidColorBrush(palette.Secondary);
-
-                var dayTexts = new[] { "DaySunText", "DayMonText", "DayTueText", "DayWedText", "DayThuText", "DayFriText", "DaySatText" };
-                foreach (var dayName in dayTexts)
-                {
-                    var dayText = Get<TextBlock>(dayName);
-                    if (dayText != null) dayText.Foreground = new SolidColorBrush(palette.Secondary);
-                }
-
-                var saveAddTaskBtn = Get<Button>("SaveAddTaskBtn");
-                var cancelAddTaskBtn = Get<Button>("CancelAddTaskBtn");
-                var saveEditTaskBtn = Get<Button>("SaveEditTaskBtn");
-                var cancelEditTaskBtn = Get<Button>("CancelEditTaskBtn");
-
-                if (saveAddTaskBtn != null) saveAddTaskBtn.Background = new SolidColorBrush(palette.Primary);
-                if (saveEditTaskBtn != null) saveEditTaskBtn.Background = new SolidColorBrush(palette.Primary);
-
-                System.Diagnostics.Debug.WriteLine($"[PAGE_CALENDAR] Theme applied: {ThemeService.Instance.CurrentTheme}");
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"[PAGE_CALENDAR] ApplyThemeToPage error: {ex.Message}");
-            }
+            System.Diagnostics.Debug.WriteLine($"[PAGE_CALENDAR] Theme applied: {ThemeService.Instance.CurrentTheme}");
         }
 
         private void ApplyLocalization()
@@ -311,6 +230,33 @@ namespace Edemly.Client
             if (categoryName == DefaultLanguage.CategoryStudy) return 4;
             if (categoryName == DefaultLanguage.CategoryEntertainment) return 5;
             return 1;
+        }
+
+        private static string GetCategoryColor(int type)
+        {
+            return _remindingTypeMap.TryGetValue(type, out var category)
+                ? category.Color
+                : _remindingTypeMap[1].Color;
+        }
+
+        private Style GetStyle(string resourceKey)
+        {
+            return TryFindResource(resourceKey) as Style;
+        }
+
+        private void SetThemeBrush(FrameworkElement element, DependencyProperty property, string resourceKey)
+        {
+            element?.SetResourceReference(property, resourceKey);
+        }
+
+        private static string GetTaskTextResourceKey(RemindingDto task)
+        {
+            return task.IsCompleted ? "ThemeDisabledTextBrush" : "ThemeTextPrimaryBrush";
+        }
+
+        private static Brush CreateColorBrush(string color)
+        {
+            return new SolidColorBrush((Color)ColorConverter.ConvertFromString(color));
         }
 
         private T Get<T>(string name) where T : class
@@ -473,7 +419,7 @@ namespace Edemly.Client
 
                 Button dayButton = new Button
                 {
-                    Style = (Style)FindResource("DayButtonStyle"),
+                    Style = GetStyle("DayButtonStyle"),
                     Content = "",
                     Height = 60,
                     Tag = null,
@@ -489,9 +435,9 @@ namespace Edemly.Client
                     FontWeight = FontWeights.Normal,
                     HorizontalAlignment = HorizontalAlignment.Right,
                     VerticalAlignment = VerticalAlignment.Top,
-                    Margin = new Thickness(0, 3, 3, 0),
-                    Foreground = new SolidColorBrush(ThemeService.Instance.GetCurrentPalette().Secondary)
+                    Margin = new Thickness(0, 3, 3, 0)
                 };
+                SetThemeBrush(dayText, TextBlock.ForegroundProperty, "ThemeTextPrimaryBrush");
 
                 StackPanel taskIndicator = new StackPanel
                 {
@@ -521,23 +467,14 @@ namespace Edemly.Client
 
                     foreach (var task in tasksForDay.Take(3))
                     {
-                        string taskColor = task.Type switch
-                        {
-                            0 => "#FF6B6B",
-                            1 => "#4A6CF7",
-                            2 => "#32CD32",
-                            3 => "#FFA500",
-                            4 => "#9B59B6",
-                            5 => "#FF69B4",
-                            _ => "#4A6CF7"
-                        };
+                        string taskColor = GetCategoryColor(task.Type);
 
                         Ellipse dot = new Ellipse
                         {
                             Width = 6,
                             Height = 6,
                             Margin = new Thickness(3, 0, 3, 0),
-                            Fill = new SolidColorBrush((Color)ColorConverter.ConvertFromString(taskColor))
+                            Fill = CreateColorBrush(taskColor)
                         };
                         taskIndicator.Children.Add(dot);
                     }
@@ -547,30 +484,30 @@ namespace Edemly.Client
 
                     if (isToday)
                     {
-                        dayButton.Background = new SolidColorBrush(ThemeService.Instance.GetCurrentPalette().Secondary);
-                        dayButton.Foreground = Brushes.White;
-                        dayText.Foreground = Brushes.White;
+                        SetThemeBrush(dayButton, Control.BackgroundProperty, "ThemeSecondaryBrush");
+                        SetThemeBrush(dayButton, Control.ForegroundProperty, "ThemeOnSecondaryTextBrush");
+                        SetThemeBrush(dayText, TextBlock.ForegroundProperty, "ThemeOnSecondaryTextBrush");
                         dayButton.IsEnabled = true;
                         dayButton.Cursor = System.Windows.Input.Cursors.Hand;
                         dayButton.ToolTip = $"{DefaultLanguage.Today} - {DefaultLanguage.AddTaskButton}/{DefaultLanguage.NoTasks}";
                     }
                     else if (isPastDate)
                     {
-                        dayButton.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#F5F5F5"));
-                        dayButton.Foreground = Brushes.Gray;
-                        dayText.Foreground = Brushes.Gray;
+                        SetThemeBrush(dayButton, Control.BackgroundProperty, "ThemeBorderLightBrush");
+                        SetThemeBrush(dayButton, Control.ForegroundProperty, "ThemeDisabledTextBrush");
+                        SetThemeBrush(dayText, TextBlock.ForegroundProperty, "ThemeDisabledTextBrush");
                         dayButton.Opacity = 0.7;
                         dayButton.IsEnabled = true;
                         dayButton.Cursor = System.Windows.Input.Cursors.Hand;
                         dayButton.ToolTip = $"{DefaultLanguage.NoTasks} ({DefaultLanguage.CannotAddPastDate})";
                         foreach (Ellipse dot in taskIndicator.Children)
-                            dot.Fill = Brushes.Gray;
+                            SetThemeBrush(dot, Shape.FillProperty, "ThemeDisabledTextBrush");
                     }
                     else
                     {
-                        dayButton.Background = new SolidColorBrush(ThemeService.Instance.GetCurrentPalette().Background);
-                        dayButton.Foreground = new SolidColorBrush(ThemeService.Instance.GetCurrentPalette().TextPrimary);
-                        dayText.Foreground = new SolidColorBrush(ThemeService.Instance.GetCurrentPalette().TextPrimary);
+                        SetThemeBrush(dayButton, Control.BackgroundProperty, "ThemeSurfaceBrush");
+                        SetThemeBrush(dayButton, Control.ForegroundProperty, "ThemeTextPrimaryBrush");
+                        SetThemeBrush(dayText, TextBlock.ForegroundProperty, "ThemeTextPrimaryBrush");
                         dayButton.IsEnabled = true;
                         dayButton.Cursor = System.Windows.Input.Cursors.Hand;
                         dayButton.ToolTip = $"{DefaultLanguage.AddTaskButton}/{DefaultLanguage.NoTasks}";
@@ -635,7 +572,8 @@ namespace Edemly.Client
                 cm.Items.Add(duplicate);
             }
 
-            var del = new MenuItem { Header = DefaultLanguage.ContextMenuDelete, Tag = task, Foreground = new SolidColorBrush(Color.FromRgb(220, 53, 69)) };
+            var del = new MenuItem { Header = DefaultLanguage.ContextMenuDelete, Tag = task };
+            SetThemeBrush(del, Control.ForegroundProperty, "ThemeDangerBrush");
             del.Click += (s, e) => DeleteTask(task);
             cm.Items.Add(del);
 
@@ -687,16 +625,7 @@ namespace Edemly.Client
                 timeBox.Text = task.ShowTime ? task.LastTime.ToString("HH:mm") : "09:00";
             }
 
-            string taskColor = task.Type switch
-            {
-                0 => "#FF6B6B",
-                1 => "#4A6CF7",
-                2 => "#32CD32",
-                3 => "#FFA500",
-                4 => "#9B59B6",
-                5 => "#FF69B4",
-                _ => "#4A6CF7"
-            };
+            string taskColor = GetCategoryColor(task.Type);
 
             var r = Get<RadioButton>("ColorRed"); if (r != null && taskColor == "#FF6B6B") r.IsChecked = true;
             var b = Get<RadioButton>("ColorBlue"); if (b != null && taskColor == "#4A6CF7") b.IsChecked = true;
@@ -715,7 +644,7 @@ namespace Edemly.Client
 
         private async void DeleteTask(RemindingDto task)
         {
-            var res = MessageBox.Show($"{DefaultLanguage.DeleteTaskConfirm} '{task.Name}'?", DefaultLanguage.Confirm, MessageBoxButton.YesNo, MessageBoxImage.Warning);
+            var res = MessageBox.ShowQuestion($"{DefaultLanguage.DeleteTaskConfirm} '{task.Name}'?", DefaultLanguage.Confirm);
             if (res == MessageBoxResult.Yes)
             {
                 _tasks.Remove(task);
@@ -733,7 +662,7 @@ namespace Edemly.Client
                 Width = 400,
                 Height = 220,
                 WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                Owner = Application.Current.MainWindow,
+                Owner = System.Windows.Application.Current.MainWindow,
                 ResizeMode = ResizeMode.NoResize
             };
 
@@ -743,7 +672,12 @@ namespace Edemly.Client
             grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
             grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
 
-            var label = new TextBlock { Text = DefaultLanguage.DuplicateTargetDate, Margin = new Thickness(0, 0, 0, 8) };
+            var label = new TextBlock
+            {
+                Text = DefaultLanguage.DuplicateTargetDate,
+                Style = GetStyle("BodyTextStyle"),
+                Margin = new Thickness(0, 0, 0, 8)
+            };
             Grid.SetRow(label, 0);
             grid.Children.Add(label);
 
@@ -765,9 +699,20 @@ namespace Edemly.Client
             grid.Children.Add(repeatPanel);
 
             var btns = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right };
-            var cancel = new Button { Content = DefaultLanguage.CancelTaskButton, Width = 80, Margin = new Thickness(0, 0, 8, 0) };
+            var cancel = new Button
+            {
+                Content = DefaultLanguage.CancelTaskButton,
+                Width = 80,
+                Style = GetStyle("SecondaryButtonStyle"),
+                Margin = new Thickness(0, 0, 8, 0)
+            };
             cancel.Click += (s, e) => wnd.DialogResult = false;
-            var ok = new Button { Content = DefaultLanguage.SaveTaskButton, Width = 80 };
+            var ok = new Button
+            {
+                Content = DefaultLanguage.SaveTaskButton,
+                Width = 80,
+                Style = GetStyle("PrimaryButtonStyle")
+            };
             ok.Click += (s, e) => wnd.DialogResult = true;
             btns.Children.Add(cancel); btns.Children.Add(ok);
             Grid.SetRow(btns, 3);
@@ -904,7 +849,16 @@ namespace Edemly.Client
 
                 if (!upcoming.Any())
                 {
-                    tasksPanel.Children.Add(new TextBlock { Text = DefaultLanguage.NoUpcomingTasks, Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#0B4539")), FontSize = 16, HorizontalAlignment = HorizontalAlignment.Center, Margin = new Thickness(0, 20, 0, 0) });
+                    var noUpcomingTasksText = new TextBlock
+                    {
+                        Text = DefaultLanguage.NoUpcomingTasks,
+                        Style = GetStyle("BodyTextStyle"),
+                        FontSize = 16,
+                        HorizontalAlignment = HorizontalAlignment.Center,
+                        Margin = new Thickness(0, 20, 0, 0)
+                    };
+                    SetThemeBrush(noUpcomingTasksText, TextBlock.ForegroundProperty, "ThemeTextSecondaryBrush");
+                    tasksPanel.Children.Add(noUpcomingTasksText);
                     return;
                 }
 
@@ -914,10 +868,11 @@ namespace Edemly.Client
                     var header = new TextBlock
                     {
                         Text = g.Key == DateTime.Today ? DefaultLanguage.Today : g.Key.ToString("dddd, MMM d"),
+                        Style = GetStyle("BodyBoldTextStyle"),
                         FontWeight = FontWeights.SemiBold,
-                        Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#0B4539")),
                         Margin = new Thickness(0, 10, 0, 6)
                     };
+                    SetThemeBrush(header, TextBlock.ForegroundProperty, "ThemeTextPrimaryBrush");
                     tasksPanel.Children.Add(header);
 
                     RenderTasksList(tasksPanel, g.OrderBy(t => t.ShowTime ? t.LastTime.TimeOfDay : TimeSpan.Zero).ToList(), null);
@@ -937,11 +892,12 @@ namespace Edemly.Client
                 TextBlock noTasksText = new TextBlock
                 {
                     Text = DefaultLanguage.NoTasks,
-                    Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#0B4539")),
+                    Style = GetStyle("BodyTextStyle"),
                     FontSize = 16,
                     HorizontalAlignment = HorizontalAlignment.Center,
                     Margin = new Thickness(0, 20, 0, 0)
                 };
+                SetThemeBrush(noTasksText, TextBlock.ForegroundProperty, "ThemeTextSecondaryBrush");
                 tasksPanel.Children.Add(noTasksText);
                 return;
             }
@@ -950,7 +906,7 @@ namespace Edemly.Client
             {
                 Border taskCard = new Border
                 {
-                    Style = (Style)FindResource("TaskItemStyle"),
+                    Style = GetStyle("TaskItemStyle"),
                     CornerRadius = new CornerRadius(10)
                 };
 
@@ -965,34 +921,25 @@ namespace Edemly.Client
                     VerticalAlignment = VerticalAlignment.Center
                 };
 
-                string taskColor = task.Type switch
-                {
-                    0 => "#FF6B6B",
-                    1 => "#4A6CF7",
-                    2 => "#32CD32",
-                    3 => "#FFA500",
-                    4 => "#9B59B6",
-                    5 => "#FF69B4",
-                    _ => "#4A6CF7"
-                };
+                string taskColor = GetCategoryColor(task.Type);
 
                 Border colorIndicator = new Border
                 {
                     Width = 12,
                     Height = 12,
                     CornerRadius = new CornerRadius(6),
-                    Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString(taskColor)),
+                    Background = CreateColorBrush(taskColor),
                     Margin = new Thickness(0, 0, 0, 4)
                 };
 
                 TextBlock categoryText = new TextBlock
                 {
                     Text = GetLocalizedCategoryName(task.Type),
-                    Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#0B4539")),
                     FontSize = 10,
                     HorizontalAlignment = HorizontalAlignment.Center,
                     Opacity = 0.7
                 };
+                SetThemeBrush(categoryText, TextBlock.ForegroundProperty, "ThemeTextSecondaryBrush");
 
                 colorPanel.Children.Add(colorIndicator);
                 colorPanel.Children.Add(categoryText);
@@ -1005,37 +952,33 @@ namespace Edemly.Client
                 TextBlock timeText = new TextBlock
                 {
                     Text = task.ShowTime ? task.LastTime.ToString("HH:mm") : string.Empty,
-                    Foreground = task.IsCompleted ? new SolidColorBrush(Colors.Gray) : new SolidColorBrush((Color)ColorConverter.ConvertFromString("#0B4539")),
                     FontSize = 12,
                     Opacity = 0.9,
                     Margin = new Thickness(0, 0, 0, 4)
                 };
+                SetThemeBrush(timeText, TextBlock.ForegroundProperty, GetTaskTextResourceKey(task));
 
                 TextBlock titleText = new TextBlock
                 {
                     Text = task.Name,
-                    Foreground = task.IsCompleted ?
-                        new SolidColorBrush(Colors.Gray) :
-                        new SolidColorBrush((Color)ColorConverter.ConvertFromString("#0B4539")),
                     FontSize = 16,
                     FontWeight = FontWeights.Bold,
                     TextDecorations = task.IsCompleted ? TextDecorations.Strikethrough : null,
                     Margin = new Thickness(0, 0, 0, 5)
                 };
+                SetThemeBrush(titleText, TextBlock.ForegroundProperty, GetTaskTextResourceKey(task));
 
                 if (!string.IsNullOrEmpty(task.Content))
                 {
                     TextBlock descText = new TextBlock
                     {
                         Text = task.Content,
-                        Foreground = task.IsCompleted ?
-                            new SolidColorBrush(Colors.Gray) :
-                            new SolidColorBrush((Color)ColorConverter.ConvertFromString("#0B4539")),
                         FontSize = 12,
                         TextWrapping = TextWrapping.Wrap,
                         TextDecorations = task.IsCompleted ? TextDecorations.Strikethrough : null,
                         Opacity = 0.8
                     };
+                    SetThemeBrush(descText, TextBlock.ForegroundProperty, GetTaskTextResourceKey(task));
                     textPanel.Children.Add(descText);
                 }
 
@@ -1152,16 +1095,7 @@ namespace Edemly.Client
             if (timeBorder != null) timeBorder.Visibility = task.ShowTime ? Visibility.Visible : Visibility.Collapsed;
             if (timeBox != null) timeBox.Text = task.ShowTime ? task.LastTime.ToString("HH:mm") : "09:00";
 
-            string taskColor = task.Type switch
-            {
-                0 => "#FF6B6B",
-                1 => "#4A6CF7",
-                2 => "#32CD32",
-                3 => "#FFA500",
-                4 => "#9B59B6",
-                5 => "#FF69B4",
-                _ => "#4A6CF7"
-            };
+            string taskColor = GetCategoryColor(task.Type);
 
             switch (taskColor)
             {
@@ -1416,8 +1350,6 @@ namespace Edemly.Client
                 Get<Button>("FilterUpcomingBtn")
             };
 
-            var themePalette = ThemeService.Instance.GetCurrentPalette();
-
             foreach (var btn in allButtons)
             {
                 if (btn == null) continue;
@@ -1426,16 +1358,16 @@ namespace Edemly.Client
 
                 if (btnFilter == activeFilter)
                 {
-                    btn.Background = new SolidColorBrush(themePalette.Secondary);
-                    btn.Foreground = Brushes.White;
+                    SetThemeBrush(btn, Control.BackgroundProperty, "ThemeSecondaryBrush");
+                    SetThemeBrush(btn, Control.ForegroundProperty, "ThemeOnSecondaryTextBrush");
                     btn.BorderBrush = Brushes.Transparent;
                     btn.FontWeight = FontWeights.Bold;
                 }
                 else
                 {
-                    btn.Background = new SolidColorBrush(themePalette.Background);
-                    btn.Foreground = new SolidColorBrush(themePalette.TextPrimary);
-                    btn.BorderBrush = new SolidColorBrush(themePalette.BorderLight);
+                    SetThemeBrush(btn, Control.BackgroundProperty, "ThemeSurfaceBrush");
+                    SetThemeBrush(btn, Control.ForegroundProperty, "ThemeTextPrimaryBrush");
+                    SetThemeBrush(btn, Control.BorderBrushProperty, "ThemeBorderLightBrush");
                     btn.BorderThickness = new Thickness(1);
                     btn.FontWeight = FontWeights.SemiBold;
                 }

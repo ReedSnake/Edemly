@@ -1,0 +1,142 @@
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- ========================================================= -->
+    <!-- Shadow effects                                            -->
+    <!-- ========================================================= -->
+
+    <DropShadowEffect x:Key="SoftShadowEffect"
+                      BlurRadius="12"
+                      ShadowDepth="0"
+                      Opacity="0.18"
+                      Color="#000000" />
+
+    <DropShadowEffect x:Key="MediumShadowEffect"
+                      BlurRadius="18"
+                      ShadowDepth="0"
+                      Opacity="0.25"
+                      Color="#000000" />
+
+    <DropShadowEffect x:Key="StrongShadowEffect"
+                      BlurRadius="24"
+                      ShadowDepth="0"
+                      Opacity="0.35"
+                      Color="#000000" />
+
+
+    <!-- ========================================================= -->
+    <!-- Dialog / popup shadows                                    -->
+    <!-- ========================================================= -->
+
+    <DropShadowEffect x:Key="DialogShadowEffect"
+                      BlurRadius="20"
+                      ShadowDepth="0"
+                      Opacity="0.30"
+                      Color="#000000" />
+
+    <DropShadowEffect x:Key="PopupShadowEffect"
+                      BlurRadius="16"
+                      ShadowDepth="0"
+                      Opacity="0.25"
+                      Color="#000000" />
+
+    <DropShadowEffect x:Key="FloatingPanelShadowEffect"
+                      BlurRadius="18"
+                      ShadowDepth="0"
+                      Opacity="0.22"
+                      Color="#000000" />
+
+
+    <!-- ========================================================= -->
+    <!-- Card shadows                                              -->
+    <!-- ========================================================= -->
+
+    <DropShadowEffect x:Key="CardShadowEffect"
+                      BlurRadius="10"
+                      ShadowDepth="1"
+                      Direction="270"
+                      Opacity="0.16"
+                      Color="#000000" />
+
+    <DropShadowEffect x:Key="SettingsCardShadowEffect"
+                      BlurRadius="12"
+                      ShadowDepth="1"
+                      Direction="270"
+                      Opacity="0.14"
+                      Color="#000000" />
+
+    <DropShadowEffect x:Key="PremiumCardShadowEffect"
+                      BlurRadius="16"
+                      ShadowDepth="1"
+                      Direction="270"
+                      Opacity="0.18"
+                      Color="#000000" />
+
+
+    <!-- ========================================================= -->
+    <!-- Overlay / call window shadows                             -->
+    <!-- ========================================================= -->
+
+    <DropShadowEffect x:Key="OverlayShadowEffect"
+                      BlurRadius="22"
+                      ShadowDepth="0"
+                      Opacity="0.32"
+                      Color="#000000" />
+
+    <DropShadowEffect x:Key="CallPanelShadowEffect"
+                      BlurRadius="20"
+                      ShadowDepth="0"
+                      Opacity="0.28"
+                      Color="#000000" />
+
+    <DropShadowEffect x:Key="IncomingCallShadowEffect"
+                      BlurRadius="24"
+                      ShadowDepth="0"
+                      Opacity="0.35"
+                      Color="#000000" />
+
+
+    <!-- ========================================================= -->
+    <!-- Small element shadows                                     -->
+    <!-- ========================================================= -->
+
+    <DropShadowEffect x:Key="ButtonShadowEffect"
+                      BlurRadius="8"
+                      ShadowDepth="1"
+                      Direction="270"
+                      Opacity="0.14"
+                      Color="#000000" />
+
+    <DropShadowEffect x:Key="AvatarShadowEffect"
+                      BlurRadius="8"
+                      ShadowDepth="1"
+                      Direction="270"
+                      Opacity="0.16"
+                      Color="#000000" />
+
+    <DropShadowEffect x:Key="ImagePreviewShadowEffect"
+                      BlurRadius="10"
+                      ShadowDepth="1"
+                      Direction="270"
+                      Opacity="0.18"
+                      Color="#000000" />
+
+
+    <!-- ========================================================= -->
+    <!-- Compatibility aliases                                     -->
+    <!-- ========================================================= -->
+
+    <DropShadowEffect x:Key="MessageBoxShadowEffect"
+                      BlurRadius="20"
+                      ShadowDepth="0"
+                      Opacity="0.30"
+                      Color="#000000" />
+
+    <DropShadowEffect x:Key="DropShadowEffect"
+                      BlurRadius="20"
+                      ShadowDepth="0"
+                      Opacity="0.30"
+                      Color="#000000" />
+
+</ResourceDictionary>

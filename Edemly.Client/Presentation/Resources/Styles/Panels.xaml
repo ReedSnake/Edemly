@@ -1,0 +1,356 @@
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- ========================================================= -->
+    <!-- Base panels                                               -->
+    <!-- ========================================================= -->
+
+    <Style x:Key="BaseStackPanelStyle"
+           TargetType="StackPanel">
+        <Setter Property="ClipToBounds"
+                Value="False" />
+    </Style>
+
+    <Style x:Key="BaseHorizontalStackPanelStyle"
+           TargetType="StackPanel"
+           BasedOn="{StaticResource BaseStackPanelStyle}">
+        <Setter Property="Orientation"
+                Value="Horizontal" />
+    </Style>
+
+    <Style x:Key="BaseVerticalStackPanelStyle"
+           TargetType="StackPanel"
+           BasedOn="{StaticResource BaseStackPanelStyle}">
+        <Setter Property="Orientation"
+                Value="Vertical" />
+    </Style>
+
+    <Style x:Key="BaseGridStyle"
+           TargetType="Grid">
+        <Setter Property="ClipToBounds"
+                Value="False" />
+    </Style>
+
+    <Style x:Key="BaseDockPanelStyle"
+           TargetType="DockPanel">
+        <Setter Property="ClipToBounds"
+                Value="False" />
+        <Setter Property="LastChildFill"
+                Value="True" />
+    </Style>
+
+    <Style x:Key="BaseWrapPanelStyle"
+           TargetType="WrapPanel">
+        <Setter Property="ClipToBounds"
+                Value="False" />
+        <Setter Property="Orientation"
+                Value="Horizontal" />
+    </Style>
+
+
+    <!-- ========================================================= -->
+    <!-- Page containers                                           -->
+    <!-- ========================================================= -->
+
+    <Style x:Key="PageRootGridStyle"
+           TargetType="Grid"
+           BasedOn="{StaticResource BaseGridStyle}">
+        <Setter Property="Background"
+                Value="{DynamicResource ThemeBackgroundBrush}" />
+    </Style>
+
+    <Style x:Key="TransparentRootGridStyle"
+           TargetType="Grid"
+           BasedOn="{StaticResource BaseGridStyle}">
+        <Setter Property="Background"
+                Value="Transparent" />
+    </Style>
+
+    <Style x:Key="PageContentStackPanelStyle"
+           TargetType="StackPanel"
+           BasedOn="{StaticResource BaseVerticalStackPanelStyle}">
+        <Setter Property="HorizontalAlignment"
+                Value="Stretch" />
+    </Style>
+
+    <Style x:Key="CenteredPageContentStackPanelStyle"
+           TargetType="StackPanel"
+           BasedOn="{StaticResource BaseVerticalStackPanelStyle}">
+        <Setter Property="HorizontalAlignment"
+                Value="Center" />
+        <Setter Property="VerticalAlignment"
+                Value="Center" />
+    </Style>
+
+
+    <!-- ========================================================= -->
+    <!-- Header panels                                             -->
+    <!-- ========================================================= -->
+
+    <Style x:Key="HeaderGridStyle"
+           TargetType="Grid"
+           BasedOn="{StaticResource BaseGridStyle}">
+        <Setter Property="Background"
+                Value="Transparent" />
+    </Style>
+
+    <Style x:Key="HeaderHorizontalPanelStyle"
+           TargetType="StackPanel"
+           BasedOn="{StaticResource BaseHorizontalStackPanelStyle}">
+        <Setter Property="VerticalAlignment"
+                Value="Center" />
+    </Style>
+
+    <Style x:Key="HeaderActionsPanelStyle"
+           TargetType="StackPanel"
+           BasedOn="{StaticResource BaseHorizontalStackPanelStyle}">
+        <Setter Property="HorizontalAlignment"
+                Value="Right" />
+        <Setter Property="VerticalAlignment"
+                Value="Center" />
+    </Style>
+
+
+    <!-- ========================================================= -->
+    <!-- Form panels                                               -->
+    <!-- ========================================================= -->
+
+    <Style x:Key="FormStackPanelStyle"
+           TargetType="StackPanel"
+           BasedOn="{StaticResource BaseVerticalStackPanelStyle}">
+        <Setter Property="HorizontalAlignment"
+                Value="Stretch" />
+    </Style>
+
+    <Style x:Key="FormRowPanelStyle"
+           TargetType="StackPanel"
+           BasedOn="{StaticResource BaseHorizontalStackPanelStyle}">
+        <Setter Property="VerticalAlignment"
+                Value="Center" />
+    </Style>
+
+    <Style x:Key="FormActionsPanelStyle"
+           TargetType="StackPanel"
+           BasedOn="{StaticResource BaseHorizontalStackPanelStyle}">
+        <Setter Property="HorizontalAlignment"
+                Value="Right" />
+    </Style>
+
+    <Style x:Key="DialogActionsPanelStyle"
+           TargetType="StackPanel"
+           BasedOn="{StaticResource BaseHorizontalStackPanelStyle}">
+        <Setter Property="HorizontalAlignment"
+                Value="Center" />
+    </Style>
+
+
+    <!-- ========================================================= -->
+    <!-- Settings panels                                           -->
+    <!-- ========================================================= -->
+
+    <Style x:Key="SettingsContentPanelStyle"
+           TargetType="StackPanel"
+           BasedOn="{StaticResource BaseVerticalStackPanelStyle}">
+        <Setter Property="HorizontalAlignment"
+                Value="Stretch" />
+    </Style>
+
+    <Style x:Key="SettingsSectionPanelStyle"
+           TargetType="StackPanel"
+           BasedOn="{StaticResource BaseVerticalStackPanelStyle}">
+        <Setter Property="HorizontalAlignment"
+                Value="Stretch" />
+    </Style>
+
+    <Style x:Key="SettingsRowPanelStyle"
+           TargetType="StackPanel"
+           BasedOn="{StaticResource BaseHorizontalStackPanelStyle}">
+        <Setter Property="VerticalAlignment"
+                Value="Center" />
+    </Style>
+
+    <Style x:Key="SettingsActionsPanelStyle"
+           TargetType="StackPanel"
+           BasedOn="{StaticResource BaseHorizontalStackPanelStyle}">
+        <Setter Property="HorizontalAlignment"
+                Value="Right" />
+        <Setter Property="VerticalAlignment"
+                Value="Center" />
+    </Style>
+
+
+    <!-- ========================================================= -->
+    <!-- Contact / profile panels                                  -->
+    <!-- ========================================================= -->
+
+    <Style x:Key="ContactInfoRowPanelStyle"
+           TargetType="StackPanel"
+           BasedOn="{StaticResource BaseHorizontalStackPanelStyle}">
+        <Setter Property="VerticalAlignment"
+                Value="Center" />
+    </Style>
+
+    <Style x:Key="ProfileHeaderPanelStyle"
+           TargetType="StackPanel"
+           BasedOn="{StaticResource BaseVerticalStackPanelStyle}">
+        <Setter Property="HorizontalAlignment"
+                Value="Center" />
+    </Style>
+
+    <Style x:Key="ProfileActionsPanelStyle"
+           TargetType="StackPanel"
+           BasedOn="{StaticResource BaseHorizontalStackPanelStyle}">
+        <Setter Property="HorizontalAlignment"
+                Value="Center" />
+    </Style>
+
+
+    <!-- ========================================================= -->
+    <!-- Chat / main page panels                                   -->
+    <!-- ========================================================= -->
+
+    <Style x:Key="ChatHeaderPanelStyle"
+           TargetType="StackPanel"
+           BasedOn="{StaticResource BaseHorizontalStackPanelStyle}">
+        <Setter Property="VerticalAlignment"
+                Value="Center" />
+    </Style>
+
+    <Style x:Key="ChatActionsPanelStyle"
+           TargetType="StackPanel"
+           BasedOn="{StaticResource BaseHorizontalStackPanelStyle}">
+        <Setter Property="HorizontalAlignment"
+                Value="Right" />
+        <Setter Property="VerticalAlignment"
+                Value="Center" />
+    </Style>
+
+    <Style x:Key="MessageInputPanelStyle"
+           TargetType="StackPanel"
+           BasedOn="{StaticResource BaseHorizontalStackPanelStyle}">
+        <Setter Property="VerticalAlignment"
+                Value="Bottom" />
+    </Style>
+
+    <Style x:Key="MessageBubbleContentPanelStyle"
+           TargetType="StackPanel"
+           BasedOn="{StaticResource BaseVerticalStackPanelStyle}">
+        <Setter Property="HorizontalAlignment"
+                Value="Stretch" />
+    </Style>
+
+    <Style x:Key="SideMenuPanelStyle"
+           TargetType="StackPanel"
+           BasedOn="{StaticResource BaseVerticalStackPanelStyle}">
+        <Setter Property="HorizontalAlignment"
+                Value="Stretch" />
+    </Style>
+
+    <Style x:Key="SearchResultsPanelStyle"
+           TargetType="StackPanel"
+           BasedOn="{StaticResource BaseVerticalStackPanelStyle}">
+        <Setter Property="HorizontalAlignment"
+                Value="Stretch" />
+    </Style>
+
+    <Style x:Key="StickerItemsPanelStyle"
+           TargetType="WrapPanel"
+           BasedOn="{StaticResource BaseWrapPanelStyle}">
+        <Setter Property="HorizontalAlignment"
+                Value="Left" />
+    </Style>
+
+
+    <!-- ========================================================= -->
+    <!-- Notes panels                                              -->
+    <!-- ========================================================= -->
+
+    <Style x:Key="NotesPanelStyle"
+           TargetType="StackPanel"
+           BasedOn="{StaticResource BaseVerticalStackPanelStyle}">
+        <Setter Property="HorizontalAlignment"
+                Value="Stretch" />
+    </Style>
+
+    <Style x:Key="NoteActionsPanelStyle"
+           TargetType="StackPanel"
+           BasedOn="{StaticResource BaseHorizontalStackPanelStyle}">
+        <Setter Property="HorizontalAlignment"
+                Value="Right" />
+    </Style>
+
+
+    <!-- ========================================================= -->
+    <!-- Call window panels                                        -->
+    <!-- ========================================================= -->
+
+    <Style x:Key="CallRootGridStyle"
+           TargetType="Grid"
+           BasedOn="{StaticResource BaseGridStyle}">
+        <Setter Property="Background"
+                Value="{DynamicResource ThemeBackgroundBrush}" />
+    </Style>
+
+    <Style x:Key="CallContentPanelStyle"
+           TargetType="StackPanel"
+           BasedOn="{StaticResource BaseVerticalStackPanelStyle}">
+        <Setter Property="HorizontalAlignment"
+                Value="Center" />
+        <Setter Property="VerticalAlignment"
+                Value="Center" />
+    </Style>
+
+    <Style x:Key="CallActionsPanelStyle"
+           TargetType="StackPanel"
+           BasedOn="{StaticResource BaseHorizontalStackPanelStyle}">
+        <Setter Property="HorizontalAlignment"
+                Value="Center" />
+        <Setter Property="VerticalAlignment"
+                Value="Center" />
+    </Style>
+
+
+    <!-- ========================================================= -->
+    <!-- Premium page panels                                       -->
+    <!-- ========================================================= -->
+
+    <Style x:Key="PremiumContentPanelStyle"
+           TargetType="StackPanel"
+           BasedOn="{StaticResource BaseVerticalStackPanelStyle}">
+        <Setter Property="HorizontalAlignment"
+                Value="Stretch" />
+    </Style>
+
+    <Style x:Key="PremiumFeaturePanelStyle"
+           TargetType="StackPanel"
+           BasedOn="{StaticResource BaseHorizontalStackPanelStyle}">
+        <Setter Property="VerticalAlignment"
+                Value="Top" />
+    </Style>
+
+    <Style x:Key="PremiumActionsPanelStyle"
+           TargetType="StackPanel"
+           BasedOn="{StaticResource BaseHorizontalStackPanelStyle}">
+        <Setter Property="HorizontalAlignment"
+                Value="Center" />
+    </Style>
+
+
+    <!-- ========================================================= -->
+    <!-- Compatibility aliases                                     -->
+    <!-- ========================================================= -->
+
+    <Style x:Key="HorizontalPanelStyle"
+           TargetType="StackPanel"
+           BasedOn="{StaticResource BaseHorizontalStackPanelStyle}" />
+
+    <Style x:Key="VerticalPanelStyle"
+           TargetType="StackPanel"
+           BasedOn="{StaticResource BaseVerticalStackPanelStyle}" />
+
+    <Style x:Key="CenterContentPanelStyle"
+           TargetType="StackPanel"
+           BasedOn="{StaticResource CenteredPageContentStackPanelStyle}" />
+
+</ResourceDictionary>

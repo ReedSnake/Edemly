@@ -1,16 +1,14 @@
-﻿#nullable disable
+#nullable disable
 
-using Edemly.Client.Lang;
+using Edemly.Client.Application.Localization;
 using Edemly.Client.Models;
-using Edemly.Client.Services;
+using Edemly.Client.Presentation.Common;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Media;
 using System.Windows.Media.Imaging;
-
-namespace Edemly.Client
+namespace Edemly.Client.Pages.Main
 {
-    public partial class Page_contact_setting : Page
+    public partial class Page_contact_setting : ThemedPage
     {
         private Contact _contact;
         private const int MAX_CONTACTS_WITH_NOTES = 5;
@@ -20,65 +18,9 @@ namespace Edemly.Client
             InitializeComponent();
             _contact = contact;
 
-            ThemeService.Instance.ThemeChanged += (themeName) => OnThemeChanged();
-
-            ApplyThemeToPage();
-
             LoadInterfaceTexts();
             LoadContactData();
             _ = LoadNoteAsync();
-        }
-
-        private void OnThemeChanged()
-        {
-            try
-            {
-                ApplyThemeToPage();
-                System.Diagnostics.Debug.WriteLine("[PAGE_CONTACT_SETTING] Theme changed");
-            }
-            catch { }
-        }
-
-        private void ApplyThemeToPage()
-        {
-            try
-            {
-                var palette = ThemeService.Instance.GetCurrentPalette();
-
-                var grid = this.Content as Grid;
-                if (grid != null)
-                {
-                    var gradientBrush = new LinearGradientBrush
-                    {
-                        StartPoint = new Point(1, 1),
-                        EndPoint = new Point(0, 0)
-                    };
-                    gradientBrush.GradientStops.Add(new GradientStop(palette.BackgroundDark, 0.7));
-                    gradientBrush.GradientStops.Add(new GradientStop(palette.Primary, 0.0));
-                    grid.Background = gradientBrush;
-                }
-
-                if (AddNoteButton != null)
-                {
-                    AddNoteButton.Background = new SolidColorBrush(palette.Primary);
-                }
-                if (DeleteNoteButton != null)
-                {
-                    DeleteNoteButton.Background = new SolidColorBrush(Color.FromRgb(220, 53, 69));
-                }
-
-                var contactPhotoBorder = this.FindName("ContactPhotoBorder") as Border;
-                if (contactPhotoBorder != null)
-                {
-                    contactPhotoBorder.BorderBrush = new SolidColorBrush(palette.Secondary);
-                }
-
-                System.Diagnostics.Debug.WriteLine($"[PAGE_CONTACT_SETTING] Theme applied: {ThemeService.Instance.CurrentTheme}");
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"[PAGE_CONTACT_SETTING] ApplyThemeToPage error: {ex.Message}");
-            }
         }
 
         private void LoadInterfaceTexts()
@@ -254,9 +196,9 @@ namespace Edemly.Client
 
         private async void DeleteNoteButton_Click(object sender, RoutedEventArgs e)
         {
-            var result = MessageBox.Show(DefaultLanguage.ContactDeleteConfirmMessage,
-                DefaultLanguage.ContactDeleteConfirmTitle,
-                MessageBoxButton.YesNo, MessageBoxImage.Question);
+            var result = MessageBox.ShowQuestion(
+                DefaultLanguage.ContactDeleteConfirmMessage,
+                DefaultLanguage.ContactDeleteConfirmTitle);
 
             if (result == MessageBoxResult.Yes)
             {

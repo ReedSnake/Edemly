@@ -1,8 +1,9 @@
 #nullable disable
 
 using Edemly.Client.Api;
-using Edemly.Client.Lang;
-using Edemly.Client.Services;
+using Edemly.Client.Application.Localization;
+using Edemly.Client.Application.Services;
+using Edemly.Client.Presentation.Common;
 using Microsoft.Win32;
 using System.Globalization;
 using System.IO;
@@ -12,11 +13,9 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using MessageBox = Edemly.Client.Pages.MessageBox;
-
-namespace Edemly.Client
+namespace Edemly.Client.Pages.Settings
 {
-    public partial class Page_settings : Page
+    public partial class Page_settings : ThemedPage
     {
         private readonly IApiService _apiService;
         private bool _hasUnsavedChanges = false;
@@ -31,8 +30,6 @@ namespace Edemly.Client
             InitializeComponent();
             _apiService = App.ApiService;
             this.Unloaded += Page_settings_Unloaded;
-
-            ThemeService.Instance.ThemeChanged += (themeName) => OnThemeChanged();
 
             try { App.HubService.ProfileUpdated += OnProfileUpdated; } catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[PAGE_SETTINGS] Failed to subscribe ProfileUpdated: {ex}"); }
             try
@@ -66,56 +63,22 @@ namespace Edemly.Client
                 var saveBtn = this.FindName("SaveButton") as Button;
                 if (saveBtn != null) saveBtn.Content = DefaultLanguage.SaveButton;
 
-                var currentTheme = ThemeService.Instance.CurrentTheme;
-                UpdateThemeButtonsStyle(currentTheme);
-
-                ApplyThemeToPage();
+                UpdateThemePreviewSelection(ThemeService.Instance.CurrentTheme);
             }
             catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[PAGE_SETTINGS] Init UI failed: {ex}"); }
 
             _ = LoadUserDataAsync();
         }
 
-        private void OnThemeChanged()
+        protected override void ApplyTheme()
         {
             try
             {
-                var currentTheme = ThemeService.Instance.CurrentTheme;
-                UpdateThemeButtonsStyle(currentTheme);
-                ApplyThemeToPage();
-                System.Diagnostics.Debug.WriteLine($"[PAGE_SETTINGS] Theme changed to: {currentTheme}");
+                MainPageGrid?.SetResourceReference(Panel.BackgroundProperty, "PageBackgroundBrush");
+                UpdateThemePreviewSelection(ThemeService.Instance.CurrentTheme);
+                System.Diagnostics.Debug.WriteLine($"[PAGE_SETTINGS] Theme applied: {ThemeService.Instance.CurrentTheme}");
             }
-            catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[PAGE_SETTINGS] OnThemeChanged error: {ex}"); }
-        }
-
-        private void ApplyThemeToPage()
-        {
-            try
-            {
-                var palette = ThemeService.Instance.GetCurrentPalette();
-
-                var grid = this.FindName("MainPageGrid") as Grid;
-                if (grid != null)
-                {
-                    var gradientBrush = new LinearGradientBrush
-                    {
-                        StartPoint = new Point(1, 1),
-                        EndPoint = new Point(0, 0)
-                    };
-                    gradientBrush.GradientStops.Add(new GradientStop(palette.BackgroundDark, 0.7));
-                    gradientBrush.GradientStops.Add(new GradientStop(palette.Primary, 0.0));
-                    grid.Background = gradientBrush;
-                }
-
-                if (AvatarBorder != null)
-                {
-                    AvatarBorder.Background = new SolidColorBrush(palette.Primary);
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"[PAGE_SETTINGS] ApplyThemeToPage error: {ex.Message}");
-            }
+            catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[PAGE_SETTINGS] ApplyTheme error: {ex}"); }
         }
 
         private async void OnProfileUpdated(int userId, string newPfpUrl)
@@ -124,7 +87,7 @@ namespace Edemly.Client
             {
                 if (App.CurrentUserId.HasValue && userId == App.CurrentUserId.Value)
                 {
-                    await Application.Current.Dispatcher.InvokeAsync(async () =>
+                    await System.Windows.Application.Current.Dispatcher.InvokeAsync(async () =>
                     {
                         try
                         {
@@ -494,23 +457,28 @@ namespace Edemly.Client
                 }
                 else
                 {
-                    Application.Current.MainWindow.Title = DefaultLanguage.AppTitle;
+                    System.Windows.Application.Current.MainWindow.Title = DefaultLanguage.AppTitle;
                 }
             }
             catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[PAGE_SETTINGS] ChangeLanguage failed: {ex}"); }
         }
 
-        private void DefaultThemeColor_MouseDown(object sender, MouseButtonEventArgs e) => ChangeTheme("Default");
+        private void ThemeColor_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (sender is not FrameworkElement element)
+            {
+                return;
+            }
 
-        private void BlueThemeColor_MouseDown(object sender, MouseButtonEventArgs e) => ChangeTheme("Blue");
+            var themeName = element.Tag as string;
 
-        private void PinkThemeColor_MouseDown(object sender, MouseButtonEventArgs e) => ChangeTheme("Pink");
+            if (string.IsNullOrWhiteSpace(themeName))
+            {
+                return;
+            }
 
-        private void OrangeThemeColor_MouseDown(object sender, MouseButtonEventArgs e) => ChangeTheme("Orange");
-
-        private void PurpleThemeColor_MouseDown(object sender, MouseButtonEventArgs e) => ChangeTheme("Purple");
-
-        private void RedThemeColor_MouseDown(object sender, MouseButtonEventArgs e) => ChangeTheme("Red");
+            ChangeTheme(themeName);
+        }
 
         private void ChangeTheme(string themeName)
         {
@@ -526,120 +494,33 @@ namespace Edemly.Client
             }
         }
 
-        private void UpdateThemeButtonsStyle(string activeTheme)
+        private void UpdateThemePreviewSelection(string activeTheme)
         {
             try
             {
-                var defaultBtn = this.FindName("DefaultThemeButton") as Button;
-                var blueBtn = this.FindName("BlueThemeButton") as Button;
-                var pinkBtn = this.FindName("PinkThemeButton") as Button;
-                var orangeBtn = this.FindName("OrangeThemeButton") as Button;
-                var purpleBtn = this.FindName("PurpleThemeButton") as Button;
-                var redBtn = this.FindName("RedThemeButton") as Button;
-
-                if (defaultBtn != null)
+                var themePreviews = new[]
                 {
-                    if (activeTheme == "Default")
-                    {
-                        defaultBtn.Background = new SolidColorBrush(Color.FromRgb(0x05, 0x72, 0x72));
-                        defaultBtn.Foreground = Brushes.White;
-                        defaultBtn.BorderThickness = new Thickness(0);
-                    }
-                    else
-                    {
-                        defaultBtn.Background = new SolidColorBrush(Color.FromRgb(0xE8, 0xE8, 0xE8));
-                        defaultBtn.Foreground = new SolidColorBrush(Color.FromRgb(0x05, 0x72, 0x72));
-                        defaultBtn.BorderBrush = new SolidColorBrush(Color.FromRgb(0x05, 0x72, 0x72));
-                        defaultBtn.BorderThickness = new Thickness(2);
-                    }
-                }
+                    (Preview: DefaultThemeColor, ThemeName: "Default"),
+                    (Preview: BlueThemeColor, ThemeName: "Blue"),
+                    (Preview: PinkThemeColor, ThemeName: "Pink"),
+                    (Preview: OrangeThemeColor, ThemeName: "Orange"),
+                    (Preview: PurpleThemeColor, ThemeName: "Purple"),
+                    (Preview: RedThemeColor, ThemeName: "Red")
+                };
 
-                if (blueBtn != null)
+                foreach (var (preview, themeName) in themePreviews)
                 {
-                    if (activeTheme == "Blue")
+                    if (preview == null)
                     {
-                        blueBtn.Background = new SolidColorBrush(Color.FromRgb(0x0D, 0x48, 0x9D));
-                        blueBtn.Foreground = Brushes.White;
-                        blueBtn.BorderThickness = new Thickness(0);
+                        continue;
                     }
-                    else
-                    {
-                        blueBtn.Background = new SolidColorBrush(Color.FromRgb(0xE8, 0xE8, 0xE8));
-                        blueBtn.Foreground = new SolidColorBrush(Color.FromRgb(0x0D, 0x48, 0x9D));
-                        blueBtn.BorderBrush = new SolidColorBrush(Color.FromRgb(0x0D, 0x48, 0x9D));
-                        blueBtn.BorderThickness = new Thickness(2);
-                    }
-                }
 
-                if (pinkBtn != null)
-                {
-                    if (activeTheme == "Pink")
-                    {
-                        pinkBtn.Background = new SolidColorBrush(Color.FromRgb(0x6F, 0x00, 0x27));
-                        pinkBtn.Foreground = Brushes.White;
-                        pinkBtn.BorderThickness = new Thickness(0);
-                    }
-                    else
-                    {
-                        pinkBtn.Background = new SolidColorBrush(Color.FromRgb(0xE8, 0xE8, 0xE8));
-                        pinkBtn.Foreground = new SolidColorBrush(Color.FromRgb(0x6F, 0x00, 0x27));
-                        pinkBtn.BorderBrush = new SolidColorBrush(Color.FromRgb(0x6F, 0x00, 0x27));
-                        pinkBtn.BorderThickness = new Thickness(2);
-                    }
-                }
-
-                if (orangeBtn != null)
-                {
-                    if (activeTheme == "Orange")
-                    {
-                        orangeBtn.Background = new SolidColorBrush(Color.FromRgb(0x73, 0x31, 0x06));
-                        orangeBtn.Foreground = Brushes.White;
-                        orangeBtn.BorderThickness = new Thickness(0);
-                    }
-                    else
-                    {
-                        orangeBtn.Background = new SolidColorBrush(Color.FromRgb(0xE8, 0xE8, 0xE8));
-                        orangeBtn.Foreground = new SolidColorBrush(Color.FromRgb(0x73, 0x31, 0x06));
-                        orangeBtn.BorderBrush = new SolidColorBrush(Color.FromRgb(0x73, 0x31, 0x06));
-                        orangeBtn.BorderThickness = new Thickness(2);
-                    }
-                }
-
-                if (purpleBtn != null)
-                {
-                    if (activeTheme == "Purple")
-                    {
-                        purpleBtn.Background = new SolidColorBrush(Color.FromRgb(0x55, 0x00, 0x91));
-                        purpleBtn.Foreground = Brushes.White;
-                        purpleBtn.BorderThickness = new Thickness(0);
-                    }
-                    else
-                    {
-                        purpleBtn.Background = new SolidColorBrush(Color.FromRgb(0xE8, 0xE8, 0xE8));
-                        purpleBtn.Foreground = new SolidColorBrush(Color.FromRgb(0x55, 0x00, 0x91));
-                        purpleBtn.BorderBrush = new SolidColorBrush(Color.FromRgb(0x55, 0x00, 0x91));
-                        purpleBtn.BorderThickness = new Thickness(2);
-                    }
-                }
-
-                if (redBtn != null)
-                {
-                    if (activeTheme == "Red")
-                    {
-                        redBtn.Background = new SolidColorBrush(Color.FromRgb(0x54, 0x09, 0x01));
-                        redBtn.Foreground = Brushes.White;
-                        redBtn.BorderThickness = new Thickness(0);
-                    }
-                    else
-                    {
-                        redBtn.Background = new SolidColorBrush(Color.FromRgb(0xE8, 0xE8, 0xE8));
-                        redBtn.Foreground = new SolidColorBrush(Color.FromRgb(0x54, 0x09, 0x01));
-                        redBtn.BorderBrush = new SolidColorBrush(Color.FromRgb(0x54, 0x09, 0x01));
-                        redBtn.BorderThickness = new Thickness(2);
-                    }
+                    bool isActive = string.Equals(activeTheme, themeName, StringComparison.OrdinalIgnoreCase);
+                    preview.BorderThickness = isActive ? new Thickness(3) : new Thickness(1);
+                    preview.SetResourceReference(Border.BorderBrushProperty, isActive ? "ThemePrimaryBrush" : "ThemeBorderBrush");
                 }
             }
-            catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[PAGE_SETTINGS] UpdateThemeButtonsStyle failed: {ex}"); }
+            catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[PAGE_SETTINGS] UpdateThemePreviewSelection failed: {ex}"); }
         }
 
         private void SetAppBackgroundImage(string packUriOrNull)
@@ -648,7 +529,7 @@ namespace Edemly.Client
             {
                 if (string.IsNullOrWhiteSpace(packUriOrNull))
                 {
-                    Application.Current.Resources["BackgroundImage"] = null;
+                    System.Windows.Application.Current.Resources["BackgroundImage"] = null;
                     try { ConfigService.Instance.BackgroundImagePath = string.Empty; } catch { }
                     return;
                 }
@@ -660,7 +541,7 @@ namespace Edemly.Client
                 bmp.EndInit();
                 bmp.Freeze();
 
-                Application.Current.Resources["BackgroundImage"] = bmp;
+                System.Windows.Application.Current.Resources["BackgroundImage"] = bmp;
 
                 try
                 {
@@ -671,102 +552,64 @@ namespace Edemly.Client
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"[SETTINGS] SetAppBackgroundImage error: {ex.Message}");
-                Application.Current.Resources["BackgroundImage"] = null;
+                System.Windows.Application.Current.Resources["BackgroundImage"] = null;
                 try { ConfigService.Instance.BackgroundImagePath = string.Empty; } catch { }
             }
         }
 
-        private void Wallpaper1_MouseDown(object sender, MouseButtonEventArgs e)
+        private void Wallpaper_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            SetAppBackgroundImage(null);
+            if (sender is not FrameworkElement element)
+            {
+                return;
+            }
+
+            var backgroundPath = element.Tag as string;
+
+            SetAppBackgroundImage(backgroundPath);
         }
 
-        private void Wallpaper2_MouseDown(object sender, MouseButtonEventArgs e)
-        {
-            SetAppBackgroundImage("pack://application:,,,/Assets/Backgrounds/profile-blue.png");
-        }
 
-        private void Wallpaper3_MouseDown(object sender, MouseButtonEventArgs e)
-        {
-            SetAppBackgroundImage("pack://application:,,,/Assets/Backgrounds/profile-pink.png");
-        }
-
-        private void Wallpaper4_MouseDown(object sender, MouseButtonEventArgs e)
-        {
-            SetAppBackgroundImage("pack://application:,,,/Assets/Backgrounds/profile-orange.png");
-        }
-
-        private void Wallpaper5_MouseDown(object sender, MouseButtonEventArgs e)
-        {
-            SetAppBackgroundImage("pack://application:,,,/Assets/Backgrounds/profile-green.png");
-        }
-
-        private void Wallpaper6_MouseDown(object sender, MouseButtonEventArgs e)
-        {
-            SetAppBackgroundImage("pack://application:,,,/Assets/Backgrounds/profile-black.png");
-        }
-
-        private void Wallpaper7_MouseDown(object sender, MouseButtonEventArgs e)
-        {
-            SetAppBackgroundImage("pack://application:,,,/Assets/Backgrounds/profile-violet.png");
-        }
-
-        private void Wallpaper8_MouseDown(object sender, MouseButtonEventArgs e)
-        {
-            SetAppBackgroundImage("pack://application:,,,/Assets/Backgrounds/profile-red.png");
-        }
-
-        private void Color1_MouseDown(object sender, MouseButtonEventArgs e)
-        { }
-
-        private void Color2_MouseDown(object sender, MouseButtonEventArgs e)
-        { }
-
-        private void Color3_MouseDown(object sender, MouseButtonEventArgs e)
-        { }
-
-        private void Color4_MouseDown(object sender, MouseButtonEventArgs e)
-        { }
-
-        private void Color5_MouseDown(object sender, MouseButtonEventArgs e)
-        { }
-
-        private void Color6_MouseDown(object sender, MouseButtonEventArgs e)
-        { }
-
-        private void Color7_MouseDown(object sender, MouseButtonEventArgs e)
-        { }
-
-        private void SelectThemeColor(string colorHex)
-        { }
-
-        private void ResetColorSelection()
-        { }
+        private static readonly Regex PhoneInputRegex = new(@"^[0-9+\-\s()]+$");
 
         private void PhoneNumberTextBox_PreviewTextInput(object sender, TextCompositionEventArgs e)
-        { }
+        {
+            e.Handled = !PhoneInputRegex.IsMatch(e.Text);
+        }
 
         private void PhoneNumberTextBox_PreviewKeyDown(object sender, KeyEventArgs e)
-        { }
+        {
+            if (e.Key == Key.Space)
+            {
+                e.Handled = false;
+            }
+        }
 
         private void PhoneNumberTextBox_Pasting(object sender, DataObjectPastingEventArgs e)
-        { }
+        {
+            if (!e.DataObject.GetDataPresent(DataFormats.Text))
+            {
+                e.CancelCommand();
+                return;
+            }
+
+            var text = e.DataObject.GetData(DataFormats.Text) as string;
+
+            if (string.IsNullOrWhiteSpace(text) || !PhoneInputRegex.IsMatch(text))
+            {
+                e.CancelCommand();
+            }
+        }
 
         private void WallpapersScrollViewer_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
         {
-            if (sender is ScrollViewer scrollViewer)
+            if (sender is not ScrollViewer scrollViewer)
             {
-                if (Keyboard.Modifiers == ModifierKeys.Shift || e.Delta > 0)
-                {
-                    scrollViewer.ScrollToHorizontalOffset(scrollViewer.HorizontalOffset - e.Delta);
-                    e.Handled = true;
-                }
-                else
-                {
-                    scrollViewer.ScrollToHorizontalOffset(scrollViewer.HorizontalOffset - e.Delta);
-                    e.Handled = true;
-                }
+                return;
             }
+
+            scrollViewer.ScrollToHorizontalOffset(scrollViewer.HorizontalOffset - e.Delta);
+            e.Handled = true;
         }
 
         private void AvatarImage_SizeChanged(object sender, SizeChangedEventArgs e) => UpdateAvatarClip();

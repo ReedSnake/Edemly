@@ -1,23 +1,22 @@
 #nullable enable
 
-using Edemly.Client.Lang;
-using Edemly.Client.Services;
-using Edemly.Client.UI.Helpers;
+using Edemly.Client.Application.Localization;
+using Edemly.Client.Infrastructure.Audio;
+using Edemly.Client.Presentation.Common;
+using Edemly.Client.Presentation.Controllers.Chats;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Navigation;
-using MessageBox = Edemly.Client.Pages.MessageBox;
-
-namespace Edemly.Client
+namespace Edemly.Client.Pages.Main
 {
-    public partial class Page_main : Page
+    public partial class Page_main : ThemedPage
     {
         private bool isMenuOpen = false;
         private bool isContactInfoOpen = false;
         private bool isGroupInfoOpen = false;
-        private ChatManager? chatManager;
+        private ChatWorkspaceController? _chatController;
         private CancellationTokenSource? _cancellationTokenSource;
         private bool _isFirstLoad = true;
 
@@ -40,38 +39,24 @@ namespace Edemly.Client
 
             _cancellationTokenSource = new CancellationTokenSource();
 
-            if (App.GlobalChatManager != null)
+            if (App.GlobalChatController != null)
             {
-                chatManager = App.GlobalChatManager;
-                chatManager.UpdateUIElements(MessagesPanel, MessagesScrollViewer, ChatsPanel, ChatHeaderText);
-
-                typeof(ChatManager)
-                    .GetField("_updateChatHeaderCallback", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
-                    ?.SetValue(chatManager, new Action<Models.Contact>(UpdateChatHeader));
+                _chatController = App.GlobalChatController;
+                _chatController.UpdateUiBindings(CreateChatWorkspaceBindings());
 
                 _isFirstLoad = false;
             }
             else
             {
-                chatManager = new ChatManager(
-                    MessagesPanel,
-                    MessagesScrollViewer,
-                    ChatsPanel,
-                    ChatHeaderText,
-                    App.CurrentUserId.Value,
-                    UpdateChatHeader);
+                _chatController = new ChatWorkspaceController(CreateChatWorkspaceBindings(), App.CurrentUserId.Value);
 
-                App.GlobalChatManager = chatManager;
+                App.GlobalChatController = _chatController;
                 _isFirstLoad = true;
             }
 
             UpdateChatHeader(null);
 
             ApplyLocalization();
-
-            ThemeService.Instance.ThemeChanged += (themeName) => OnThemeChanged();
-
-            ApplyThemeToPage();
 
             MessageTextBox.KeyDown += MessageTextBox_PreviewKeyDown;
 
@@ -80,8 +65,7 @@ namespace Edemly.Client
                 if (IsPlaceholderText(MessageTextBox.Text))
                 {
                     MessageTextBox.Text = "";
-                    MessageTextBox.Foreground = Brushes.Black;
-                    MessageTextBox.FontStyle = FontStyles.Normal;
+                    ApplyTextInputActiveStyle(MessageTextBox);
                 }
             };
 
@@ -111,15 +95,56 @@ namespace Edemly.Client
 
             if (ParticipantSearchTextBox != null)
             {
-                ParticipantSearchTextBox.Text = DefaultLanguage.SearchUsers;
-                ParticipantSearchTextBox.Foreground = Brushes.Gray;
-                ParticipantSearchTextBox.FontStyle = FontStyles.Italic;
+                ApplyTextInputPlaceholderStyle(ParticipantSearchTextBox, DefaultLanguage.SearchUsers);
             }
 
             this.Loaded += Page_main_Loaded;
             this.Unloaded += Page_main_Unloaded;
             LoadStickers();
             InitializeAsync();
+        }
+
+        private ChatWorkspaceBindings CreateChatWorkspaceBindings()
+        {
+            return new ChatWorkspaceBindings(
+                MessagesPanel,
+                MessagesScrollViewer,
+                ChatsPanel,
+                ChatHeaderText,
+                UpdateChatHeader);
+        }
+
+        private void SetThemeResource(FrameworkElement element, DependencyProperty property, string resourceKey)
+        {
+            element?.SetResourceReference(property, resourceKey);
+        }
+
+        private void ApplyTextInputPlaceholderStyle(TextBox textBox, string placeholder)
+        {
+            if (textBox == null)
+            {
+                return;
+            }
+
+            textBox.Text = placeholder;
+            SetThemeResource(textBox, Control.ForegroundProperty, "ThemeDisabledTextBrush");
+            textBox.FontStyle = FontStyles.Italic;
+        }
+
+        private void ApplyTextInputActiveStyle(TextBox textBox, string? text = null)
+        {
+            if (textBox == null)
+            {
+                return;
+            }
+
+            if (text != null)
+            {
+                textBox.Text = text;
+            }
+
+            SetThemeResource(textBox, Control.ForegroundProperty, "ThemeTextPrimaryBrush");
+            textBox.FontStyle = FontStyles.Normal;
         }
 
         private void ApplyLocalization()
@@ -193,8 +218,7 @@ namespace Edemly.Client
                 {
                     if (string.IsNullOrWhiteSpace(SearchTextBox.Text) || SearchTextBox.Text == "Search...")
                     {
-                        SearchTextBox.Text = DefaultLanguage.SearchPlaceholder;
-                        SearchTextBox.Foreground = Brushes.Gray;
+                        ApplyTextInputPlaceholderStyle(SearchTextBox, DefaultLanguage.SearchPlaceholder);
                     }
                 }
 
@@ -230,10 +254,17 @@ namespace Edemly.Client
             {
                 if (MessageTextBox != null)
                 {
-                    var currentText = MessageTextBox.Text?.Trim() ?? "";
-                    if (string.IsNullOrWhiteSpace(currentText) || IsPlaceholderText(currentText))
+                    if (_isRecording)
                     {
-                        SetMessagePlaceholder();
+                        ApplyTextInputPlaceholderStyle(MessageTextBox, DefaultLanguage.Loading);
+                    }
+                    else
+                    {
+                        var currentText = MessageTextBox.Text?.Trim() ?? "";
+                        if (string.IsNullOrWhiteSpace(currentText) || IsPlaceholderText(currentText))
+                        {
+                            SetMessagePlaceholder();
+                        }
                     }
                 }
 
@@ -244,8 +275,7 @@ namespace Edemly.Client
                         currentText == "Search..." ||
                         currentText == "Пошук...")
                     {
-                        SearchTextBox.Text = DefaultLanguage.SearchPlaceholder;
-                        SearchTextBox.Foreground = Brushes.Gray;
+                        ApplyTextInputPlaceholderStyle(SearchTextBox, DefaultLanguage.SearchPlaceholder);
                     }
                 }
 
@@ -256,9 +286,7 @@ namespace Edemly.Client
                         currentText == "Search users..." ||
                         currentText == "Пошук користувачів...")
                     {
-                        ParticipantSearchTextBox.Text = DefaultLanguage.SearchUsers;
-                        ParticipantSearchTextBox.Foreground = Brushes.Gray;
-                        ParticipantSearchTextBox.FontStyle = FontStyles.Italic;
+                        ApplyTextInputPlaceholderStyle(ParticipantSearchTextBox, DefaultLanguage.SearchUsers);
                     }
                 }
             }
@@ -365,10 +393,10 @@ namespace Edemly.Client
                 }
                 else
                 {
-                    if (chatManager == null)
+                    if (_chatController == null)
                         return;
 
-                    await chatManager.RestoreUIAsync();
+                    await _chatController.RestoreUIAsync();
                 }
             }
             catch (Exception ex)
@@ -385,112 +413,44 @@ namespace Edemly.Client
             DisposeCancellationTokenSourceSafely();
         }
 
-        private void OnThemeChanged()
+        protected override void ApplyTheme()
         {
             try
             {
-                ApplyThemeToPage();
-                System.Diagnostics.Debug.WriteLine("[PAGE_MAIN] Theme changed, updating UI colors");
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"[PAGE_MAIN] OnThemeChanged error: {ex.Message}");
-            }
-        }
+                MainGrid?.SetResourceReference(Panel.BackgroundProperty, "PageBackgroundBrush");
+                RefreshPlaceholders();
 
-        private void ApplyThemeToPage()
-        {
-            try
-            {
-                var palette = ThemeService.Instance.GetCurrentPalette();
-
-                var mainGrid = this.FindName("MainGrid") as Grid;
-                if (mainGrid != null)
+                if (_isRecording)
                 {
-                    var gradientBrush = new LinearGradientBrush
+                    if (SendButton != null)
                     {
-                        StartPoint = new Point(1, 1),
-                        EndPoint = new Point(0, 0)
-                    };
-                    gradientBrush.GradientStops.Add(new GradientStop(palette.BackgroundDark, 0.7));
-                    gradientBrush.GradientStops.Add(new GradientStop(palette.Primary, 0.0));
-                    mainGrid.Background = gradientBrush;
+                        SendButton.Content = "⏹";
+                        SendButton.Tag = "recording";
+                        SetThemeResource(SendButton, Control.BackgroundProperty, "ThemeDangerBrush");
+                    }
                 }
-
-                if (MenuButton != null)
+                else
                 {
-                    MenuButton.Background = new SolidColorBrush(palette.Secondary);
+                    ResetSendButtonForCurrentMessageInput();
                 }
 
-                if (MyPlannerButton != null)
+                if (_chatController?.CurrentChatContact != null && !(_chatController.IsCurrentChatGroup()))
                 {
-                    MyPlannerButton.Background = new SolidColorBrush(palette.Background);
-                    MyPlannerButton.BorderBrush = new SolidColorBrush(palette.Secondary);
+                    if (_chatController.TryGetCachedUserStatus(_chatController.CurrentChatContact.UserId, out var cachedOnline, out var cachedLastSeen))
+                    {
+                        UpdateOnlineStatus(cachedOnline, cachedLastSeen);
+                    }
+                    else
+                    {
+                        UpdateOnlineStatus(false, null);
+                    }
                 }
 
-                var todayBtn = this.FindName("TodayBtn") as Button;
-                if (todayBtn != null)
-                {
-                    todayBtn.Background = new SolidColorBrush(palette.Secondary);
-                }
-
-                if (CreateGroupButton != null)
-                {
-                    CreateGroupButton.Background = new SolidColorBrush(palette.Secondary);
-                }
-
-                if (ConfirmCreateGroupButton != null)
-                {
-                    ConfirmCreateGroupButton.Background = new SolidColorBrush(palette.Primary);
-                }
-
-                var closeContactInfoButton = this.FindName("CloseContactInfoButton") as Button;
-                if (closeContactInfoButton != null)
-                {
-                    closeContactInfoButton.Background = new SolidColorBrush(palette.Primary);
-                }
-
-                var contactInfoPanel = this.FindName("ContactInfoPanel") as Border;
-                if (contactInfoPanel != null)
-                {
-                    contactInfoPanel.BorderBrush = new SolidColorBrush(palette.Primary);
-                }
-
-                var groupInfoPanel = this.FindName("GroupInfoPanel") as Border;
-                if (groupInfoPanel != null)
-                {
-                    groupInfoPanel.BorderBrush = new SolidColorBrush(palette.Primary);
-                }
-
-                var stickersPanel = this.FindName("StickersPanel") as Border;
-                if (stickersPanel != null)
-                {
-                    stickersPanel.BorderBrush = new SolidColorBrush(palette.Primary);
-                }
-
-                var searchResultsBorder = this.FindName("SearchResultsBorder") as Border;
-                if (searchResultsBorder != null)
-                {
-                    searchResultsBorder.BorderBrush = new SolidColorBrush(palette.Primary);
-                }
-
-                var createGroupDialog = this.FindName("CreateGroupDialog") as Border;
-                if (createGroupDialog != null)
-                {
-                    createGroupDialog.BorderBrush = new SolidColorBrush(palette.Primary);
-                }
-
-                var chatHeaderContainer = this.FindName("ChatHeaderContainer") as Border;
-                if (chatHeaderContainer != null)
-                {
-                    chatHeaderContainer.Background = new SolidColorBrush(palette.PrimaryLight);
-                }
-
-                System.Diagnostics.Debug.WriteLine($"[PAGE_MAIN] Theme applied: {ThemeService.Instance.CurrentTheme}");
+                System.Diagnostics.Debug.WriteLine("[PAGE_MAIN] Theme applied");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[PAGE_MAIN] ApplyThemeToPage error: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"[PAGE_MAIN] ApplyTheme error: {ex.Message}");
             }
         }
 
@@ -520,9 +480,9 @@ namespace Edemly.Client
         {
             try
             {
-                if (chatManager == null)
+                if (_chatController == null)
                     return;
-                await chatManager.LoadExistingChatsAsync();
+                await _chatController.LoadExistingChatsAsync();
             }
             catch (Exception ex)
             {

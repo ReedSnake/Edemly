@@ -1,16 +1,13 @@
-﻿using Edemly.Client.Lang;
-using Edemly.Client.Services;
+using Edemly.Client.Application.Localization;
+using Edemly.Client.Presentation.Common;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Media;
-using MessageBox = Edemly.Client.Pages.MessageBox;
-
-namespace Edemly.Client
+namespace Edemly.Client.Pages.Payments
 {
-    public partial class Page_premium : Page
+    public partial class Page_premium : ThemedPage
     {
         private const decimal MonthlyAmount = 79.90m;
         private const decimal YearlyAmount = 790.00m;
@@ -19,57 +16,21 @@ namespace Edemly.Client
         {
             InitializeComponent();
 
-            ThemeService.Instance.ThemeChanged += (themeName) => OnThemeChanged();
-
-            ApplyThemeToPage();
-
             LoadTexts();
         }
 
-        private void OnThemeChanged()
+        protected override void ApplyTheme()
         {
             try
             {
-                ApplyThemeToPage();
-                System.Diagnostics.Debug.WriteLine("[PAGE_PREMIUM] Theme changed");
-            }
-            catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[PAGE_PREMIUM] OnThemeChanged failed: {ex}"); }
-        }
-
-        private void ApplyThemeToPage()
-        {
-            try
-            {
-                var palette = ThemeService.Instance.GetCurrentPalette();
-
-                var grid = this.Content as Grid;
-                if (grid != null)
+                if (Content is Grid rootGrid)
                 {
-                    var gradientBrush = new LinearGradientBrush
-                    {
-                        StartPoint = new Point(1, 1),
-                        EndPoint = new Point(0, 0)
-                    };
-                    gradientBrush.GradientStops.Add(new GradientStop(palette.BackgroundDark, 0.7));
-                    gradientBrush.GradientStops.Add(new GradientStop(palette.Primary, 0.0));
-                    grid.Background = gradientBrush;
+                    rootGrid.SetResourceReference(Panel.BackgroundProperty, "PageBackgroundBrush");
                 }
 
-                if (MonthlyButton != null)
-                {
-                    MonthlyButton.Background = new SolidColorBrush(palette.Primary);
-                }
-                if (YearlyButton != null)
-                {
-                    YearlyButton.Background = new SolidColorBrush(palette.Secondary);
-                }
-
-                System.Diagnostics.Debug.WriteLine($"[PAGE_PREMIUM] Theme applied: {ThemeService.Instance.CurrentTheme}");
+                System.Diagnostics.Debug.WriteLine("[PAGE_PREMIUM] Theme applied");
             }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"[PAGE_PREMIUM] ApplyThemeToPage error: {ex.Message}");
-            }
+            catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[PAGE_PREMIUM] ApplyTheme failed: {ex}"); }
         }
 
         private void LoadTexts()

@@ -1,6 +1,5 @@
 using Edemly.Contracts.Payments;
 using System.Text.Json;
-
 namespace Edemly.Client.Api
 {
     public partial class ApiService

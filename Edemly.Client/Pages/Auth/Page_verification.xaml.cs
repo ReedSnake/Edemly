@@ -1,75 +1,32 @@
-﻿using Edemly.Client.Lang;
-using Edemly.Client.Services;
+using Edemly.Client.Application.Localization;
+using Edemly.Client.Presentation.Common;
 using Edemly.Contracts.Auth;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Navigation;
-using MessageBox = Edemly.Client.Pages.MessageBox;
 
-namespace Edemly.Client
+namespace Edemly.Client.Pages.Auth
 {
-    public partial class Page_verification : Page
+    public partial class Page_verification : ThemedPage
     {
         private readonly string _userEmail;
         private readonly bool _isRegistration;
         private readonly string _username;
         private readonly bool _rememberMe;
 
-        public Page_verification(string email = "", bool isRegistration = false, string username = "", bool rememberMe = true)
+        public Page_verification(
+            string email = "",
+            bool isRegistration = false,
+            string username = "",
+            bool rememberMe = true)
         {
             InitializeComponent();
+
             _userEmail = email;
             _isRegistration = isRegistration;
             _username = username;
             _rememberMe = rememberMe;
 
-            ThemeService.Instance.ThemeChanged += (themeName) => OnThemeChanged();
-
-            ApplyThemeToPage();
-
             CodeTextBox.Focus();
-        }
-
-        private void OnThemeChanged()
-        {
-            try
-            {
-                ApplyThemeToPage();
-                System.Diagnostics.Debug.WriteLine("[PAGE_VERIFICATION] Theme changed");
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"[PAGE_VERIFICATION] OnThemeChanged error: {ex}");
-            }
-        }
-
-        private void ApplyThemeToPage()
-        {
-            try
-            {
-                var palette = ThemeService.Instance.GetCurrentPalette();
-
-                var grid = this.Content as Grid;
-                if (grid != null)
-                {
-                    var gradientBrush = new LinearGradientBrush
-                    {
-                        StartPoint = new Point(0, 0),
-                        EndPoint = new Point(1, 1)
-                    };
-                    gradientBrush.GradientStops.Add(new GradientStop(palette.BackgroundDark, 0.0));
-                    gradientBrush.GradientStops.Add(new GradientStop(palette.Secondary, 0.5));
-                    grid.Background = gradientBrush;
-                }
-
-                System.Diagnostics.Debug.WriteLine($"[PAGE_VERIFICATION] Theme applied: {ThemeService.Instance.CurrentTheme}");
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"[PAGE_VERIFICATION] ApplyThemeToPage error: {ex.Message}");
-            }
         }
 
         private async void VerifyButton_Click(object sender, RoutedEventArgs e)
@@ -78,7 +35,10 @@ namespace Edemly.Client
 
             if (string.IsNullOrWhiteSpace(code) || code.Length != 6)
             {
-                MessageBox.ShowWarning(DefaultLanguage.PleaseEnterValidCode, DefaultLanguage.ErrorTitle);
+                MessageBox.ShowWarning(
+                    DefaultLanguage.PleaseEnterValidCode,
+                    DefaultLanguage.ErrorTitle);
+
                 return;
             }
 
@@ -87,41 +47,26 @@ namespace Edemly.Client
 
             try
             {
-                AuthResponseDto? authResponse = null;
+                App.AuthService.ClearAuthData();
 
-                if (_isRegistration)
+                AuthResponseDto? authResponse = _isRegistration
+                    ? await App.AuthService.RegisterWithCodeAsync(_userEmail, code, _username)
+                    : await App.AuthService.LoginWithCodeAsync(_userEmail, code);
+
+                if (authResponse is null)
                 {
-                    App.AuthService.ClearAuthData();
+                    MessageBox.ShowError(
+                        _isRegistration
+                            ? DefaultLanguage.RegistrationFailedMessage
+                            : DefaultLanguage.LoginFailedMessage,
+                        DefaultLanguage.ErrorTitle);
 
-                    authResponse = await App.AuthService.RegisterWithCodeAsync(_userEmail, code, _username);
-
-                    if (authResponse == null)
-                    {
-                        MessageBox.ShowError(DefaultLanguage.RegistrationFailedMessage, DefaultLanguage.ErrorTitle);
-                        return;
-                    }
-
-                    if (!_rememberMe)
-                    {
-                        App.AuthService.ClearAuthData();
-                    }
+                    return;
                 }
-                else
+
+                if (!_rememberMe)
                 {
                     App.AuthService.ClearAuthData();
-
-                    authResponse = await App.AuthService.LoginWithCodeAsync(_userEmail, code);
-
-                    if (authResponse == null)
-                    {
-                        MessageBox.ShowError(DefaultLanguage.LoginFailedMessage, DefaultLanguage.ErrorTitle);
-                        return;
-                    }
-
-                    if (!_rememberMe)
-                    {
-                        App.AuthService.ClearAuthData();
-                    }
                 }
 
                 App.SetCurrentUser(
@@ -129,19 +74,19 @@ namespace Edemly.Client
                     authResponse.Email,
                     authResponse.Username,
                     null,
-                    authResponse.Token
-                );
+                    authResponse.Token);
 
-                App.ApiService.SetAuthToken(authResponse.Token);
                 await App.RefreshCurrentUserProfileAsync();
 
                 await App.HubService.ConnectAsync(authResponse.Token);
 
-                NavigationService.Navigate(new Page_main());
+                NavigationService?.Navigate(new Page_main());
             }
             catch (Exception ex)
             {
-                MessageBox.ShowError($"Error: {ex.Message}", DefaultLanguage.ErrorTitle);
+                MessageBox.ShowError(
+                    $"Error: {ex.Message}",
+                    DefaultLanguage.ErrorTitle);
             }
             finally
             {
@@ -152,41 +97,48 @@ namespace Edemly.Client
 
         private async void ResendText_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            if (string.IsNullOrEmpty(_userEmail))
+            if (string.IsNullOrWhiteSpace(_userEmail))
                 return;
 
             try
             {
                 bool success = await App.AuthService.SendVerificationCodeAsync(_userEmail);
 
-                if (success)
+                if (!success)
                 {
-                    MessageBox.ShowInfo(DefaultLanguage.VerificationResent, DefaultLanguage.SuccessTitle);
-                    CodeTextBox.Text = "";
-                    CodeTextBox.Focus();
+                    MessageBox.ShowError(
+                        DefaultLanguage.FailedResendCode,
+                        DefaultLanguage.ErrorTitle);
+
+                    return;
                 }
-                else
-                {
-                    MessageBox.ShowError(DefaultLanguage.FailedResendCode, DefaultLanguage.ErrorTitle);
-                }
+
+                MessageBox.ShowInfo(
+                    DefaultLanguage.VerificationResent,
+                    DefaultLanguage.SuccessTitle);
+
+                CodeTextBox.Text = string.Empty;
+                CodeTextBox.Focus();
             }
             catch (Exception ex)
             {
-                MessageBox.ShowError($"Error: {ex.Message}", DefaultLanguage.ErrorTitle);
+                MessageBox.ShowError(
+                    $"Error: {ex.Message}",
+                    DefaultLanguage.ErrorTitle);
             }
         }
 
         private void BackToLoginText_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            NavigationService.Navigate(new Page_login());
+            NavigationService?.Navigate(new Page_login());
         }
 
         private void CodeTextBox_KeyDown(object sender, KeyEventArgs e)
         {
-            if (e.Key == Key.Enter)
-            {
-                VerifyButton_Click(sender, e);
-            }
+            if (e.Key != Key.Enter)
+                return;
+
+            VerifyButton_Click(VerifyButton, e);
         }
     }
 }

@@ -1,0 +1,27 @@
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <SolidColorBrush x:Key="ThemePrimaryBrush" Color="{DynamicResource ThemePrimaryColor}" />
+    <SolidColorBrush x:Key="ThemePrimaryLightBrush" Color="{DynamicResource ThemePrimaryLightColor}" />
+    <SolidColorBrush x:Key="ThemeSecondaryBrush" Color="{DynamicResource ThemeSecondaryColor}" />
+    <SolidColorBrush x:Key="ThemeBackgroundBrush" Color="{DynamicResource ThemeBackgroundColor}" />
+    <SolidColorBrush x:Key="ThemeBackgroundDarkBrush" Color="{DynamicResource ThemeBackgroundDarkColor}" />
+    <SolidColorBrush x:Key="ThemeTextPrimaryBrush" Color="{DynamicResource ThemeTextPrimaryColor}" />
+    <SolidColorBrush x:Key="ThemeTextSecondaryBrush" Color="{DynamicResource ThemeTextSecondaryColor}" />
+    <SolidColorBrush x:Key="ThemeBorderBrush" Color="{DynamicResource ThemeBorderColor}" />
+    <SolidColorBrush x:Key="ThemeBorderLightBrush" Color="{DynamicResource ThemeBorderLightColor}" />
+    <SolidColorBrush x:Key="ThemeSurfaceBrush" Color="{DynamicResource ThemeSurfaceColor}" />
+    <SolidColorBrush x:Key="ThemeSurfaceAltBrush" Color="{DynamicResource ThemeSurfaceAltColor}" />
+    <SolidColorBrush x:Key="ThemeInputBackgroundBrush" Color="{DynamicResource ThemeInputBackgroundColor}" />
+    <SolidColorBrush x:Key="ThemeOverlayBrush" Color="{DynamicResource ThemeOverlayColor}" />
+    <SolidColorBrush x:Key="ThemeOnPrimaryTextBrush" Color="{DynamicResource ThemeOnPrimaryTextColor}" />
+    <SolidColorBrush x:Key="ThemeOnSecondaryTextBrush" Color="{DynamicResource ThemeOnSecondaryTextColor}" />
+    <SolidColorBrush x:Key="ThemeDisabledTextBrush" Color="{DynamicResource ThemeDisabledTextColor}" />
+    <SolidColorBrush x:Key="ThemeDangerBrush" Color="{DynamicResource ThemeDangerColor}" />
+    <SolidColorBrush x:Key="ThemeSuccessBrush" Color="{DynamicResource ThemeSuccessColor}" />
+    <SolidColorBrush x:Key="ThemeWarningBrush" Color="{DynamicResource ThemeWarningColor}" />
+    <SolidColorBrush x:Key="ThemeInfoBrush" Color="{DynamicResource ThemeInfoColor}" />
+    <SolidColorBrush x:Key="ThemeOnlineBrush" Color="{DynamicResource ThemeOnlineColor}" />
+
+</ResourceDictionary>

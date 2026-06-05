@@ -1,0 +1,27 @@
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Color x:Key="ThemePrimaryColor">#057272</Color>
+    <Color x:Key="ThemePrimaryLightColor">#00B8B8</Color>
+    <Color x:Key="ThemeSecondaryColor">#0B4539</Color>
+    <Color x:Key="ThemeBackgroundColor">#F6FFFC</Color>
+    <Color x:Key="ThemeBackgroundDarkColor">#004040</Color>
+    <Color x:Key="ThemeTextPrimaryColor">#031C1C</Color>
+    <Color x:Key="ThemeTextSecondaryColor">#666666</Color>
+    <Color x:Key="ThemeBorderColor">#E0E0E0</Color>
+    <Color x:Key="ThemeBorderLightColor">#C3F0E1</Color>
+    <Color x:Key="ThemeSurfaceColor">#FFFFFF</Color>
+    <Color x:Key="ThemeSurfaceAltColor">#F0F7F5</Color>
+    <Color x:Key="ThemeInputBackgroundColor">#FFFFFF</Color>
+    <Color x:Key="ThemeOverlayColor">#80000000</Color>
+    <Color x:Key="ThemeOnPrimaryTextColor">#FFFFFF</Color>
+    <Color x:Key="ThemeOnSecondaryTextColor">#FFFFFF</Color>
+    <Color x:Key="ThemeDisabledTextColor">#999999</Color>
+    <Color x:Key="ThemeDangerColor">#E53935</Color>
+    <Color x:Key="ThemeSuccessColor">#2E7D32</Color>
+    <Color x:Key="ThemeWarningColor">#F59E0B</Color>
+    <Color x:Key="ThemeInfoColor">#2196F3</Color>
+    <Color x:Key="ThemeOnlineColor">#22C55E</Color>
+
+</ResourceDictionary>

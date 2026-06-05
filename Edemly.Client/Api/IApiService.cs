@@ -1,7 +1,6 @@
 using Edemly.Contracts.Calls;
 using Edemly.Contracts.Payments;
 using Edemly.Contracts.Remindings;
-
 namespace Edemly.Client.Api
 {
     public interface IApiService

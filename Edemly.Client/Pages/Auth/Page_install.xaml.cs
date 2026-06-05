@@ -1,6 +1,7 @@
-﻿using Edemly.Client.Lang;
-using Edemly.Client.Realtime;
-using Edemly.Client.Services;
+using Edemly.Client.Application.Localization;
+using Edemly.Client.Application.Services;
+using Edemly.Client.Infrastructure.Realtime;
+using Edemly.Client.Presentation.Common;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
@@ -9,11 +10,10 @@ using System.Reflection;
 using System.Text.Json;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Navigation;
 
-namespace Edemly.Client.Pages
+namespace Edemly.Client.Pages.Auth
 {
-    public partial class Page_install : Page
+    public partial class Page_install : ThemedPage
     {
         private const string ShortcutFileName = "Edemly.lnk";
 
@@ -21,56 +21,65 @@ namespace Edemly.Client.Pages
         {
             InitializeComponent();
 
-            ThemeService.Instance.ThemeChanged += (themeName) => OnThemeChanged();
-
             Loaded += Page_install_Loaded;
-        }
-
-        private void OnThemeChanged()
-        {
-            try
-            {
-                System.Diagnostics.Debug.WriteLine("[PAGE_INSTALL] Theme changed");
-            }
-            catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[PAGE_INSTALL] OnThemeChanged failed: {ex}"); }
         }
 
         private async void Page_install_Loaded(object sender, RoutedEventArgs e)
         {
             LanguageComboBox.Items.Clear();
-            var enItem = new ComboBoxItem { Content = "English", Tag = "en" };
-            var ukItem = new ComboBoxItem { Content = "Українська", Tag = "uk" };
+
+            var enItem = new ComboBoxItem
+            {
+                Content = "English",
+                Tag = "en"
+            };
+
+            var ukItem = new ComboBoxItem
+            {
+                Content = "Українська",
+                Tag = "uk"
+            };
+
             LanguageComboBox.Items.Add(enItem);
             LanguageComboBox.Items.Add(ukItem);
 
             var savedLang = ConfigService.Instance?.Language;
+
             string initial;
+
             if (!string.IsNullOrWhiteSpace(savedLang))
             {
                 initial = savedLang;
             }
             else
             {
-                var sys = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName?.ToLowerInvariant() ?? "en";
-                initial = (sys == "uk" || sys == "ru") ? "uk" : "en";
+                string systemLanguage =
+                    CultureInfo.CurrentUICulture.TwoLetterISOLanguageName?.ToLowerInvariant() ?? "en";
+
+                initial = systemLanguage is "uk" or "ru"
+                    ? "uk"
+                    : "en";
             }
 
             LanguageComboBox.SelectedItem = LanguageComboBox.Items
                 .Cast<ComboBoxItem>()
-                .FirstOrDefault(i => (string)i.Tag == initial);
+                .FirstOrDefault(item => (string)item.Tag == initial);
 
             try
             {
                 LanguageService.Instance.LoadLanguage(initial);
             }
-            catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[PAGE_INSTALL] LoadLanguage failed: {ex}"); }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[PAGE_INSTALL] LoadLanguage failed: {ex}");
+            }
 
-            ApplyLanguage(initial);
+            ApplyLanguage();
 
             await LoadCompaniesAsync();
         }
 
-        private void ApplyLanguage(string langTag)
+        private void ApplyLanguage()
         {
             TitleText.Text = DefaultLanguage.InstallTitle;
             DescriptionText.Text = DefaultLanguage.InstallDescription;
@@ -95,56 +104,74 @@ namespace Edemly.Client.Pages
         {
             try
             {
-                if (CompanyComboBox == null) return;
+                if (CompanyComboBox.Items.Count == 0)
+                    return;
 
-                if (CompanyComboBox.Items.Count > 0)
-                {
-                    if (CompanyComboBox.Items[0] is ComboBoxItem first)
-                    {
-                        var personalLabel = DefaultLanguage.PersonalLabel;
-                        var tag = first.Tag;
-                        first.Content = personalLabel;
-                        first.Tag = tag;
-                        first.ToolTip = personalLabel;
-                    }
-                }
+                if (CompanyComboBox.Items[0] is not ComboBoxItem firstItem)
+                    return;
+
+                string personalLabel = DefaultLanguage.PersonalLabel;
+
+                firstItem.Content = personalLabel;
+                firstItem.ToolTip = personalLabel;
             }
-            catch { }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[PAGE_INSTALL] UpdateCompanyPersonalLabel failed: {ex}");
+            }
         }
 
         private void LanguageComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (LanguageComboBox.SelectedItem is ComboBoxItem item && item.Tag is string tag)
+            if (LanguageComboBox.SelectedItem is not ComboBoxItem item)
+                return;
+
+            if (item.Tag is not string languageTag)
+                return;
+
+            try
             {
-                try
-                {
-                    ConfigService.Instance.Language = tag;
-                    ConfigService.Instance.Save();
-                }
-                catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[PAGE_INSTALL] Save config language failed: {ex}"); }
-
-                try
-                {
-                    LanguageService.Instance.LoadLanguage(tag);
-                }
-                catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[PAGE_INSTALL] LoadLanguage on selection failed: {ex}"); }
-
-                ApplyLanguage(tag);
-
-                UpdateCompanyPersonalLabel();
+                ConfigService.Instance.Language = languageTag;
+                ConfigService.Instance.Save();
             }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[PAGE_INSTALL] Save config language failed: {ex}");
+            }
+
+            try
+            {
+                LanguageService.Instance.LoadLanguage(languageTag);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[PAGE_INSTALL] LoadLanguage on selection failed: {ex}");
+            }
+
+            ApplyLanguage();
         }
 
         private void CancelButton_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                NavigationService?.Navigate(new Edemly.Client.Page_login());
+                NavigationService?.Navigate(new Page_login());
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[PAGE_INSTALL] Cancel navigation failed: {ex}");
-                try { if (NavigationService?.CanGoBack == true) NavigationService.GoBack(); } catch (Exception ex2) { System.Diagnostics.Debug.WriteLine($"[PAGE_INSTALL] GoBack failed: {ex2}"); }
+                Debug.WriteLine($"[PAGE_INSTALL] Cancel navigation failed: {ex}");
+
+                try
+                {
+                    if (NavigationService?.CanGoBack == true)
+                    {
+                        NavigationService.GoBack();
+                    }
+                }
+                catch (Exception goBackEx)
+                {
+                    Debug.WriteLine($"[PAGE_INSTALL] GoBack failed: {goBackEx}");
+                }
             }
         }
 
@@ -152,44 +179,70 @@ namespace Edemly.Client.Pages
         {
             try
             {
-                var sel = (LanguageComboBox.SelectedItem as ComboBoxItem)?.Tag as string ?? "en";
+                string selectedLanguage =
+                    (LanguageComboBox.SelectedItem as ComboBoxItem)?.Tag as string ?? "en";
 
                 try
                 {
-                    ConfigService.Instance.Language = sel;
+                    ConfigService.Instance.Language = selectedLanguage;
                     ConfigService.Instance.Save();
-                }
-                catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[PAGE_INSTALL] Save language on continue failed: {ex}"); }
-
-                try
-                {
-                    LanguageService.Instance.LoadLanguage(sel);
                 }
                 catch (Exception ex)
                 {
-                    System.Diagnostics.Debug.WriteLine($"[PAGE_INSTALL] LoadLanguage on continue failed: {ex}");
-                    try { ConfigService.Instance.Language = sel; } catch (Exception innerEx) { System.Diagnostics.Debug.WriteLine($"[PAGE_INSTALL] Save fallback language failed: {innerEx}"); }
+                    Debug.WriteLine($"[PAGE_INSTALL] Save language on continue failed: {ex}");
                 }
 
-                ApplyLanguage(sel);
+                try
+                {
+                    LanguageService.Instance.LoadLanguage(selectedLanguage);
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"[PAGE_INSTALL] LoadLanguage on continue failed: {ex}");
 
-                var selectedCompanyTag = (CompanyComboBox.SelectedItem as ComboBoxItem)?.Tag as string ?? "personal";
+                    try
+                    {
+                        ConfigService.Instance.Language = selectedLanguage;
+                    }
+                    catch (Exception innerEx)
+                    {
+                        Debug.WriteLine($"[PAGE_INSTALL] Save fallback language failed: {innerEx}");
+                    }
+                }
+
+                ApplyLanguage();
+
+                string selectedCompanyTag =
+                    (CompanyComboBox.SelectedItem as ComboBoxItem)?.Tag as string ?? "personal";
+
                 if (string.Equals(selectedCompanyTag, "personal", StringComparison.OrdinalIgnoreCase))
+                {
                     selectedCompanyTag = string.Empty;
+                }
 
                 App.SetCompanyAndApply(selectedCompanyTag, markInstalled: true);
 
-                var baseUrl = App.BaseServerUrlNoCompany?.TrimEnd('/') ?? string.Empty;
-                string shortcutArg = string.IsNullOrEmpty(baseUrl) ? string.Empty :
-                    (string.IsNullOrEmpty(selectedCompanyTag) ? baseUrl : $"{baseUrl}/{selectedCompanyTag.Trim().Trim('/')}");
+                string baseUrl = App.BaseServerUrlNoCompany?.TrimEnd('/') ?? string.Empty;
+
+                string shortcutArgument = string.IsNullOrEmpty(baseUrl)
+                    ? string.Empty
+                    : string.IsNullOrEmpty(selectedCompanyTag)
+                        ? baseUrl
+                        : $"{baseUrl}/{selectedCompanyTag.Trim().Trim('/')}";
 
                 if (DesktopShortcutCheckBox.IsChecked == true)
                 {
                     ConfigService.Instance.CreateDesktopShortcut = true;
-                    var created = CreateOrReplaceDesktopShortcut(shortcutArg);
+
+                    bool created = CreateOrReplaceDesktopShortcut(shortcutArgument);
+
                     if (!created)
                     {
-                        MessageBox.Show(DefaultLanguage.ShortcutCreateFailed, "Edemly", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        MessageBox.Show(
+                            DefaultLanguage.ShortcutCreateFailed,
+                            "Edemly",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Warning);
                     }
                 }
                 else
@@ -198,11 +251,16 @@ namespace Edemly.Client.Pages
                 }
 
                 await Task.Delay(80);
-                NavigationService?.Navigate(new Edemly.Client.Page_login());
+
+                NavigationService?.Navigate(new Page_login());
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error: " + ex.Message, "Edemly", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(
+                    "Error: " + ex.Message,
+                    "Edemly",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
             }
         }
 
@@ -213,63 +271,97 @@ namespace Edemly.Client.Pages
                 CompanyComboBox.IsEnabled = false;
                 CompanyComboBox.Items.Clear();
 
-                var personalLabel = DefaultLanguage.PersonalLabel;
-                var personalItem = new ComboBoxItem { Content = personalLabel, Tag = "personal" };
+                string personalLabel = DefaultLanguage.PersonalLabel;
+
+                var personalItem = new ComboBoxItem
+                {
+                    Content = personalLabel,
+                    Tag = "personal",
+                    ToolTip = personalLabel
+                };
+
                 CompanyComboBox.Items.Add(personalItem);
 
                 NoteTextBlock.Text = DefaultLanguage.LoadingCompanies;
 
-                var baseUrl = App.BaseServerUrlNoCompany?.TrimEnd('/');
+                string? baseUrl = App.BaseServerUrlNoCompany?.TrimEnd('/');
+
                 if (string.IsNullOrEmpty(baseUrl))
                 {
                     CompanyComboBox.SelectedIndex = 0;
                     NoteTextBlock.Text = DefaultLanguage.ServerNotProvided;
                     CompanyComboBox.IsEnabled = true;
+
                     return;
                 }
 
-                using var http = new HttpClient { Timeout = HubSettings.ShortOperationTimeout };
-                var url = baseUrl + "/api/admin/companies";
+                using var httpClient = new HttpClient
+                {
+                    Timeout = HubSettings.ShortOperationTimeout
+                };
 
-                HttpResponseMessage? resp;
+                string url = baseUrl + "/api/admin/companies";
+
+                HttpResponseMessage? response;
+
                 try
                 {
-                    resp = await http.GetAsync(url);
+                    response = await httpClient.GetAsync(url);
                 }
                 catch (Exception ex)
                 {
-                    System.Diagnostics.Debug.WriteLine($"[PAGE_INSTALL] Get companies failed: {ex}");
-                    resp = null;
+                    Debug.WriteLine($"[PAGE_INSTALL] Get companies failed: {ex}");
+                    response = null;
                 }
 
-                if (resp == null || !resp.IsSuccessStatusCode)
+                if (response is null || !response.IsSuccessStatusCode)
                 {
                     CompanyComboBox.SelectedIndex = 0;
                     NoteTextBlock.Text = DefaultLanguage.CompaniesLoadFailed;
                     CompanyComboBox.IsEnabled = true;
+
                     return;
                 }
 
-                var json = await resp.Content.ReadAsStringAsync();
-                var companies = JsonSerializer.Deserialize<List<SimpleCompany>>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true })
-                               ?? new List<SimpleCompany>();
+                string json = await response.Content.ReadAsStringAsync();
 
-                foreach (var c in companies.OrderBy(c => c.Name))
+                var companies = JsonSerializer.Deserialize<List<SimpleCompany>>(
+                    json,
+                    new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    }) ?? new List<SimpleCompany>();
+
+                foreach (var company in companies.OrderBy(company => company.Name))
                 {
-                    if (string.IsNullOrWhiteSpace(c.Name)) continue;
-                    var display = c.Name.Replace('_', ' ');
-                    var item = new ComboBoxItem { Content = display, Tag = c.Name, ToolTip = display };
+                    if (string.IsNullOrWhiteSpace(company.Name))
+                        continue;
+
+                    string displayName = company.Name.Replace('_', ' ');
+
+                    var item = new ComboBoxItem
+                    {
+                        Content = displayName,
+                        Tag = company.Name,
+                        ToolTip = displayName
+                    };
+
                     CompanyComboBox.Items.Add(item);
                 }
 
-                var saved = ConfigService.Instance?.Company;
-                if (!string.IsNullOrWhiteSpace(saved))
+                string? savedCompany = ConfigService.Instance?.Company;
+
+                if (!string.IsNullOrWhiteSpace(savedCompany))
                 {
-                    var match = CompanyComboBox.Items.Cast<ComboBoxItem>().FirstOrDefault(i => string.Equals((string?)i.Tag, saved, StringComparison.OrdinalIgnoreCase));
-                    if (match != null)
-                        CompanyComboBox.SelectedItem = match;
-                    else
-                        CompanyComboBox.SelectedIndex = 0;
+                    var match = CompanyComboBox.Items
+                        .Cast<ComboBoxItem>()
+                        .FirstOrDefault(item =>
+                            string.Equals(
+                                item.Tag as string,
+                                savedCompany,
+                                StringComparison.OrdinalIgnoreCase));
+
+                    CompanyComboBox.SelectedItem = match ?? CompanyComboBox.Items[0];
                 }
                 else
                 {
@@ -281,10 +373,19 @@ namespace Edemly.Client.Pages
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[PAGE_INSTALL] LoadCompaniesAsync failed: {ex}");
+                Debug.WriteLine($"[PAGE_INSTALL] LoadCompaniesAsync failed: {ex}");
+
                 CompanyComboBox.Items.Clear();
-                var personalLabel = DefaultLanguage.PersonalLabel;
-                CompanyComboBox.Items.Add(new ComboBoxItem { Content = personalLabel, Tag = "personal" });
+
+                string personalLabel = DefaultLanguage.PersonalLabel;
+
+                CompanyComboBox.Items.Add(new ComboBoxItem
+                {
+                    Content = personalLabel,
+                    Tag = "personal",
+                    ToolTip = personalLabel
+                });
+
                 CompanyComboBox.SelectedIndex = 0;
                 NoteTextBlock.Text = DefaultLanguage.CompaniesErrorFallback;
                 CompanyComboBox.IsEnabled = true;
@@ -295,55 +396,110 @@ namespace Edemly.Client.Pages
         {
             try
             {
-                var desktop = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
-                var shortcutPath = Path.Combine(desktop, ShortcutFileName);
+                string desktop = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
+                string shortcutPath = Path.Combine(desktop, ShortcutFileName);
 
                 try
                 {
                     if (File.Exists(shortcutPath))
+                    {
                         File.Delete(shortcutPath);
+                    }
                 }
-                catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[PAGE_INSTALL] Delete shortcut failed: {ex}"); }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"[PAGE_INSTALL] Delete shortcut failed: {ex}");
+                }
 
                 string exePath = GetExecutablePath();
+
                 if (string.IsNullOrEmpty(exePath) || !File.Exists(exePath))
                     return false;
 
-                string args = string.IsNullOrWhiteSpace(combinedServerArg) ? string.Empty : $"\"{combinedServerArg}\"";
+                string args = string.IsNullOrWhiteSpace(combinedServerArg)
+                    ? string.Empty
+                    : $"\"{combinedServerArg}\"";
 
-                var wshType = Type.GetTypeFromProgID("WScript.Shell");
-                if (wshType == null) return false;
-                var wsh = Activator.CreateInstance(wshType);
-                var shortcut = wshType.InvokeMember(
+                Type? wshType = Type.GetTypeFromProgID("WScript.Shell");
+
+                if (wshType is null)
+                    return false;
+
+                object? wsh = Activator.CreateInstance(wshType);
+
+                object? shortcut = wshType.InvokeMember(
                     "CreateShortcut",
                     BindingFlags.InvokeMethod,
                     null,
                     wsh,
                     new object[] { shortcutPath });
 
-                if (shortcut == null)
+                if (shortcut is null)
                     return false;
 
-                var scType = shortcut.GetType();
-                scType.InvokeMember("TargetPath", BindingFlags.SetProperty, null, shortcut, new object[] { exePath });
-                scType.InvokeMember("Arguments", BindingFlags.SetProperty, null, shortcut, new object[] { args });
-                scType.InvokeMember("WorkingDirectory", BindingFlags.SetProperty, null, shortcut, new object[] { Path.GetDirectoryName(exePath) ?? "" });
-                scType.InvokeMember("WindowStyle", BindingFlags.SetProperty, null, shortcut, new object[] { 1 });
-                scType.InvokeMember("Description", BindingFlags.SetProperty, null, shortcut, new object[] { "Edemly" });
+                Type shortcutType = shortcut.GetType();
+
+                shortcutType.InvokeMember(
+                    "TargetPath",
+                    BindingFlags.SetProperty,
+                    null,
+                    shortcut,
+                    new object[] { exePath });
+
+                shortcutType.InvokeMember(
+                    "Arguments",
+                    BindingFlags.SetProperty,
+                    null,
+                    shortcut,
+                    new object[] { args });
+
+                shortcutType.InvokeMember(
+                    "WorkingDirectory",
+                    BindingFlags.SetProperty,
+                    null,
+                    shortcut,
+                    new object[] { Path.GetDirectoryName(exePath) ?? string.Empty });
+
+                shortcutType.InvokeMember(
+                    "WindowStyle",
+                    BindingFlags.SetProperty,
+                    null,
+                    shortcut,
+                    new object[] { 1 });
+
+                shortcutType.InvokeMember(
+                    "Description",
+                    BindingFlags.SetProperty,
+                    null,
+                    shortcut,
+                    new object[] { "Edemly" });
 
                 try
                 {
-                    scType.InvokeMember("IconLocation", BindingFlags.SetProperty, null, shortcut, new object[] { exePath + ",0" });
+                    shortcutType.InvokeMember(
+                        "IconLocation",
+                        BindingFlags.SetProperty,
+                        null,
+                        shortcut,
+                        new object[] { exePath + ",0" });
                 }
-                catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[PAGE_INSTALL] Set IconLocation failed: {ex}"); }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"[PAGE_INSTALL] Set IconLocation failed: {ex}");
+                }
 
-                scType.InvokeMember("Save", BindingFlags.InvokeMethod, null, shortcut, null);
+                shortcutType.InvokeMember(
+                    "Save",
+                    BindingFlags.InvokeMethod,
+                    null,
+                    shortcut,
+                    null);
 
                 return File.Exists(shortcutPath);
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[PAGE_INSTALL] CreateOrReplaceDesktopShortcut failed: {ex}");
+                Debug.WriteLine($"[PAGE_INSTALL] CreateOrReplaceDesktopShortcut failed: {ex}");
                 return false;
             }
         }
@@ -354,76 +510,102 @@ namespace Edemly.Client.Pages
             {
                 try
                 {
-                    var cfgPath = ConfigService.Instance?.ExePath;
-                    if (!string.IsNullOrWhiteSpace(cfgPath) && File.Exists(cfgPath))
-                        return cfgPath;
-                }
-                catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[PAGE_INSTALL] Read config exe path failed: {ex}"); }
+                    string? configPath = ConfigService.Instance?.ExePath;
 
-                var entry = Assembly.GetEntryAssembly()?.Location;
-                if (!string.IsNullOrWhiteSpace(entry) && File.Exists(entry))
-                    return entry;
+                    if (!string.IsNullOrWhiteSpace(configPath) && File.Exists(configPath))
+                        return configPath;
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"[PAGE_INSTALL] Read config exe path failed: {ex}");
+                }
+
+                string? entryAssemblyPath = Assembly.GetEntryAssembly()?.Location;
+
+                if (!string.IsNullOrWhiteSpace(entryAssemblyPath) && File.Exists(entryAssemblyPath))
+                    return entryAssemblyPath;
 
                 try
                 {
-                    var procPath = Process.GetCurrentProcess().MainModule?.FileName;
-                    if (!string.IsNullOrWhiteSpace(procPath) && File.Exists(procPath))
-                        return procPath;
+                    string? processPath = Process.GetCurrentProcess().MainModule?.FileName;
+
+                    if (!string.IsNullOrWhiteSpace(processPath) && File.Exists(processPath))
+                        return processPath;
                 }
-                catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[PAGE_INSTALL] Get process main module failed: {ex}"); }
-
-                var baseDir = AppDomain.CurrentDomain.BaseDirectory ?? Directory.GetCurrentDirectory();
-                var candidates = new List<string> { "Edemly.exe", "Edemly.Client.exe" };
-
-                var asmName = Assembly.GetExecutingAssembly().GetName().Name;
-                try
+                catch (Exception ex)
                 {
-                    if (!string.IsNullOrWhiteSpace(asmName))
-                        candidates.Add(asmName + ".exe");
+                    Debug.WriteLine($"[PAGE_INSTALL] Get process main module failed: {ex}");
                 }
-                catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[PAGE_INSTALL] Assembly name retrieval failed: {ex}"); }
 
-                DirectoryInfo? di = new DirectoryInfo(baseDir);
-                for (int depth = 0; di != null && depth < 4; depth++)
+                string baseDirectory = AppDomain.CurrentDomain.BaseDirectory
+                    ?? Directory.GetCurrentDirectory();
+
+                var candidates = new List<string>
                 {
-                    foreach (var name in candidates)
+                    "Edemly.exe",
+                    "Edemly.Client.exe"
+                };
+
+                string? assemblyName = Assembly.GetExecutingAssembly().GetName().Name;
+
+                if (!string.IsNullOrWhiteSpace(assemblyName))
+                {
+                    candidates.Add(assemblyName + ".exe");
+                }
+
+                DirectoryInfo? directoryInfo = new(baseDirectory);
+
+                for (int depth = 0; directoryInfo is not null && depth < 4; depth++)
+                {
+                    foreach (string candidate in candidates)
                     {
-                        var p = Path.Combine(di.FullName, name);
-                        if (File.Exists(p)) return p;
+                        string path = Path.Combine(directoryInfo.FullName, candidate);
+
+                        if (File.Exists(path))
+                            return path;
                     }
-                    di = di.Parent;
+
+                    directoryInfo = directoryInfo.Parent;
                 }
 
-                var prog = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
-                var progX86 = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86);
+                string programFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
+                string programFilesX86 = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86);
+
                 try
                 {
-                    foreach (var pf in new[] { prog, progX86 }.Where(p => !string.IsNullOrWhiteSpace(p)))
+                    foreach (string programFilesDirectory in new[] { programFiles, programFilesX86 }
+                                 .Where(path => !string.IsNullOrWhiteSpace(path)))
                     {
-                        foreach (var folder in new[] { "Edemly" })
+                        foreach (string candidate in candidates)
                         {
-                            foreach (var candidate in candidates)
-                            {
-                                var p = Path.Combine(pf, folder, candidate);
-                                if (File.Exists(p)) return p;
-                            }
+                            string path = Path.Combine(
+                                programFilesDirectory,
+                                "Edemly",
+                                candidate);
+
+                            if (File.Exists(path))
+                                return path;
                         }
                     }
                 }
-                catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[PAGE_INSTALL] Searching program files failed: {ex}"); }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"[PAGE_INSTALL] Searching program files failed: {ex}");
+                }
 
                 return string.Empty;
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[PAGE_INSTALL] GetExecutablePath failed: {ex}");
+                Debug.WriteLine($"[PAGE_INSTALL] GetExecutablePath failed: {ex}");
                 return string.Empty;
             }
         }
 
-        private class SimpleCompany
+        private sealed class SimpleCompany
         {
             public int Id { get; set; }
+
             public string? Name { get; set; }
         }
     }

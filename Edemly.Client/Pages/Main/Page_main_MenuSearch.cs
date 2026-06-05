@@ -1,23 +1,20 @@
-﻿#nullable disable
+#nullable disable
 
-using Edemly.Client.Lang;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
-using MessageBox = Edemly.Client.Pages.MessageBox;
-
-namespace Edemly.Client
+using Edemly.Client.Presentation.Windows;
+namespace Edemly.Client.Pages.Main
 {
-    public partial class Page_main : Page
+    public partial class Page_main
     {
         private void SearchTextBox_GotFocus(object sender, RoutedEventArgs e)
         {
             if (SearchTextBox.Text == DefaultLanguage.SearchPlaceholder || SearchTextBox.Text == "Search...")
             {
-                SearchTextBox.Text = "";
-                SearchTextBox.Foreground = Brushes.Black;
+                ApplyTextInputActiveStyle(SearchTextBox, string.Empty);
             }
         }
 
@@ -29,8 +26,7 @@ namespace Edemly.Client
                 {
                     if (string.IsNullOrWhiteSpace(SearchTextBox.Text))
                     {
-                        SearchTextBox.Text = DefaultLanguage.SearchPlaceholder;
-                        SearchTextBox.Foreground = Brushes.Gray;
+                        ApplyTextInputPlaceholderStyle(SearchTextBox, DefaultLanguage.SearchPlaceholder);
                     }
                     HideSearchResults();
                 });
@@ -42,9 +38,9 @@ namespace Edemly.Client
             var searchText = SearchTextBox.Text;
 
             var resultsPanel = this.FindName("SearchResultsPanel") as StackPanel;
-            if (resultsPanel != null)
+            if (resultsPanel != null && _chatController != null)
             {
-                await chatManager.SearchAndCreateChatAsync(searchText, SearchTextBox, resultsPanel);
+                await _chatController.SearchAndCreateChatAsync(searchText, SearchTextBox, resultsPanel);
             }
         }
 

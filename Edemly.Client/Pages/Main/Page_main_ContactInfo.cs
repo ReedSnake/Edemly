@@ -1,6 +1,6 @@
 #nullable disable
 
-using Edemly.Client.Lang;
+using Edemly.Client.Application.Localization;
 using Edemly.Client.Pages;
 using System.Windows;
 using System.Windows.Controls;
@@ -8,14 +8,13 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
-
-namespace Edemly.Client
+namespace Edemly.Client.Pages.Main
 {
-    public partial class Page_main : Page
+    public partial class Page_main
     {
         private void ContactMenuButton_Click(object sender, RoutedEventArgs e)
         {
-            if (chatManager?.IsCurrentChatGroup() == true)
+            if (_chatController?.IsCurrentChatGroup() == true)
             {
                 if (isGroupInfoOpen)
                 {
@@ -41,13 +40,13 @@ namespace Edemly.Client
 
         private async void OpenContactInfo()
         {
-            if (chatManager?.CurrentChatContact == null) return;
+            if (_chatController?.CurrentChatContact == null) return;
 
             isContactInfoOpen = true;
             ContactInfoOverlay.Visibility = Visibility.Visible;
             ContactInfoPanel.Visibility = Visibility.Visible;
 
-            var contact = chatManager.CurrentChatContact;
+            var contact = _chatController.CurrentChatContact;
             ContactInfoName.Text = contact.Name ?? string.Empty;
             ContactInfoEmail.Text = contact.Email ?? string.Empty;
             ContactInfoPhone.Text = string.IsNullOrEmpty(contact.Phone) ?
@@ -151,10 +150,10 @@ namespace Edemly.Client
 
         private void EditContactButton_Click(object sender, RoutedEventArgs e)
         {
-            if (chatManager.CurrentChatContact != null)
+            if (_chatController.CurrentChatContact != null)
             {
                 CloseContactInfo();
-                NavigationService.Navigate(new Page_contact_setting(chatManager.CurrentChatContact));
+                NavigationService.Navigate(new Page_contact_setting(_chatController.CurrentChatContact));
             }
         }
 
@@ -167,7 +166,7 @@ namespace Edemly.Client
             Note5Border.Visibility = Visibility.Collapsed;
             NoNotesText.Visibility = Visibility.Visible;
 
-            if (chatManager?.CurrentChatContact == null)
+            if (_chatController?.CurrentChatContact == null)
             {
                 System.Diagnostics.Debug.WriteLine("[CONTACT INFO] CurrentChatContact is null");
                 return;
@@ -190,10 +189,11 @@ namespace Edemly.Client
                     return;
                 }
 
-                System.Diagnostics.Debug.WriteLine($"[CONTACT INFO] Loading note for user {chatManager.CurrentChatContact.UserId}...");
+                var currentContactUserId = _chatController.CurrentChatContact.UserId;
+                System.Diagnostics.Debug.WriteLine($"[CONTACT INFO] Loading note for user {currentContactUserId}...");
 
-                var note = await App.NotesService.GetNoteAsync(chatManager.CurrentChatContact.UserId);
-                chatManager.CurrentChatContact.Note = note ?? string.Empty;
+                var note = await App.NotesService.GetNoteAsync(currentContactUserId);
+                _chatController.TrySetCurrentChatNote(currentContactUserId, note ?? string.Empty);
 
                 if (!string.IsNullOrWhiteSpace(note))
                 {
@@ -205,7 +205,7 @@ namespace Edemly.Client
                 }
                 else
                 {
-                    System.Diagnostics.Debug.WriteLine($"[CONTACT INFO] No note found for user {chatManager.CurrentChatContact.UserId}");
+                    System.Diagnostics.Debug.WriteLine($"[CONTACT INFO] No note found for user {_chatController.CurrentChatContact.UserId}");
                 }
             }
             catch (Exception ex)
@@ -218,13 +218,13 @@ namespace Edemly.Client
 
         private async void OpenGroupInfo()
         {
-            if (chatManager?.CurrentChatContact == null || chatManager.CurrentChatId < 0) return;
+            if (_chatController?.CurrentChatContact == null || _chatController.CurrentChatId < 0) return;
 
             isGroupInfoOpen = true;
             GroupInfoOverlay.Visibility = Visibility.Visible;
             GroupInfoPanel.Visibility = Visibility.Visible;
 
-            var groupContact = chatManager.CurrentChatContact;
+            var groupContact = _chatController.CurrentChatContact;
             GroupInfoNameText.Text = groupContact.Name ?? string.Empty;
 
             await LoadGroupPhotoAsync();
@@ -252,7 +252,7 @@ namespace Edemly.Client
                 var settingsButton = this.FindName("GroupSettingsIconButton") as Button;
                 if (settingsButton == null) return;
 
-                var members = await App.ApiService.GetChatMembersAsync(chatManager.CurrentChatId);
+                var members = await App.ApiService.GetChatMembersAsync(_chatController.CurrentChatId);
 
                 var isOwner = members?.Any(m => m.UserId == App.CurrentUserId && m.Role == 1) ?? false;
 
@@ -283,9 +283,9 @@ namespace Edemly.Client
         {
             try
             {
-                if (chatManager?.CurrentChatContact == null) return;
+                if (_chatController?.CurrentChatContact == null) return;
 
-                var groupContact = chatManager.CurrentChatContact;
+                var groupContact = _chatController.CurrentChatContact;
 
                 if (!string.IsNullOrEmpty(groupContact.PhotoPath) &&
                     groupContact.PhotoPath != "pack://application:,,,/Assets/Avatars/default-avatar.png")
@@ -326,7 +326,7 @@ namespace Edemly.Client
 
             try
             {
-                var members = await App.ApiService.GetChatMembersAsync(chatManager.CurrentChatId);
+                var members = await App.ApiService.GetChatMembersAsync(_chatController.CurrentChatId);
 
                 if (members == null || members.Count == 0)
                 {
@@ -371,7 +371,7 @@ namespace Edemly.Client
                     int index = GroupMembersPanel.Children.IndexOf(memberItem);
                     if (index >= 0)
                     {
-                        await Application.Current.Dispatcher.InvokeAsync(() =>
+                        await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
                         {
                             GroupMembersPanel.Children.RemoveAt(index);
                             GroupMembersPanel.Children.Insert(index, newItem);
@@ -421,7 +421,7 @@ namespace Edemly.Client
                         var bitmap = await App.GlobalProfilePictureCache.GetOrDownloadAsync(user.PfpUrl);
                         if (bitmap != null)
                         {
-                            await Application.Current.Dispatcher.InvokeAsync(() =>
+                            await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
                             {
                                 imageBrush.ImageSource = bitmap;
                             });
@@ -501,15 +501,11 @@ namespace Edemly.Client
             {
                 var userName = user?.Username ?? string.Format(DefaultLanguage.UserIdText, member.UserId);
 
-                var result = Pages.MessageBox.ShowQuestion($"Choose action for {userName}:", DefaultLanguage.Information);
+                var result = MessageBox.ShowQuestion($"Choose action for {userName}:", DefaultLanguage.Information);
 
                 if (result == MessageBoxResult.Yes)
                 {
                     await OpenChatWithUserAsync(member.UserId, user);
-                }
-                else if (result == MessageBoxResult.No)
-                {
-                    await ViewUserProfileAsync(member.UserId, user);
                 }
             }
             catch (Exception ex)
@@ -524,7 +520,7 @@ namespace Edemly.Client
             {
                 if (userId == App.CurrentUserId)
                 {
-                    Pages.MessageBox.ShowWarning(DefaultLanguage.Warning, DefaultLanguage.Information);
+                    MessageBox.ShowWarning(DefaultLanguage.Warning, DefaultLanguage.Information);
                     return;
                 }
 
@@ -541,17 +537,17 @@ namespace Edemly.Client
                 var chatResult = await App.ApiService.CreateOrGetPrivateChatAsync(userId);
                 if (chatResult == null)
                 {
-                    Pages.MessageBox.ShowError(DefaultLanguage.Error, DefaultLanguage.ErrorTitle);
+                    MessageBox.ShowError(DefaultLanguage.Error, DefaultLanguage.ErrorTitle);
                     return;
                 }
 
-                await chatManager.SwitchToChatPublicAsync(contact, chatResult.Id);
+                await _chatController.SwitchToChatPublicAsync(contact, chatResult.Id);
                 System.Diagnostics.Debug.WriteLine($"[GROUP INFO] Opened private chat with {user?.Username}");
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"[GROUP INFO] Error opening chat: {ex.Message}");
-                Pages.MessageBox.ShowError($"{DefaultLanguage.Error}: {ex.Message}", DefaultLanguage.ErrorTitle);
+                MessageBox.ShowError($"{DefaultLanguage.Error}: {ex.Message}", DefaultLanguage.ErrorTitle);
             }
         }
 
@@ -575,7 +571,7 @@ namespace Edemly.Client
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"[GROUP INFO] Error viewing profile: {ex.Message}");
-                Pages.MessageBox.ShowError($"{DefaultLanguage.Error}: {ex.Message}", DefaultLanguage.ErrorTitle);
+                MessageBox.ShowError($"{DefaultLanguage.Error}: {ex.Message}", DefaultLanguage.ErrorTitle);
             }
         }
 
@@ -615,10 +611,10 @@ namespace Edemly.Client
 
         private void GroupSettingsButton_Click(object sender, RoutedEventArgs e)
         {
-            if (chatManager.CurrentChatContact != null)
+            if (_chatController.CurrentChatContact != null)
             {
                 CloseGroupInfo();
-                NavigationService.Navigate(new Page_group_settings(chatManager.CurrentChatContact, chatManager.CurrentChatId));
+                NavigationService.Navigate(new Page_group_settings(_chatController.CurrentChatContact, _chatController.CurrentChatId));
             }
         }
     }

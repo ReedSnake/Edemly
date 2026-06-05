@@ -1,5 +1,4 @@
 #nullable disable
-
 namespace Edemly.Client.Models
 {
     public class Contact

@@ -1,9 +1,9 @@
 #nullable disable
 
 using Edemly.Client.Api;
-using Edemly.Client.Lang;
+using Edemly.Client.Application.Localization;
 using Edemly.Client.Models;
-using Edemly.Client.Services;
+using Edemly.Client.Presentation.Common;
 using Microsoft.Win32;
 using System.IO;
 using System.Windows;
@@ -11,24 +11,22 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
-namespace Edemly.Client.Pages
+namespace Edemly.Client.Pages.Main
 {
-    public partial class Page_group_settings : Page
+    public partial class Page_group_settings : ThemedPage
     {
         private readonly Contact _groupContact;
         private readonly int _chatId;
         private readonly IApiService _apiService;
-        private List<string> _groupNotes = new List<string>();
-        private List<ChatMemberDto> _groupMembers = new List<ChatMemberDto>();
-        private bool _isOwner = false;
+        private List<ChatMemberDto> _groupMembers = new();
+        private bool _isOwner;
 
         private string _originalGroupName = string.Empty;
         private string _originalGroupDescription = string.Empty;
         private string _originalIconUrl = string.Empty;
 
         private string _pendingIconPath = null;
-        private string _newIconUrl = null;
-        private bool _iconChanged = false;
+        private bool _iconChanged;
 
         public Page_group_settings(Contact groupContact, int chatId)
         {
@@ -36,10 +34,6 @@ namespace Edemly.Client.Pages
             _groupContact = groupContact;
             _chatId = chatId;
             _apiService = App.ApiService;
-
-            ThemeService.Instance.ThemeChanged += (themeName) => OnThemeChanged();
-
-            ApplyThemeToPage();
 
             LoadGroupData();
             _ = LoadGroupMembersAsync();
@@ -50,60 +44,40 @@ namespace Edemly.Client.Pages
             GroupDescriptionTextBox.TextChanged += GroupDescriptionTextBox_TextChanged;
         }
 
-        private void OnThemeChanged()
+        protected override void ApplyTheme()
         {
-            try
-            {
-                ApplyThemeToPage();
-                System.Diagnostics.Debug.WriteLine("[PAGE_GROUP_SETTINGS] Theme changed");
-            }
-            catch { }
+            if (Content is Grid rootGrid)
+                rootGrid.SetResourceReference(Panel.BackgroundProperty, "PageBackgroundBrush");
+
+            ApplyTextBoxStateResources(GroupNameTextBox);
+            ApplyTextBoxStateResources(GroupDescriptionTextBox);
+
+            System.Diagnostics.Debug.WriteLine("[PAGE_GROUP_SETTINGS] Theme applied");
         }
 
-        private void ApplyThemeToPage()
+        private void ApplyTextBoxStateResources(TextBox textBox)
         {
-            try
+            if (textBox == null)
+                return;
+
+            textBox.SetResourceReference(
+                Control.BackgroundProperty,
+                textBox.IsReadOnly ? "ThemeSurfaceAltBrush" : "ThemeInputBackgroundBrush");
+        }
+
+        private TextBlock CreateCenteredStatusText(string text, string foregroundResourceKey = "ThemeTextSecondaryBrush")
+        {
+            var textBlock = new TextBlock
             {
-                var palette = ThemeService.Instance.GetCurrentPalette();
+                Text = text,
+                FontSize = 14,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                Margin = new Thickness(0, 10, 0, 10)
+            };
 
-                var grid = this.Content as Grid;
-                if (grid != null)
-                {
-                    var gradientBrush = new LinearGradientBrush
-                    {
-                        StartPoint = new Point(1, 1),
-                        EndPoint = new Point(0, 0)
-                    };
-                    gradientBrush.GradientStops.Add(new GradientStop(palette.BackgroundDark, 0.7));
-                    gradientBrush.GradientStops.Add(new GradientStop(palette.Primary, 0.0));
-                    grid.Background = gradientBrush;
-                }
+            textBlock.SetResourceReference(TextBlock.ForegroundProperty, foregroundResourceKey);
 
-                if (SaveButton != null)
-                {
-                    SaveButton.Background = new SolidColorBrush(palette.Primary);
-                }
-                if (HeaderSaveButton != null)
-                {
-                    HeaderSaveButton.Background = new SolidColorBrush(palette.Primary);
-                }
-                if (ChangeIconButton != null)
-                {
-                    ChangeIconButton.Background = new SolidColorBrush(palette.Primary);
-                }
-
-                var groupIconBorder = this.FindName("GroupIconBorder") as Border;
-                if (groupIconBorder != null)
-                {
-                    groupIconBorder.BorderBrush = new SolidColorBrush(palette.Secondary);
-                }
-
-                System.Diagnostics.Debug.WriteLine($"[PAGE_GROUP_SETTINGS] Theme applied: {ThemeService.Instance.CurrentTheme}");
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"[PAGE_GROUP_SETTINGS] ApplyThemeToPage error: {ex.Message}");
-            }
+            return textBlock;
         }
 
         private void GroupNameTextBox_TextChanged(object sender, TextChangedEventArgs e)
@@ -162,20 +136,20 @@ namespace Edemly.Client.Pages
                     ChangeIconButton.ToolTip = DefaultLanguage.ChangeIcon;
 
                     GroupNameTextBox.IsReadOnly = false;
-                    GroupNameTextBox.Background = new SolidColorBrush(Colors.White);
+                    ApplyTextBoxStateResources(GroupNameTextBox);
 
                     GroupDescriptionTextBox.IsReadOnly = false;
-                    GroupDescriptionTextBox.Background = new SolidColorBrush(Colors.White);
+                    ApplyTextBoxStateResources(GroupDescriptionTextBox);
                 }
                 else
                 {
                     ChangeIconButton.Visibility = Visibility.Collapsed;
 
                     GroupNameTextBox.IsReadOnly = true;
-                    GroupNameTextBox.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#F0F0F0"));
+                    ApplyTextBoxStateResources(GroupNameTextBox);
 
                     GroupDescriptionTextBox.IsReadOnly = true;
-                    GroupDescriptionTextBox.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#F0F0F0"));
+                    ApplyTextBoxStateResources(GroupDescriptionTextBox);
 
                     SaveButton.Visibility = Visibility.Collapsed;
                     HeaderSaveButton.Visibility = Visibility.Collapsed;
@@ -190,6 +164,8 @@ namespace Edemly.Client.Pages
                 ChangeIconButton.Visibility = Visibility.Collapsed;
                 GroupNameTextBox.IsReadOnly = true;
                 GroupDescriptionTextBox.IsReadOnly = true;
+                ApplyTextBoxStateResources(GroupNameTextBox);
+                ApplyTextBoxStateResources(GroupDescriptionTextBox);
                 SaveButton.Visibility = Visibility.Collapsed;
                 HeaderSaveButton.Visibility = Visibility.Collapsed;
             }
@@ -207,7 +183,6 @@ namespace Edemly.Client.Pages
 
             _iconChanged = false;
             _pendingIconPath = null;
-            _newIconUrl = null;
 
             SaveButton.Visibility = Visibility.Collapsed;
             HeaderSaveButton.Visibility = Visibility.Collapsed;
@@ -224,7 +199,7 @@ namespace Edemly.Client.Pages
 
                 if (chatData != null)
                 {
-                    await Application.Current.Dispatcher.InvokeAsync(() =>
+                    await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
                     {
                         if (!string.IsNullOrEmpty(chatData.Description))
                         {
@@ -288,14 +263,7 @@ namespace Edemly.Client.Pages
             {
                 GroupMembersPanel.Children.Clear();
 
-                var loadingText = new TextBlock
-                {
-                    Text = DefaultLanguage.LoadingMembers,
-                    FontSize = 14,
-                    Foreground = new SolidColorBrush(Colors.Gray),
-                    HorizontalAlignment = HorizontalAlignment.Center,
-                    Margin = new Thickness(0, 10, 0, 10)
-                };
+                var loadingText = CreateCenteredStatusText(DefaultLanguage.LoadingMembers);
                 GroupMembersPanel.Children.Add(loadingText);
 
                 _groupMembers = await _apiService.GetChatMembersAsync(_chatId);
@@ -303,14 +271,7 @@ namespace Edemly.Client.Pages
                 if (_groupMembers == null || _groupMembers.Count == 0)
                 {
                     GroupMembersPanel.Children.Clear();
-                    var noMembersText = new TextBlock
-                    {
-                        Text = DefaultLanguage.NoMembers,
-                        FontSize = 14,
-                        Foreground = new SolidColorBrush(Colors.Gray),
-                        HorizontalAlignment = HorizontalAlignment.Center,
-                        Margin = new Thickness(0, 10, 0, 10)
-                    };
+                    var noMembersText = CreateCenteredStatusText(DefaultLanguage.NoMembers);
                     GroupMembersPanel.Children.Add(noMembersText);
                     return;
                 }
@@ -328,10 +289,10 @@ namespace Edemly.Client.Pages
                 {
                     Text = string.Format(DefaultLanguage.TotalMembers, _groupMembers.Count),
                     FontSize = 12,
-                    Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#666")),
                     HorizontalAlignment = HorizontalAlignment.Right,
                     Margin = new Thickness(0, 10, 0, 0)
                 };
+                statsText.SetResourceReference(TextBlock.ForegroundProperty, "ThemeTextSecondaryBrush");
                 GroupMembersPanel.Children.Add(statsText);
             }
             catch (Exception ex)
@@ -339,14 +300,7 @@ namespace Edemly.Client.Pages
                 System.Diagnostics.Debug.WriteLine($"[GROUP SETTINGS] Error loading members: {ex.Message}");
 
                 GroupMembersPanel.Children.Clear();
-                var errorText = new TextBlock
-                {
-                    Text = DefaultLanguage.FailedLoadMembers,
-                    FontSize = 14,
-                    Foreground = new SolidColorBrush(Colors.Red),
-                    HorizontalAlignment = HorizontalAlignment.Center,
-                    Margin = new Thickness(0, 10, 0, 10)
-                };
+                var errorText = CreateCenteredStatusText(DefaultLanguage.FailedLoadMembers, "ThemeDangerBrush");
                 GroupMembersPanel.Children.Add(errorText);
             }
         }
@@ -375,8 +329,8 @@ namespace Edemly.Client.Pages
                 CornerRadius = new CornerRadius(20),
                 Margin = new Thickness(0, 0, 10, 0),
                 VerticalAlignment = VerticalAlignment.Center,
-                Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#E0F0F0"))
             };
+            avatarBorder.SetResourceReference(Border.BackgroundProperty, "ThemeBorderLightBrush");
 
             var placeholderText = new TextBlock
             {
@@ -385,10 +339,10 @@ namespace Edemly.Client.Pages
                     : member.UserId.ToString(),
                 FontSize = 12,
                 FontWeight = FontWeights.Bold,
-                Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#057272")),
                 HorizontalAlignment = HorizontalAlignment.Center,
                 VerticalAlignment = VerticalAlignment.Center
             };
+            placeholderText.SetResourceReference(TextBlock.ForegroundProperty, "ThemePrimaryBrush");
             avatarBorder.Child = placeholderText;
 
             Grid.SetColumn(avatarBorder, 0);
@@ -400,18 +354,18 @@ namespace Edemly.Client.Pages
             {
                 Text = string.Format(DefaultLanguage.UserIdText, member.UserId),
                 FontSize = 13,
-                FontWeight = FontWeights.SemiBold,
-                Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#031C1C"))
+                FontWeight = FontWeights.SemiBold
             };
+            userIdText.SetResourceReference(TextBlock.ForegroundProperty, "ThemeTextPrimaryBrush");
             textPanel.Children.Add(userIdText);
 
             var loadingText = new TextBlock
             {
                 Text = DefaultLanguage.LoadingText,
                 FontSize = 11,
-                Foreground = new SolidColorBrush(Colors.Gray),
                 FontStyle = FontStyles.Italic
             };
+            loadingText.SetResourceReference(TextBlock.ForegroundProperty, "ThemeTextSecondaryBrush");
             textPanel.Children.Add(loadingText);
 
             Grid.SetColumn(textPanel, 1);
@@ -421,19 +375,19 @@ namespace Edemly.Client.Pages
             {
                 CornerRadius = new CornerRadius(4),
                 Padding = new Thickness(8, 4, 8, 4),
-                VerticalAlignment = VerticalAlignment.Center,
-                Background = member.Role == 1 ?
-                    new SolidColorBrush((Color)ColorConverter.ConvertFromString("#057272")) :
-                    new SolidColorBrush((Color)ColorConverter.ConvertFromString("#757575"))
+                VerticalAlignment = VerticalAlignment.Center
             };
+            roleBadge.SetResourceReference(
+                Border.BackgroundProperty,
+                member.Role == 1 ? "ThemePrimaryBrush" : "ThemeTextSecondaryBrush");
 
             var roleText = new TextBlock
             {
                 Text = member.Role == 1 ? DefaultLanguage.OwnerRole : DefaultLanguage.MemberRole,
                 FontSize = 10,
-                FontWeight = FontWeights.Bold,
-                Foreground = Brushes.White
+                FontWeight = FontWeights.Bold
             };
+            roleText.SetResourceReference(TextBlock.ForegroundProperty, "ThemeOnPrimaryTextBrush");
             roleBadge.Child = roleText;
 
             Grid.SetColumn(roleBadge, 2);
@@ -443,7 +397,7 @@ namespace Edemly.Client.Pages
 
             container.MouseEnter += (s, e) =>
             {
-                container.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#F0F8F8"));
+                container.SetResourceReference(Border.BackgroundProperty, "ThemeBorderLightBrush");
             };
 
             container.MouseLeave += (s, e) =>
@@ -467,7 +421,7 @@ namespace Edemly.Client.Pages
 
                 if (user != null)
                 {
-                    await Application.Current.Dispatcher.InvokeAsync(() =>
+                    await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
                     {
                         var grid = memberItem.Child as Grid;
                         if (grid != null)
@@ -488,7 +442,7 @@ namespace Edemly.Client.Pages
                                 if (statusText != null)
                                 {
                                     statusText.Text = user.Email ?? DefaultLanguage.MemberRole;
-                                    statusText.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#666"));
+                                    statusText.SetResourceReference(TextBlock.ForegroundProperty, "ThemeTextSecondaryBrush");
                                     statusText.FontStyle = FontStyles.Normal;
                                 }
                             }
@@ -518,7 +472,7 @@ namespace Edemly.Client.Pages
                 var bitmap = await App.GlobalProfilePictureCache.GetOrDownloadAsync(pfpUrl);
                 if (bitmap != null)
                 {
-                    await Application.Current.Dispatcher.InvokeAsync(() =>
+                    await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
                     {
                         avatarBorder.Background = new ImageBrush
                         {
@@ -617,8 +571,6 @@ namespace Edemly.Client.Pages
                     if (uploadResult.Success && !string.IsNullOrEmpty(uploadResult.Url))
                     {
                         finalIconUrl = uploadResult.Url;
-                        _newIconUrl = uploadResult.Url;
-
                         System.Diagnostics.Debug.WriteLine($"[GROUP SETTINGS] Icon uploaded successfully: {finalIconUrl}");
 
                         if (!string.IsNullOrEmpty(_originalIconUrl))
@@ -634,9 +586,9 @@ namespace Edemly.Client.Pages
                         }
                         catch { }
 
-                        if (App.GlobalChatManager != null)
+                        if (App.GlobalChatController != null)
                         {
-                            App.GlobalChatManager.UpdateGroupIcon(_chatId, finalIconUrl);
+                            App.GlobalChatController.UpdateGroupIcon(_chatId, finalIconUrl);
                         }
                     }
                     else
@@ -666,17 +618,11 @@ namespace Edemly.Client.Pages
 
                     _groupContact.Name = newName;
 
-                    if (App.GlobalChatManager != null)
+                    if (App.GlobalChatController != null)
                     {
-                        await Application.Current.Dispatcher.InvokeAsync(() =>
+                        await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
                         {
-                            App.GlobalChatManager.UpdateChatButtonName(_chatId, newName);
-
-                            if (App.GlobalChatManager.CurrentChatId == _chatId &&
-                                App.GlobalChatManager.CurrentChatContact != null)
-                            {
-                                App.GlobalChatManager.CurrentChatContact.Name = newName;
-                            }
+                            App.GlobalChatController.UpdateChatButtonName(_chatId, newName);
                         });
                     }
 

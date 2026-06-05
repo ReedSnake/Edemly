@@ -1,13 +1,12 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-
-namespace Edemly.Client
+namespace Edemly.Client.Pages.Main
 {
-    public partial class Page_main : Page
+    public partial class Page_main
     {
         public ObservableCollection<StickerModel> Stickers { get; set; } = new ObservableCollection<StickerModel>();
 

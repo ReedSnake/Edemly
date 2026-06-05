@@ -1,18 +1,16 @@
-﻿#nullable disable
+#nullable disable
 
-using Edemly.Client.Lang;
+using Edemly.Client.Application.Localization;
 using Edemly.Client.Pages;
-using Edemly.Client.UI.Helpers;
+using Edemly.Client.Infrastructure.Audio;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
-using MessageBox = Edemly.Client.Pages.MessageBox;
-
-namespace Edemly.Client
+namespace Edemly.Client.Pages.Main
 {
-    public partial class Page_main : Page
+    public partial class Page_main
     {
         private void CreateGroupButton_Click(object sender, RoutedEventArgs e)
         {
@@ -117,7 +115,7 @@ namespace Edemly.Client
 
                 System.Diagnostics.Debug.WriteLine($"[GROUP] Created contact for group: {groupContact.Name}");
 
-                await chatManager.AddGroupChatAndSwitchAsync(groupContact, groupChat.Id);
+                await _chatController.AddGroupChatAndSwitchAsync(groupContact, groupChat.Id);
 
                 System.Diagnostics.Debug.WriteLine($"[GROUP] Switched to group chat {groupChat.Id}");
             }
@@ -144,9 +142,7 @@ namespace Edemly.Client
 
                 if (ParticipantSearchTextBox.Text == DefaultLanguage.SearchUsers)
                 {
-                    ParticipantSearchTextBox.Text = "";
-                    ParticipantSearchTextBox.Foreground = Brushes.Black;
-                    ParticipantSearchTextBox.FontStyle = FontStyles.Normal;
+                    ApplyTextInputActiveStyle(ParticipantSearchTextBox, string.Empty);
                 }
 
                 ParticipantSearchTextBox.TextAlignment = TextAlignment.Center;
@@ -175,9 +171,7 @@ namespace Edemly.Client
 
                 if (string.IsNullOrWhiteSpace(ParticipantSearchTextBox.Text))
                 {
-                    ParticipantSearchTextBox.Text = DefaultLanguage.SearchUsers;
-                    ParticipantSearchTextBox.Foreground = Brushes.Gray;
-                    ParticipantSearchTextBox.FontStyle = FontStyles.Italic;
+                    ApplyTextInputPlaceholderStyle(ParticipantSearchTextBox, DefaultLanguage.SearchUsers);
 
                     ParticipantSearchTextBox.TextAlignment = TextAlignment.Left;
                     ParticipantSearchTextBox.VerticalContentAlignment = VerticalAlignment.Center;
@@ -290,19 +284,19 @@ namespace Edemly.Client
                 Width = 35,
                 Height = 35,
                 CornerRadius = new CornerRadius(17.5),
-                Background = new SolidColorBrush(Color.FromRgb(130, 200, 195)),
                 Margin = new Thickness(0, 0, 10, 0),
                 VerticalAlignment = VerticalAlignment.Center
             };
+            SetThemeResource(avatar, Border.BackgroundProperty, "ThemePrimaryLightBrush");
 
             var avatarText = new TextBlock
             {
                 Text = user.Username.Substring(0, Math.Min(2, user.Username.Length)).ToUpper(),
-                Foreground = Brushes.White,
                 FontWeight = FontWeights.Bold,
                 HorizontalAlignment = HorizontalAlignment.Center,
                 VerticalAlignment = VerticalAlignment.Center
             };
+            SetThemeResource(avatarText, TextBlock.ForegroundProperty, "ThemeOnSecondaryTextBrush");
 
             avatar.Child = avatarText;
             Grid.SetColumn(avatar, 1);
@@ -317,9 +311,9 @@ namespace Edemly.Client
                 Text = user.Username,
                 FontSize = 14,
                 FontWeight = FontWeights.SemiBold,
-                Foreground = new SolidColorBrush(Color.FromRgb(3, 28, 28)),
                 Margin = new Thickness(0, 0, 0, 2)
             };
+            SetThemeResource(username, TextBlock.ForegroundProperty, "ThemeTextPrimaryBrush");
             textPanel.Children.Add(username);
 
             if (!string.IsNullOrEmpty(user.Email))
@@ -328,9 +322,9 @@ namespace Edemly.Client
                 {
                     Text = user.Email,
                     FontSize = 11,
-                    Foreground = new SolidColorBrush(Color.FromRgb(136, 136, 136)),
                     TextTrimming = TextTrimming.CharacterEllipsis
                 };
+                SetThemeResource(email, TextBlock.ForegroundProperty, "ThemeTextSecondaryBrush");
                 textPanel.Children.Add(email);
             }
 
@@ -344,7 +338,7 @@ namespace Edemly.Client
 
             container.MouseEnter += (s, e) =>
             {
-                container.Background = new SolidColorBrush(Color.FromRgb(234, 255, 253));
+                SetThemeResource(container, Border.BackgroundProperty, "ThemeBorderLightBrush");
             };
 
             container.MouseLeave += (s, e) =>
@@ -362,7 +356,7 @@ namespace Edemly.Client
 
         private async Task HandleVoiceRecordingAsync()
         {
-            if (chatManager.CurrentChatId < 0)
+            if (_chatController.CurrentChatId < 0)
             {
                 MessageBox.ShowWarning(DefaultLanguage.SelectChat, DefaultLanguage.ErrorTitle);
                 return;
@@ -383,14 +377,12 @@ namespace Edemly.Client
                         var currentText = MessageTextBox.Text ?? string.Empty;
                         _messageTextBeforeRecording = IsPlaceholderText(currentText) ? string.Empty : currentText;
                         MessageTextBox.IsEnabled = false;
-                        MessageTextBox.Text = DefaultLanguage.Loading;
-                        MessageTextBox.Foreground = Brushes.Gray;
-                        MessageTextBox.FontStyle = FontStyles.Italic;
+                        ApplyTextInputPlaceholderStyle(MessageTextBox, DefaultLanguage.Loading);
                     }
                     catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[VOICE] Setting recording UI failed: {ex}"); }
 
                     SendButton.Content = "⏹";
-                    SendButton.Background = new SolidColorBrush(Color.FromRgb(220, 53, 69));
+                    SetThemeResource(SendButton, Control.BackgroundProperty, "ThemeDangerBrush");
                     SendButton.Tag = "recording";
                     SendButton.ToolTip = "Stop and send voice message";
 
@@ -492,7 +484,7 @@ namespace Edemly.Client
 
                 var message = new CreateMessageDto
                 {
-                    ChatId = chatManager.CurrentChatId,
+                    ChatId = _chatController.CurrentChatId,
                     Text = string.Empty,
                     Type = 1,
                     ContentUrl = uploadResult.Url,
@@ -570,103 +562,62 @@ namespace Edemly.Client
             }
         }
 
-        private async void OnProfileUpdated(int userId, string newPfpUrl)
-        {
-            await Application.Current.Dispatcher.InvokeAsync(async () =>
-            {
-                try
-                {
-                    System.Diagnostics.Debug.WriteLine($"[PAGE_MAIN] Profile updated for user {userId}: {newPfpUrl}");
-
-                    try
-                    {
-                        var cache = App.GlobalProfilePictureCache;
-                        if (cache != null)
-                        {
-                            string oldUrl = null;
-
-                            if (chatManager?.CurrentChatContact != null && chatManager.CurrentChatContact.UserId == userId)
-                            {
-                                oldUrl = chatManager.CurrentChatContact.PhotoPath;
-                            }
-
-                            if (!string.IsNullOrEmpty(oldUrl) && oldUrl != newPfpUrl)
-                            {
-                                try { cache.InvalidateCache(oldUrl); } catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[PAGE_MAIN] InvalidateCache failed: {ex}"); }
-                            }
-
-                            if (!string.IsNullOrEmpty(newPfpUrl))
-                            {
-                                try { await cache.ForceDownloadAsync(newPfpUrl); } catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[PAGE_MAIN] ForceDownloadAsync failed: {ex}"); }
-                            }
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        System.Diagnostics.Debug.WriteLine($"[PAGE_MAIN] Prefetch failed: {ex.Message}");
-                    }
-
-                    if (isContactInfoOpen &&
-                        chatManager?.CurrentChatContact != null &&
-                        chatManager.CurrentChatContact.UserId == userId)
-                    {
-                        System.Diagnostics.Debug.WriteLine($"[PAGE_MAIN] Updating Contact Info photo");
-                        chatManager.CurrentChatContact.PhotoPath = newPfpUrl;
-
-                        var bitmap = string.IsNullOrEmpty(newPfpUrl) ? null : await App.GlobalProfilePictureCache.GetOrDownloadAsync(newPfpUrl);
-                        if (bitmap != null)
-                        {
-                            ContactPhotoBackground.ImageSource = bitmap;
-                        }
-                    }
-
-                    if (chatManager?.CurrentChatContact != null &&
-                        chatManager.CurrentChatContact.UserId == userId)
-                    {
-                        System.Diagnostics.Debug.WriteLine($"[PAGE_MAIN] Updating chat header photo");
-                        chatManager.CurrentChatContact.PhotoPath = newPfpUrl;
-
-                        var bitmap = string.IsNullOrEmpty(newPfpUrl) ? null : await App.GlobalProfilePictureCache.GetOrDownloadAsync(newPfpUrl);
-                        if (bitmap != null)
-                        {
-                            ChatHeaderAvatarBackground.ImageSource = bitmap;
-                        }
-                    }
-
-                    System.Diagnostics.Debug.WriteLine($"[PAGE_MAIN] Profile update processed in Page_main");
-                }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine($"[PAGE_MAIN] Error processing profile update: {ex.Message}");
-                }
-            });
-        }
-
         private async void CallButton_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                if (chatManager == null || chatManager.CurrentChatId < 0)
+                if (_chatController == null || _chatController.CurrentChatId < 0)
                 {
                     MessageBox.ShowWarning(DefaultLanguage.SelectChat, DefaultLanguage.StartCall);
                     return;
                 }
 
-                foreach (Window w in Application.Current.Windows)
+                foreach (Window w in System.Windows.Application.Current.Windows)
                 {
                     if (w is CallWindow cw)
                     {
-                        cw.Activate();
-                        return;
+                        try
+                        {
+                            if (!cw.IsVisible)
+                            {
+                                cw.Owner = System.Windows.Application.Current.MainWindow;
+                                cw.Show();
+                            }
+
+                            if (cw.WindowState == WindowState.Minimized)
+                            {
+                                cw.WindowState = WindowState.Normal;
+                            }
+
+                            cw.Topmost = true;
+                            cw.Topmost = false;
+                            cw.Activate();
+
+                            try
+                            {
+                                cw.RegisterHubHandlers();
+                            }
+                            catch (Exception ex)
+                            {
+                                System.Diagnostics.Debug.WriteLine($"[CALL] RegisterHubHandlers for existing CallWindow failed: {ex}");
+                            }
+
+                            return;
+                        }
+                        catch (Exception ex)
+                        {
+                            System.Diagnostics.Debug.WriteLine($"[CALL] Failed to reopen existing CallWindow: {ex}");
+                            break;
+                        }
                     }
                 }
 
-                var result = MessageBox.ShowQuestion(DefaultLanguage.LogoutConfirm, DefaultLanguage.StartCall);
+                var result = MessageBox.ShowQuestion(DefaultLanguage.StartCall, DefaultLanguage.StartCall);
                 if (result != MessageBoxResult.Yes) return;
 
                 var callUid = Guid.NewGuid().ToString("N");
 
-                System.Diagnostics.Debug.WriteLine($"[CALL] Starting call for chat {chatManager.CurrentChatId}, callUid={callUid}");
+                System.Diagnostics.Debug.WriteLine($"[CALL] Starting call for chat {_chatController.CurrentChatId}, callUid={callUid}");
                 try
                 {
                     System.Diagnostics.Debug.WriteLine($"[CALL] HubService.IsConnected={App.HubService?.IsConnected}");
@@ -675,7 +626,7 @@ namespace Edemly.Client
 
                 try
                 {
-                    await App.HubService.StartCallAsync(chatManager.CurrentChatId, callUid, null);
+                    await App.HubService.StartCallAsync(_chatController.CurrentChatId, callUid, null);
                 }
                 catch (Exception ex)
                 {
@@ -687,7 +638,7 @@ namespace Edemly.Client
                 try
                 {
                     var win = new CallWindow();
-                    win.Owner = Application.Current.MainWindow;
+                    win.Owner = System.Windows.Application.Current.MainWindow;
                     try { win.RegisterHubHandlers(); } catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[CALL] RegisterHubHandlers failed: {ex}"); }
                     win.Show();
                 }

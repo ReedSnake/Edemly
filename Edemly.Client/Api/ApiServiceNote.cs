@@ -1,9 +1,8 @@
-﻿using Edemly.Contracts.Notes;
+using Edemly.Contracts.Notes;
 using System.IO;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
-
 namespace Edemly.Client.Api
 {
     public partial class ApiService : IApiService, IDisposable

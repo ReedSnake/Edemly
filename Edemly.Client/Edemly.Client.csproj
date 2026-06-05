@@ -13,17 +13,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<Resource Include="Assets\**" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<None Remove="Localization\*.json" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<Content Include="Localization\*.json">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</Content>
+		<Resource Include="Assets\**" Exclude="Assets\Unused\**" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -32,9 +22,17 @@
 	  <Resource Remove="Assets\Audio\call-ended.wav" />
 	  <Resource Remove="Assets\Audio\call-dialing.wav" />
 	  <Resource Remove="Assets\Audio\call-countdown.wav" />
+	  <Resource Remove="Assets\Localization\*.json" />
+	  <Resource Remove="Assets\Legal\*.txt" />
 	</ItemGroup>
 
 	<ItemGroup>
+	  <Content Include="Assets\Localization\*.json">
+		<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Assets\Legal\*.txt">
+		<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </Content>
 	  <Content Include="Assets\Audio\message-notification.wav">
 		<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </Content>
@@ -70,12 +68,11 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Folder Include="Themes\" />
-	  <Folder Include="UI\Behaviors\" />
+	  <ProjectReference Include="..\Edemly.Contracts\Edemly.Contracts.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\Edemly.Contracts\Edemly.Contracts.csproj" />
+	  <Folder Include="Presentation\Resources\Styles\" />
 	</ItemGroup>
 
 </Project>

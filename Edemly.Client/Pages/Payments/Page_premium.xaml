@@ -1,170 +1,150 @@
-﻿<Page x:Class="Edemly.Client.Page_premium"
+<common:ThemedPage x:Class="Edemly.Client.Pages.Payments.Page_premium"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:common="clr-namespace:Edemly.Client.Presentation.Common"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-      xmlns:local="clr-namespace:Edemly.Client"
       mc:Ignorable="d"
-      d:DesignHeight="720" d:DesignWidth="1280"
+      d:DesignHeight="720"
+      d:DesignWidth="1280"
       Title="Edemly Premium">
 
-    <Grid>
-        <Grid.Background>
-            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                <GradientStop Color="#021A1A" Offset="0.0" />
-                <GradientStop Color="#052A2A" Offset="0.5" />
-            </LinearGradientBrush>
-        </Grid.Background>
+    <common:ThemedPage.Resources>
+        <Style x:Key="PremiumFeatureItemStyle"
+               TargetType="StackPanel"
+               BasedOn="{StaticResource PremiumContentPanelStyle}">
+            <Setter Property="Margin" Value="0,0,0,15" />
+        </Style>
 
-        <Rectangle HorizontalAlignment="Stretch"
-                   Height="Auto"
-                   Fill="#F6FFFC"
-                   VerticalAlignment="Stretch"
-                   Margin="20"
-                   RadiusX="40"
-                   RadiusY="40" />
+        <Style x:Key="PremiumFeaturesContainerStyle"
+               TargetType="Border"
+               BasedOn="{StaticResource PremiumCardBorderStyle}">
+            <Setter Property="Background" Value="{DynamicResource ThemeSurfaceAltBrush}" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="CornerRadius" Value="20" />
+            <Setter Property="Padding" Value="20" />
+            <Setter Property="Margin" Value="0,0,0,20" />
+        </Style>
+
+        <Style x:Key="PremiumSubscribeButtonBaseStyle"
+               TargetType="Button"
+               BasedOn="{StaticResource RoundedButtonBaseStyle}">
+            <Setter Property="Height" Value="50" />
+            <Setter Property="FontSize" Value="16" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Margin" Value="0,20,0,0" />
+        </Style>
+
+        <Style x:Key="PremiumMonthlyButtonStyle"
+               TargetType="Button"
+               BasedOn="{StaticResource SecondaryButtonStyle}">
+            <Setter Property="Height" Value="50" />
+            <Setter Property="FontSize" Value="16" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Margin" Value="0,20,0,0" />
+        </Style>
+
+        <Style x:Key="PremiumYearlyButtonStyle"
+               TargetType="Button"
+               BasedOn="{StaticResource PrimaryButtonStyle}">
+            <Setter Property="Height" Value="50" />
+            <Setter Property="FontSize" Value="16" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Margin" Value="0,20,0,0" />
+        </Style>
+    </common:ThemedPage.Resources>
+
+    <Grid Background="{DynamicResource PageBackgroundBrush}">
+        <Border Margin="20"
+                Background="{DynamicResource ThemeSurfaceBrush}"
+                CornerRadius="40" />
 
         <Grid Margin="40">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="Auto" MinWidth="350" />
+                <ColumnDefinition Width="Auto"
+                                  MinWidth="350" />
             </Grid.ColumnDefinitions>
 
-            <ScrollViewer Grid.Column="0"
+            <ScrollViewer Padding="10"
                           VerticalScrollBarVisibility="Hidden"
-                          HorizontalScrollBarVisibility="Disabled"
-                          Padding="10">
-                <StackPanel>
+                          HorizontalScrollBarVisibility="Disabled">
+
+                <StackPanel Style="{StaticResource PremiumContentPanelStyle}">
                     <Button x:Name="BackButton"
-                            Click="Back_Click"
-                            HorizontalAlignment="Left"
-                            Background="Transparent"
-                            Foreground="{DynamicResource ThemeBackgroundDarkBrush}"
-                            FontSize="24"
-                            FontWeight="Bold"
-                            Width="40"
-                            Height="40"
-                            BorderThickness="0"
-                            Cursor="Hand"
+                            Style="{StaticResource BackButtonStyle}"
                             Content="←"
-                            Margin="0,0,0,20">
-                        <Button.Style>
-                            <Style TargetType="Button">
-                                <Setter Property="Template">
-                                    <Setter.Value>
-                                        <ControlTemplate TargetType="Button">
-                                            <Border x:Name="border"
-                                                    Background="{TemplateBinding Background}"
-                                                    BorderBrush="{TemplateBinding BorderBrush}"
-                                                    BorderThickness="{TemplateBinding BorderThickness}"
-                                                    CornerRadius="4">
-                                                <ContentPresenter HorizontalAlignment="Center"
-                                                                  VerticalAlignment="Center" />
-                                            </Border>
-                                            <ControlTemplate.Triggers>
-                                                <Trigger Property="IsMouseOver" Value="True">
-                                                    <Setter TargetName="border" Property="CornerRadius" Value="8" />
-                                                    <Setter TargetName="border" Property="Background" Value="{DynamicResource ThemeBackgroundBrush}" />
-                                                </Trigger>
-                                            </ControlTemplate.Triggers>
-                                        </ControlTemplate>
-                                    </Setter.Value>
-                                </Setter>
-                            </Style>
-                        </Button.Style>
-                    </Button>
+                            HorizontalAlignment="Left"
+                            Margin="0,0,0,20"
+                            Click="Back_Click" />
 
                     <TextBlock x:Name="MainTitleText"
+                               Style="{StaticResource PageTitleTextStyle}"
                                Text="Edemly Premium — More opportunities for you!"
-                               FontSize="28"
-                               FontWeight="Bold"
-                               Foreground="{DynamicResource ThemeBackgroundDarkBrush}"
-                               TextWrapping="Wrap"
                                Margin="0,0,0,10" />
 
                     <TextBlock x:Name="DescriptionText"
+                               Style="{StaticResource PremiumTextStyle}"
                                Text="Want to use Edemly to its full potential? Upgrade to Premium and get advanced planning and organization features!"
-                               TextWrapping="Wrap"
-                               FontSize="16"
-                               Foreground="{DynamicResource ThemeBackgroundDarkBrush}"
                                Margin="0,0,0,20" />
 
                     <TextBlock x:Name="WhatIncludedText"
+                               Style="{StaticResource BodyBoldTextStyle}"
                                Text="What is included in Premium?"
                                FontSize="20"
-                               FontWeight="Bold"
-                               Foreground="{DynamicResource ThemeBackgroundDarkBrush}"
                                Margin="0,0,0,10" />
 
-                    <Border Background="{DynamicResource ThemeBorderLightBrush}"
-                            CornerRadius="20"
-                            Padding="20"
-                            Margin="0,0,0,20">
-                        <StackPanel>
-                            <StackPanel Margin="0,0,0,15">
+                    <Border Style="{StaticResource PremiumFeaturesContainerStyle}">
+                        <StackPanel Style="{StaticResource PremiumContentPanelStyle}">
+                            <StackPanel Style="{StaticResource PremiumFeatureItemStyle}">
                                 <TextBlock x:Name="Feature1TitleText"
-                                           FontSize="16"
-                                           FontWeight="Bold"
-                                           Foreground="{DynamicResource ThemeBackgroundDarkBrush}"
+                                           Style="{StaticResource PremiumFeatureTitleStyle}"
                                            Text="📝 Unlimited notes" />
+
                                 <TextBlock x:Name="Feature1DescText"
-                                           Text="The free version offers a limited number of notes. With Premium, you can create as many notes as you need — for work, study, personal matters, and creative ideas."
-                                           FontSize="14"
-                                           Foreground="{DynamicResource ThemeBackgroundDarkBrush}"
-                                           TextWrapping="Wrap"
-                                           Margin="0,5,0,0" />
+                                           Style="{StaticResource PremiumFeatureDescriptionStyle}"
+                                           Text="The free version offers a limited number of notes. With Premium, you can create as many notes as you need — for work, study, personal matters, and creative ideas." />
                             </StackPanel>
 
-                            <StackPanel Margin="0,0,0,15">
+                            <StackPanel Style="{StaticResource PremiumFeatureItemStyle}">
                                 <TextBlock x:Name="Feature2TitleText"
-                                           FontSize="16"
-                                           FontWeight="Bold"
-                                           Foreground="{DynamicResource ThemeBackgroundDarkBrush}"
+                                           Style="{StaticResource PremiumFeatureTitleStyle}"
                                            Text="⏰ Advanced reminder system" />
+
                                 <TextBlock x:Name="Feature2DescText"
-                                           Text="Create an unlimited number of reminders with flexible settings."
-                                           FontSize="14"
-                                           Foreground="{DynamicResource ThemeBackgroundDarkBrush}"
-                                           TextWrapping="Wrap"
-                                           Margin="0,5,0,0" />
+                                           Style="{StaticResource PremiumFeatureDescriptionStyle}"
+                                           Text="Create an unlimited number of reminders with flexible settings." />
                             </StackPanel>
 
-                            <StackPanel Margin="0,0,0,15">
+                            <StackPanel Style="{StaticResource PremiumFeatureItemStyle}">
                                 <TextBlock x:Name="Feature3TitleText"
-                                           FontSize="16"
-                                           FontWeight="Bold"
-                                           Foreground="{DynamicResource ThemeBackgroundDarkBrush}"
+                                           Style="{StaticResource PremiumFeatureTitleStyle}"
                                            Text="🎨 Exclusive themes" />
+
                                 <TextBlock x:Name="Feature3DescText"
-                                           Text="Access premium themes and fine-tune the interface to suit your style."
-                                           FontSize="14"
-                                           Foreground="{DynamicResource ThemeBackgroundDarkBrush}"
-                                           TextWrapping="Wrap"
-                                           Margin="0,5,0,0" />
+                                           Style="{StaticResource PremiumFeatureDescriptionStyle}"
+                                           Text="Access premium themes and fine-tune the interface to suit your style." />
                             </StackPanel>
 
-                            <StackPanel Margin="0,0,0,0">
+                            <StackPanel Style="{StaticResource PremiumFeatureItemStyle}">
                                 <TextBlock x:Name="Feature4TitleText"
-                                           FontSize="16"
-                                           FontWeight="Bold"
-                                           Foreground="{DynamicResource ThemeBackgroundDarkBrush}"
+                                           Style="{StaticResource PremiumFeatureTitleStyle}"
                                            Text="⚡ Priority support" />
+
                                 <TextBlock x:Name="Feature4DescText"
-                                           Text="Your questions will be handled first — we are always ready to help our users."
-                                           FontSize="14"
-                                           Foreground="{DynamicResource ThemeBackgroundDarkBrush}"
-                                           TextWrapping="Wrap"
-                                           Margin="0,5,0,0" />
+                                           Style="{StaticResource PremiumFeatureDescriptionStyle}"
+                                           Text="Your questions will be handled first — we are always ready to help our users." />
                             </StackPanel>
                         </StackPanel>
                     </Border>
 
                     <TextBlock x:Name="NoteText"
-                               Text="*After your subscription ends, you will retain an unlimited number of notes."
-                               FontSize="14"
+                               Style="{StaticResource PremiumFeatureDescriptionStyle}"
                                FontStyle="Italic"
-                               Foreground="{DynamicResource ThemeBackgroundDarkBrush}"
-                               TextWrapping="Wrap"
+                               Text="*After your subscription ends, you will retain an unlimited number of notes."
                                Margin="0,0,0,20" />
 
                     <Grid>
@@ -176,55 +156,22 @@
 
                         <Button x:Name="MonthlyButton"
                                 Grid.Column="0"
+                                Style="{StaticResource PremiumMonthlyButtonStyle}"
                                 Content="SUBSCRIBE FOR 2$/MONTH"
-                                Click="MonthlyButton_Click"
-                                Height="50"
-                                FontSize="16"
-                                FontWeight="SemiBold"
-                                Foreground="{DynamicResource ThemeBackgroundBrush}"
-                                Background="{DynamicResource ThemeSecondaryBrush}"
-                                BorderThickness="0"
-                                Cursor="Hand"
-                                Margin="0,29,0,-29">
-                            <Button.Template>
-                                <ControlTemplate TargetType="Button">
-                                    <Border Background="{TemplateBinding Background}"
-                                            CornerRadius="15"
-                                            Padding="10">
-                                        <ContentPresenter HorizontalAlignment="Center"
-                                                          VerticalAlignment="Center" />
-                                    </Border>
-                                </ControlTemplate>
-                            </Button.Template>
-                        </Button>
+                                Click="MonthlyButton_Click" />
 
                         <Button x:Name="YearlyButton"
                                 Grid.Column="2"
+                                Style="{StaticResource PremiumYearlyButtonStyle}"
                                 Content="SUBSCRIBE FOR 10$/YEAR"
-                                Click="YearlyButton_Click"
-                                Height="50"
-                                FontSize="16"
-                                FontWeight="SemiBold"
-                                Foreground="White"
-                                Background="{DynamicResource ThemePrimaryBrush}"
-                                BorderThickness="0"
-                                Cursor="Hand"
-                                Margin="0,29,0,-29">
-                            <Button.Template>
-                                <ControlTemplate TargetType="Button">
-                                    <Border Background="{TemplateBinding Background}"
-                                            CornerRadius="15"
-                                            Padding="10">
-                                        <ContentPresenter HorizontalAlignment="Center"
-                                                          VerticalAlignment="Center" />
-                                    </Border>
-                                </ControlTemplate>
-                            </Button.Template>
-                        </Button>
+                                Click="YearlyButton_Click" />
                     </Grid>
                 </StackPanel>
             </ScrollViewer>
-            <Image Source="/Assets/PageIllustrations/premium-panel.png" Margin="8,68,3,-4" Grid.Column="1" />
+
+            <Image Grid.Column="1"
+                   Source="/Assets/PageIllustrations/premium-panel.png"
+                   Margin="8,68,3,-4" />
         </Grid>
     </Grid>
-</Page>
+</common:ThemedPage>

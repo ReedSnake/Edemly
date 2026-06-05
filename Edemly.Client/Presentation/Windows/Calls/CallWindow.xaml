@@ -1,0 +1,238 @@
+<common:ThemedWindow x:Class="Edemly.Client.Presentation.Windows.Calls.CallWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:common="clr-namespace:Edemly.Client.Presentation.Common"
+        Title="Calls"
+        Height="420"
+        Width="480"
+        ResizeMode="NoResize"
+        WindowStartupLocation="CenterOwner"
+        Background="{DynamicResource PageBackgroundBrush}">
+
+    <Window.Resources>
+        <Style x:Key="CallOverlayPanelStyle"
+               TargetType="Border"
+               BasedOn="{StaticResource CallOverlayPanelBorderStyle}">
+            <Setter Property="VerticalAlignment" Value="Top" />
+            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="Margin" Value="8" />
+            <Setter Property="Visibility" Value="Collapsed" />
+            <Setter Property="Panel.ZIndex" Value="9000" />
+            <Setter Property="Effect" Value="{StaticResource CallPanelShadowEffect}" />
+        </Style>
+    </Window.Resources>
+
+    <Grid x:Name="RootGrid"
+          Margin="8">
+
+        <Border x:Name="NotificationBorder"
+                Background="{DynamicResource ThemeBackgroundDarkBrush}"
+                CornerRadius="8"
+                Padding="10"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Top"
+                Margin="8"
+                Visibility="Collapsed"
+                Panel.ZIndex="9500">
+
+            <TextBlock x:Name="NotificationText"
+                       Foreground="{DynamicResource ThemeOnPrimaryTextBrush}"
+                       FontWeight="SemiBold"
+                       TextWrapping="Wrap" />
+        </Border>
+
+        <Grid x:Name="ListViewGrid">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <TextBlock Grid.Row="0"
+                       Style="{StaticResource CallSectionTitleStyle}"
+                       Text="Active calls" />
+
+            <ScrollViewer Grid.Row="1"
+                          Margin="8"
+                          VerticalScrollBarVisibility="Hidden">
+
+                <Border Height="273"
+                        Background="{DynamicResource ThemeSurfaceBrush}"
+                        CornerRadius="20"
+                        Padding="10">
+
+                    <StackPanel x:Name="CallsListPanel" />
+                </Border>
+            </ScrollViewer>
+
+            <StackPanel Grid.Row="2"
+                        Orientation="Horizontal"
+                        HorizontalAlignment="Right"
+                        Margin="8">
+
+                <Button x:Name="RefreshListButton"
+                        Style="{StaticResource PrimaryButtonStyle}"
+                        Content="Refresh"
+                        Width="147"
+                        Height="36"
+                        Margin="4"
+                        Padding="14,0"
+                        Click="RefreshListButton_Click" />
+
+                <Button x:Name="CloseButton"
+                        Style="{StaticResource PrimaryButtonStyle}"
+                        Content="Close"
+                        Width="119"
+                        Height="36"
+                        Margin="4"
+                        Padding="14,0"
+                        Click="CloseButton_Click" />
+            </StackPanel>
+        </Grid>
+
+        <Border x:Name="IncomingPrompt"
+                Style="{StaticResource CallOverlayPanelStyle}"
+                Background="{DynamicResource ThemeSecondaryBrush}">
+
+            <StackPanel Orientation="Horizontal"
+                        Width="420">
+
+                <Border Width="56"
+                        Height="56"
+                        CornerRadius="28"
+                        BorderBrush="{DynamicResource ThemeOnSecondaryTextBrush}"
+                        BorderThickness="2"
+                        Margin="0,0,8,0">
+
+                    <Image x:Name="IncomingAvatar"
+                           Stretch="UniformToFill" />
+                </Border>
+
+                <StackPanel Orientation="Vertical"
+                            VerticalAlignment="Center"
+                            Width="280">
+
+                    <TextBlock x:Name="IncomingText"
+                               Text="Incoming call"
+                               FontSize="14"
+                               FontWeight="Bold"
+                               Foreground="{DynamicResource ThemeOnSecondaryTextBrush}"
+                               TextWrapping="Wrap" />
+
+                    <TextBlock x:Name="IncomingFromText"
+                               Text="From: "
+                               Foreground="{DynamicResource ThemeOnSecondaryTextBrush}"
+                               Margin="0,6,0,8" />
+
+                    <StackPanel Orientation="Horizontal"
+                                HorizontalAlignment="Right">
+
+                        <Button x:Name="AcceptIncomingButton"
+                                Style="{StaticResource LightButtonStyle}"
+                                Content="Accept"
+                                Width="80"
+                                Height="36"
+                                Margin="4"
+                                Padding="14,0"
+                                Click="AcceptIncomingButton_Click" />
+
+                        <Button x:Name="RejectIncomingButton"
+                                Style="{StaticResource DangerButtonStyle}"
+                                Content="Reject"
+                                Width="80"
+                                Height="36"
+                                Margin="4"
+                                Padding="14,0"
+                                Click="RejectIncomingButton_Click" />
+                    </StackPanel>
+                </StackPanel>
+            </StackPanel>
+        </Border>
+
+        <Border x:Name="DialingPanel"
+                Style="{StaticResource CallOverlayPanelStyle}"
+                Background="{DynamicResource ThemeBackgroundDarkBrush}">
+
+            <StackPanel Orientation="Vertical"
+                        Width="420">
+
+                <TextBlock x:Name="DialingText"
+                           Text="Calling..."
+                           FontSize="14"
+                           FontWeight="Bold"
+                           Foreground="{DynamicResource ThemeOnPrimaryTextBrush}"
+                           TextWrapping="Wrap" />
+
+                <TextBlock x:Name="DialingCountdown"
+                           Text="30s"
+                           Foreground="{DynamicResource ThemeOnPrimaryTextBrush}"
+                           Margin="0,8,0,8" />
+
+                <StackPanel Orientation="Horizontal"
+                            HorizontalAlignment="Right">
+
+                    <Button x:Name="CancelCallButton"
+                            Style="{StaticResource LightButtonStyle}"
+                            Content="Cancel"
+                            Width="80"
+                            Height="36"
+                            Margin="4"
+                            Padding="14,0"
+                            Click="CancelCallButton_Click" />
+                </StackPanel>
+            </StackPanel>
+        </Border>
+
+        <Grid x:Name="CallViewGrid"
+              Visibility="Collapsed">
+
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <TextBlock x:Name="CallTitle"
+                       Grid.Row="0"
+                       Style="{StaticResource CallSectionTitleStyle}"
+                       Text="Call" />
+
+            <StackPanel Grid.Row="1"
+                        Margin="8">
+
+                <TextBlock x:Name="CallInfoText"
+                           Foreground="{DynamicResource ThemeTextPrimaryBrush}"
+                           TextWrapping="Wrap" />
+
+                <Grid x:Name="WebViewHost"
+                      Height="240"
+                      Margin="0,8,0,0"
+                      Background="{DynamicResource ThemeSurfaceAltBrush}" />
+            </StackPanel>
+
+            <StackPanel Grid.Row="2"
+                        Orientation="Horizontal"
+                        HorizontalAlignment="Center"
+                        Margin="8">
+
+                <Button x:Name="MuteButton"
+                        Style="{StaticResource PrimaryButtonStyle}"
+                        Content="Mute"
+                        Width="80"
+                        Height="36"
+                        Margin="6"
+                        Padding="14,0"
+                        Click="MuteButton_Click" />
+
+                <Button x:Name="EndCallButton"
+                        Style="{StaticResource DangerButtonStyle}"
+                        Content="End"
+                        Width="80"
+                        Height="36"
+                        Margin="6"
+                        Padding="14,0"
+                        Click="EndCallButton_Click" />
+            </StackPanel>
+        </Grid>
+    </Grid>
+</common:ThemedWindow>
