@@ -1,5 +1,6 @@
 using Edemly.Client.Infrastructure.Startup;
 using System.Diagnostics;
+using Edemly.Client.Application.Users.Profile;
 
 namespace Edemly.Client.Application.Session
 {
@@ -53,13 +54,7 @@ namespace Edemly.Client.Application.Session
                 }
 
                 _session.PhotoUrl = userInfo.PfpUrl;
-                CurrentUserProfileState.UserName = userInfo.Username ?? string.Empty;
-                CurrentUserProfileState.Email = userInfo.Email ?? string.Empty;
-                CurrentUserProfileState.PhoneNumber = userInfo.PhoneNumber ?? string.Empty;
-                CurrentUserProfileState.PfpUrl = userInfo.PfpUrl ?? string.Empty;
-                CurrentUserProfileState.Description = userInfo.Description ?? string.Empty;
-                CurrentUserProfileState.FirstName = userInfo.FirstName ?? string.Empty;
-                CurrentUserProfileState.LastName = userInfo.LastName ?? string.Empty;
+                CurrentUserProfileState.Apply(userInfo);
 
                 if (!string.IsNullOrWhiteSpace(userInfo.PfpUrl))
                 {

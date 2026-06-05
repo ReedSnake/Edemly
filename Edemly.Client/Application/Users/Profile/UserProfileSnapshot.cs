@@ -1,6 +1,6 @@
 #nullable enable
 
-namespace Edemly.Client.Application.Profiles
+namespace Edemly.Client.Application.Users.Profile
 {
     public sealed record UserProfileSnapshot(
         string Username,

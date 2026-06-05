@@ -1,7 +1,7 @@
 using Edemly.Contracts.Calls;
 using Edemly.Contracts.Payments;
 using Edemly.Contracts.Remindings;
-using Edemly.Client.Application.Profiles;
+using Edemly.Client.Application.Users.Profile;
 namespace Edemly.Client.Api
 {
     public interface IApiService

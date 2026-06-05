@@ -1,4 +1,4 @@
-using Edemly.Client.Application.Profiles;
+using Edemly.Client.Application.Users.Profile;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;

@@ -1,4 +1,4 @@
-using Edemly.Client.Application.Session;
+using Edemly.Client.Application.Users.Profile;
 using Edemly.Contracts.Realtime;
 using Microsoft.AspNetCore.SignalR.Client;
 using System.Diagnostics;

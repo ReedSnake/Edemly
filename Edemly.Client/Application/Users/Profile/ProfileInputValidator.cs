@@ -2,7 +2,9 @@
 
 using System.Text.RegularExpressions;
 
-namespace Edemly.Client.Application.Profiles
+using Edemly.Client.Application.Localization;
+
+namespace Edemly.Client.Application.Users.Profile
 {
     public static class ProfileInputValidator
     {

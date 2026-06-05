@@ -1,7 +1,7 @@
 #nullable enable
 
 using Edemly.Client.Api;
-using Edemly.Client.Application.Profiles;
+using Edemly.Client.Application.Users.Profile;
 using Edemly.Client.Application.Services;
 using Edemly.Client.Presentation.Common;
 using System.Windows;
@@ -13,10 +13,7 @@ namespace Edemly.Client.Pages.Settings
     public partial class Page_settings : ThemedPage
     {
         private readonly IApiService _apiService;
-        private bool _hasUnsavedChanges;
-        private UserProfileSnapshot _originalProfile = UserProfileSnapshot.Empty;
-        private string _currentAvatarPath = string.Empty;
-        private bool _isInitialized;
+        private readonly SettingsProfileEditorState _profileState = new();
 
         public Page_settings()
         {

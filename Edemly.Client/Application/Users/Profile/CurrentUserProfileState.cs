@@ -1,6 +1,4 @@
-using Edemly.Client.Api;
-
-namespace Edemly.Client.Application.Session
+namespace Edemly.Client.Application.Users.Profile
 {
     internal static class CurrentUserProfileState
     {
@@ -13,7 +11,39 @@ namespace Edemly.Client.Application.Session
         public static string LastName { get; set; } = string.Empty;
         public static int CurrentChatIdNotification { get; set; } = -1;
 
-        public static async Task<bool> LoadFromServerAsync(IApiService apiService)
+        public static void Apply(UserInfoDto userInfo)
+        {
+            if (userInfo == null)
+            {
+                return;
+            }
+
+            UserName = userInfo.Username ?? string.Empty;
+            Email = userInfo.Email ?? string.Empty;
+            PhoneNumber = userInfo.PhoneNumber ?? string.Empty;
+            PfpUrl = userInfo.PfpUrl ?? string.Empty;
+            Description = userInfo.Description ?? string.Empty;
+            FirstName = userInfo.FirstName ?? string.Empty;
+            LastName = userInfo.LastName ?? string.Empty;
+        }
+
+        public static void Apply(UserProfileSnapshot snapshot)
+        {
+            if (snapshot == null)
+            {
+                return;
+            }
+
+            UserName = snapshot.Username;
+            Email = snapshot.Email;
+            PhoneNumber = snapshot.PhoneNumber;
+            PfpUrl = snapshot.PfpUrl;
+            Description = snapshot.Description;
+            FirstName = snapshot.FirstName;
+            LastName = snapshot.LastName;
+        }
+
+        public static async Task<bool> LoadFromServerAsync(Edemly.Client.Api.IApiService apiService)
         {
             try
             {
@@ -21,14 +51,7 @@ namespace Edemly.Client.Application.Session
 
                 if (userInfo != null && userInfo.Id > 0)
                 {
-                    UserName = userInfo.Username ?? string.Empty;
-                    Email = userInfo.Email ?? string.Empty;
-                    PhoneNumber = userInfo.PhoneNumber ?? string.Empty;
-                    PfpUrl = userInfo.PfpUrl ?? string.Empty;
-                    Description = userInfo.Description ?? string.Empty;
-                    FirstName = userInfo.FirstName ?? string.Empty;
-                    LastName = userInfo.LastName ?? string.Empty;
-
+                    Apply(userInfo);
                     return true;
                 }
 

@@ -2,7 +2,7 @@
 
 using Edemly.Client.Api;
 using Edemly.Client.Application.Chats;
-using Edemly.Client.Application.Session;
+using Edemly.Client.Application.Users.Profile;
 using Edemly.Client.Infrastructure.Caching;
 using Edemly.Client.Models;
 using Edemly.Client.Infrastructure.Realtime;
