@@ -102,7 +102,8 @@
                 Padding="40">
             <ScrollViewer HorizontalAlignment="Center"
                           VerticalAlignment="Top"
-                          VerticalScrollBarVisibility="Hidden">
+                          VerticalScrollBarVisibility="Hidden"
+                          HorizontalScrollBarVisibility="Disabled">
                 <StackPanel Width="600"
                             HorizontalAlignment="Center">
 
@@ -134,7 +135,7 @@
                                        Text="{x:Static lang:DefaultLanguage.GroupName}" />
 
                             <TextBox x:Name="GroupNameTextBox"
-                                     Style="{StaticResource SettingsTextBoxStyle}"
+                                     Style="{StaticResource GroupNameTextBoxStyle}"
                                      MaxLength="50" />
 
                             <TextBlock Style="{StaticResource SettingsHintTextStyle}"
@@ -166,7 +167,8 @@
                                        Text="{x:Static lang:DefaultLanguage.GroupMembers}" />
 
                             <Border Style="{StaticResource GroupMembersContainerStyle}">
-                                <ScrollViewer VerticalScrollBarVisibility="Hidden">
+                                <ScrollViewer VerticalScrollBarVisibility="Hidden"
+                                              HorizontalScrollBarVisibility="Disabled">
                                     <StackPanel x:Name="GroupMembersPanel"
                                                 Orientation="Vertical">
                                         <TextBlock Text="{x:Static lang:DefaultLanguage.LoadingMembers}"

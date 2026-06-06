@@ -62,6 +62,41 @@ namespace Edemly.Client.Models
             return new Contact(chatId, name, string.Empty, string.Empty, photoPath);
         }
 
+        public void ApplyUserProfile(UserDto user)
+        {
+            if (user == null)
+            {
+                return;
+            }
+
+            UpdateIdentity(user.Username, user.FirstName, user.LastName);
+
+            if (!string.IsNullOrWhiteSpace(user.Email))
+            {
+                Email = Normalize(user.Email);
+            }
+
+            if (!string.IsNullOrWhiteSpace(user.PhoneNumber))
+            {
+                Phone = Normalize(user.PhoneNumber);
+            }
+
+            if (!string.IsNullOrWhiteSpace(user.PfpUrl))
+            {
+                PhotoPath = Normalize(user.PfpUrl);
+            }
+            else if (string.IsNullOrWhiteSpace(PhotoPath))
+            {
+                PhotoPath = DefaultAvatarPath;
+            }
+
+            var refreshedName = ResolveDisplayName(string.Empty, Username, FirstName, LastName);
+            if (!string.IsNullOrWhiteSpace(refreshedName))
+            {
+                Name = refreshedName;
+            }
+        }
+
         public void UpdateIdentity(string username = null, string firstName = null, string lastName = null)
         {
             if (username != null)

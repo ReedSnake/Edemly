@@ -8,48 +8,46 @@ namespace Edemly.Client.Pages.Main
     {
         private const int MAX_CONTACTS_WITH_NOTES = 5;
 
-        private async Task LoadContactNotesAsync()
+        private async Task LoadContactNotesAsync(Models.Contact contact, int requestId)
         {
-            Note1Border.Visibility = Visibility.Collapsed;
-            NoNotesText.Visibility = Visibility.Visible;
-            NoNotesText.Text = DefaultLanguage.NoNotes;
-            ContactNoteLimitWarning.Visibility = Visibility.Collapsed;
-            ContactNoteEditor.IsEnabled = true;
-            SaveContactNoteButton.IsEnabled = true;
-
-            if (_chatController?.CurrentChatContact == null)
+            var notesService = await WaitForNotesServiceAsync(maxRetries: 5, delayMs: 75);
+            if (!IsContactInfoRequestCurrent(requestId, contact.UserId))
             {
-                System.Diagnostics.Debug.WriteLine("[CONTACT NOTES] CurrentChatContact is null");
-                ApplyContactNoteState(string.Empty);
                 return;
             }
 
-            var notesService = await WaitForNotesServiceAsync();
             if (notesService == null)
             {
-                NoNotesText.Text = DefaultLanguage.ContactNotesServiceError;
-                ContactNoteEditor.IsEnabled = false;
-                SaveContactNoteButton.IsEnabled = false;
+                System.Diagnostics.Debug.WriteLine("[CONTACT NOTES] Notes service unavailable during contact info refresh");
                 return;
             }
 
             try
             {
-                var contact = _chatController.CurrentChatContact;
                 var note = await notesService.GetNoteAsync(contact.UserId) ?? string.Empty;
+                if (!IsContactInfoRequestCurrent(requestId, contact.UserId))
+                {
+                    return;
+                }
 
                 contact.Note = note;
-                _chatController.TrySetCurrentChatNote(contact.UserId, note);
+                _chatController?.TrySetCurrentChatNote(contact.UserId, note);
                 ApplyContactNoteState(note);
 
                 if (string.IsNullOrWhiteSpace(note))
                 {
-                    await ApplyContactNoteAvailabilityAsync(notesService, contact.UserId);
+                    await ApplyContactNoteAvailabilityAsync(notesService, contact.UserId, requestId);
                 }
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"[CONTACT NOTES] Error loading contact note: {ex.Message}");
+
+                if (!IsContactInfoRequestCurrent(requestId, contact.UserId))
+                {
+                    return;
+                }
+
                 NoNotesText.Text = DefaultLanguage.Error;
             }
         }
@@ -101,7 +99,7 @@ namespace Edemly.Client.Pages.Main
                 }
 
                 contact.Note = noteText;
-                _chatController.TrySetCurrentChatNote(contact.UserId, noteText);
+                _chatController?.TrySetCurrentChatNote(contact.UserId, noteText);
                 ApplyContactNoteState(noteText);
             }
             catch (Exception ex)
@@ -147,7 +145,7 @@ namespace Edemly.Client.Pages.Main
                 }
 
                 contact.Note = string.Empty;
-                _chatController.TrySetCurrentChatNote(contact.UserId, string.Empty);
+                _chatController?.TrySetCurrentChatNote(contact.UserId, string.Empty);
                 ApplyContactNoteState(string.Empty);
                 await ApplyContactNoteAvailabilityAsync(notesService, contact.UserId);
             }
@@ -160,46 +158,16 @@ namespace Edemly.Client.Pages.Main
             }
         }
 
-        private async Task<Edemly.Client.Application.Services.NotesService?> WaitForNotesServiceAsync()
+        private async Task<Edemly.Client.Application.Services.NotesService?> WaitForNotesServiceAsync(int maxRetries = 10, int delayMs = 100)
         {
             var retries = 0;
-            while (App.NotesService == null && retries < 10)
+            while (App.NotesService == null && retries < maxRetries)
             {
-                await Task.Delay(100);
+                await Task.Delay(delayMs);
                 retries++;
             }
 
             return App.NotesService;
-        }
-
-        private async Task ApplyContactNoteAvailabilityAsync(Edemly.Client.Application.Services.NotesService notesService, int userId)
-        {
-            var canAdd = await notesService.CanAddNoteAsync(userId);
-            ContactNoteEditor.IsEnabled = canAdd;
-            SaveContactNoteButton.IsEnabled = canAdd;
-            ContactNoteLimitWarning.Visibility = canAdd ? Visibility.Collapsed : Visibility.Visible;
-            ContactNoteLimitWarning.Text = canAdd
-                ? string.Empty
-                : string.Format(DefaultLanguage.ContactNotesLimitWarning, MAX_CONTACTS_WITH_NOTES);
-        }
-
-        private void ApplyContactNoteState(string note)
-        {
-            var hasNote = !string.IsNullOrWhiteSpace(note);
-
-            ContactInfoNote1.Text = note;
-            Note1Border.Visibility = hasNote ? Visibility.Visible : Visibility.Collapsed;
-            NoNotesText.Visibility = hasNote ? Visibility.Collapsed : Visibility.Visible;
-            ContactNoteEditor.Text = note;
-            SaveContactNoteButton.Content = hasNote
-                ? DefaultLanguage.ContactUpdateNoteButton
-                : DefaultLanguage.ContactAddNoteButton;
-            DeleteContactNoteButton.Visibility = hasNote ? Visibility.Visible : Visibility.Collapsed;
-
-            if (hasNote)
-            {
-                ContactNoteLimitWarning.Visibility = Visibility.Collapsed;
-            }
         }
     }
 }

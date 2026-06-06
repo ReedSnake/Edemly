@@ -1023,8 +1023,7 @@
                                Margin="0,0,0,5" />
 
                     <TextBox x:Name="GroupNameTextBox"
-                             Style="{StaticResource DialogTextBoxStyle}"
-                             Height="40"
+                             Style="{StaticResource GroupNameTextBoxStyle}"
                              FontSize="16"
                              MaxLength="50" />
                 </StackPanel>
@@ -1063,8 +1062,10 @@
 
                     <ScrollViewer MaxHeight="250"
                                   VerticalScrollBarVisibility="Hidden"
+                                  HorizontalScrollBarVisibility="Disabled"
                                   PreviewMouseWheel="InnerScrollViewer_PreviewMouseWheel">
                         <StackPanel x:Name="ParticipantsPanel"
+                                    HorizontalAlignment="Stretch"
                                     Orientation="Vertical" />
                     </ScrollViewer>
                 </StackPanel>

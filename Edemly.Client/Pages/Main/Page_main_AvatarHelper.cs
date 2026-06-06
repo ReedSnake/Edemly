@@ -22,7 +22,17 @@ namespace Edemly.Client.Pages.Main
             };
         }
 
-        internal static async Task SetImageSourceAsync(ImageBrush imageBrush, string? photoPath, string tracePrefix)
+        internal static void ApplyDefaultAvatar(ImageBrush imageBrush)
+        {
+            ApplyImageSource(imageBrush, CreateDefaultAvatar());
+        }
+
+        internal static void ApplyImageSource(ImageBrush imageBrush, ImageSource? imageSource)
+        {
+            imageBrush.ImageSource = imageSource ?? CreateDefaultAvatar();
+        }
+
+        internal static async Task<ImageSource> ResolveImageSourceAsync(string? photoPath, string tracePrefix)
         {
             try
             {
@@ -33,9 +43,8 @@ namespace Edemly.Client.Pages.Main
                     var bitmap = await App.GlobalProfilePictureCache.GetOrDownloadAsync(photoPath!);
                     if (bitmap != null)
                     {
-                        imageBrush.ImageSource = bitmap;
                         System.Diagnostics.Debug.WriteLine($"{tracePrefix} Avatar loaded successfully");
-                        return;
+                        return bitmap;
                     }
 
                     System.Diagnostics.Debug.WriteLine($"{tracePrefix} Avatar unavailable, using default");
@@ -50,7 +59,13 @@ namespace Edemly.Client.Pages.Main
                 System.Diagnostics.Debug.WriteLine($"{tracePrefix} Avatar load failed: {ex.Message}");
             }
 
-            imageBrush.ImageSource = CreateDefaultAvatar();
+            return CreateDefaultAvatar();
+        }
+
+        internal static async Task SetImageSourceAsync(ImageBrush imageBrush, string? photoPath, string tracePrefix)
+        {
+            var imageSource = await ResolveImageSourceAsync(photoPath, tracePrefix);
+            ApplyImageSource(imageBrush, imageSource);
         }
 
         private static BitmapImage CreateDefaultAvatar()

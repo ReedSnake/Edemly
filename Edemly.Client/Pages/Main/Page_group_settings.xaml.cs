@@ -314,7 +314,8 @@ namespace Edemly.Client.Pages.Main
                 Background = Brushes.Transparent,
                 Cursor = System.Windows.Input.Cursors.Hand,
                 Margin = new Thickness(0, 0, 0, 5),
-                Tag = member
+                Tag = member,
+                HorizontalAlignment = HorizontalAlignment.Stretch
             };
 
             var grid = new Grid();
@@ -348,13 +349,19 @@ namespace Edemly.Client.Pages.Main
             Grid.SetColumn(avatarBorder, 0);
             grid.Children.Add(avatarBorder);
 
-            var textPanel = new StackPanel { VerticalAlignment = VerticalAlignment.Center };
+            var textPanel = new StackPanel
+            {
+                VerticalAlignment = VerticalAlignment.Center,
+                HorizontalAlignment = HorizontalAlignment.Stretch
+            };
 
             var userIdText = new TextBlock
             {
                 Text = string.Format(DefaultLanguage.UserIdText, member.UserId),
                 FontSize = 13,
-                FontWeight = FontWeights.SemiBold
+                FontWeight = FontWeights.SemiBold,
+                TextAlignment = TextAlignment.Left,
+                TextTrimming = TextTrimming.CharacterEllipsis
             };
             userIdText.SetResourceReference(TextBlock.ForegroundProperty, "ThemeTextPrimaryBrush");
             textPanel.Children.Add(userIdText);
@@ -363,7 +370,9 @@ namespace Edemly.Client.Pages.Main
             {
                 Text = DefaultLanguage.LoadingText,
                 FontSize = 11,
-                FontStyle = FontStyles.Italic
+                FontStyle = FontStyles.Italic,
+                TextAlignment = TextAlignment.Left,
+                TextTrimming = TextTrimming.CharacterEllipsis
             };
             loadingText.SetResourceReference(TextBlock.ForegroundProperty, "ThemeTextSecondaryBrush");
             textPanel.Children.Add(loadingText);

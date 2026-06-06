@@ -24,6 +24,7 @@ namespace Edemly.Client.Pages.Main
             ParticipantsPanel.Children.Clear();
             _selectedParticipants.Clear();
             UpdateParticipantCountText();
+            ResetParticipantSearchState();
 
             CreateGroupOverlay.Visibility = Visibility.Visible;
             CreateGroupDialog.Visibility = Visibility.Visible;
@@ -50,6 +51,41 @@ namespace Edemly.Client.Pages.Main
             if (ParticipantsPanel != null) ParticipantsPanel.Children.Clear();
 
             _selectedParticipants.Clear();
+            ResetParticipantSearchState();
+        }
+
+        private void ResetParticipantSearchState()
+        {
+            if (ParticipantSearchTextBox == null)
+            {
+                return;
+            }
+
+            ApplyTextInputPlaceholderStyle(ParticipantSearchTextBox, DefaultLanguage.SearchUsers);
+            ApplyParticipantSearchTextBoxLayout();
+        }
+
+        private void ApplyParticipantSearchTextBoxLayout()
+        {
+            if (ParticipantSearchTextBox == null)
+            {
+                return;
+            }
+
+            ParticipantSearchTextBox.TextAlignment = TextAlignment.Left;
+            ParticipantSearchTextBox.HorizontalContentAlignment = HorizontalAlignment.Left;
+            ParticipantSearchTextBox.VerticalContentAlignment = VerticalAlignment.Center;
+
+            if (GroupNameTextBox != null && !double.IsNaN(GroupNameTextBox.ActualHeight) && GroupNameTextBox.ActualHeight > 0)
+            {
+                ParticipantSearchTextBox.MinHeight = GroupNameTextBox.ActualHeight;
+                ParticipantSearchTextBox.Height = GroupNameTextBox.ActualHeight;
+            }
+            else
+            {
+                ParticipantSearchTextBox.MinHeight = 40;
+                ParticipantSearchTextBox.Height = 40;
+            }
         }
 
         private async void ConfirmCreateGroup_Click(object sender, RoutedEventArgs e)
@@ -131,17 +167,7 @@ namespace Edemly.Client.Pages.Main
                     ApplyTextInputActiveStyle(ParticipantSearchTextBox, string.Empty);
                 }
 
-                ParticipantSearchTextBox.TextAlignment = TextAlignment.Center;
-                ParticipantSearchTextBox.VerticalContentAlignment = VerticalAlignment.Center;
-
-                if (GroupNameTextBox != null && !double.IsNaN(GroupNameTextBox.Height) && GroupNameTextBox.Height > 0)
-                {
-                    ParticipantSearchTextBox.Height = GroupNameTextBox.Height;
-                }
-                else
-                {
-                    ParticipantSearchTextBox.Height = 40;
-                }
+                ApplyParticipantSearchTextBoxLayout();
             }
             catch (Exception ex)
             {
@@ -158,19 +184,9 @@ namespace Edemly.Client.Pages.Main
                 if (string.IsNullOrWhiteSpace(ParticipantSearchTextBox.Text))
                 {
                     ApplyTextInputPlaceholderStyle(ParticipantSearchTextBox, DefaultLanguage.SearchUsers);
-
-                    ParticipantSearchTextBox.TextAlignment = TextAlignment.Left;
-                    ParticipantSearchTextBox.VerticalContentAlignment = VerticalAlignment.Center;
-
-                    if (GroupNameTextBox != null && !double.IsNaN(GroupNameTextBox.Height) && GroupNameTextBox.Height > 0)
-                    {
-                        ParticipantSearchTextBox.Height = GroupNameTextBox.Height;
-                    }
-                    else
-                    {
-                        ParticipantSearchTextBox.Height = 40;
-                    }
                 }
+
+                ApplyParticipantSearchTextBoxLayout();
             }
             catch (Exception ex)
             {
@@ -236,7 +252,8 @@ namespace Edemly.Client.Pages.Main
                 Padding = new Thickness(10),
                 Margin = new Thickness(0, 2, 0, 2),
                 CornerRadius = new CornerRadius(8),
-                Cursor = Cursors.Hand
+                Cursor = Cursors.Hand,
+                HorizontalAlignment = HorizontalAlignment.Stretch
             };
 
             var grid = new Grid();
@@ -289,7 +306,8 @@ namespace Edemly.Client.Pages.Main
 
             var textPanel = new StackPanel
             {
-                VerticalAlignment = VerticalAlignment.Center
+                VerticalAlignment = VerticalAlignment.Center,
+                HorizontalAlignment = HorizontalAlignment.Stretch
             };
 
             var username = new TextBlock
@@ -297,7 +315,9 @@ namespace Edemly.Client.Pages.Main
                 Text = user.Username,
                 FontSize = 14,
                 FontWeight = FontWeights.SemiBold,
-                Margin = new Thickness(0, 0, 0, 2)
+                Margin = new Thickness(0, 0, 0, 2),
+                TextAlignment = TextAlignment.Left,
+                TextTrimming = TextTrimming.CharacterEllipsis
             };
             SetThemeResource(username, TextBlock.ForegroundProperty, "ThemeTextPrimaryBrush");
             textPanel.Children.Add(username);
@@ -308,6 +328,7 @@ namespace Edemly.Client.Pages.Main
                 {
                     Text = user.Email,
                     FontSize = 11,
+                    TextAlignment = TextAlignment.Left,
                     TextTrimming = TextTrimming.CharacterEllipsis
                 };
                 SetThemeResource(email, TextBlock.ForegroundProperty, "ThemeTextSecondaryBrush");

@@ -35,11 +35,13 @@
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
 
-                    <TextBlock x:Name="txtIcon"
-                               Grid.Column="0"
-                               FontSize="24"
-                               VerticalAlignment="Center"
-                               HorizontalAlignment="Center" />
+                    <Image x:Name="IconImage"
+                           Grid.Column="0"
+                           Width="22"
+                           Height="22"
+                           VerticalAlignment="Center"
+                           HorizontalAlignment="Center"
+                           Stretch="Uniform" />
 
                     <TextBlock x:Name="txtTitle"
                                Grid.Column="1"

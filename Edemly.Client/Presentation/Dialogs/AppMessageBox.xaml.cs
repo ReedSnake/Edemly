@@ -27,22 +27,20 @@ namespace Edemly.Client.Presentation.Dialogs
 
         private void ConfigureIcon(MessageBoxImage icon)
         {
+            IconImage.Source = AppMessageBoxIconSourceFactory.Create(icon);
+            ApplyAccentResources(ResolveAccentResourceKey(icon));
+        }
+
+        private void ApplyAccentResources(string accentResourceKey)
+        {
             var headerGrid = txtTitle.Parent as Grid;
             var headerBorder = headerGrid?.Parent as Border;
             var mainBorder = Content as Border;
 
-            _accentResourceKey = ResolveAccentResourceKey(icon);
-            txtIcon.Text = ResolveIconGlyph(icon);
+            _accentResourceKey = accentResourceKey;
 
-            if (headerBorder != null)
-            {
-                headerBorder.SetResourceReference(Border.BackgroundProperty, _accentResourceKey);
-            }
-
-            if (mainBorder != null)
-            {
-                mainBorder.SetResourceReference(Border.BorderBrushProperty, _accentResourceKey);
-            }
+            headerBorder?.SetResourceReference(Border.BackgroundProperty, _accentResourceKey);
+            mainBorder?.SetResourceReference(Border.BorderBrushProperty, _accentResourceKey);
         }
 
         private static string ResolveAccentResourceKey(MessageBoxImage icon)
@@ -53,17 +51,6 @@ namespace Edemly.Client.Presentation.Dialogs
                 MessageBoxImage.Error => "ThemeDangerBrush",
                 MessageBoxImage.Question => "ThemeSuccessBrush",
                 _ => "ThemeInfoBrush"
-            };
-        }
-
-        private static string ResolveIconGlyph(MessageBoxImage icon)
-        {
-            return icon switch
-            {
-                MessageBoxImage.Warning => "!",
-                MessageBoxImage.Error => "x",
-                MessageBoxImage.Question => "?",
-                _ => "i"
             };
         }
 

@@ -22,6 +22,7 @@ namespace Edemly.Client.Pages.Main
         private ChatWorkspaceController? _chatController;
         private CancellationTokenSource? _cancellationTokenSource;
         private bool _isFirstLoad = true;
+        private int _contactInfoLoadVersion = 0;
         private readonly IAttachmentFilePicker _attachmentFilePicker = null!;
         private readonly IClipboardImageTempFileStore _clipboardImageTempFileStore = null!;
         private readonly IAttachmentWorkflowCoordinator _attachmentWorkflowCoordinator = null!;
