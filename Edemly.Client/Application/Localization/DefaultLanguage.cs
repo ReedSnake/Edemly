@@ -18,8 +18,10 @@ namespace Edemly.Client.Application.Localization
         public static string No => Lang.GetText("common", "no", "No");
         public static string Ok => Lang.GetText("common", "ok", "OK");
         public static string Cancel => Lang.GetText("common", "cancel", "Cancel");
+        public static string Send => Lang.GetText("common", "send", "Send");
         public static string Close => Lang.GetText("common", "close", "Close");
         public static string Delete => Lang.GetText("common", "delete", "Delete");
+        public static string Remove => Lang.GetText("common", "remove", "Remove");
         public static string Edit => Lang.GetText("common", "edit", "Edit");
         public static string Save => Lang.GetText("common", "save", "Save");
         public static string Copy => Lang.GetText("common", "copy", "Copy");
@@ -406,6 +408,13 @@ namespace Edemly.Client.Application.Localization
         public static string AllFiles => Lang.GetText("files", "all_files", "All Files");
         public static string Images => Lang.GetText("files", "images", "Images");
         public static string Documents => Lang.GetText("files", "documents", "Documents");
+        public static string AttachmentPreviewFileTitle => Lang.GetText("files", "attachment_preview_file_title", "Send file");
+        public static string AttachmentPreviewImageTitle => Lang.GetText("files", "attachment_preview_image_title", "Send image");
+        public static string AttachmentPreviewHint => Lang.GetText("files", "attachment_preview_hint", "Review the file, add a caption if needed, or remove it from the send queue.");
+        public static string AttachmentPreviewUnavailable => Lang.GetText("files", "attachment_preview_unavailable", "Preview is not available for this file type.");
+        public static string AttachmentCaptionLabel => Lang.GetText("files", "attachment_caption_label", "Caption");
+        public static string AttachmentTooLarge => Lang.GetText("files", "attachment_too_large", "File size exceeds 50 MB limit");
+        public static string AttachmentFileMissing => Lang.GetText("files", "attachment_file_missing", "File could not be found.");
         public static string UploadFailed => Lang.GetText("files", "upload_failed", "Failed to upload file: {0}");
         public static string DownloadFailed => Lang.GetText("files", "download_failed", "Failed to download file: {0}");
 

@@ -1,19 +1,24 @@
 using Edemly.Client.Presentation.Common;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Media;
 
 namespace Edemly.Client.Presentation.Dialogs
 {
     public partial class AppMessageBox : ThemedWindow
     {
+        private readonly MessageBoxImage _currentIcon;
+        private MessageBoxResult _okResult = MessageBoxResult.OK;
+        private MessageBoxResult _cancelResult = MessageBoxResult.Cancel;
+        private string _accentResourceKey = "ThemeInfoBrush";
+
         public MessageBoxResult Result { get; private set; }
 
         private AppMessageBox(string message, string title, MessageBoxButton button, MessageBoxImage icon)
         {
             InitializeComponent();
 
-            txtTitle.Text = title;
+            _currentIcon = icon;
+            txtTitle.Text = string.IsNullOrWhiteSpace(title) ? DefaultLanguage.Information : title;
             txtMessage.Text = message;
 
             ConfigureIcon(icon);
@@ -25,35 +30,41 @@ namespace Edemly.Client.Presentation.Dialogs
             var headerGrid = txtTitle.Parent as Grid;
             var headerBorder = headerGrid?.Parent as Border;
             var mainBorder = Content as Border;
-            var accentBrush = ResolveAccentBrush(icon);
 
-            txtIcon.Text = icon switch
-            {
-                MessageBoxImage.Warning => "вљ пёЏ",
-                MessageBoxImage.Error => "вќЊ",
-                MessageBoxImage.Question => "вќ“",
-                _ => "в„№пёЏ"
-            };
+            _accentResourceKey = ResolveAccentResourceKey(icon);
+            txtIcon.Text = ResolveIconGlyph(icon);
 
             if (headerBorder != null)
-                headerBorder.Background = accentBrush;
+            {
+                headerBorder.SetResourceReference(Border.BackgroundProperty, _accentResourceKey);
+            }
 
             if (mainBorder != null)
-                mainBorder.BorderBrush = accentBrush;
+            {
+                mainBorder.SetResourceReference(Border.BorderBrushProperty, _accentResourceKey);
+            }
         }
 
-        private Brush ResolveAccentBrush(MessageBoxImage icon)
+        private static string ResolveAccentResourceKey(MessageBoxImage icon)
         {
-            string resourceKey = icon switch
+            return icon switch
             {
                 MessageBoxImage.Warning => "ThemeWarningBrush",
                 MessageBoxImage.Error => "ThemeDangerBrush",
                 MessageBoxImage.Question => "ThemeSuccessBrush",
                 _ => "ThemeInfoBrush"
             };
+        }
 
-            return TryFindResource(resourceKey) as Brush
-                ?? new SolidColorBrush(Color.FromRgb(33, 150, 243));
+        private static string ResolveIconGlyph(MessageBoxImage icon)
+        {
+            return icon switch
+            {
+                MessageBoxImage.Warning => "!",
+                MessageBoxImage.Error => "x",
+                MessageBoxImage.Question => "?",
+                _ => "i"
+            };
         }
 
         private void ConfigureButtons(MessageBoxButton button)
@@ -63,76 +74,89 @@ namespace Edemly.Client.Presentation.Dialogs
                 case MessageBoxButton.OK:
                     btnOk.Visibility = Visibility.Visible;
                     btnCancel.Visibility = Visibility.Collapsed;
-                    btnOk.Content = "OK";
+                    btnOk.Content = DefaultLanguage.Ok;
+                    _okResult = MessageBoxResult.OK;
+                    _cancelResult = MessageBoxResult.Cancel;
                     break;
 
                 case MessageBoxButton.OKCancel:
                     btnOk.Visibility = Visibility.Visible;
                     btnCancel.Visibility = Visibility.Visible;
-                    btnOk.Content = "OK";
-                    btnCancel.Content = "Cancel";
+                    btnOk.Content = DefaultLanguage.Ok;
+                    btnCancel.Content = DefaultLanguage.Cancel;
+                    _okResult = MessageBoxResult.OK;
+                    _cancelResult = MessageBoxResult.Cancel;
                     break;
 
                 case MessageBoxButton.YesNo:
                     btnOk.Visibility = Visibility.Visible;
                     btnCancel.Visibility = Visibility.Visible;
-                    btnOk.Content = "Yes";
-                    btnCancel.Content = "No";
+                    btnOk.Content = DefaultLanguage.Yes;
+                    btnCancel.Content = DefaultLanguage.No;
+                    _okResult = MessageBoxResult.Yes;
+                    _cancelResult = MessageBoxResult.No;
                     break;
 
                 case MessageBoxButton.YesNoCancel:
                     btnOk.Visibility = Visibility.Visible;
                     btnCancel.Visibility = Visibility.Visible;
-                    btnOk.Content = "Yes";
-                    btnCancel.Content = "No";
+                    btnOk.Content = DefaultLanguage.Yes;
+                    btnCancel.Content = DefaultLanguage.No;
+                    _okResult = MessageBoxResult.Yes;
+                    _cancelResult = MessageBoxResult.No;
                     break;
             }
         }
 
         private void BtnOk_Click(object sender, RoutedEventArgs e)
         {
-            Result = btnOk.Content.ToString() == "Yes" ? MessageBoxResult.Yes : MessageBoxResult.OK;
+            Result = _okResult;
             DialogResult = true;
             Close();
         }
 
         private void BtnCancel_Click(object sender, RoutedEventArgs e)
         {
-            Result = btnCancel.Content.ToString() == "No" ? MessageBoxResult.No : MessageBoxResult.Cancel;
+            Result = _cancelResult;
             DialogResult = false;
             Close();
         }
 
+        protected override void ApplyTheme()
+        {
+            ConfigureIcon(_currentIcon);
+        }
+
         #region Static Show Methods
 
-        public static void Show(string message, string title = "Message", MessageBoxButton button = MessageBoxButton.OK, MessageBoxImage icon = MessageBoxImage.Information)
+        public static void Show(string message, string? title = null, MessageBoxButton button = MessageBoxButton.OK, MessageBoxImage icon = MessageBoxImage.Information)
         {
-            var messageBox = new AppMessageBox(message, title, button, icon);
+            var messageBox = new AppMessageBox(message, title ?? DefaultLanguage.Information, button, icon);
             messageBox.ShowDialog();
         }
 
-        public static MessageBoxResult ShowQuestion(string message, string title = "Question")
+        public static MessageBoxResult ShowQuestion(string message, string? title = null)
         {
-            var messageBox = new AppMessageBox(message, title, MessageBoxButton.YesNo, MessageBoxImage.Question);
+            var messageBox = new AppMessageBox(message, title ?? DefaultLanguage.Warning, MessageBoxButton.YesNo, MessageBoxImage.Question);
             messageBox.ShowDialog();
             return messageBox.Result;
         }
 
-        public static void ShowInfo(string message, string title = "Information")
+        public static void ShowInfo(string message, string? title = null)
         {
-            var messageBox = new AppMessageBox(message, title, MessageBoxButton.OK, MessageBoxImage.Information);
+            var messageBox = new AppMessageBox(message, title ?? DefaultLanguage.Information, MessageBoxButton.OK, MessageBoxImage.Information);
             messageBox.ShowDialog();
         }
 
-        public static void ShowError(string message, string title = "Error")
+        public static void ShowError(string message, string? title = null)
         {
-            var messageBox = new AppMessageBox(message, title, MessageBoxButton.OK, MessageBoxImage.Error);
+            var messageBox = new AppMessageBox(message, title ?? DefaultLanguage.Error, MessageBoxButton.OK, MessageBoxImage.Error);
             messageBox.ShowDialog();
         }
 
-        public static void ShowWarning(string message, string title = "Warning")
+        public static void ShowWarning(string message, string? title = null)
         {
-            var messageBox = new AppMessageBox(message, title, MessageBoxButton.OK, MessageBoxImage.Warning);
+            var messageBox = new AppMessageBox(message, title ?? DefaultLanguage.Warning, MessageBoxButton.OK, MessageBoxImage.Warning);
             messageBox.ShowDialog();
         }
 

@@ -1,9 +1,12 @@
 #nullable enable
 
 using Edemly.Client.Application.Localization;
+using Edemly.Client.Application.Attachments;
 using Edemly.Client.Infrastructure.Audio;
+using Edemly.Client.Infrastructure.Attachments;
 using Edemly.Client.Presentation.Common;
 using Edemly.Client.Presentation.Controllers.Chats;
+using Edemly.Client.Presentation.Dialogs.Attachments;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -19,6 +22,9 @@ namespace Edemly.Client.Pages.Main
         private ChatWorkspaceController? _chatController;
         private CancellationTokenSource? _cancellationTokenSource;
         private bool _isFirstLoad = true;
+        private readonly IAttachmentFilePicker _attachmentFilePicker = null!;
+        private readonly IClipboardImageTempFileStore _clipboardImageTempFileStore = null!;
+        private readonly IAttachmentWorkflowCoordinator _attachmentWorkflowCoordinator = null!;
 
         private HashSet<int> _selectedParticipants = new HashSet<int>();
 
@@ -55,6 +61,13 @@ namespace Edemly.Client.Pages.Main
             }
 
             UpdateChatHeader(null);
+
+            _attachmentFilePicker = new AttachmentFilePicker();
+            _clipboardImageTempFileStore = new ClipboardImageTempFileStore();
+            _attachmentWorkflowCoordinator = new AttachmentWorkflowCoordinator(
+                new AttachmentDescriptorFactory(),
+                new AttachmentPreviewDialogService(),
+                new ChatAttachmentSender(App.ApiService, App.HubService));
 
             ApplyLocalization();
 
@@ -454,6 +467,8 @@ namespace Edemly.Client.Pages.Main
                         UpdateOnlineStatus(false, null);
                     }
                 }
+
+                _ = RefreshActiveChatThemeAsync();
 
                 System.Diagnostics.Debug.WriteLine("[PAGE_MAIN] Theme applied");
             }

@@ -47,5 +47,30 @@ namespace Edemly.Client.Presentation.Controllers.Chats
                 System.Diagnostics.Debug.WriteLine($"[CHAT MANAGER] UpdateGroupIcon error: {ex.Message}");
             }
         }
+
+        public async Task RefreshCurrentChatAppearanceAsync()
+        {
+            try
+            {
+                if (CurrentChatContact == null)
+                {
+                    _updateChatHeaderCallback?.Invoke(null);
+                    return;
+                }
+
+                NotifyCurrentChatHeader();
+
+                if (CurrentChatId < 0 || !_chatHistory.ContainsKey(CurrentChatId))
+                {
+                    return;
+                }
+
+                await RefreshCurrentChatMessagesAsync();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[CHAT MANAGER] RefreshCurrentChatAppearanceAsync error: {ex.Message}");
+            }
+        }
     }
 }

@@ -1,7 +1,7 @@
 #nullable disable
 
 using Edemly.Client.Application.Localization;
-using System.IO;
+using Edemly.Client.Application.Attachments;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -69,7 +69,7 @@ namespace Edemly.Client.Presentation.Rendering.Messages
 
             var fileIcon = new TextBlock
             {
-                Text = GetFileIcon(message.FileName),
+                Text = AttachmentFileIconResolver.GetIconGlyph(message.FileName),
                 FontSize = 20,
                 Foreground = Brushes.White,
                 Margin = new Thickness(0, 0, 10, 0),
@@ -135,30 +135,6 @@ namespace Edemly.Client.Presentation.Rendering.Messages
 
             _contextMenuFactory.Attach(messageBorder, message, context);
             _bubbleFactory.AddToPanel(context.MessagesPanel, messageBorder, isHistorical);
-        }
-
-        private static string GetFileIcon(string fileName)
-        {
-            if (string.IsNullOrEmpty(fileName))
-            {
-                return "\U0001F4C1";
-            }
-
-            var extension = Path.GetExtension(fileName).ToLower();
-
-            return extension switch
-            {
-                ".pdf" => "\U0001F4C4",
-                ".doc" or ".docx" => "\U0001F4DD",
-                ".xls" or ".xlsx" => "\U0001F4CA",
-                ".ppt" or ".pptx" => "\U0001F4C8",
-                ".txt" => "\U0001F4C4",
-                ".zip" or ".rar" or ".7z" => "\U0001F5DC\uFE0F",
-                ".mp3" or ".wav" or ".flac" => "\U0001F3B5",
-                ".mp4" or ".avi" or ".mkv" => "\U0001F3AC",
-                ".jpg" or ".jpeg" or ".png" or ".gif" or ".bmp" => "\U0001F5BC\uFE0F",
-                _ => "\U0001F4C1"
-            };
         }
     }
 }

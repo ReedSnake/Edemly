@@ -1,0 +1,68 @@
+#nullable enable
+
+using Edemly.Client.Api;
+using Edemly.Client.Infrastructure.Realtime;
+using System.IO;
+
+namespace Edemly.Client.Application.Attachments
+{
+    public sealed class ChatAttachmentSender : IChatAttachmentSender
+    {
+        private const long MaxFileSizeBytes = 50 * 1024 * 1024;
+
+        private readonly IApiService _apiService;
+        private readonly IHubService _hubService;
+
+        public ChatAttachmentSender(IApiService apiService, IHubService hubService)
+        {
+            _apiService = apiService ?? throw new ArgumentNullException(nameof(apiService));
+            _hubService = hubService ?? throw new ArgumentNullException(nameof(hubService));
+        }
+
+        public async Task<AttachmentSendResult> SendAsync(int chatId, AttachmentDescriptor descriptor, string caption)
+        {
+            try
+            {
+                if (chatId < 0)
+                {
+                    return AttachmentSendResult.Fail(DefaultLanguage.SelectChat);
+                }
+
+                if (descriptor == null || !File.Exists(descriptor.FilePath))
+                {
+                    return AttachmentSendResult.Fail(DefaultLanguage.AttachmentFileMissing);
+                }
+
+                if (descriptor.SizeBytes > MaxFileSizeBytes)
+                {
+                    return AttachmentSendResult.Fail(DefaultLanguage.AttachmentTooLarge);
+                }
+
+                var uploadResult = await _apiService.UploadFileAsync(descriptor.FilePath);
+                if (!uploadResult.Success || string.IsNullOrWhiteSpace(uploadResult.Url))
+                {
+                    return AttachmentSendResult.Fail(string.Format(DefaultLanguage.UploadFailed, uploadResult.Error));
+                }
+
+                var message = new CreateMessageDto
+                {
+                    ChatId = chatId,
+                    Text = string.IsNullOrWhiteSpace(caption) ? string.Empty : caption.Trim(),
+                    Type = descriptor.MessageType,
+                    ContentUrl = uploadResult.Url,
+                    FileName = uploadResult.FileName
+                };
+
+                var success = await _hubService.SendMessageAsync(message);
+                return success
+                    ? AttachmentSendResult.Ok()
+                    : AttachmentSendResult.Fail(DefaultLanguage.FailedSendMessage);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[ATTACHMENTS] SendAsync failed: {ex.Message}");
+                return AttachmentSendResult.Fail($"{DefaultLanguage.Error}: {ex.Message}");
+            }
+        }
+    }
+}
