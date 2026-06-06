@@ -26,13 +26,14 @@ namespace Edemly.Client.Presentation.Rendering.Messages
             var bubbleFactory = new MessageBubbleFactory();
             _uiUpdater = new MessageUiUpdater(messagesPanel);
 
-            var actions = new MessageActions(_uiUpdater);
-            var contextMenuFactory = new MessageContextMenuFactory(actions);
+            IMessageEditDialogService editDialogService = new MessageEditDialogService();
+            var actions = new MessageActions(_uiUpdater, editDialogService);
+            IMessageContextMenuFactory contextMenuFactory = new MessageContextMenuFactory(actions);
 
             _textRenderer = new TextMessageRenderer(themeProvider, timeFormatter, bubbleFactory, contextMenuFactory);
             _photoRenderer = new PhotoMessageRenderer(themeProvider, timeFormatter, bubbleFactory, contextMenuFactory, actions);
             _fileRenderer = new FileMessageRenderer(themeProvider, timeFormatter, bubbleFactory, contextMenuFactory, actions);
-            _voiceRenderer = new VoiceMessageRenderer();
+            _voiceRenderer = new VoiceMessageRenderer(contextMenuFactory);
         }
 
         public void SetGroupChatMode(bool isGroupChat)

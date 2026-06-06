@@ -1,5 +1,7 @@
 #nullable enable
 
+using Edemly.Client.Presentation.Rendering.Messages;
+
 namespace Edemly.Client.Presentation.Controllers.Chats
 {
     public partial class ChatWorkspaceController
@@ -65,6 +67,7 @@ namespace Edemly.Client.Presentation.Controllers.Chats
                     return;
                 }
 
+                VoiceMessageHelper.StopPlaybackForUiRefresh();
                 await RefreshCurrentChatMessagesAsync();
             }
             catch (Exception ex)

@@ -5,6 +5,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Effects;
+
 namespace Edemly.Client.Presentation.Rendering.Common
 {
     public static class StyledContextMenu
@@ -13,13 +14,14 @@ namespace Edemly.Client.Presentation.Rendering.Common
         {
             var contextMenu = new ContextMenu
             {
-                Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#F6FFFC")),
-                BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#82C8C3")),
-                BorderThickness = new Thickness(2),
                 Padding = new Thickness(8),
                 FontFamily = new FontFamily("Segoe UI"),
-                FontSize = 14,
+                FontSize = 14
             };
+
+            contextMenu.Background = ResolveBrushResource("ThemeSurfaceBrush", Color.FromRgb(0xF6, 0xFF, 0xFC));
+            contextMenu.BorderBrush = ResolveBrushResource("ThemeBorderBrush", Color.FromRgb(0xE0, 0xE0, 0xE0));
+            contextMenu.Foreground = ResolveBrushResource("ThemeTextPrimaryBrush", Color.FromRgb(0x03, 0x1C, 0x1C));
 
             var style = new Style(typeof(ContextMenu));
             style.Setters.Add(new Setter(ContextMenu.TemplateProperty, CreateContextMenuTemplate()));
@@ -32,11 +34,11 @@ namespace Edemly.Client.Presentation.Rendering.Common
         {
             var item = new MenuItem
             {
-                Header = CreateMenuItemContent(icon, text, isDanger),
+                Header = CreateMenuItemContent(icon, NormalizeLabel(text), isDanger),
                 Background = Brushes.Transparent,
                 BorderThickness = new Thickness(0),
                 Padding = new Thickness(12, 10, 20, 10),
-                Cursor = System.Windows.Input.Cursors.Hand,
+                Cursor = System.Windows.Input.Cursors.Hand
             };
 
             var style = new Style(typeof(MenuItem));
@@ -53,11 +55,30 @@ namespace Edemly.Client.Presentation.Rendering.Common
         {
             var separator = new Separator
             {
-                Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#E0F0EC")),
+                Background = ResolveBrushResource("ThemeBorderBrush", Color.FromRgb(0xE0, 0xE0, 0xE0)),
                 Height = 1,
-                Margin = new Thickness(10, 5, 10, 5)
+                Margin = new Thickness(10, 5, 10, 5),
+                Opacity = 0.75
             };
             menu.Items.Add(separator);
+        }
+
+        public static string NormalizeLabel(string text)
+        {
+            if (string.IsNullOrWhiteSpace(text))
+            {
+                return string.Empty;
+            }
+
+            for (var index = 0; index < text.Length; index++)
+            {
+                if (char.IsLetterOrDigit(text[index]))
+                {
+                    return text[index..].TrimStart();
+                }
+            }
+
+            return text.Trim();
         }
 
         private static StackPanel CreateMenuItemContent(string icon, string text, bool isDanger)
@@ -68,12 +89,18 @@ namespace Edemly.Client.Presentation.Rendering.Common
                 VerticalAlignment = VerticalAlignment.Center
             };
 
+            var foreground = isDanger
+                ? ResolveBrushResource("ThemeDangerBrush", Color.FromRgb(0xE5, 0x39, 0x35))
+                : ResolveBrushResource("ThemeTextPrimaryBrush", Color.FromRgb(0x03, 0x1C, 0x1C));
+
             var iconText = new TextBlock
             {
                 Text = icon,
+                FontFamily = new FontFamily("Segoe MDL2 Assets"),
                 FontSize = 16,
                 Margin = new Thickness(0, 0, 12, 0),
-                VerticalAlignment = VerticalAlignment.Center
+                VerticalAlignment = VerticalAlignment.Center,
+                Foreground = foreground
             };
 
             var labelText = new TextBlock
@@ -81,9 +108,7 @@ namespace Edemly.Client.Presentation.Rendering.Common
                 Text = text,
                 FontSize = 14,
                 FontWeight = FontWeights.Medium,
-                Foreground = isDanger
-                    ? new SolidColorBrush(Color.FromRgb(220, 53, 69))
-                    : new SolidColorBrush((Color)ColorConverter.ConvertFromString("#031C1C")),
+                Foreground = foreground,
                 VerticalAlignment = VerticalAlignment.Center
             };
 
@@ -98,17 +123,17 @@ namespace Edemly.Client.Presentation.Rendering.Common
             var template = new ControlTemplate(typeof(ContextMenu));
 
             var borderFactory = new FrameworkElementFactory(typeof(Border));
-            borderFactory.SetValue(Border.BackgroundProperty, new SolidColorBrush((Color)ColorConverter.ConvertFromString("#F6FFFC")));
-            borderFactory.SetValue(Border.BorderBrushProperty, new SolidColorBrush((Color)ColorConverter.ConvertFromString("#82C8C3")));
-            borderFactory.SetValue(Border.BorderThicknessProperty, new Thickness(2));
+            borderFactory.SetValue(Border.BackgroundProperty, ResolveBrushResource("ThemeSurfaceBrush", Color.FromRgb(0xF6, 0xFF, 0xFC)));
+            borderFactory.SetValue(Border.BorderBrushProperty, ResolveBrushResource("ThemeBorderBrush", Color.FromRgb(0xE0, 0xE0, 0xE0)));
+            borderFactory.SetValue(Border.BorderThicknessProperty, new Thickness(1.5));
             borderFactory.SetValue(Border.CornerRadiusProperty, new CornerRadius(12));
             borderFactory.SetValue(Border.PaddingProperty, new Thickness(4));
             borderFactory.SetValue(Border.EffectProperty, new DropShadowEffect
             {
-                BlurRadius = 15,
-                ShadowDepth = 5,
-                Opacity = 0.25,
-                Color = (Color)ColorConverter.ConvertFromString("#004040")
+                BlurRadius = 12,
+                ShadowDepth = 4,
+                Opacity = 0.16,
+                Color = Colors.Black
             });
 
             var stackPanelFactory = new FrameworkElementFactory(typeof(StackPanel));
@@ -139,10 +164,11 @@ namespace Edemly.Client.Presentation.Rendering.Common
             template.VisualTree = borderFactory;
 
             var hoverTrigger = new Trigger { Property = MenuItem.IsHighlightedProperty, Value = true };
-            hoverTrigger.Setters.Add(new Setter(Border.BackgroundProperty,
+            hoverTrigger.Setters.Add(new Setter(
+                Border.BackgroundProperty,
                 isDanger
-                    ? new SolidColorBrush(Color.FromArgb(30, 220, 53, 69))
-                    : new SolidColorBrush((Color)ColorConverter.ConvertFromString("#E6FFFD")),
+                    ? ResolveBrushResource("ThemeSurfaceAltBrush", Color.FromRgb(0xFF, 0xED, 0xEC))
+                    : ResolveBrushResource("ThemeSurfaceAltBrush", Color.FromRgb(0xEC, 0xF7, 0xF3)),
                 "Border"));
             template.Triggers.Add(hoverTrigger);
 
@@ -175,17 +201,19 @@ namespace Edemly.Client.Presentation.Rendering.Common
 
             var mainBorder = new Border
             {
-                Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#F6FFFC")),
+                Background = ResolveBrushResource("ThemeSurfaceBrush", Color.FromRgb(0xF6, 0xFF, 0xFC)),
                 CornerRadius = new CornerRadius(20),
-                BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#82C8C3")),
+                BorderBrush = isDanger
+                    ? ResolveBrushResource("ThemeDangerBrush", Color.FromRgb(0xE5, 0x39, 0x35))
+                    : ResolveBrushResource("ThemeBorderBrush", Color.FromRgb(0xE0, 0xE0, 0xE0)),
                 BorderThickness = new Thickness(2),
                 Margin = new Thickness(10),
                 Effect = new DropShadowEffect
                 {
                     BlurRadius = 20,
                     ShadowDepth = 8,
-                    Opacity = 0.35,
-                    Color = (Color)ColorConverter.ConvertFromString("#004040")
+                    Opacity = 0.22,
+                    Color = Colors.Black
                 }
             };
 
@@ -199,7 +227,7 @@ namespace Edemly.Client.Presentation.Rendering.Common
                 Text = title,
                 FontSize = 20,
                 FontWeight = FontWeights.Bold,
-                Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#031C1C")),
+                Foreground = ResolveBrushResource("ThemeTextPrimaryBrush", Color.FromRgb(0x03, 0x1C, 0x1C)),
                 HorizontalAlignment = HorizontalAlignment.Center,
                 Margin = new Thickness(0, 0, 0, 15)
             };
@@ -210,7 +238,7 @@ namespace Edemly.Client.Presentation.Rendering.Common
             {
                 Text = message,
                 FontSize = 14,
-                Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#333333")),
+                Foreground = ResolveBrushResource("ThemeTextSecondaryBrush", Color.FromRgb(0x66, 0x66, 0x66)),
                 TextWrapping = TextWrapping.Wrap,
                 TextAlignment = TextAlignment.Center,
                 VerticalAlignment = VerticalAlignment.Center,
@@ -243,7 +271,9 @@ namespace Edemly.Client.Presentation.Rendering.Common
             mainBorder.MouseLeftButtonDown += (s, e) =>
             {
                 if (e.LeftButton == System.Windows.Input.MouseButtonState.Pressed)
+                {
                     dialog.DragMove();
+                }
             };
 
             return dialog;
@@ -264,18 +294,18 @@ namespace Edemly.Client.Presentation.Rendering.Common
 
             if (isDanger)
             {
-                button.Background = new SolidColorBrush(Color.FromRgb(220, 53, 69));
-                button.Foreground = Brushes.White;
+                button.Background = ResolveBrushResource("ThemeDangerBrush", Color.FromRgb(0xE5, 0x39, 0x35));
+                button.Foreground = ResolveBrushResource("ThemeOnPrimaryTextBrush", Colors.White);
             }
             else if (isPrimary)
             {
-                button.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#057272"));
-                button.Foreground = Brushes.White;
+                button.Background = ResolveBrushResource("ThemeSecondaryBrush", Color.FromRgb(0x0B, 0x45, 0x39));
+                button.Foreground = ResolveBrushResource("ThemeOnSecondaryTextBrush", Colors.White);
             }
             else
             {
-                button.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#6c757d"));
-                button.Foreground = Brushes.White;
+                button.Background = ResolveBrushResource("ThemeSurfaceAltBrush", Color.FromRgb(0xEC, 0xF7, 0xF3));
+                button.Foreground = ResolveBrushResource("ThemeTextPrimaryBrush", Color.FromRgb(0x03, 0x1C, 0x1C));
             }
 
             var style = new Style(typeof(Button));
@@ -302,21 +332,27 @@ namespace Edemly.Client.Presentation.Rendering.Common
             template.VisualTree = borderFactory;
 
             var hoverTrigger = new Trigger { Property = Button.IsMouseOverProperty, Value = true };
-            if (isDanger)
-            {
-                hoverTrigger.Setters.Add(new Setter(Border.BackgroundProperty, new SolidColorBrush(Color.FromRgb(200, 35, 51)), "Border"));
-            }
-            else if (isPrimary)
-            {
-                hoverTrigger.Setters.Add(new Setter(Border.BackgroundProperty, new SolidColorBrush((Color)ColorConverter.ConvertFromString("#0B4539")), "Border"));
-            }
-            else
-            {
-                hoverTrigger.Setters.Add(new Setter(Border.BackgroundProperty, new SolidColorBrush((Color)ColorConverter.ConvertFromString("#5a6268")), "Border"));
-            }
+            hoverTrigger.Setters.Add(new Setter(
+                Border.BackgroundProperty,
+                isDanger
+                    ? ResolveBrushResource("ThemeDangerBrush", Color.FromRgb(0xE5, 0x39, 0x35))
+                    : isPrimary
+                        ? ResolveBrushResource("ThemePrimaryBrush", Color.FromRgb(0x05, 0x72, 0x72))
+                        : ResolveBrushResource("ThemeSurfaceBrush", Color.FromRgb(0xF6, 0xFF, 0xFC)),
+                "Border"));
             template.Triggers.Add(hoverTrigger);
 
             return template;
+        }
+
+        private static Brush ResolveBrushResource(string resourceKey, Color fallbackColor)
+        {
+            if (System.Windows.Application.Current?.Resources[resourceKey] is Brush brush)
+            {
+                return brush;
+            }
+
+            return new SolidColorBrush(fallbackColor);
         }
     }
 }

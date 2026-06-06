@@ -1,8 +1,8 @@
 using Edemly.Client.Presentation.Controls;
 using Edemly.Client.Presentation.Common;
 using Edemly.Client.Application.Services;
-using Edemly.Client.Pages.Auth;
-using Edemly.Client.Pages.Main;
+using Edemly.Client.Presentation.Pages.Auth;
+using Edemly.Client.Presentation.Pages.Main;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Interop;

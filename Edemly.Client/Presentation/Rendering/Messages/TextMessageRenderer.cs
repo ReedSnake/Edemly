@@ -11,13 +11,13 @@ namespace Edemly.Client.Presentation.Rendering.Messages
         private readonly MessageThemeProvider _themeProvider;
         private readonly MessageTimeFormatter _timeFormatter;
         private readonly MessageBubbleFactory _bubbleFactory;
-        private readonly MessageContextMenuFactory _contextMenuFactory;
+        private readonly IMessageContextMenuFactory _contextMenuFactory;
 
         public TextMessageRenderer(
             MessageThemeProvider themeProvider,
             MessageTimeFormatter timeFormatter,
             MessageBubbleFactory bubbleFactory,
-            MessageContextMenuFactory contextMenuFactory)
+            IMessageContextMenuFactory contextMenuFactory)
         {
             _themeProvider = themeProvider;
             _timeFormatter = timeFormatter;
@@ -34,17 +34,14 @@ namespace Edemly.Client.Presentation.Rendering.Messages
                 Margin = new Thickness(12, 8, 12, 8)
             };
 
-            if (!isMine && context.IsGroupChat && !string.IsNullOrEmpty(context.SenderName))
-            {
-                var senderNameText = new TextBlock
-                {
-                    Text = context.SenderName,
-                    FontSize = 11,
-                    FontWeight = FontWeights.SemiBold,
-                    Foreground = _themeProvider.GetGroupSenderBrush(),
-                    Margin = new Thickness(0, 0, 0, 3)
-                };
+            var senderNameText = MessageSenderHeaderFactory.Create(
+                context,
+                isMine,
+                _themeProvider.GetGroupSenderBrush(),
+                new Thickness(0, 0, 0, 3));
 
+            if (senderNameText != null)
+            {
                 messageContainer.Children.Add(senderNameText);
             }
 

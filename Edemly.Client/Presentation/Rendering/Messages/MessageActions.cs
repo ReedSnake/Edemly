@@ -13,10 +13,12 @@ namespace Edemly.Client.Presentation.Rendering.Messages
     public sealed class MessageActions
     {
         private readonly MessageUiUpdater _uiUpdater;
+        private readonly IMessageEditDialogService _editDialogService;
 
-        public MessageActions(MessageUiUpdater uiUpdater)
+        public MessageActions(MessageUiUpdater uiUpdater, IMessageEditDialogService editDialogService)
         {
             _uiUpdater = uiUpdater;
+            _editDialogService = editDialogService;
         }
 
         public async Task OpenDownloadedContentAsync(string contentUrl, string fileName)
@@ -43,81 +45,11 @@ namespace Edemly.Client.Presentation.Rendering.Messages
         {
             try
             {
-                var inputDialog = new Window
-                {
-                    Title = DefaultLanguage.EditMessageTitle,
-                    Width = 450,
-                    Height = 250,
-                    WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                    ResizeMode = ResizeMode.NoResize,
-                    Owner = System.Windows.Application.Current.MainWindow
-                };
-
-                var grid = new Grid { Margin = new Thickness(15) };
-                grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-                grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
-                grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-
-                var label = new TextBlock
-                {
-                    Text = DefaultLanguage.EditMessageLabel,
-                    FontSize = 14,
-                    Margin = new Thickness(0, 0, 0, 10)
-                };
-                Grid.SetRow(label, 0);
-                grid.Children.Add(label);
-
-                var textBox = new TextBox
-                {
-                    Text = message.Text,
-                    AcceptsReturn = true,
-                    TextWrapping = TextWrapping.Wrap,
-                    VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
-                    FontSize = 13,
-                    Padding = new Thickness(8)
-                };
-                Grid.SetRow(textBox, 1);
-                grid.Children.Add(textBox);
-
-                var buttonPanel = new StackPanel
-                {
-                    Orientation = Orientation.Horizontal,
-                    HorizontalAlignment = HorizontalAlignment.Right,
-                    Margin = new Thickness(0, 10, 0, 0)
-                };
-                Grid.SetRow(buttonPanel, 2);
-
-                var cancelButton = new Button
-                {
-                    Content = DefaultLanguage.Cancel,
-                    Width = 80,
-                    Height = 30,
-                    Margin = new Thickness(0, 0, 10, 0)
-                };
-                cancelButton.Click += (s, e) => inputDialog.DialogResult = false;
-
-                var saveButton = new Button
-                {
-                    Content = DefaultLanguage.Save,
-                    Width = 80,
-                    Height = 30,
-                    Background = new SolidColorBrush(Color.FromRgb(5, 114, 114)),
-                    Foreground = Brushes.White
-                };
-                saveButton.Click += (s, e) => inputDialog.DialogResult = true;
-
-                buttonPanel.Children.Add(cancelButton);
-                buttonPanel.Children.Add(saveButton);
-                grid.Children.Add(buttonPanel);
-
-                inputDialog.Content = grid;
-
-                if (inputDialog.ShowDialog() != true)
+                var newText = _editDialogService.Show(message.Text);
+                if (newText == null)
                 {
                     return;
                 }
-
-                var newText = textBox.Text.Trim();
 
                 if (string.IsNullOrEmpty(newText))
                 {

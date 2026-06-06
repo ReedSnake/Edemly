@@ -14,14 +14,14 @@ namespace Edemly.Client.Presentation.Rendering.Messages
         private readonly MessageThemeProvider _themeProvider;
         private readonly MessageTimeFormatter _timeFormatter;
         private readonly MessageBubbleFactory _bubbleFactory;
-        private readonly MessageContextMenuFactory _contextMenuFactory;
+        private readonly IMessageContextMenuFactory _contextMenuFactory;
         private readonly MessageActions _actions;
 
         public FileMessageRenderer(
             MessageThemeProvider themeProvider,
             MessageTimeFormatter timeFormatter,
             MessageBubbleFactory bubbleFactory,
-            MessageContextMenuFactory contextMenuFactory,
+            IMessageContextMenuFactory contextMenuFactory,
             MessageActions actions)
         {
             _themeProvider = themeProvider;
@@ -34,6 +34,7 @@ namespace Edemly.Client.Presentation.Rendering.Messages
         public void Render(MessageDto message, MessageRenderContext context, bool isHistorical)
         {
             bool isMine = context.IsMine(message);
+            var bubbleTextBrush = _themeProvider.GetColoredBubbleTextBrush();
 
             var messageBorder = _bubbleFactory.CreateBubble(
                 message.Id,
@@ -48,16 +49,14 @@ namespace Edemly.Client.Presentation.Rendering.Messages
 
             var stackPanel = new StackPanel();
 
-            if (!isMine && context.IsGroupChat && !string.IsNullOrEmpty(context.SenderName))
+            var senderNameText = MessageSenderHeaderFactory.Create(
+                context,
+                isMine,
+                _themeProvider.GetGroupSenderBrush(),
+                new Thickness(0, 0, 0, 5));
+
+            if (senderNameText != null)
             {
-                var senderNameText = new TextBlock
-                {
-                    Text = context.SenderName,
-                    FontSize = 11,
-                    FontWeight = FontWeights.SemiBold,
-                    Foreground = _themeProvider.GetGroupSenderBrush(),
-                    Margin = new Thickness(0, 0, 0, 5)
-                };
                 stackPanel.Children.Add(senderNameText);
             }
 
@@ -71,7 +70,7 @@ namespace Edemly.Client.Presentation.Rendering.Messages
             {
                 Text = AttachmentFileIconResolver.GetIconGlyph(message.FileName),
                 FontSize = 20,
-                Foreground = Brushes.White,
+                Foreground = bubbleTextBrush,
                 Margin = new Thickness(0, 0, 10, 0),
                 VerticalAlignment = VerticalAlignment.Center
             };
@@ -80,7 +79,7 @@ namespace Edemly.Client.Presentation.Rendering.Messages
             {
                 Text = message.FileName ?? "File",
                 FontSize = 14,
-                Foreground = Brushes.White,
+                Foreground = bubbleTextBrush,
                 FontWeight = FontWeights.SemiBold,
                 TextTrimming = TextTrimming.CharacterEllipsis,
                 VerticalAlignment = VerticalAlignment.Center
@@ -93,7 +92,7 @@ namespace Edemly.Client.Presentation.Rendering.Messages
             {
                 Text = DefaultLanguage.ClickToOpen,
                 FontSize = 11,
-                Foreground = Brushes.White,
+                Foreground = bubbleTextBrush,
                 Opacity = 0.7,
                 Margin = new Thickness(0, 0, 0, 5)
             };
@@ -102,7 +101,7 @@ namespace Edemly.Client.Presentation.Rendering.Messages
             {
                 Text = _timeFormatter.Format(message.SentAt, isHistorical),
                 FontSize = 10,
-                Foreground = Brushes.White,
+                Foreground = bubbleTextBrush,
                 Opacity = 0,
                 HorizontalAlignment = HorizontalAlignment.Right
             };

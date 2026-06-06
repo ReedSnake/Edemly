@@ -14,14 +14,14 @@ namespace Edemly.Client.Presentation.Rendering.Messages
         private readonly MessageThemeProvider _themeProvider;
         private readonly MessageTimeFormatter _timeFormatter;
         private readonly MessageBubbleFactory _bubbleFactory;
-        private readonly MessageContextMenuFactory _contextMenuFactory;
+        private readonly IMessageContextMenuFactory _contextMenuFactory;
         private readonly MessageActions _actions;
 
         public PhotoMessageRenderer(
             MessageThemeProvider themeProvider,
             MessageTimeFormatter timeFormatter,
             MessageBubbleFactory bubbleFactory,
-            MessageContextMenuFactory contextMenuFactory,
+            IMessageContextMenuFactory contextMenuFactory,
             MessageActions actions)
         {
             _themeProvider = themeProvider;
@@ -48,16 +48,14 @@ namespace Edemly.Client.Presentation.Rendering.Messages
 
             var stackPanel = new StackPanel();
 
-            if (!isMine && context.IsGroupChat && !string.IsNullOrEmpty(context.SenderName))
+            var senderNameText = MessageSenderHeaderFactory.Create(
+                context,
+                isMine,
+                _themeProvider.GetGroupSenderBrush(),
+                new Thickness(0, 0, 0, 5));
+
+            if (senderNameText != null)
             {
-                var senderNameText = new TextBlock
-                {
-                    Text = context.SenderName,
-                    FontSize = 11,
-                    FontWeight = FontWeights.SemiBold,
-                    Foreground = _themeProvider.GetGroupSenderBrush(),
-                    Margin = new Thickness(0, 0, 0, 5)
-                };
                 stackPanel.Children.Add(senderNameText);
             }
 

@@ -1,13 +1,13 @@
 #nullable disable
 
 using Edemly.Client.Application.Localization;
+using Edemly.Client.Presentation.Rendering.Common;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Media;
 
 namespace Edemly.Client.Presentation.Rendering.Messages
 {
-    public sealed class MessageContextMenuFactory
+    public sealed class MessageContextMenuFactory : IMessageContextMenuFactory
     {
         private readonly MessageActions _actions;
 
@@ -16,52 +16,67 @@ namespace Edemly.Client.Presentation.Rendering.Messages
             _actions = actions;
         }
 
-        public void Attach(Border messageBorder, MessageDto message, MessageRenderContext context)
+        public void Attach(
+            Border messageBorder,
+            MessageDto message,
+            MessageRenderContext context,
+            MessageContextMenuOptions options = null)
         {
-            var contextMenu = new ContextMenu();
+            options ??= MessageContextMenuOptions.ForMessage(message);
 
-            if (message.Type == 0 && !string.IsNullOrEmpty(message.Text))
+            var contextMenu = StyledContextMenu.Create();
+
+            if (options.AllowCopyText && !string.IsNullOrWhiteSpace(message.Text))
             {
-                var copyItem = new MenuItem
-                {
-                    Header = DefaultLanguage.CopyMessage,
-                    FontSize = 13
-                };
-                copyItem.Click += (s, e) => Clipboard.SetText(message.Text);
-                contextMenu.Items.Add(copyItem);
+                StyledContextMenu.AddItem(
+                    contextMenu,
+                    MessageMenuGlyphs.Copy,
+                    DefaultLanguage.CopyMessage,
+                    () => Clipboard.SetText(message.Text));
             }
 
             if (message.SenderId == context.CurrentUserId)
             {
                 if (contextMenu.Items.Count > 0)
                 {
-                    contextMenu.Items.Add(new Separator());
+                    StyledContextMenu.AddSeparator(contextMenu);
                 }
 
-                if (message.Type == 0)
+                if (options.AllowEdit)
                 {
-                    var editItem = new MenuItem
-                    {
-                        Header = DefaultLanguage.EditMessage,
-                        FontSize = 13
-                    };
-                    editItem.Click += async (s, e) => await _actions.EditMessageAsync(message, context.CurrentUserId);
-                    contextMenu.Items.Add(editItem);
+                    StyledContextMenu.AddItem(
+                        contextMenu,
+                        MessageMenuGlyphs.Edit,
+                        DefaultLanguage.EditMessage,
+                        () => _ = ExecuteMenuActionAsync(() => _actions.EditMessageAsync(message, context.CurrentUserId)));
                 }
 
-                var deleteItem = new MenuItem
+                if (options.AllowDelete)
                 {
-                    Header = DefaultLanguage.DeleteMessage,
-                    FontSize = 13,
-                    Foreground = new SolidColorBrush(Color.FromRgb(220, 53, 69))
-                };
-                deleteItem.Click += async (s, e) => await _actions.DeleteMessageAsync(message);
-                contextMenu.Items.Add(deleteItem);
+                    StyledContextMenu.AddItem(
+                        contextMenu,
+                        MessageMenuGlyphs.Delete,
+                        DefaultLanguage.DeleteMessage,
+                        () => _ = ExecuteMenuActionAsync(() => _actions.DeleteMessageAsync(message)),
+                        isDanger: true);
+                }
             }
 
-            if (contextMenu.Items.Count > 0)
+            messageBorder.ContextMenu = contextMenu.Items.Count > 0
+                ? contextMenu
+                : null;
+        }
+
+        private static async Task ExecuteMenuActionAsync(Func<Task> action)
+        {
+            try
             {
-                messageBorder.ContextMenu = contextMenu;
+                await action();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[MESSAGE MENU] Action failed: {ex.Message}");
+                MessageBox.ShowError($"{DefaultLanguage.Error}: {ex.Message}", DefaultLanguage.ErrorTitle);
             }
         }
     }

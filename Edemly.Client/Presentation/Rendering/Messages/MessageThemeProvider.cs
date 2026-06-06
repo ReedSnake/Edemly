@@ -14,7 +14,12 @@ namespace Edemly.Client.Presentation.Rendering.Messages
 
         public Brush GetFriendTextBrush()
         {
-            return Brushes.White;
+            return ResolveBrush("ThemeOnPrimaryTextBrush", Colors.White);
+        }
+
+        public Brush GetColoredBubbleTextBrush()
+        {
+            return ResolveBrush("ThemeOnSecondaryTextBrush", Colors.White);
         }
 
         public Brush GetMyBubbleBrush()
@@ -34,17 +39,40 @@ namespace Edemly.Client.Presentation.Rendering.Messages
 
         public Brush GetMyFileHoverBrush()
         {
-            return new SolidColorBrush(Color.FromArgb(255, 8, 138, 138));
+            var palette = ThemeService.Instance.GetCurrentPalette();
+            return new SolidColorBrush(Blend(palette.Secondary, palette.PrimaryLight, 0.18));
         }
 
         public Brush GetFriendFileHoverBrush()
         {
-            return new SolidColorBrush(Color.FromArgb(255, 7, 150, 150));
+            var palette = ThemeService.Instance.GetCurrentPalette();
+            return new SolidColorBrush(Blend(palette.Primary, palette.PrimaryLight, 0.24));
         }
 
         public Brush GetGroupSenderBrush()
         {
-            return new SolidColorBrush(Color.FromRgb(180, 220, 220));
+            var palette = ThemeService.Instance.GetCurrentPalette();
+            return new SolidColorBrush(Blend(palette.BorderLight, Colors.White, 0.24));
+        }
+
+        private static Brush ResolveBrush(string resourceKey, Color fallbackColor)
+        {
+            if (System.Windows.Application.Current?.Resources[resourceKey] is Brush brush)
+            {
+                return brush;
+            }
+
+            return new SolidColorBrush(fallbackColor);
+        }
+
+        private static Color Blend(Color first, Color second, double amount)
+        {
+            amount = Math.Max(0, Math.Min(1, amount));
+
+            return Color.FromRgb(
+                (byte)Math.Round(first.R + ((second.R - first.R) * amount)),
+                (byte)Math.Round(first.G + ((second.G - first.G) * amount)),
+                (byte)Math.Round(first.B + ((second.B - first.B) * amount)));
         }
     }
 }

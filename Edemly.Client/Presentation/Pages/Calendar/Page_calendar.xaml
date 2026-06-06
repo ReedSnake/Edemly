@@ -1,0 +1,978 @@
+<common:ThemedPage x:Class="Edemly.Client.Presentation.Pages.Calendar.Page_calendar"
+                   xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                   xmlns:common="clr-namespace:Edemly.Client.Presentation.Common"
+                   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                   mc:Ignorable="d"
+                   d:DesignHeight="720"
+                   d:DesignWidth="1280"
+                   Title="Page_calendar">
+
+    <common:ThemedPage.Resources>
+
+        <Style x:Key="CalendarPanelStyle"
+               TargetType="Border"
+               BasedOn="{StaticResource BasePanelBorderStyle}">
+            <Setter Property="CornerRadius" Value="20" />
+            <Setter Property="Padding" Value="25" />
+            <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderLightBrush}" />
+            <Setter Property="BorderThickness" Value="2" />
+        </Style>
+
+        <Style x:Key="CalendarModalPanelStyle"
+               TargetType="Border"
+               BasedOn="{StaticResource DialogPanelBorderStyle}">
+            <Setter Property="Width" Value="450" />
+            <Setter Property="Height" Value="600" />
+            <Setter Property="CornerRadius" Value="20" />
+            <Setter Property="Visibility" Value="Collapsed" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="Panel.ZIndex" Value="1000" />
+        </Style>
+
+        <Style x:Key="CalendarFormLabelStyle"
+               TargetType="Label">
+            <Setter Property="Foreground" Value="{DynamicResource ThemeTextPrimaryBrush}" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+        </Style>
+
+        <Style x:Key="CalendarMultilineTextBoxStyle"
+               TargetType="TextBox"
+               BasedOn="{StaticResource CalendarTextBoxStyle}">
+            <Setter Property="Height" Value="80" />
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+            <Setter Property="AcceptsReturn" Value="True" />
+            <Setter Property="VerticalContentAlignment" Value="Top" />
+            <Setter Property="VerticalScrollBarVisibility" Value="Hidden" />
+        </Style>
+
+        <Style x:Key="TimeTextBoxStyle"
+               TargetType="TextBox"
+               BasedOn="{StaticResource CalendarTextBoxStyle}">
+            <Setter Property="Width" Value="80" />
+            <Setter Property="Height" Value="30" />
+            <Setter Property="Padding" Value="6" />
+            <Setter Property="TextAlignment" Value="Center" />
+            <Setter Property="MaxLength" Value="5" />
+            <Setter Property="ToolTip" Value="Enter time in 24-hour format (00:00 - 23:59)" />
+        </Style>
+
+        <Style x:Key="DayButtonStyle"
+               TargetType="Button">
+            <Setter Property="Background" Value="{DynamicResource ThemeSurfaceBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource ThemeTextPrimaryBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderLightBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="FontSize" Value="16" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="8">
+                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+                        </Border>
+
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver"
+                                     Value="True">
+                                <Setter Property="Background"
+                                        Value="{DynamicResource ThemePrimaryLightBrush}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="TaskItemStyle"
+               TargetType="Border"
+               BasedOn="{StaticResource BaseBorderStyle}">
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Padding" Value="12" />
+            <Setter Property="Margin" Value="0,0,0,8" />
+            <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderLightBrush}" />
+        </Style>
+
+        <Style x:Key="CalendarSmallButtonStyle"
+               TargetType="Button"
+               BasedOn="{StaticResource RoundedButtonBaseStyle}">
+            <Setter Property="Height" Value="36" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="FontWeight" Value="Bold" />
+        </Style>
+
+        <Style x:Key="CalendarIconButtonStyle"
+               TargetType="Button"
+               BasedOn="{StaticResource IconButtonStyle}">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Foreground" Value="{DynamicResource ThemeTextPrimaryBrush}" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="FontWeight" Value="Bold" />
+        </Style>
+
+        <Style x:Key="CalendarArrowButtonStyle"
+               TargetType="Button"
+               BasedOn="{StaticResource CalendarIconButtonStyle}">
+            <Setter Property="Width" Value="40" />
+            <Setter Property="Height" Value="40" />
+            <Setter Property="FontSize" Value="20" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <ContentPresenter HorizontalAlignment="Center"
+                                          VerticalAlignment="Center" />
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="FilterButtonStyle"
+               TargetType="Button"
+               BasedOn="{StaticResource RoundedButtonBaseStyle}">
+            <Setter Property="Height" Value="30" />
+            <Setter Property="Background" Value="{DynamicResource ThemeSurfaceBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource ThemeTextPrimaryBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderLightBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Margin" Value="2" />
+            <Setter Property="Padding" Value="0" />
+        </Style>
+
+        <Style x:Key="ActiveFilterButtonStyle"
+               TargetType="Button"
+               BasedOn="{StaticResource FilterButtonStyle}">
+            <Setter Property="Background" Value="{DynamicResource ThemeSecondaryBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource ThemeOnSecondaryTextBrush}" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+        </Style>
+
+        <Style x:Key="ThemeTextStyle"
+               TargetType="TextBlock"
+               BasedOn="{StaticResource BaseTextBlockStyle}">
+            <Setter Property="Foreground" Value="{DynamicResource ThemeTextPrimaryBrush}" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+
+        <Style x:Key="WeekDayTextStyle"
+               TargetType="TextBlock"
+               BasedOn="{StaticResource ThemeTextStyle}">
+            <Setter Property="FontWeight" Value="Bold" />
+            <Setter Property="HorizontalAlignment" Value="Center" />
+        </Style>
+
+        <Style x:Key="TimeHintTextStyle"
+               TargetType="TextBlock"
+               BasedOn="{StaticResource ThemeTextStyle}">
+            <Setter Property="Margin" Value="6,0,0,0" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Opacity" Value="0.7" />
+        </Style>
+
+        <Style x:Key="TimeBorderStyle"
+               TargetType="Border"
+               BasedOn="{StaticResource InputBorderStyle}">
+            <Setter Property="Padding" Value="10,6" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Visibility" Value="Collapsed" />
+            <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderLightBrush}" />
+        </Style>
+
+        <Style x:Key="FilterPanelBorderStyle"
+               TargetType="Border"
+               BasedOn="{StaticResource InputBorderStyle}">
+            <Setter Property="Padding" Value="4" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderLightBrush}" />
+        </Style>
+
+        <Style x:Key="ColorRadioButtonStyle"
+               TargetType="RadioButton">
+            <Setter Property="Margin" Value="0,0,12,0" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+
+        <Style x:Key="CategoryCardStyle"
+               TargetType="Border"
+               BasedOn="{StaticResource BaseBorderStyle}">
+            <Setter Property="Margin" Value="5" />
+            <Setter Property="Padding" Value="12" />
+            <Setter Property="CornerRadius" Value="10" />
+            <Setter Property="Width" Value="190" />
+            <Setter Property="BorderThickness" Value="0" />
+        </Style>
+
+        <Style x:Key="CategoryColorDotStyle"
+               TargetType="Border">
+            <Setter Property="Width" Value="28" />
+            <Setter Property="Height" Value="28" />
+            <Setter Property="CornerRadius" Value="14" />
+            <Setter Property="BorderThickness" Value="2" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsChecked, RelativeSource={RelativeSource AncestorType=RadioButton}}"
+                             Value="True">
+                    <Setter Property="BorderBrush" Value="{DynamicResource ThemeSecondaryBrush}" />
+                    <Setter Property="BorderThickness" Value="3" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        </common:ThemedPage.Resources>
+
+        <Grid Background="{DynamicResource PageBackgroundBrush}">
+
+        <Rectangle Fill="{DynamicResource ThemeSurfaceBrush}"
+                   Margin="40"
+                   RadiusX="20"
+                   RadiusY="20" />
+
+        <Grid Margin="60">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="17*" />
+                <RowDefinition Height="107*" />
+            </Grid.RowDefinitions>
+
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="3*" />
+                <ColumnDefinition Width="2*" />
+            </Grid.ColumnDefinitions>
+
+            <Border Grid.Column="0"
+                    Grid.RowSpan="2"
+                    Style="{StaticResource CalendarPanelStyle}">
+
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <StackPanel Grid.Row="0"
+                                Orientation="Horizontal"
+                                Margin="0,0,0,20">
+
+                        <Button x:Name="BackButton"
+                                Content="←"
+                                Width="80"
+                                Margin="0,0,20,0"
+                                Style="{StaticResource CalendarSmallButtonStyle}"
+                                Click="BackButton_Click" />
+
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock x:Name="MonthText"
+                                       Text="MARCH"
+                                       FontSize="24"
+                                       FontWeight="Bold"
+                                       Foreground="{DynamicResource ThemeTextPrimaryBrush}" />
+
+                            <TextBlock x:Name="YearText"
+                                       Text="2025"
+                                       FontSize="16"
+                                       Foreground="{DynamicResource ThemeTextPrimaryBrush}" />
+                        </StackPanel>
+                    </StackPanel>
+
+                    <StackPanel Grid.Row="1"
+                                Orientation="Horizontal"
+                                Margin="0,0,0,20">
+
+                        <Button x:Name="PrevMonthBtn"
+                                Content="◄"
+                                Style="{StaticResource CalendarArrowButtonStyle}"
+                                Click="PrevMonthBtn_Click" />
+
+                        <Button x:Name="TodayBtn"
+                                Content="TODAY"
+                                Width="120"
+                                Margin="10,0"
+                                Style="{StaticResource CalendarSmallButtonStyle}"
+                                Click="TodayBtn_Click" />
+
+                        <Button x:Name="NextMonthBtn"
+                                Content="►"
+                                Style="{StaticResource CalendarArrowButtonStyle}"
+                                Click="NextMonthBtn_Click" />
+                    </StackPanel>
+
+                    <Grid Grid.Row="2">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+
+                        <UniformGrid x:Name="DaysOfWeekGrid"
+                                     Grid.Row="0"
+                                     Rows="1"
+                                     Columns="7"
+                                     Margin="0,0,0,10">
+                            <TextBlock x:Name="DaySunText"
+                                       Text="Sun"
+                                       Style="{StaticResource WeekDayTextStyle}" />
+
+                            <TextBlock x:Name="DayMonText"
+                                       Text="Mon"
+                                       Style="{StaticResource WeekDayTextStyle}" />
+
+                            <TextBlock x:Name="DayTueText"
+                                       Text="Tue"
+                                       Style="{StaticResource WeekDayTextStyle}" />
+
+                            <TextBlock x:Name="DayWedText"
+                                       Text="Wed"
+                                       Style="{StaticResource WeekDayTextStyle}" />
+
+                            <TextBlock x:Name="DayThuText"
+                                       Text="Thu"
+                                       Style="{StaticResource WeekDayTextStyle}" />
+
+                            <TextBlock x:Name="DayFriText"
+                                       Text="Fri"
+                                       Style="{StaticResource WeekDayTextStyle}" />
+
+                            <TextBlock x:Name="DaySatText"
+                                       Text="Sat"
+                                       Style="{StaticResource WeekDayTextStyle}" />
+                        </UniformGrid>
+
+                        <UniformGrid x:Name="CalendarGrid"
+                                     Grid.Row="1"
+                                     Rows="6"
+                                     Columns="7" />
+                    </Grid>
+                </Grid>
+            </Border>
+
+            <Border Grid.Column="1"
+                    Grid.RowSpan="2"
+                    Margin="20,0,0,0"
+                    Style="{StaticResource CalendarPanelStyle}">
+
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <StackPanel Grid.Row="0"
+                                Orientation="Horizontal"
+                                Margin="0,0,0,15">
+
+                        <TextBlock x:Name="TasksHeader"
+                                   Text="TODAY'S TASKS"
+                                   Style="{StaticResource CalendarTitleTextStyle}" />
+
+                        <Button x:Name="AddTaskBtn"
+                                Content="+"
+                                Width="40"
+                                Height="40"
+                                FontSize="24"
+                                Margin="10,0,0,0"
+                                Style="{StaticResource CalendarIconButtonStyle}"
+                                Click="AddTaskBtn_Click" />
+                    </StackPanel>
+
+                    <ScrollViewer Grid.Row="1"
+                                  VerticalScrollBarVisibility="Hidden">
+                        <StackPanel x:Name="TasksPanel" />
+                    </ScrollViewer>
+
+                    <StackPanel Grid.Row="2"
+                                Orientation="Horizontal"
+                                Margin="0,20,0,0">
+
+                        <TextBlock x:Name="ShowFilterLabel"
+                                   Text="Show:"
+                                   Margin="0,0,10,0"
+                                   Style="{StaticResource ThemeTextStyle}" />
+
+                        <Border Style="{StaticResource FilterPanelBorderStyle}">
+                            <StackPanel Orientation="Horizontal">
+                                <Button x:Name="FilterAllBtn"
+                                        Content="All"
+                                        Width="80"
+                                        Tag="All"
+                                        Style="{StaticResource ActiveFilterButtonStyle}"
+                                        Click="FilterButton_Click" />
+
+                                <Button x:Name="FilterActiveBtn"
+                                        Content="Active"
+                                        Width="59"
+                                        Tag="Active"
+                                        Style="{StaticResource FilterButtonStyle}"
+                                        Click="FilterButton_Click" />
+
+                                <Button x:Name="FilterCompletedBtn"
+                                        Content="Completed"
+                                        Width="90"
+                                        Tag="Completed"
+                                        Style="{StaticResource FilterButtonStyle}"
+                                        Click="FilterButton_Click" />
+
+                                <Button x:Name="FilterUpcomingBtn"
+                                        Content="Upcoming"
+                                        Width="91"
+                                        Tag="Upcoming"
+                                        Style="{StaticResource FilterButtonStyle}"
+                                        Click="FilterButton_Click" />
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <Border x:Name="AddTaskPanel"
+                Style="{StaticResource CalendarModalPanelStyle}">
+
+            <Grid Margin="30">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <Grid Grid.Row="0"
+                      Margin="0,0,0,15">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock x:Name="AddTaskPanelTitle"
+                               Text="NEW TASK"
+                               Style="{StaticResource CalendarTitleTextStyle}" />
+
+                    <Button x:Name="CloseAddPanelBtn"
+                            Grid.Column="1"
+                            Content="×"
+                            Width="32"
+                            Height="32"
+                            FontSize="24"
+                            Style="{StaticResource CalendarIconButtonStyle}"
+                            Click="CloseAddPanelBtn_Click" />
+                </Grid>
+
+                <Label x:Name="AddTaskNameLabel"
+                       Grid.Row="1"
+                       Content="Task name:"
+                       Style="{StaticResource CalendarFormLabelStyle}" />
+
+                <TextBox x:Name="AddTaskTitle"
+                         Grid.Row="2"
+                         Margin="0,5,0,15"
+                         Style="{StaticResource CalendarTextBoxStyle}" />
+
+                <Label x:Name="AddTaskDescLabel"
+                       Grid.Row="3"
+                       Content="Description (optional):"
+                       Style="{StaticResource CalendarFormLabelStyle}" />
+
+                <TextBox x:Name="AddTaskDescription"
+                         Grid.Row="4"
+                         Margin="0,5,0,15"
+                         Style="{StaticResource CalendarMultilineTextBoxStyle}" />
+
+                <Label x:Name="AddTaskTimeLabel"
+                       Grid.Row="5"
+                       Content="Time (optional):"
+                       Style="{StaticResource CalendarFormLabelStyle}" />
+
+                <StackPanel Grid.Row="6"
+                            Orientation="Horizontal"
+                            Margin="0,5,0,15"
+                            VerticalAlignment="Center">
+
+                    <CheckBox x:Name="AddTaskHasTime"
+                              Content="Set time"
+                              IsChecked="False"
+                              VerticalAlignment="Center"
+                              Margin="0,0,12,0"
+                              Checked="AddTaskHasTime_Checked"
+                              Unchecked="AddTaskHasTime_Unchecked" />
+
+                    <Border x:Name="AddTaskTimeBorder"
+                            Style="{StaticResource TimeBorderStyle}">
+
+                        <StackPanel Orientation="Horizontal"
+                                    VerticalAlignment="Center">
+
+                            <TextBox x:Name="AddTaskTime"
+                                     Text="09:00"
+                                     Style="{StaticResource TimeTextBoxStyle}"
+                                     PreviewTextInput="TimeTextBox_PreviewTextInput"
+                                     PreviewKeyDown="TimeTextBox_PreviewKeyDown" />
+
+                            <TextBlock x:Name="AddTaskTimeFormatHint"
+                                       Style="{StaticResource TimeHintTextStyle}">
+                                <Run Text="(24h format)" />
+                            </TextBlock>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+
+                <Label x:Name="AddTaskCategoryLabel"
+                       Grid.Row="7"
+                       Content="Category (color):"
+                       Style="{StaticResource CalendarFormLabelStyle}" />
+
+                <ScrollViewer x:Name="CategoryScrollViewer"
+                              Grid.Row="8"
+                              HorizontalScrollBarVisibility="Hidden"
+                              VerticalScrollBarVisibility="Disabled"
+                              Margin="0,5,0,10"
+                              Height="160"
+                              PanningMode="HorizontalOnly"
+                              CanContentScroll="False">
+
+                    <WrapPanel Orientation="Horizontal">
+
+                        <Border Style="{StaticResource CategoryCardStyle}">
+                            <StackPanel Orientation="Horizontal"
+                                        VerticalAlignment="Center">
+
+                                <RadioButton x:Name="ColorRed"
+                                             GroupName="TaskColors"
+                                             Style="{StaticResource ColorRadioButtonStyle}">
+                                    <Border Background="#FF6B6B"
+                                            Style="{StaticResource CategoryColorDotStyle}" />
+                                </RadioButton>
+
+                                <StackPanel>
+                                    <TextBlock x:Name="CategoryImportantText"
+                                               Text="Important"
+                                               Style="{StaticResource CategoryTitleTextStyle}" />
+
+                                    <TextBlock x:Name="CategoryImportantDescText"
+                                               Text="Priority tasks"
+                                               Style="{StaticResource CategoryDescriptionTextStyle}" />
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Style="{StaticResource CategoryCardStyle}">
+                            <StackPanel Orientation="Horizontal"
+                                        VerticalAlignment="Center">
+
+                                <RadioButton x:Name="ColorBlue"
+                                             GroupName="TaskColors"
+                                             IsChecked="True"
+                                             Style="{StaticResource ColorRadioButtonStyle}">
+                                    <Border Background="#4A6CF7"
+                                            Style="{StaticResource CategoryColorDotStyle}" />
+                                </RadioButton>
+
+                                <StackPanel>
+                                    <TextBlock x:Name="CategoryWorkText"
+                                               Text="Work"
+                                               Style="{StaticResource CategoryTitleTextStyle}" />
+
+                                    <TextBlock x:Name="CategoryWorkDescText"
+                                               Text="Work tasks"
+                                               Style="{StaticResource CategoryDescriptionTextStyle}" />
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Style="{StaticResource CategoryCardStyle}">
+                            <StackPanel Orientation="Horizontal"
+                                        VerticalAlignment="Center">
+
+                                <RadioButton x:Name="ColorGreen"
+                                             GroupName="TaskColors"
+                                             Style="{StaticResource ColorRadioButtonStyle}">
+                                    <Border Background="#32CD32"
+                                            Style="{StaticResource CategoryColorDotStyle}" />
+                                </RadioButton>
+
+                                <StackPanel>
+                                    <TextBlock x:Name="CategoryPersonalText"
+                                               Text="Personal"
+                                               Style="{StaticResource CategoryTitleTextStyle}" />
+
+                                    <TextBlock x:Name="CategoryPersonalDescText"
+                                               Text="Personal matters"
+                                               Style="{StaticResource CategoryDescriptionTextStyle}" />
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Style="{StaticResource CategoryCardStyle}">
+                            <StackPanel Orientation="Horizontal"
+                                        VerticalAlignment="Center">
+
+                                <RadioButton x:Name="ColorOrange"
+                                             GroupName="TaskColors"
+                                             Style="{StaticResource ColorRadioButtonStyle}">
+                                    <Border Background="#FFA500"
+                                            Style="{StaticResource CategoryColorDotStyle}" />
+                                </RadioButton>
+
+                                <StackPanel>
+                                    <TextBlock x:Name="CategorySportsText"
+                                               Text="Sports"
+                                               Style="{StaticResource CategoryTitleTextStyle}" />
+
+                                    <TextBlock x:Name="CategorySportsDescText"
+                                               Text="Training, activity"
+                                               Style="{StaticResource CategoryDescriptionTextStyle}" />
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Style="{StaticResource CategoryCardStyle}">
+                            <StackPanel Orientation="Horizontal"
+                                        VerticalAlignment="Center">
+
+                                <RadioButton x:Name="ColorPurple"
+                                             GroupName="TaskColors"
+                                             Style="{StaticResource ColorRadioButtonStyle}">
+                                    <Border Background="#9B59B6"
+                                            Style="{StaticResource CategoryColorDotStyle}" />
+                                </RadioButton>
+
+                                <StackPanel>
+                                    <TextBlock x:Name="CategoryStudyText"
+                                               Text="Study"
+                                               Style="{StaticResource CategoryTitleTextStyle}" />
+
+                                    <TextBlock x:Name="CategoryStudyDescText"
+                                               Text="Learning tasks"
+                                               Style="{StaticResource CategoryDescriptionTextStyle}" />
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Style="{StaticResource CategoryCardStyle}">
+                            <StackPanel Orientation="Horizontal"
+                                        VerticalAlignment="Center">
+
+                                <RadioButton x:Name="ColorPink"
+                                             GroupName="TaskColors"
+                                             Style="{StaticResource ColorRadioButtonStyle}">
+                                    <Border Background="#FF69B4"
+                                            Style="{StaticResource CategoryColorDotStyle}" />
+                                </RadioButton>
+
+                                <StackPanel>
+                                    <TextBlock x:Name="CategoryEntertainmentText"
+                                               Text="Entertainment"
+                                               Style="{StaticResource CategoryTitleTextStyle}" />
+
+                                    <TextBlock x:Name="CategoryEntertainmentDescText"
+                                               Text="Rest, hobbies"
+                                               Style="{StaticResource CategoryDescriptionTextStyle}" />
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+                    </WrapPanel>
+                </ScrollViewer>
+
+                <StackPanel Grid.Row="9"
+                            Orientation="Horizontal"
+                            HorizontalAlignment="Center"
+                            Margin="0,30,0,0">
+
+                    <Button x:Name="CancelAddTaskBtn"
+                            Content="CANCEL"
+                            Width="160"
+                            Height="48"
+                            Style="{StaticResource DangerButtonStyle}"
+                            Click="CancelAddTaskBtn_Click" />
+
+                    <Button x:Name="SaveAddTaskBtn"
+                            Content="SAVE"
+                            Width="160"
+                            Height="48"
+                            Margin="30,0,0,0"
+                            Style="{StaticResource PrimaryButtonStyle}"
+                            Click="ConfirmAddTaskBtn_Click" />
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <Border x:Name="EditTaskPanel"
+                Style="{StaticResource CalendarModalPanelStyle}">
+
+            <Grid Margin="30">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <Grid Grid.Row="0"
+                      Margin="0,0,0,15">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock x:Name="EditTaskPanelTitle"
+                               Text="EDIT TASK"
+                               Style="{StaticResource CalendarTitleTextStyle}" />
+
+                    <Button x:Name="CloseEditPanelBtn"
+                            Grid.Column="1"
+                            Content="×"
+                            Width="32"
+                            Height="32"
+                            FontSize="24"
+                            Style="{StaticResource CalendarIconButtonStyle}"
+                            Click="CloseEditPanelBtn_Click" />
+                </Grid>
+
+                <Label x:Name="EditTaskNameLabel"
+                       Grid.Row="1"
+                       Content="Task name:"
+                       Style="{StaticResource CalendarFormLabelStyle}" />
+
+                <TextBox x:Name="EditTaskTitle"
+                         Grid.Row="2"
+                         Margin="0,5,0,15"
+                         Style="{StaticResource CalendarTextBoxStyle}" />
+
+                <Label x:Name="EditTaskDescLabel"
+                       Grid.Row="3"
+                       Content="Description:"
+                       Style="{StaticResource CalendarFormLabelStyle}" />
+
+                <TextBox x:Name="EditTaskDescription"
+                         Grid.Row="4"
+                         Margin="0,5,0,15"
+                         Style="{StaticResource CalendarMultilineTextBoxStyle}" />
+
+                <Label x:Name="EditTaskTimeLabel"
+                       Grid.Row="5"
+                       Content="Time (optional):"
+                       Style="{StaticResource CalendarFormLabelStyle}" />
+
+                <StackPanel Grid.Row="6"
+                            Orientation="Horizontal"
+                            Margin="0,5,0,15">
+
+                    <CheckBox x:Name="EditTaskHasTime"
+                              Content="Set time"
+                              VerticalAlignment="Center"
+                              Margin="0,0,12,0"
+                              Checked="EditTaskHasTime_Checked"
+                              Unchecked="EditTaskHasTime_Unchecked" />
+
+                    <Border x:Name="EditTaskTimeBorder"
+                            Style="{StaticResource TimeBorderStyle}">
+
+                        <TextBox x:Name="EditTaskTime"
+                                 Style="{StaticResource TimeTextBoxStyle}"
+                                 PreviewTextInput="TimeTextBox_PreviewTextInput"
+                                 PreviewKeyDown="TimeTextBox_PreviewKeyDown" />
+                    </Border>
+                </StackPanel>
+
+                <Label x:Name="EditTaskCategoryLabel"
+                       Grid.Row="7"
+                       Content="Category (color):"
+                       Style="{StaticResource CalendarFormLabelStyle}" />
+
+                <ScrollViewer Grid.Row="8"
+                              HorizontalScrollBarVisibility="Hidden"
+                              VerticalScrollBarVisibility="Disabled"
+                              Height="160">
+
+                    <WrapPanel x:Name="EditCategoryWrap">
+
+                        <Border Style="{StaticResource CategoryCardStyle}">
+                            <StackPanel Orientation="Horizontal"
+                                        VerticalAlignment="Center">
+
+                                <RadioButton x:Name="EditColorRed"
+                                             GroupName="EditTaskColors"
+                                             Style="{StaticResource ColorRadioButtonStyle}">
+                                    <Border Background="#FF6B6B"
+                                            Style="{StaticResource CategoryColorDotStyle}" />
+                                </RadioButton>
+
+                                <StackPanel>
+                                    <TextBlock x:Name="EditCategoryImportantText"
+                                               Text="Important"
+                                               Style="{StaticResource CategoryTitleTextStyle}" />
+
+                                    <TextBlock x:Name="EditCategoryImportantDescText"
+                                               Text="Priority tasks"
+                                               Style="{StaticResource CategoryDescriptionTextStyle}" />
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Style="{StaticResource CategoryCardStyle}">
+                            <StackPanel Orientation="Horizontal"
+                                        VerticalAlignment="Center">
+
+                                <RadioButton x:Name="EditColorBlue"
+                                             GroupName="EditTaskColors"
+                                             IsChecked="True"
+                                             Style="{StaticResource ColorRadioButtonStyle}">
+                                    <Border Background="#4A6CF7"
+                                            Style="{StaticResource CategoryColorDotStyle}" />
+                                </RadioButton>
+
+                                <StackPanel>
+                                    <TextBlock x:Name="EditCategoryWorkText"
+                                               Text="Work"
+                                               Style="{StaticResource CategoryTitleTextStyle}" />
+
+                                    <TextBlock x:Name="EditCategoryWorkDescText"
+                                               Text="Work tasks"
+                                               Style="{StaticResource CategoryDescriptionTextStyle}" />
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Style="{StaticResource CategoryCardStyle}">
+                            <StackPanel Orientation="Horizontal"
+                                        VerticalAlignment="Center">
+
+                                <RadioButton x:Name="EditColorGreen"
+                                             GroupName="EditTaskColors"
+                                             Style="{StaticResource ColorRadioButtonStyle}">
+                                    <Border Background="#32CD32"
+                                            Style="{StaticResource CategoryColorDotStyle}" />
+                                </RadioButton>
+
+                                <StackPanel>
+                                    <TextBlock x:Name="EditCategoryPersonalText"
+                                               Text="Personal"
+                                               Style="{StaticResource CategoryTitleTextStyle}" />
+
+                                    <TextBlock x:Name="EditCategoryPersonalDescText"
+                                               Text="Personal matters"
+                                               Style="{StaticResource CategoryDescriptionTextStyle}" />
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Style="{StaticResource CategoryCardStyle}">
+                            <StackPanel Orientation="Horizontal"
+                                        VerticalAlignment="Center">
+
+                                <RadioButton x:Name="EditColorOrange"
+                                             GroupName="EditTaskColors"
+                                             Style="{StaticResource ColorRadioButtonStyle}">
+                                    <Border Background="#FFA500"
+                                            Style="{StaticResource CategoryColorDotStyle}" />
+                                </RadioButton>
+
+                                <StackPanel>
+                                    <TextBlock x:Name="EditCategorySportsText"
+                                               Text="Sports"
+                                               Style="{StaticResource CategoryTitleTextStyle}" />
+
+                                    <TextBlock x:Name="EditCategorySportsDescText"
+                                               Text="Training, activity"
+                                               Style="{StaticResource CategoryDescriptionTextStyle}" />
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Style="{StaticResource CategoryCardStyle}">
+                            <StackPanel Orientation="Horizontal"
+                                        VerticalAlignment="Center">
+
+                                <RadioButton x:Name="EditColorPurple"
+                                             GroupName="EditTaskColors"
+                                             Style="{StaticResource ColorRadioButtonStyle}">
+                                    <Border Background="#9B59B6"
+                                            Style="{StaticResource CategoryColorDotStyle}" />
+                                </RadioButton>
+
+                                <StackPanel>
+                                    <TextBlock x:Name="EditCategoryStudyText"
+                                               Text="Study"
+                                               Style="{StaticResource CategoryTitleTextStyle}" />
+
+                                    <TextBlock x:Name="EditCategoryStudyDescText"
+                                               Text="Learning tasks"
+                                               Style="{StaticResource CategoryDescriptionTextStyle}" />
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Style="{StaticResource CategoryCardStyle}">
+                            <StackPanel Orientation="Horizontal"
+                                        VerticalAlignment="Center">
+
+                                <RadioButton x:Name="EditColorPink"
+                                             GroupName="EditTaskColors"
+                                             Style="{StaticResource ColorRadioButtonStyle}">
+                                    <Border Background="#FF69B4"
+                                            Style="{StaticResource CategoryColorDotStyle}" />
+                                </RadioButton>
+
+                                <StackPanel>
+                                    <TextBlock x:Name="EditCategoryEntertainmentText"
+                                               Text="Entertainment"
+                                               Style="{StaticResource CategoryTitleTextStyle}" />
+
+                                    <TextBlock x:Name="EditCategoryEntertainmentDescText"
+                                               Text="Rest, hobbies"
+                                               Style="{StaticResource CategoryDescriptionTextStyle}" />
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+                    </WrapPanel>
+                </ScrollViewer>
+
+                <StackPanel Grid.Row="9"
+                            Orientation="Horizontal"
+                            HorizontalAlignment="Center"
+                            Margin="0,30,0,0">
+
+                    <Button x:Name="CancelEditTaskBtn"
+                            Content="CANCEL"
+                            Width="160"
+                            Height="48"
+                            Style="{StaticResource DangerButtonStyle}"
+                            Click="CancelEditTaskBtn_Click" />
+
+                    <Button x:Name="SaveEditTaskBtn"
+                            Content="SAVE"
+                            Width="160"
+                            Height="48"
+                            Margin="30,0,0,0"
+                            Style="{StaticResource PrimaryButtonStyle}"
+                            Click="ConfirmEditTaskBtn_Click" />
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <Rectangle x:Name="OverlayBackground"
+                   Fill="{DynamicResource ThemeOverlayBrush}"
+                   Visibility="Collapsed"
+                   Panel.ZIndex="999" />
+    </Grid>
+</common:ThemedPage>
