@@ -6,6 +6,8 @@ using Edemly.Client.Api.Notes;
 using Edemly.Client.Api.Payments;
 using Edemly.Client.Api.Remindings;
 using Edemly.Client.Api.Users;
+using Edemly.Client.Api.ChatMember;
+using Edemly.Client.Api.Messages;
 
 namespace Edemly.Client.Api;
 
@@ -20,6 +22,8 @@ public sealed class ApiClients : IApiClients
         Files = new FileApiClient(context);
         Payments = new PaymentApiClient(context);
         Remindings = new RemindingApiClient(context);
+        ChatMembers = new ChatMemberApiClient(context);
+        Messages = new MessageApiClient(context);
     }
 
     public IUserApiClient Users { get; }
@@ -29,4 +33,7 @@ public sealed class ApiClients : IApiClients
     public IFileApiClient Files { get; }
     public IPaymentApiClient Payments { get; }
     public IRemindingApiClient Remindings { get; }
+    public IChatMemberApiClient ChatMembers { get; }
+    public IMessageApiClient Messages { get; }
+
 }

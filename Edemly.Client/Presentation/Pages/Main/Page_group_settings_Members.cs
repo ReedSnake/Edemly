@@ -17,7 +17,7 @@ namespace Edemly.Client.Presentation.Pages.Main
                 GroupMembersPanel.Children.Clear();
                 GroupMembersPanel.Children.Add(GroupSettingsMemberItemFactory.CreateCenteredStatusText(DefaultLanguage.LoadingMembers));
 
-                _groupMembers = await _apiClient.Chats.GetChatMembersAsync(_chatId) ?? new List<ChatMemberDto>();
+                _groupMembers = await _apiClient.ChatMembers.GetChatMembersAsync(_chatId) ?? new List<ChatMemberDto>();
 
                 var isOwner = _groupMembers.Any(member => member.UserId == App.CurrentUserId && member.Role == 1);
                 ApplyOwnerEditingState(isOwner);

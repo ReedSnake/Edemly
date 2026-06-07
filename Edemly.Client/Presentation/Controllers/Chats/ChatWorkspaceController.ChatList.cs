@@ -59,7 +59,7 @@ namespace Edemly.Client.Presentation.Controllers.Chats
                         await semaphore.WaitAsync();
                         try
                         {
-                            var messages = await _apiClient.Chats.GetChatMessagesAsync(chatId, page: 1, pageSize: 1);
+                            var messages = await _apiClient.Messages.GetChatMessagesAsync(chatId, page: 1, pageSize: 1);
                             if (messages.Count > 0)
                             {
                                 var lastMessage = messages[0];

@@ -79,7 +79,7 @@ namespace Edemly.Client.Presentation.Pages.Main
 
             try
             {
-                var members = await App.ApiClients.Chats.GetChatMembersAsync(_chatController.CurrentChatId) ?? new List<ChatMemberDto>();
+                var members = await App.ApiClients.ChatMembers.GetChatMembersAsync(_chatController.CurrentChatId) ?? new List<ChatMemberDto>();
 
                 if (members.Count == 0)
                 {

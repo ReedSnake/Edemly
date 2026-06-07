@@ -351,7 +351,7 @@ public partial class CallWindow : ThemedWindow
 
             try
             {
-                var members = await App.ApiClients.Chats.GetChatMembersAsync(chatId);
+                var members = await App.ApiClients.ChatMembers.GetChatMembersAsync(chatId);
                 var me = App.CurrentUserId ?? 0;
                 var peer = members?.FirstOrDefault(m => m.UserId != me);
                 if (peer != null) _peerUserId = peer.UserId;

@@ -39,7 +39,7 @@ namespace Edemly.Client.Application.Chats
                     return cachedMessages;
                 }
 
-                var messages = await _apiClient.Chats.GetChatMessagesAsync(chatId, page, pageSize);
+                var messages = await _apiClient.Messages.GetChatMessagesAsync(chatId, page, pageSize);
 
                 if (messages.Count > 0)
                 {
@@ -67,7 +67,7 @@ namespace Edemly.Client.Application.Chats
             {
                 if (chat.Type == 0)
                 {
-                    var members = await _apiClient.Chats.GetChatMembersAsync(chat.Id);
+                    var members = await _apiClient.ChatMembers.GetChatMembersAsync(chat.Id);
 
                     if (members.Count > 0)
                     {
@@ -122,7 +122,7 @@ namespace Edemly.Client.Application.Chats
             {
                 try
                 {
-                    var members = await _apiClient.Chats.GetChatMembersAsync(chatId);
+                    var members = await _apiClient.ChatMembers.GetChatMembersAsync(chatId);
                     return (chatId, members);
                 }
                 catch (Exception)

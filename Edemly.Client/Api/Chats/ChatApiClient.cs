@@ -8,15 +8,6 @@ public sealed class ChatApiClient : ApiClientBase, IChatApiClient
     {
     }
 
-    public Task<List<MessageDto>> GetChatMessagesAsync(
-        int chatId,
-        int page = 1,
-        int pageSize = 50)
-    {
-        return GetListAsync<MessageDto>(
-            $"api/message/chat/{chatId}?page={page}&pageSize={pageSize}");
-    }
-
     public Task<List<ChatDto>> GetMyChatsAsync()
     {
         return GetListAsync<ChatDto>("api/chat/my-chats");
@@ -56,11 +47,6 @@ public sealed class ChatApiClient : ApiClientBase, IChatApiClient
     public Task<ChatDto?> GetChatByIdAsync(int chatId)
     {
         return GetAsync<ChatDto>($"api/chat/{chatId}");
-    }
-
-    public Task<List<ChatMemberDto>> GetChatMembersAsync(int chatId)
-    {
-        return GetListAsync<ChatMemberDto>($"api/chatmember/list/{chatId}");
     }
 
     public Task<(bool Success, string? Error)> UpdateChatAsync(

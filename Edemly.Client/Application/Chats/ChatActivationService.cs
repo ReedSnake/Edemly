@@ -101,7 +101,7 @@ namespace Edemly.Client.Application.Chats
 
             var _apiClient = _apiClientProvider();
             var chatsTask = _apiClient.Chats.GetMyChatsAsync();
-            var membersTask = _apiClient.Chats.GetChatMembersAsync(chatId);
+            var membersTask = _apiClient.ChatMembers.GetChatMembersAsync(chatId);
 
             await Task.WhenAll(chatsTask, membersTask);
 
