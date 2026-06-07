@@ -3,9 +3,9 @@
 
 namespace Edemly.Client.Api.ChatMember;
 
-public sealed class ChatMemberApiClient : ApiClientBase, IChatMemberApiClient
+public sealed class ChatMembersApiClient : ApiClientBase, IChatMembersApiClient
 {
-    public ChatMemberApiClient(ApiClientContext context) : base(context)
+    public ChatMembersApiClient(ApiClientContext context) : base(context)
     {
     }
 

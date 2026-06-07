@@ -22,7 +22,7 @@ public sealed class ApiClients : IApiClients
         Files = new FileApiClient(context);
         Payments = new PaymentApiClient(context);
         Remindings = new RemindingApiClient(context);
-        ChatMembers = new ChatMemberApiClient(context);
+        ChatMembers = new ChatMembersApiClient(context);
         Messages = new MessageApiClient(context);
     }
 
@@ -33,7 +33,7 @@ public sealed class ApiClients : IApiClients
     public IFileApiClient Files { get; }
     public IPaymentApiClient Payments { get; }
     public IRemindingApiClient Remindings { get; }
-    public IChatMemberApiClient ChatMembers { get; }
+    public IChatMembersApiClient ChatMembers { get; }
     public IMessageApiClient Messages { get; }
 
 }

@@ -1,6 +1,6 @@
 ﻿namespace Edemly.Client.Api.ChatMember;
 
-public interface IChatMemberApiClient
+public interface IChatMembersApiClient
 {
     Task<List<ChatMemberDto>> GetChatMembersAsync(int chatId);
 }

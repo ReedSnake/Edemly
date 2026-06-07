@@ -16,7 +16,7 @@ namespace Edemly.Client.Application.Users.Profile
             @"^[0-9+\-\s()]+$",
             RegexOptions.Compiled);
 
-        public static bool TryValidate(UserProfileUpdateRequest request, out string errorMessage)
+        public static bool TryValidate(UpdateUserDto request, out string errorMessage)
         {
             if (!TryValidateUsername(request.Username, out errorMessage))
             {

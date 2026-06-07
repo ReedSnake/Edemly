@@ -10,5 +10,5 @@ public interface IUserApiClient
 
     Task<UserInfoDto> GetUserInfoAsync();
 
-    Task<(bool Success, string? Error)> UpdateUserInfoAsync(UserProfileUpdateRequest request);
+    Task<(bool Success, string? Error)> UpdateUserInfoAsync(UpdateUserDto request);
 }

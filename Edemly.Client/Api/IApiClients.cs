@@ -19,6 +19,6 @@ public interface IApiClients
     IFileApiClient Files { get; }
     IPaymentApiClient Payments { get; }
     IRemindingApiClient Remindings { get; }
-    IChatMemberApiClient ChatMembers { get; }
+    IChatMembersApiClient ChatMembers { get; }
     IMessageApiClient Messages { get; }
 }

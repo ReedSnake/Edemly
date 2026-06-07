@@ -40,14 +40,14 @@ namespace Edemly.Client.Presentation.Pages.Settings
             CurrentAvatarPath = avatarPath?.Trim() ?? string.Empty;
         }
 
-        public void MarkSaved(UserProfileUpdateRequest request, string? email)
+        public void MarkSaved(UpdateUserDto request, string? email)
         {
             OriginalProfile = UserProfileSnapshot.From(request, email);
             CurrentAvatarPath = OriginalProfile.PfpUrl;
             HasUnsavedChanges = false;
         }
 
-        public bool UpdateHasChanges(UserProfileUpdateRequest request)
+        public bool UpdateHasChanges(UpdateUserDto request)
         {
             HasUnsavedChanges = !OriginalProfile.Matches(request);
             return HasUnsavedChanges;

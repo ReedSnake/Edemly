@@ -87,25 +87,15 @@ public sealed class UserApiClient : ApiClientBase, IUserApiClient
         }
     }
 
-    public async Task<(bool Success, string? Error)> UpdateUserInfoAsync(UserProfileUpdateRequest request)
+    public async Task<(bool Success, string? Error)> UpdateUserInfoAsync(UpdateUserDto request)
     {
+        if (request == null)
+            throw new ArgumentNullException(nameof(request));
+
         try
         {
-            if (request == null)
-                throw new ArgumentNullException(nameof(request));
-
-            var updateData = new UpdateUserDto
-            {
-                Username = request.Username?.Trim(),
-                FirstName = request.FirstName?.Trim(),
-                LastName = request.LastName?.Trim(),
-                PhoneNumber = request.PhoneNumber?.Trim(),
-                Description = request.Description?.Trim(),
-                PfpUrl = request.PfpUrl?.Trim()
-            };
-
             var json = JsonSerializer.Serialize(
-                updateData,
+                request,
                 new JsonSerializerOptions
                 {
                     DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
@@ -127,10 +117,6 @@ public sealed class UserApiClient : ApiClientBase, IUserApiClient
                 string.IsNullOrWhiteSpace(errorMessage)
                     ? response.ReasonPhrase
                     : errorMessage);
-        }
-        catch (ArgumentNullException)
-        {
-            throw;
         }
         catch (Exception ex)
         {

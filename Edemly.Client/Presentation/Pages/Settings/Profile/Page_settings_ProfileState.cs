@@ -9,7 +9,7 @@ namespace Edemly.Client.Presentation.Pages.Settings
 {
     public partial class Page_settings
     {
-        private bool TryBuildValidatedRequest(out UserProfileUpdateRequest request)
+        private bool TryBuildValidatedRequest(out UpdateUserDto request)
         {
             request = CreateProfileUpdateRequest();
 
@@ -22,18 +22,20 @@ namespace Edemly.Client.Presentation.Pages.Settings
             return false;
         }
 
-        private UserProfileUpdateRequest CreateProfileUpdateRequest(string? avatarPathOverride = null)
+        private UpdateUserDto CreateProfileUpdateRequest(string? avatarPathOverride = null)
         {
-            return new UserProfileUpdateRequest(
-                UsernameTextBox.Text ?? string.Empty,
-                FirstNameTextBox.Text ?? string.Empty,
-                LastNameTextBox.Text ?? string.Empty,
-                PhoneNumberTextBox.Text ?? string.Empty,
-                AboutTextBox.Text ?? string.Empty,
-                avatarPathOverride ?? _profileState.CurrentAvatarPath);
+            return new UpdateUserDto
+            {
+                Username = UsernameTextBox.Text?.Trim() ?? string.Empty,
+                FirstName = FirstNameTextBox.Text?.Trim() ?? string.Empty,
+                LastName = LastNameTextBox.Text?.Trim() ?? string.Empty,
+                PhoneNumber = PhoneNumberTextBox.Text?.Trim() ?? string.Empty,
+                Description = AboutTextBox.Text?.Trim() ?? string.Empty,
+                PfpUrl = (avatarPathOverride ?? _profileState.CurrentAvatarPath)?.Trim()
+            };
         }
 
-        private void UpdateSavedProfile(UserProfileUpdateRequest request)
+        private void UpdateSavedProfile(UpdateUserDto request)
         {
             _profileState.MarkSaved(request, EmailTextBox.Text);
             CheckForChanges();

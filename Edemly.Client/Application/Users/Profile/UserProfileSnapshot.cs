@@ -32,7 +32,7 @@ namespace Edemly.Client.Application.Users.Profile
                 Normalize(userInfo?.Email));
         }
 
-        public static UserProfileSnapshot From(UserProfileUpdateRequest request, string? email)
+        public static UserProfileSnapshot From(UpdateUserDto request, string? email)
         {
             return new UserProfileSnapshot(
                 Normalize(request?.Username),
@@ -44,7 +44,7 @@ namespace Edemly.Client.Application.Users.Profile
                 Normalize(email));
         }
 
-        public bool Matches(UserProfileUpdateRequest request)
+        public bool Matches(UpdateUserDto request)
         {
             return Username == Normalize(request?.Username)
                 && FirstName == Normalize(request?.FirstName)
