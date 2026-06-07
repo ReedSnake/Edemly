@@ -91,5 +91,10 @@ namespace Edemly.Client.Presentation.Pages.Auth
 
             LoginButton_Click(LoginButton, e);
         }
+
+        private void EmailTextBox_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
+        {
+
+        }
     }
 }

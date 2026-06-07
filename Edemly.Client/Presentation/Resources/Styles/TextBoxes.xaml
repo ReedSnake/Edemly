@@ -64,6 +64,7 @@
 									   Text="{TemplateBinding Tag}"
 									   Foreground="Gray" 
 									   Margin="{TemplateBinding Padding}"
+									   Padding="6 0"
 									   VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
 									   IsHitTestVisible="False" Visibility="Hidden" />
 						</Grid>

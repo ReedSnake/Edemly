@@ -314,7 +314,7 @@
                                                        Style="{StaticResource SettingsFieldLabelStyle}" />
 
                                             <Border Style="{StaticResource InputBorderStyle}"
-                                                    Width="220">
+                                                    HorizontalAlignment="Stretch">
 
                                                 <TextBox x:Name="PhoneNumberTextBox"
                                                          Style="{StaticResource InputTextBoxStyle}"
@@ -337,7 +337,7 @@
                                                        Style="{StaticResource SettingsFieldLabelStyle}" />
 
                                             <Border Style="{StaticResource InputBorderStyle}"
-                                                    Width="220">
+                                                    HorizontalAlignment="Stretch">
 
                                                 <TextBox x:Name="UsernameTextBox"
                                                          Style="{StaticResource InputTextBoxStyle}"
@@ -355,7 +355,7 @@
                                                        Style="{StaticResource SettingsFieldLabelStyle}" />
 
                                             <Border Style="{StaticResource InputBorderStyle}"
-                                                    Width="220">
+                                                    HorizontalAlignment="Stretch">
 
                                                 <TextBox x:Name="FirstNameTextBox"
                                                          Style="{StaticResource InputTextBoxStyle}"
@@ -373,7 +373,7 @@
                                                        Style="{StaticResource SettingsFieldLabelStyle}" />
 
                                             <Border Style="{StaticResource InputBorderStyle}"
-                                                    Width="220">
+                                                    HorizontalAlignment="Stretch">
 
                                                 <TextBox x:Name="LastNameTextBox"
                                                          Style="{StaticResource InputTextBoxStyle}"
