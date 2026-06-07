@@ -1,7 +1,7 @@
-﻿using Edemly.Client.Api.Core;
+﻿using Edemly.Client.Api.ChatMembers;
+using Edemly.Client.Api.Core;
 
-
-namespace Edemly.Client.Api.ChatMember;
+namespace Edemly.Client.Api.ChatMembers;
 
 public sealed class ChatMembersApiClient : ApiClientBase, IChatMembersApiClient
 {
@@ -13,6 +13,4 @@ public sealed class ChatMembersApiClient : ApiClientBase, IChatMembersApiClient
     {
         return GetListAsync<ChatMemberDto>($"api/chatmember/list/{chatId}");
     }
-
 }
-

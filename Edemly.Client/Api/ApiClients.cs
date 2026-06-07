@@ -6,7 +6,7 @@ using Edemly.Client.Api.Notes;
 using Edemly.Client.Api.Payments;
 using Edemly.Client.Api.Remindings;
 using Edemly.Client.Api.Users;
-using Edemly.Client.Api.ChatMember;
+using Edemly.Client.Api.ChatMembers;
 using Edemly.Client.Api.Messages;
 
 namespace Edemly.Client.Api;

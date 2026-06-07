@@ -1,5 +1,5 @@
 ﻿using Edemly.Client.Api.Calls;
-using Edemly.Client.Api.ChatMember;
+using Edemly.Client.Api.ChatMembers;
 using Edemly.Client.Api.Chats;
 using Edemly.Client.Api.Files;
 using Edemly.Client.Api.Messages;

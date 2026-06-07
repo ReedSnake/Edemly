@@ -1,4 +1,4 @@
-﻿namespace Edemly.Client.Api.ChatMember;
+﻿namespace Edemly.Client.Api.ChatMembers;
 
 public interface IChatMembersApiClient
 {

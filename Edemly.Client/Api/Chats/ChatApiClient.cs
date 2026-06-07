@@ -65,10 +65,4 @@ public sealed class ChatApiClient : ApiClientBase, IChatApiClient
 
         return PutAsync("api/chat/update", request);
     }
-
-    public void Dispose()
-    {
-        // HttpClient тут не dispose-имо, якщо він передається ззовні
-        // і використовується іншими ApiClient.
-    }
 }
