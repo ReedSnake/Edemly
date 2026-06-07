@@ -12,9 +12,9 @@ namespace Edemly.Client.Presentation.Rendering.Chats
         private readonly ChatListItemBuilder _uiBuilder;
         private readonly int _currentUserId;
 
-        public UserSearchHandler(IApiClients _apiClient, int currentUserId)
+        public UserSearchHandler(IApiClients apiClient, int currentUserId)
         {
-            _apiClient = _apiClient ?? throw new ArgumentNullException(nameof(_apiClient));
+            _apiClient = apiClient ?? throw new ArgumentNullException(nameof(apiClient));
             _currentUserId = currentUserId;
             _uiBuilder = new ChatListItemBuilder();
         }

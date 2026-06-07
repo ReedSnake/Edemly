@@ -5,15 +5,14 @@ namespace Edemly.Client.Api.Core;
 
 public sealed class ApiClientContext
 {
-    private readonly HttpClient _httpClient;
     private string? _authToken;
-
-    public HttpClient? HttpClient { get; internal set; }
 
     public ApiClientContext(HttpClient httpClient)
     {
-        _httpClient = httpClient;
+        HttpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
     }
+
+    public HttpClient HttpClient { get; }
 
     public void SetBaseUrl(string serverUrl)
     {
@@ -23,14 +22,14 @@ public sealed class ApiClientContext
         var baseUrl = UrlHelper.NormalizeBaseUrl(serverUrl);
         var baseAddress = baseUrl.EndsWith('/') ? baseUrl : baseUrl + "/";
 
-        _httpClient.BaseAddress = new Uri(baseAddress);
+        HttpClient.BaseAddress = new Uri(baseAddress);
     }
 
-    public void SetAuthToken(string token)
+    public void SetAuthToken(string? token)
     {
         _authToken = string.IsNullOrWhiteSpace(token) ? null : token;
 
-        _httpClient.DefaultRequestHeaders.Authorization =
+        HttpClient.DefaultRequestHeaders.Authorization =
             string.IsNullOrEmpty(_authToken)
                 ? null
                 : new AuthenticationHeaderValue("Bearer", _authToken);

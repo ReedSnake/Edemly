@@ -16,12 +16,12 @@ namespace Edemly.Client.Application.Chats
         private readonly object _chatCacheLock = new();
 
         public ChatActivationService(
-            Func<IApiClients> _apiClientProvider,
+            Func<IApiClients> apiClientProvider,
             Func<ChatWorkspaceController?> chatControllerProvider,
             Func<int?> currentUserIdProvider,
             Func<MainWindow> ensureMainWindow)
         {
-            _apiClientProvider = _apiClientProvider ?? throw new ArgumentNullException(nameof(_apiClientProvider));
+            _apiClientProvider = apiClientProvider ?? throw new ArgumentNullException(nameof(apiClientProvider));
             _chatControllerProvider = chatControllerProvider ?? throw new ArgumentNullException(nameof(chatControllerProvider));
             _currentUserIdProvider = currentUserIdProvider ?? throw new ArgumentNullException(nameof(currentUserIdProvider));
             _ensureMainWindow = ensureMainWindow ?? throw new ArgumentNullException(nameof(ensureMainWindow));

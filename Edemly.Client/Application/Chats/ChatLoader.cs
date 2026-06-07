@@ -8,9 +8,9 @@ namespace Edemly.Client.Application.Chats
         private readonly ChatCache _cache;
         private readonly IApiClients _apiClient;
 
-        public ChatLoader(IApiClients _apiClient, ChatCache cache)
+        public ChatLoader(IApiClients apiClient, ChatCache cache)
         {
-            _apiClient = _apiClient ?? throw new ArgumentNullException(nameof(_apiClient));
+            _apiClient = apiClient ?? throw new ArgumentNullException(nameof(apiClient));
             _cache = cache ?? throw new ArgumentNullException(nameof(cache));
         }
 

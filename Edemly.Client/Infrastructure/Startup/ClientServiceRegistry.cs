@@ -157,23 +157,23 @@ public sealed class ClientServiceRegistry : IDisposable
         }
     }
     public void ClearMediaCaches()
+{
+    try
     {
-        try
-        {
-            ProfilePictureCache?.ClearAll();
-        }
-        catch (Exception ex)
-        {
-            Debug.WriteLine($"[SERVICE REGISTRY] ProfilePictureCache.ClearAll failed: {ex}");
-        }
-
-        try
-        {
-            FileCache?.ClearAll();
-        }
-        catch (Exception ex)
-        {
-            Debug.WriteLine($"[SERVICE REGISTRY] FileCache.ClearAll failed: {ex}");
-        }
+        ProfilePictureCache?.ClearAll();
     }
+    catch (Exception ex)
+    {
+        Debug.WriteLine($"[SERVICE REGISTRY] ProfilePictureCache.ClearAll failed: {ex}");
+    }
+
+    try
+    {
+        FileCache?.ClearAll();
+    }
+    catch (Exception ex)
+    {
+        Debug.WriteLine($"[SERVICE REGISTRY] FileCache.ClearAll failed: {ex}");
+    }
+}
 }

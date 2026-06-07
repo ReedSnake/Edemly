@@ -1,18 +1,18 @@
+using Edemly.Client.Api;
 using Edemly.Client.Api.Notes;
 namespace Edemly.Client.Application.Services
 {
     public class NotesService
     {
-        private readonly INoteApiClient _apiClient;
-        private readonly Dictionary<int, Dictionary<int, string>> _notesCache;
         private bool _isInitialized;
         private const int MAX_CONTACTS_WITH_NOTES = 5;
 
-        public NotesService(INoteApiClient _apiClient)
+        private readonly INoteApiClient _notesApiClient;
+        private readonly Dictionary<int, Dictionary<int, string>> _notesCache = new();
+
+        public NotesService(INoteApiClient notesApiClient)
         {
-            _apiClient = _apiClient;
-            _notesCache = new Dictionary<int, Dictionary<int, string>>();
-            _isInitialized = false;
+            _notesApiClient = notesApiClient ?? throw new ArgumentNullException(nameof(notesApiClient));
         }
 
         public async Task InitializeAsync()
@@ -41,7 +41,7 @@ namespace Edemly.Client.Application.Services
 
             try
             {
-                var note = await _apiClient.GetContactNoteAsync(userId);
+                var note = await _notesApiClient.GetContactNoteAsync(userId);
 
                 if (note != null && App.CurrentUserId.HasValue)
                 {
@@ -80,7 +80,7 @@ namespace Edemly.Client.Application.Services
 
                     if (!isCompany)
                     {
-                        var serverCount = await _apiClient.GetNotesCountAsync();
+                        var serverCount = await _notesApiClient.GetNotesCountAsync();
                         if (serverCount >= MAX_CONTACTS_WITH_NOTES)
                         {
                             return false;
@@ -88,7 +88,7 @@ namespace Edemly.Client.Application.Services
                     }
                 }
 
-                var success = await _apiClient.SaveContactNoteAsync(userId, noteText);
+                var success = await _notesApiClient.SaveContactNoteAsync(userId, noteText);
 
                 if (success)
                 {
@@ -108,7 +108,7 @@ namespace Edemly.Client.Application.Services
         {
             try
             {
-                var success = await _apiClient.DeleteContactNoteAsync(userId);
+                var success = await _notesApiClient.DeleteContactNoteAsync(userId);
                 if (success && App.CurrentUserId.HasValue)
                 {
                     var creatorId = App.CurrentUserId.Value;
@@ -135,10 +135,10 @@ namespace Edemly.Client.Application.Services
                 {
                     var creatorId = App.CurrentUserId.Value;
                     if (_notesCache.TryGetValue(creatorId, out var dict))
-                        return Math.Max(await _apiClient.GetNotesCountAsync(), dict.Count);
+                        return Math.Max(await _notesApiClient.GetNotesCountAsync(), dict.Count);
                 }
 
-                return await _apiClient.GetNotesCountAsync();
+                return await _notesApiClient.GetNotesCountAsync();
             }
             catch
             {

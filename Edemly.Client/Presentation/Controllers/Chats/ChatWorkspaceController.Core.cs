@@ -84,6 +84,7 @@ namespace Edemly.Client.Presentation.Controllers.Chats
 
             _hubService = App.HubService;
             _cache = App.GlobalChatCache;
+            _apiClient = App.ApiClients;
 
             _chatLoader = new ChatLoader(_apiClient, _cache);
             _messageRenderer = new MessageRenderer(_messagesPanel, CurrentUserId);

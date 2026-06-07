@@ -16,7 +16,7 @@ public sealed class ApiClients : IApiClients
         Users = new UserApiClient(context);
         Chats = new ChatApiClient(context);
         Calls = new CallApiClient(context);
-        Notes = new NoteApiClient(context, () => null);
+        Notes = new NoteApiClient(context);
         Files = new FileApiClient(context);
         Payments = new PaymentApiClient(context);
         Remindings = new RemindingApiClient(context);

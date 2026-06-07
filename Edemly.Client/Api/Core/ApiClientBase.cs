@@ -17,14 +17,16 @@ public abstract class ApiClientBase
     protected ApiClientBase(ApiClientContext context)
     {
         Context = context ?? throw new ArgumentNullException(nameof(context));
-        HttpClient = context.HttpClient;
+
+        HttpClient = context.HttpClient
+            ?? throw new InvalidOperationException("ApiClientContext.HttpClient is null.");
     }
 
     protected static async Task<T?> ReadJsonAsync<T>(HttpResponseMessage response)
     {
         try
         {
-            return await ReadJsonAsync<T>(response);
+            return await response.Content.ReadFromJsonAsync<T>(JsonOptions);
         }
         catch (Exception ex)
         {
@@ -44,7 +46,7 @@ public abstract class ApiClientBase
             if (!response.IsSuccessStatusCode)
                 return default;
 
-            return await response.Content.ReadFromJsonAsync<T>(JsonOptions);
+            return await ReadJsonAsync<T>(response);
         }
         catch (Exception ex)
         {

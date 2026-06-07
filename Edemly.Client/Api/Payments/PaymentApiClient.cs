@@ -115,25 +115,4 @@ public sealed class PaymentApiClient : ApiClientBase, IPaymentApiClient
             return (false, false, ex.Message);
         }
     }
-
-    private static T? Deserialize<T>(string json)
-    {
-        if (string.IsNullOrWhiteSpace(json))
-            return default;
-
-        try
-        {
-            return JsonSerializer.Deserialize<T>(
-                json,
-                new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true
-                });
-        }
-        catch (Exception ex)
-        {
-            System.Diagnostics.Debug.WriteLine($"[API] JSON parse failed: {ex.Message}");
-            return default;
-        }
-    }
 }

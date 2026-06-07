@@ -12,9 +12,9 @@ namespace Edemly.Client.Application.Attachments
         private readonly IApiClients _apiClient;
         private readonly IHubService _hubService;
 
-        public ChatAttachmentSender(IApiClients _apiClient, IHubService hubService)
+        public ChatAttachmentSender(IApiClients apiClient, IHubService hubService)
         {
-            _apiClient = _apiClient ?? throw new ArgumentNullException(nameof(_apiClient));
+            _apiClient = apiClient ?? throw new ArgumentNullException(nameof(apiClient));
             _hubService = hubService ?? throw new ArgumentNullException(nameof(hubService));
         }
 

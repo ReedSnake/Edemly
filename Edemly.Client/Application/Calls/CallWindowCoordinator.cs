@@ -13,12 +13,12 @@ namespace Edemly.Client.Application.Calls
 
         public CallWindowCoordinator(
             Func<IHubService> hubServiceProvider,
-            Func<IApiClients> _apiClientProvider,
+            Func<IApiClients> apiClientProvider,
             Func<string?> authTokenProvider,
             Func<Window?> mainWindowProvider)
         {
             _hubServiceProvider = hubServiceProvider ?? throw new ArgumentNullException(nameof(hubServiceProvider));
-            _apiClientProvider = _apiClientProvider ?? throw new ArgumentNullException(nameof(_apiClientProvider));
+            _apiClientProvider = apiClientProvider ?? throw new ArgumentNullException(nameof(apiClientProvider));
             _authTokenProvider = authTokenProvider ?? throw new ArgumentNullException(nameof(authTokenProvider));
             _mainWindowProvider = mainWindowProvider ?? throw new ArgumentNullException(nameof(mainWindowProvider));
         }
