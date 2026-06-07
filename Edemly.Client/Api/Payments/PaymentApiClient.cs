@@ -2,6 +2,7 @@
 using System.Net.Http;
 using System.Text.Json;
 using Edemly.Client.Api.Core;
+using Edemly.Contracts.Payments;
 
 namespace Edemly.Client.Api.Payments;
 
@@ -55,13 +56,9 @@ public sealed class PaymentApiClient : ApiClientBase, IPaymentApiClient
                 return new List<PaymentDto>();
             }
 
-            using var doc = JsonDocument.Parse(responseContent);
-
-            if (doc.RootElement.TryGetProperty("payments", out var paymentsElement))
-            {
-                var paymentsJson = paymentsElement.GetRawText();
-                return Deserialize<List<PaymentDto>>(paymentsJson) ?? new List<PaymentDto>();
-            }
+            var wrapped = Deserialize<PaymentHistoryResponseDto>(responseContent);
+            if (wrapped?.Payments != null)
+                return wrapped.Payments;
 
             return Deserialize<List<PaymentDto>>(responseContent) ?? new List<PaymentDto>();
         }
@@ -90,24 +87,8 @@ public sealed class PaymentApiClient : ApiClientBase, IPaymentApiClient
                 return (false, false, content);
             }
 
-            using var doc = JsonDocument.Parse(content);
-
-            if (doc.RootElement.TryGetProperty("isPaid", out var isPaidElement) &&
-                isPaidElement.ValueKind is JsonValueKind.True or JsonValueKind.False)
-            {
-                return (true, isPaidElement.GetBoolean(), null);
-            }
-
-            var wrapper = Deserialize<Dictionary<string, object>>(content);
-
-            if (wrapper != null &&
-                wrapper.TryGetValue("isPaid", out var value) &&
-                value is bool isPaid)
-            {
-                return (true, isPaid, null);
-            }
-
-            return (true, false, null);
+            var status = Deserialize<PaymentStatusResponseDto>(content);
+            return (true, status?.IsPaid ?? false, null);
         }
         catch (Exception ex)
         {
