@@ -1,6 +1,4 @@
-﻿using System.Net.Http;
-using System.Net.Http.Json;
-using Edemly.Client.Api.Core;
+﻿using Edemly.Client.Api.Core;
 
 namespace Edemly.Client.Api.Remindings;
 
@@ -10,23 +8,11 @@ public sealed class RemindingApiClient : ApiClientBase, IRemindingApiClient
     {
     }
 
-    public async Task<RemindingDto?> CreateRemindingAsync(CreateRemindingDto model)
+    public Task<RemindingDto?> CreateRemindingAsync(CreateRemindingDto model)
     {
-        try
-        {
-            System.Diagnostics.Debug.WriteLine("[OUTGOING JSON] " + System.Text.Json.JsonSerializer.Serialize(model));
-
-            var result = await PostAsync<CreateRemindingDto, RemindingDto>(
-                "api/reminding/create",
-                model);
-
-            return result;
-        }
-        catch (Exception ex)
-        {
-            System.Diagnostics.Debug.WriteLine($"[API] CreateRemindingAsync exception: {ex.Message}");
-            return null;
-        }
+        return PostAsync<CreateRemindingDto, RemindingDto>(
+            "api/reminding/create",
+            model);
     }
 
     public Task<List<RemindingDto>> GetMyRemindingsAsync()
@@ -36,49 +22,18 @@ public sealed class RemindingApiClient : ApiClientBase, IRemindingApiClient
 
     public async Task<bool> UpdateRemindingAsync(UpdateRemindingDto model)
     {
-        try
-        {
-            var url = UrlHelper.BuildRelativeUrl("api/reminding/update");
-            var response = await HttpClient.PutAsJsonAsync(url, model);
-
-            return response.IsSuccessStatusCode;
-        }
-        catch (Exception ex)
-        {
-            System.Diagnostics.Debug.WriteLine($"[API] UpdateRemindingAsync exception: {ex.Message}");
-            return false;
-        }
+        var result = await PutAsync("api/reminding/update", model);
+        return result.Success;
     }
 
     public async Task<bool> ToggleRemindingAsync(int id)
     {
-        try
-        {
-            var url = UrlHelper.BuildRelativeUrl($"api/reminding/toggle-completion/{id}");
-            var response = await HttpClient.PutAsync(url, null);
-
-            return response.IsSuccessStatusCode;
-        }
-        catch (Exception ex)
-        {
-            System.Diagnostics.Debug.WriteLine($"[API] ToggleRemindingAsync exception: {ex.Message}");
-            return false;
-        }
+        var result = await PutAsync<object?>($"api/reminding/toggle-completion/{id}", null);
+        return result.Success;
     }
 
-    public async Task<bool> DeleteRemindingAsync(int id)
+    public Task<bool> DeleteRemindingAsync(int id)
     {
-        try
-        {
-            var url = UrlHelper.BuildRelativeUrl($"api/reminding/delete/{id}");
-            var response = await HttpClient.DeleteAsync(url);
-
-            return response.IsSuccessStatusCode;
-        }
-        catch (Exception ex)
-        {
-            System.Diagnostics.Debug.WriteLine($"[API] DeleteRemindingAsync exception: {ex.Message}");
-            return false;
-        }
+        return DeleteAsync($"api/reminding/delete/{id}");
     }
 }
