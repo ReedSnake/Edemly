@@ -20,7 +20,7 @@ public sealed class FileApiClient : ApiClientBase, IFileApiClient
             await using var fileStream = File.OpenRead(filePath);
             using var streamContent = new StreamContent(fileStream);
 
-            streamContent.Headers.ContentType = new MediaTypeHeaderValue(GetImageContentType(filePath));
+            streamContent.Headers.ContentType = new MediaTypeHeaderValue(FileContentTypeResolver.GetImageContentType(filePath));
 
             form.Add(streamContent, "file", Path.GetFileName(filePath));
 
@@ -77,7 +77,7 @@ public sealed class FileApiClient : ApiClientBase, IFileApiClient
             await using var fileStream = File.OpenRead(filePath);
             using var streamContent = new StreamContent(fileStream);
 
-            streamContent.Headers.ContentType = new MediaTypeHeaderValue(GetImageContentType(filePath));
+            streamContent.Headers.ContentType = new MediaTypeHeaderValue(FileContentTypeResolver.GetImageContentType(filePath));
 
             content.Add(streamContent, "file", Path.GetFileName(filePath));
             content.Add(new StringContent(chatId.ToString()), "chatId");
@@ -115,7 +115,7 @@ public sealed class FileApiClient : ApiClientBase, IFileApiClient
 
             var fileName = Path.GetFileName(filePath);
 
-            streamContent.Headers.ContentType = new MediaTypeHeaderValue(GetFileContentType(filePath));
+            streamContent.Headers.ContentType = new MediaTypeHeaderValue(FileContentTypeResolver.GetFileContentType(filePath));
             content.Add(streamContent, "file", fileName);
 
             var url = UrlHelper.BuildRelativeUrl("api/file/upload");
@@ -139,30 +139,5 @@ public sealed class FileApiClient : ApiClientBase, IFileApiClient
             System.Diagnostics.Debug.WriteLine($"[API] UploadFileAsync failed: {ex.Message}");
             return (false, null, null, ex.Message);
         }
-    }
-
-    private static string GetImageContentType(string filePath)
-    {
-        return Path.GetExtension(filePath).ToLowerInvariant() switch
-        {
-            ".png" => "image/png",
-            ".gif" => "image/gif",
-            ".jpg" or ".jpeg" => "image/jpeg",
-            _ => "image/jpeg"
-        };
-    }
-
-    private static string GetFileContentType(string filePath)
-    {
-        return Path.GetExtension(filePath).ToLowerInvariant() switch
-        {
-            ".jpg" or ".jpeg" => "image/jpeg",
-            ".png" => "image/png",
-            ".gif" => "image/gif",
-            ".pdf" => "application/pdf",
-            ".doc" => "application/msword",
-            ".docx" => "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-            _ => "application/octet-stream"
-        };
     }
 }
