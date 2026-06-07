@@ -520,7 +520,8 @@
                                      Text="09:00"
                                      Style="{StaticResource TimeTextBoxStyle}"
                                      PreviewTextInput="TimeTextBox_PreviewTextInput"
-                                     PreviewKeyDown="TimeTextBox_PreviewKeyDown" />
+                                     PreviewKeyDown="TimeTextBox_PreviewKeyDown" 
+                                     Padding="0"/>
 
                             <TextBlock x:Name="AddTaskTimeFormatHint"
                                        Style="{StaticResource TimeHintTextStyle}">
