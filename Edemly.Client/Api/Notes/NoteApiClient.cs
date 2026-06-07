@@ -18,13 +18,13 @@ public sealed class NoteApiClient : ApiClientBase, INoteApiClient
 
     public async Task<bool> SaveContactNoteAsync(int userId, string noteText)
     {
-        var request = new
+        var request = new SaveContactNoteRequestDto
         {
             UserId = userId,
             NoteText = noteText
         };
 
-        var result = await PostAsync<object, object>("api/note/create", request);
+        var result = await PostAsync<SaveContactNoteRequestDto, object>("api/note/create", request);
         return result != null;
     }
 
@@ -35,12 +35,7 @@ public sealed class NoteApiClient : ApiClientBase, INoteApiClient
 
     public async Task<int> GetNotesCountAsync()
     {
-        var result = await GetAsync<NoteCountResponse>("api/note/count");
+        var result = await GetAsync<NoteCountResponseDto>("api/note/count");
         return result?.Count ?? 0;
-    }
-
-    private sealed class NoteCountResponse
-    {
-        public int Count { get; set; }
     }
 }
