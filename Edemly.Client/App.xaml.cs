@@ -1,5 +1,4 @@
 using CommunityToolkit.WinUI.Notifications;
-using Edemly.Client.Api;
 using Edemly.Client.Application.Calls;
 using Edemly.Client.Application.Chats;
 using Edemly.Client.Application.Services;
@@ -9,6 +8,7 @@ using Edemly.Client.Presentation.Controllers.Chats;
 using System.Diagnostics;
 using System.Windows;
 using Edemly.Client.Presentation.Windows;
+using Edemly.Client.Api;
 
 namespace Edemly.Client
 {
@@ -19,7 +19,7 @@ namespace Edemly.Client
         private static readonly ClientServiceRegistry _serviceRegistry = new(() => Task.FromResult(AuthToken));
         private static Edemly.Client.Presentation.Controls.ConnectionStatusBar? _statusBar;
         private static readonly ChatActivationService _chatActivationService = new(
-            () => _serviceRegistry.ApiService,
+            () => _serviceRegistry.ApiClients,
             () => GlobalChatController,
             () => CurrentUserId,
             EnsureMainWindowAvailable);
@@ -31,7 +31,7 @@ namespace Edemly.Client
             _chatActivationService.ClearCache);
         private static readonly CallWindowCoordinator _callWindowCoordinator = new(
             () => _serviceRegistry.HubService,
-            () => _serviceRegistry.ApiService,
+            () => _serviceRegistry.ApiClients,
             () => AuthToken,
             () => Current?.MainWindow);
         private static readonly AppRealtimeCoordinator _realtimeCoordinator = new(
@@ -49,7 +49,7 @@ namespace Edemly.Client
             DisposeGlobalChatController,
             _chatActivationService.ClearCache);
 
-        public static IApiService ApiService => _serviceRegistry.ApiService;
+        public static IApiClients ApiClients => _serviceRegistry.ApiClients;
         public static IAuthService AuthService => _serviceRegistry.AuthService;
         public static IHubService HubService => _serviceRegistry.HubService;
         public static NotesService? NotesService => _serviceRegistry.NotesService;

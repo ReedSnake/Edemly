@@ -1,15 +1,13 @@
 #nullable enable
 
-using Edemly.Client.Api;
 using Edemly.Client.Application.Chats;
 using Edemly.Client.Application.Users.Profile;
-using Edemly.Client.Infrastructure.Caching;
 using Edemly.Client.Models;
-using Edemly.Client.Infrastructure.Realtime;
 using Edemly.Client.Presentation.Rendering.Chats;
 using Edemly.Client.Presentation.Rendering.Messages;
 using System.Windows;
 using System.Windows.Controls;
+using Edemly.Client.Api;
 namespace Edemly.Client.Presentation.Controllers.Chats
 {
     public partial class ChatWorkspaceController : IDisposable
@@ -37,7 +35,7 @@ namespace Edemly.Client.Presentation.Controllers.Chats
         private HashSet<int> _noMoreOlderMessages => _runtimeState.NoMoreOlderMessages;
 
         private readonly IHubService _hubService;
-        private readonly IApiService _apiService;
+        private readonly IApiClients _apiClient;
 
         private readonly ChatLoader _chatLoader;
         private readonly MessageRenderer _messageRenderer;
@@ -85,14 +83,13 @@ namespace Edemly.Client.Presentation.Controllers.Chats
             _updateChatHeaderCallback = uiBindings.UpdateChatHeaderCallback;
 
             _hubService = App.HubService;
-            _apiService = App.ApiService;
             _cache = App.GlobalChatCache;
 
-            _chatLoader = new ChatLoader(_apiService, _cache);
+            _chatLoader = new ChatLoader(_apiClient, _cache);
             _messageRenderer = new MessageRenderer(_messagesPanel, CurrentUserId);
             _chatListItemBuilder = new ChatListItemBuilder();
             _chatListItemStateFactory = new ChatListItemStateFactory(_runtimeState, CurrentUserId);
-            _searchHandler = new UserSearchHandler(_apiService, CurrentUserId);
+            _searchHandler = new UserSearchHandler(_apiClient, CurrentUserId);
 
             _hubService.MessageReceived += OnMessageReceived;
             _hubService.MessageUpdated += OnMessageUpdated;
@@ -138,7 +135,7 @@ namespace Edemly.Client.Presentation.Controllers.Chats
         {
             try
             {
-                var chats = await _apiService.GetMyChatsAsync();
+                var chats = await _apiClient.Chats.GetMyChatsAsync();
 
                 if (chats == null || chats.Count == 0)
                 {
@@ -597,7 +594,7 @@ namespace Edemly.Client.Presentation.Controllers.Chats
                     _contacts[user.Id] = contact;
                 }
 
-                var chat = await _apiService.CreateOrGetPrivateChatAsync(user.Id);
+                var chat = await _apiClient.Chats.CreateOrGetPrivateChatAsync(user.Id);
 
                 if (chat == null)
                 {
@@ -776,7 +773,7 @@ namespace Edemly.Client.Presentation.Controllers.Chats
 
             try
             {
-                var user = await _apiService.GetUserByIdAsync(userId);
+                var user = await _apiClient.Users.GetUserByIdAsync(userId);
                 if (user != null)
                 {
                     _userNamesCache[userId] = user.Username;

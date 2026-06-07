@@ -1,8 +1,7 @@
 #nullable enable
 
-using Edemly.Client.Api;
-using Edemly.Client.Infrastructure.Realtime;
 using System.IO;
+using Edemly.Client.Api;
 
 namespace Edemly.Client.Application.Attachments
 {
@@ -10,12 +9,12 @@ namespace Edemly.Client.Application.Attachments
     {
         private const long MaxFileSizeBytes = 50 * 1024 * 1024;
 
-        private readonly IApiService _apiService;
+        private readonly IApiClients _apiClient;
         private readonly IHubService _hubService;
 
-        public ChatAttachmentSender(IApiService apiService, IHubService hubService)
+        public ChatAttachmentSender(IApiClients _apiClient, IHubService hubService)
         {
-            _apiService = apiService ?? throw new ArgumentNullException(nameof(apiService));
+            _apiClient = _apiClient ?? throw new ArgumentNullException(nameof(_apiClient));
             _hubService = hubService ?? throw new ArgumentNullException(nameof(hubService));
         }
 
@@ -38,7 +37,7 @@ namespace Edemly.Client.Application.Attachments
                     return AttachmentSendResult.Fail(DefaultLanguage.AttachmentTooLarge);
                 }
 
-                var uploadResult = await _apiService.UploadFileAsync(descriptor.FilePath);
+                var uploadResult = await _apiClient.Files.UploadFileAsync(descriptor.FilePath);
                 if (!uploadResult.Success || string.IsNullOrWhiteSpace(uploadResult.Url))
                 {
                     return AttachmentSendResult.Fail(string.Format(DefaultLanguage.UploadFailed, uploadResult.Error));

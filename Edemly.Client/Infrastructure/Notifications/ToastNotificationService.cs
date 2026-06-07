@@ -7,7 +7,7 @@ namespace Edemly.Client.Infrastructure.Notifications
         {
             try
             {
-                var sender = await App.ApiService.GetUserByIdAsync(content.SenderId);
+                var sender = await App.ApiClients.Users.GetUserByIdAsync(content.SenderId);
 
                 string senderName = sender?.Username ?? "Невідомий";
                 string messageText = content.Text;

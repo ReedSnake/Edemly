@@ -28,13 +28,13 @@ namespace Edemly.Client.Presentation.Pages.Payments
         {
             try
             {
-                if (App.ApiService is not ApiService apiService)
+                if (App.ApiClients is not ApiClients _apiClient)
                 {
                     MessageBox.ShowError(DefaultLanguage.PremiumApiError, DefaultLanguage.PremiumPaymentError);
                     return;
                 }
 
-                var response = await apiService.InitiatePaymentAsync(amount);
+                var response = await _apiClient.Payments.InitiatePaymentAsync(amount);
                 if (!response.Success || string.IsNullOrEmpty(response.Html))
                 {
                     MessageBox.ShowError(response.Error ?? DefaultLanguage.PremiumPaymentFailed, DefaultLanguage.PremiumPaymentError);

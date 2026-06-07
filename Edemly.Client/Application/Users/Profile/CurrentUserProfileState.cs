@@ -1,3 +1,4 @@
+using Edemly.Client.Api.Users;
 namespace Edemly.Client.Application.Users.Profile
 {
     internal static class CurrentUserProfileState
@@ -43,11 +44,11 @@ namespace Edemly.Client.Application.Users.Profile
             LastName = snapshot.LastName;
         }
 
-        public static async Task<bool> LoadFromServerAsync(Edemly.Client.Api.IApiService apiService)
+        public static async Task<bool> LoadFromServerAsync(IUserApiClient _apiClient)
         {
             try
             {
-                var userInfo = await apiService.GetUserInfoAsync();
+                var userInfo = await _apiClient.GetUserInfoAsync();
 
                 if (userInfo != null && userInfo.Id > 0)
                 {

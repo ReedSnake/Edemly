@@ -31,7 +31,7 @@ namespace Edemly.Client.Presentation.Controllers.Chats
 
                 if (!_chatToUserMap.ContainsKey(message.ChatId))
                 {
-                    var chats = await _apiService.GetMyChatsAsync();
+                    var chats = await _apiClient.Chats.GetMyChatsAsync();
                     var chat = chats.FirstOrDefault(c => c.Id == message.ChatId);
 
                     if (chat != null)

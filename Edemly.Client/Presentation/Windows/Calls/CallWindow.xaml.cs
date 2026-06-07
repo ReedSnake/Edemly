@@ -214,8 +214,8 @@ public partial class CallWindow : ThemedWindow
             CallsListPanel.Children.Clear();
             try
             {
-                var api = App.ApiService;
-                var calls = await api.GetActiveCallsAsync();
+                var api = App.ApiClients;
+                var calls = await api.Calls.GetActiveCallsAsync();
                 if (calls == null || calls.Count == 0)
                 {
                     var noCallsText = new TextBlock { Text = DefaultLanguage.NoActiveCall, Margin = new Thickness(6) };
@@ -284,7 +284,7 @@ public partial class CallWindow : ThemedWindow
                     {
                         try
                         {
-                            var user = await App.ApiService.GetUserByIdAsync(c.InitiatorId);
+                            var user = await App.ApiClients.Users.GetUserByIdAsync(c.InitiatorId);
                             if (user == null) return;
 
                             await System.Windows.Application.Current.Dispatcher.InvokeAsync(async () =>
@@ -351,7 +351,7 @@ public partial class CallWindow : ThemedWindow
 
             try
             {
-                var members = await App.ApiService.GetChatMembersAsync(chatId);
+                var members = await App.ApiClients.Chats.GetChatMembersAsync(chatId);
                 var me = App.CurrentUserId ?? 0;
                 var peer = members?.FirstOrDefault(m => m.UserId != me);
                 if (peer != null) _peerUserId = peer.UserId;
@@ -673,7 +673,7 @@ public partial class CallWindow : ThemedWindow
         {
             try
             {
-                var user = await App.ApiService.GetUserByIdAsync(initiatorId);
+                var user = await App.ApiClients.Users.GetUserByIdAsync(initiatorId);
                 if (user == null) return;
 
                 var avatar = !string.IsNullOrEmpty(user.PfpUrl)

@@ -55,7 +55,7 @@ namespace Edemly.Client.Presentation.Pages.Main
             _attachmentWorkflowCoordinator = new AttachmentWorkflowCoordinator(
                 new AttachmentDescriptorFactory(),
                 new AttachmentPreviewDialogService(),
-                new ChatAttachmentSender(App.ApiService, App.HubService));
+                new ChatAttachmentSender(App.ApiClients, App.HubService));
         }
 
         private void InitializeStaticUi()

@@ -1,7 +1,6 @@
 #nullable disable
 
 using Edemly.Client.Api;
-using Edemly.Client.Application.Localization;
 using Edemly.Client.Models;
 using Edemly.Client.Presentation.Common;
 using Edemly.Client.Presentation.Pages.Main.Helpers;
@@ -14,7 +13,7 @@ namespace Edemly.Client.Presentation.Pages.Main
     {
         private readonly Contact _groupContact;
         private readonly int _chatId;
-        private readonly IApiService _apiService;
+        private readonly IApiClients _apiClient;
         private List<ChatMemberDto> _groupMembers = new();
 
         private bool _isOwner;
@@ -31,7 +30,7 @@ namespace Edemly.Client.Presentation.Pages.Main
 
             _groupContact = groupContact;
             _chatId = chatId;
-            _apiService = App.ApiService;
+            _apiClient = App.ApiClients;
 
             BackButton.Content = PageNavigationGlyphs.Back;
 
@@ -107,7 +106,7 @@ namespace Edemly.Client.Presentation.Pages.Main
         {
             try
             {
-                var chatData = await _apiService.GetChatByIdAsync(_chatId);
+                var chatData = await _apiClient.Chats.GetChatByIdAsync(_chatId);
                 if (chatData == null)
                 {
                     return;

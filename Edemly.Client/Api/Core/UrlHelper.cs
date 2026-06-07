@@ -1,4 +1,4 @@
-namespace Edemly.Client.Api;
+﻿namespace Edemly.Client.Api.Core;
 
 public static class UrlHelper
 {

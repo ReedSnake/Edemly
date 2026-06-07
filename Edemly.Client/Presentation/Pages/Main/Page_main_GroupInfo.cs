@@ -47,7 +47,7 @@ namespace Edemly.Client.Presentation.Pages.Main
         {
             try
             {
-                var chat = await App.ApiService.GetChatByIdAsync(_chatController.CurrentChatId);
+                var chat = await App.ApiClients.Chats.GetChatByIdAsync(_chatController.CurrentChatId);
                 var description = chat?.Description?.Trim() ?? string.Empty;
 
                 GroupInfoDescriptionText.Text = description;
@@ -79,7 +79,7 @@ namespace Edemly.Client.Presentation.Pages.Main
 
             try
             {
-                var members = await App.ApiService.GetChatMembersAsync(_chatController.CurrentChatId) ?? new List<ChatMemberDto>();
+                var members = await App.ApiClients.Chats.GetChatMembersAsync(_chatController.CurrentChatId) ?? new List<ChatMemberDto>();
 
                 if (members.Count == 0)
                 {
@@ -109,7 +109,7 @@ namespace Edemly.Client.Presentation.Pages.Main
         {
             try
             {
-                return await App.ApiService.GetUserByIdAsync(userId);
+                return await App.ApiClients.Users.GetUserByIdAsync(userId);
             }
             catch (Exception ex)
             {
@@ -247,7 +247,7 @@ namespace Edemly.Client.Presentation.Pages.Main
                 CloseGroupInfo();
 
                 var contact = CreateDirectContactFromUser(userId, user);
-                var chatResult = await App.ApiService.CreateOrGetPrivateChatAsync(userId);
+                var chatResult = await App.ApiClients.Chats.CreateOrGetPrivateChatAsync(userId);
                 if (chatResult == null)
                 {
                     MessageBox.ShowError(DefaultLanguage.Error, DefaultLanguage.ErrorTitle);

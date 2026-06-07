@@ -17,7 +17,7 @@ namespace Edemly.Client.Presentation.Pages.Settings
 
             try
             {
-                var userInfo = await _apiService.GetUserInfoAsync();
+                var userInfo = await _apiClient.Users.GetUserInfoAsync();
                 if (userInfo == null)
                 {
                     return;
@@ -62,7 +62,7 @@ namespace Edemly.Client.Presentation.Pages.Settings
                     return;
                 }
 
-                var (success, error) = await _apiService.UpdateUserInfoAsync(request);
+                var (success, error) = await _apiClient.Users.UpdateUserInfoAsync(request);
                 if (!success)
                 {
                     MessageBox.ShowError(error ?? DefaultLanguage.FailedSaveUserSettings, DefaultLanguage.ErrorTitle);

@@ -200,8 +200,8 @@ SignalR:
 Client tests:
 
 - Add `Edemly.Client.Tests` reference/setup for client API tests.
-- `ApiService` URL building for personal and tenant modes.
-- `ApiService` bearer token application.
-- `ApiService` DTO parsing and failed response fallbacks.
+- `_apiClient` URL building for personal and tenant modes.
+- `_apiClient` bearer token application.
+- `_apiClient` DTO parsing and failed response fallbacks.
 - Cache key generation and cache invalidation.
 - Language/config services where they do file or JSON handling.

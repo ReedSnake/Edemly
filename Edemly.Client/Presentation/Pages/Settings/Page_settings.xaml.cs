@@ -1,24 +1,22 @@
 #nullable enable
 
 using Edemly.Client.Api;
-using Edemly.Client.Application.Users.Profile;
 using Edemly.Client.Application.Services;
 using Edemly.Client.Presentation.Common;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Media;
-
+using Edemly.Client.Api.Users;  
 namespace Edemly.Client.Presentation.Pages.Settings
 {
     public partial class Page_settings : ThemedPage
     {
-        private readonly IApiService _apiService;
+        private readonly IApiClients _apiClient;
         private readonly SettingsProfileEditorState _profileState = new();
 
         public Page_settings()
         {
             InitializeComponent();
-            _apiService = App.ApiService;
+            _apiClient = App.ApiClients;
             BackButton.Content = PageNavigationGlyphs.Back;
             Unloaded += Page_settings_Unloaded;
 

@@ -1,21 +1,20 @@
 #nullable disable
 
-using Edemly.Client.Api;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-
+using Edemly.Client.Api;
 namespace Edemly.Client.Presentation.Rendering.Chats
 {
     public class UserSearchHandler
     {
-        private readonly IApiService _apiService;
+        private readonly IApiClients _apiClient;
         private readonly ChatListItemBuilder _uiBuilder;
         private readonly int _currentUserId;
 
-        public UserSearchHandler(IApiService apiService, int currentUserId)
+        public UserSearchHandler(IApiClients _apiClient, int currentUserId)
         {
-            _apiService = apiService ?? throw new ArgumentNullException(nameof(apiService));
+            _apiClient = _apiClient ?? throw new ArgumentNullException(nameof(_apiClient));
             _currentUserId = currentUserId;
             _uiBuilder = new ChatListItemBuilder();
         }
@@ -49,7 +48,7 @@ namespace Edemly.Client.Presentation.Rendering.Chats
                     borderContainer.Visibility = Visibility.Visible;
                 }
 
-                var users = await _apiService.SearchUsersAsync(searchText);
+                var users = await _apiClient.Users.SearchUsersAsync(searchText);
 
                 if (users.Count == 0)
                 {

@@ -1,7 +1,4 @@
 using Edemly.Client.Api;
-using Edemly.Client.Infrastructure.Realtime;
-using Edemly.Client.Presentation.Windows.Calls;
-using Edemly.Contracts.Realtime;
 using System.Diagnostics;
 using System.Windows;
 
@@ -10,18 +7,18 @@ namespace Edemly.Client.Application.Calls
     public sealed class CallWindowCoordinator
     {
         private readonly Func<IHubService> _hubServiceProvider;
-        private readonly Func<IApiService> _apiServiceProvider;
+        private readonly Func<IApiClients> _apiClientProvider;
         private readonly Func<string?> _authTokenProvider;
         private readonly Func<Window?> _mainWindowProvider;
 
         public CallWindowCoordinator(
             Func<IHubService> hubServiceProvider,
-            Func<IApiService> apiServiceProvider,
+            Func<IApiClients> _apiClientProvider,
             Func<string?> authTokenProvider,
             Func<Window?> mainWindowProvider)
         {
             _hubServiceProvider = hubServiceProvider ?? throw new ArgumentNullException(nameof(hubServiceProvider));
-            _apiServiceProvider = apiServiceProvider ?? throw new ArgumentNullException(nameof(apiServiceProvider));
+            _apiClientProvider = _apiClientProvider ?? throw new ArgumentNullException(nameof(_apiClientProvider));
             _authTokenProvider = authTokenProvider ?? throw new ArgumentNullException(nameof(authTokenProvider));
             _mainWindowProvider = mainWindowProvider ?? throw new ArgumentNullException(nameof(mainWindowProvider));
         }
@@ -45,7 +42,7 @@ namespace Edemly.Client.Application.Calls
                     }
                 }
 
-                var calls = await _apiServiceProvider().GetActiveCallsAsync();
+                var calls = await _apiClientProvider().Calls.GetActiveCallsAsync();
                 if (calls == null || calls.Count == 0)
                 {
                     return;

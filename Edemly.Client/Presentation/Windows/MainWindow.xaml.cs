@@ -237,7 +237,7 @@ namespace Edemly.Client.Presentation.Windows
                 UserInfoDto? info = null;
                 try
                 {
-                    info = await App.ApiService.GetUserInfoAsync();
+                    info = await App.ApiClients.Users.GetUserInfoAsync();
                 }
                 catch (Exception ex)
                 {

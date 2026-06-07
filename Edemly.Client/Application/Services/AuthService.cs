@@ -258,7 +258,6 @@ namespace Edemly.Client.Application.Services
                 _configService.SetValue<string?>("Username", null);
                 _configService.SetValue<string?>("Email", null);
 
-                try { App.ApiService?.SetAuthToken(string.Empty); } catch (Exception ex) { Debug.WriteLine($"[AUTH SERVICE] Failed to clear ApiService token: {ex.Message}"); }
                 try { App.GlobalProfilePictureCache?.SetAuthToken(null); } catch (Exception ex) { Debug.WriteLine($"[AUTH SERVICE] Failed to clear ProfilePictureCache token: {ex.Message}"); }
                 try { App.GlobalFileCache?.SetAuthToken(null); } catch (Exception ex) { Debug.WriteLine($"[AUTH SERVICE] Failed to clear FileCache token: {ex.Message}"); }
             }

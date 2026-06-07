@@ -21,7 +21,7 @@ namespace Edemly.Client.Presentation.Controllers.Chats
                         return;
                     }
 
-                    var chats = await _apiService.GetMyChatsAsync();
+                    var chats = await _apiClient.Chats.GetMyChatsAsync();
                     var newChat = chats.FirstOrDefault(c => c.Id == chatId);
 
                     if (newChat != null)
@@ -130,7 +130,7 @@ namespace Edemly.Client.Presentation.Controllers.Chats
                         {
                             try
                             {
-                                var user = await _apiService.GetUserByIdAsync(userId);
+                                var user = await _apiClient.Users.GetUserByIdAsync(userId);
                                 if (user != null)
                                 {
                                     contact = Models.Contact.FromUserDto(user);

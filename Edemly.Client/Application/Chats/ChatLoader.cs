@@ -1,18 +1,16 @@
 #nullable enable
 
 using Edemly.Client.Api;
-using Edemly.Client.Infrastructure.Caching;
-
 namespace Edemly.Client.Application.Chats
 {
     public class ChatLoader
     {
         private readonly ChatCache _cache;
-        private readonly IApiService _apiService;
+        private readonly IApiClients _apiClient;
 
-        public ChatLoader(IApiService apiService, ChatCache cache)
+        public ChatLoader(IApiClients _apiClient, ChatCache cache)
         {
-            _apiService = apiService ?? throw new ArgumentNullException(nameof(apiService));
+            _apiClient = _apiClient ?? throw new ArgumentNullException(nameof(_apiClient));
             _cache = cache ?? throw new ArgumentNullException(nameof(cache));
         }
 
@@ -23,7 +21,7 @@ namespace Edemly.Client.Application.Chats
                 return cachedUser;
             }
 
-            var user = await _apiService.GetUserByIdAsync(userId);
+            var user = await _apiClient.Users.GetUserByIdAsync(userId);
             if (user != null)
             {
                 _cache.AddUser(userId, user);
@@ -41,7 +39,7 @@ namespace Edemly.Client.Application.Chats
                     return cachedMessages;
                 }
 
-                var messages = await _apiService.GetChatMessagesAsync(chatId, page, pageSize);
+                var messages = await _apiClient.Chats.GetChatMessagesAsync(chatId, page, pageSize);
 
                 if (messages.Count > 0)
                 {
@@ -69,7 +67,7 @@ namespace Edemly.Client.Application.Chats
             {
                 if (chat.Type == 0)
                 {
-                    var members = await _apiService.GetChatMembersAsync(chat.Id);
+                    var members = await _apiClient.Chats.GetChatMembersAsync(chat.Id);
 
                     if (members.Count > 0)
                     {
@@ -124,7 +122,7 @@ namespace Edemly.Client.Application.Chats
             {
                 try
                 {
-                    var members = await _apiService.GetChatMembersAsync(chatId);
+                    var members = await _apiClient.Chats.GetChatMembersAsync(chatId);
                     return (chatId, members);
                 }
                 catch (Exception)
@@ -181,7 +179,7 @@ namespace Edemly.Client.Application.Chats
             {
                 try
                 {
-                    var user = await _apiService.GetUserByIdAsync(userId);
+                    var user = await _apiClient.Users.GetUserByIdAsync(userId);
                     return (userId, user);
                 }
                 catch (Exception)

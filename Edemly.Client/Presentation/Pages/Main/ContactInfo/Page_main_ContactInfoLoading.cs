@@ -58,7 +58,7 @@ namespace Edemly.Client.Presentation.Pages.Main
                     return;
                 }
 
-                var user = await App.ApiService.GetUserByIdAsync(contact.UserId);
+                var user = await App.ApiClients.Users.GetUserByIdAsync(contact.UserId);
                 contact.ApplyUserProfile(user);
             }
             catch (Exception ex)

@@ -117,7 +117,7 @@ namespace Edemly.Client.Presentation.Pages.Main
 
                 System.Diagnostics.Debug.WriteLine($"[GROUP] Sending to API: {string.Join(", ", participantsList)}");
 
-                var groupChat = await App.ApiService.CreateGroupChatAsync(groupName, participantsList);
+                var groupChat = await App.ApiClients.Chats.CreateGroupChatAsync(groupName, participantsList);
 
                 if (groupChat == null)
                 {
@@ -214,14 +214,14 @@ namespace Edemly.Client.Presentation.Pages.Main
 
             try
             {
-                if (App.ApiService == null)
+                if (App.ApiClients == null)
                 {
-                    System.Diagnostics.Debug.WriteLine("[GROUP] ApiService is not initialized yet");
+                    System.Diagnostics.Debug.WriteLine("[GROUP] _apiClient is not initialized yet");
                     return;
                 }
 
                 System.Diagnostics.Debug.WriteLine($"[GROUP] Searching for users: {searchText}");
-                var users = await App.ApiService.SearchUsersAsync(searchText);
+                var users = await App.ApiClients.Users.SearchUsersAsync(searchText);
                 System.Diagnostics.Debug.WriteLine($"[GROUP] Found {users.Count} users");
 
                 ParticipantsPanel.Children.Clear();
@@ -478,7 +478,7 @@ namespace Edemly.Client.Presentation.Pages.Main
                 SendButton.IsEnabled = false;
                 SendButton.Content = PageMainGlyphs.Loading;
 
-                var uploadResult = await App.ApiService.UploadFileAsync(audioPath);
+                var uploadResult = await App.ApiClients.Files.UploadFileAsync(audioPath);
 
                 if (!uploadResult.Success)
                 {

@@ -1,13 +1,14 @@
-using Edemly.Client.Api;
 using Edemly.Client.Presentation.Controllers.Chats;
 using System.Diagnostics;
 using System.Windows;
 using Edemly.Client.Presentation.Windows;
+using Edemly.Client.Api;
+
 namespace Edemly.Client.Application.Chats
 {
     public sealed class ChatActivationService
     {
-        private readonly Func<IApiService> _apiServiceProvider;
+        private readonly Func<IApiClients> _apiClientProvider;
         private readonly Func<ChatWorkspaceController?> _chatControllerProvider;
         private readonly Func<int?> _currentUserIdProvider;
         private readonly Func<MainWindow> _ensureMainWindow;
@@ -15,12 +16,12 @@ namespace Edemly.Client.Application.Chats
         private readonly object _chatCacheLock = new();
 
         public ChatActivationService(
-            Func<IApiService> apiServiceProvider,
+            Func<IApiClients> _apiClientProvider,
             Func<ChatWorkspaceController?> chatControllerProvider,
             Func<int?> currentUserIdProvider,
             Func<MainWindow> ensureMainWindow)
         {
-            _apiServiceProvider = apiServiceProvider ?? throw new ArgumentNullException(nameof(apiServiceProvider));
+            _apiClientProvider = _apiClientProvider ?? throw new ArgumentNullException(nameof(_apiClientProvider));
             _chatControllerProvider = chatControllerProvider ?? throw new ArgumentNullException(nameof(chatControllerProvider));
             _currentUserIdProvider = currentUserIdProvider ?? throw new ArgumentNullException(nameof(currentUserIdProvider));
             _ensureMainWindow = ensureMainWindow ?? throw new ArgumentNullException(nameof(ensureMainWindow));
@@ -98,9 +99,9 @@ namespace Edemly.Client.Application.Chats
                 }
             }
 
-            var apiService = _apiServiceProvider();
-            var chatsTask = apiService.GetMyChatsAsync();
-            var membersTask = apiService.GetChatMembersAsync(chatId);
+            var _apiClient = _apiClientProvider();
+            var chatsTask = _apiClient.Chats.GetMyChatsAsync();
+            var membersTask = _apiClient.Chats.GetChatMembersAsync(chatId);
 
             await Task.WhenAll(chatsTask, membersTask);
 
@@ -130,7 +131,7 @@ namespace Edemly.Client.Application.Chats
                     return null;
                 }
 
-                var user = await _apiServiceProvider().GetUserByIdAsync(otherMember.UserId);
+                var user = await _apiClientProvider().Users.GetUserByIdAsync(otherMember.UserId);
                 if (user == null)
                 {
                     return null;

@@ -42,12 +42,12 @@ namespace Edemly.Client.Application.Session
         {
             try
             {
-                if (_serviceRegistry.ApiService == null || !_session.UserId.HasValue)
+                if (_serviceRegistry.ApiClients == null || !_session.UserId.HasValue)
                 {
                     return;
                 }
 
-                var userInfo = await _serviceRegistry.ApiService.GetUserInfoAsync();
+                var userInfo = await _serviceRegistry.ApiClients.Users.GetUserInfoAsync();
                 if (userInfo == null || userInfo.Id <= 0)
                 {
                     return;

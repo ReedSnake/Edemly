@@ -199,7 +199,7 @@ namespace Edemly.Client.Presentation.Pages.Calendar
 
                 try
                 {
-                    var createdReminding = await _apiService.CreateRemindingAsync(newTask);
+                    var createdReminding = await _apiClient.CreateRemindingAsync(newTask);
                     if (createdReminding != null)
                     {
                         System.Diagnostics.Debug.WriteLine($"[TASK] Reminding created with ID {createdReminding.Id}");
@@ -298,7 +298,7 @@ namespace Edemly.Client.Presentation.Pages.Calendar
                 IsCompleted = originalTask.IsCompleted
             };
 
-            await _apiService.UpdateRemindingAsync(model);
+            await _apiClient.UpdateRemindingAsync(model);
 
             await UpdateCalendarAsync();
             UpdateTasksList(_selectedDateForTask);

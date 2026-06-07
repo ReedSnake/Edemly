@@ -131,7 +131,7 @@ namespace Edemly.Client.Presentation.Pages.Main
                 HeaderSaveButton.IsEnabled = false;
 
                 var finalIconUrl = await TryUploadPendingIconAsync(_originalIconUrl);
-                var result = await _apiService.UpdateChatAsync(_chatId, name: newName, description: newDescription);
+                var result = await _apiClient.Chats.UpdateChatAsync(_chatId, name: newName, description: newDescription);
 
                 if (!result.Success)
                 {
@@ -169,7 +169,7 @@ namespace Edemly.Client.Presentation.Pages.Main
 
             try
             {
-                var uploadResult = await _apiService.UploadGroupIconAsync(_chatId, _pendingIconPath);
+                var uploadResult = await _apiClient.Files.UploadGroupIconAsync(_chatId, _pendingIconPath);
                 if (!uploadResult.Success || string.IsNullOrWhiteSpace(uploadResult.Url))
                 {
                     MessageBox.Show(string.Format(DefaultLanguage.IconUploadFailed, uploadResult.Error),

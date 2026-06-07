@@ -6,7 +6,7 @@ using Microsoft.Win32;
 using System.IO;
 using System.Windows;
 using System.Windows.Input;
-
+using Edemly.Client.Api;
 namespace Edemly.Client.Presentation.Pages.Settings
 {
     public partial class Page_settings
@@ -53,7 +53,7 @@ namespace Edemly.Client.Presentation.Pages.Settings
                 ChangePhotoButton.IsEnabled = false;
                 ChangePhotoButton.Content = DefaultLanguage.Uploading;
 
-                var upload = await _apiService.UploadProfilePictureAsync(dialog.FileName);
+                var upload = await _apiClient.Files.UploadProfilePictureAsync(dialog.FileName);
                 if (!upload.Success || string.IsNullOrWhiteSpace(upload.Url))
                 {
                     MessageBox.ShowError(string.Format(DefaultLanguage.PhotoUploadFailed, upload.Error), DefaultLanguage.ErrorTitle);
@@ -62,7 +62,7 @@ namespace Edemly.Client.Presentation.Pages.Settings
 
                 var request = CreateProfileUpdateRequest(upload.Url);
                 var previousAvatarPath = _profileState.OriginalProfile.PfpUrl;
-                var (success, error) = await _apiService.UpdateUserInfoAsync(request);
+                var (success, error) = await _apiClient.Users.UpdateUserInfoAsync(request);
 
                 _profileState.SetCurrentAvatar(upload.Url);
                 App.CurrentUserPhotoUrl = upload.Url;

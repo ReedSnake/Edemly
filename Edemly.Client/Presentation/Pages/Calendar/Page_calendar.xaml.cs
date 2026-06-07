@@ -1,18 +1,15 @@
 #nullable disable
 
-using Edemly.Client.Api;
-using Edemly.Client.Application.Localization;
-using Edemly.Client.Application.Services;
 using Edemly.Client.Presentation.Common;
 using Edemly.Client.Presentation.Pages.Calendar.Helpers;
-using Edemly.Contracts.Remindings;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
+using Edemly.Client.Api;
 using System.Windows.Controls.Primitives;
 using System.Windows.Media;
 using System.Windows.Shapes;
-
+using Edemly.Client.Api.Remindings;
 namespace Edemly.Client.Presentation.Pages.Calendar
 {
     public partial class Page_calendar : ThemedPage
@@ -23,7 +20,7 @@ namespace Edemly.Client.Presentation.Pages.Calendar
         private List<RemindingDto> _tasks = new List<RemindingDto>();
         private DateTime _selectedDateForTask;
         private string _currentFilter = string.Empty;
-        private readonly IApiService _apiService;
+        private readonly IRemindingApiClient _apiClient;
 
         public Page_calendar()
         {
@@ -43,7 +40,7 @@ namespace Edemly.Client.Presentation.Pages.Calendar
 
             _currentDate = DateTime.Today;
             _selectedDateForTask = DateTime.Today;
-            _apiService = App.ApiService;
+            _apiClient = App.ApiClients.Remindings;
 
             ApplyLocalization();
 
@@ -104,7 +101,7 @@ namespace Edemly.Client.Presentation.Pages.Calendar
 
             try
             {
-                _tasks = await _apiService.GetMyRemindingsAsync();
+                _tasks = await _apiClient.GetMyRemindingsAsync();
             }
             catch (Exception ex)
             {
@@ -351,7 +348,7 @@ namespace Edemly.Client.Presentation.Pages.Calendar
             if (res == MessageBoxResult.Yes)
             {
                 _tasks.Remove(task);
-                await _apiService.DeleteRemindingAsync(task.Id);
+                await _apiClient.DeleteRemindingAsync(task.Id);
                 await UpdateCalendarAsync();
                 UpdateTasksList(_selectedDateForTask);
             }
@@ -445,7 +442,7 @@ namespace Edemly.Client.Presentation.Pages.Calendar
                     ShouldNotify = task.ShouldNotify,
                     ShowTime = task.ShowTime,
                 };
-                await _apiService.CreateRemindingAsync(dup);
+                await _apiClient.CreateRemindingAsync(dup);
 
                 if (daily.IsChecked == true)
                 {
@@ -460,7 +457,7 @@ namespace Edemly.Client.Presentation.Pages.Calendar
                             ShouldNotify = task.ShouldNotify,
                             ShowTime = task.ShowTime,
                         };
-                        await _apiService.CreateRemindingAsync(d);
+                        await _apiClient.CreateRemindingAsync(d);
                     }
                 }
                 else if (weekly.IsChecked == true)
@@ -477,7 +474,7 @@ namespace Edemly.Client.Presentation.Pages.Calendar
                             ShowTime = task.ShowTime,
                             IsCompleted = false
                         };
-                        await _apiService.CreateRemindingAsync(d);
+                        await _apiClient.CreateRemindingAsync(d);
                     }
                 }
                 else if (monthly.IsChecked == true)
@@ -494,7 +491,7 @@ namespace Edemly.Client.Presentation.Pages.Calendar
                             ShowTime = task.ShowTime,
                             IsCompleted = false
                         };
-                        await _apiService.CreateRemindingAsync(d);
+                        await _apiClient.CreateRemindingAsync(d);
                     }
                 }
 
@@ -700,12 +697,12 @@ namespace Edemly.Client.Presentation.Pages.Calendar
                 doneCheckbox.Checked += async (s, e) =>
                 {
                     task.IsCompleted = true;
-                    await _apiService.ToggleRemindingAsync(task.Id);
+                    await _apiClient.ToggleRemindingAsync(task.Id);
                 };
                 doneCheckbox.Unchecked += async (s, e) =>
                 {
                     task.IsCompleted = false;
-                    await _apiService.ToggleRemindingAsync(task.Id);
+                    await _apiClient.ToggleRemindingAsync(task.Id);
                 };
                 Grid.SetColumn(doneCheckbox, 2);
                 taskGrid.Children.Add(doneCheckbox);
