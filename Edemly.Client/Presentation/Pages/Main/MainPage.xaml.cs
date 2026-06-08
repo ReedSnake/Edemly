@@ -2,6 +2,7 @@
 
 using Edemly.Client.Application.Attachments;
 using Edemly.Client.Infrastructure.Attachments;
+using Edemly.Client.Infrastructure.Audio;
 using Edemly.Client.Presentation.Common;
 using Edemly.Client.Presentation.Controllers.Chats;
 using Edemly.Client.Presentation.Dialogs.Attachments;

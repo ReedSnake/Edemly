@@ -1,4 +1,5 @@
 using Edemly.Client.Api.Core;
+using Edemly.Contracts.Chats;
 
 namespace Edemly.Client.Api.Chats;
 

@@ -2,6 +2,7 @@
 
 using Edemly.Client.Application.Localization;
 using Edemly.Client.Presentation.Pages.Main.Helpers;
+using Edemly.Contracts.ChatMembers;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;

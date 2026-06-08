@@ -1,5 +1,7 @@
 #nullable enable
 
+using Edemly.Contracts.Users;
+
 namespace Edemly.Client.Application.Users.Profile
 {
     public sealed record UserProfileSnapshot(

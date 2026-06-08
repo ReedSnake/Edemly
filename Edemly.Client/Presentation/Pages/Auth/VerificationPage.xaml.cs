@@ -1,5 +1,6 @@
 using Edemly.Client.Application.Localization;
 using Edemly.Client.Presentation.Common;
+using Edemly.Client.Presentation.Pages.Main;
 using Edemly.Contracts.Auth;
 using System.Windows;
 using System.Windows.Input;

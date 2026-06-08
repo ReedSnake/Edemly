@@ -5,6 +5,11 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
+using Edemly.Client.Presentation.Pages.Auth;
+using Edemly.Client.Presentation.Pages.Calendar;
+using Edemly.Client.Presentation.Pages.Info;
+using Edemly.Client.Presentation.Pages.Payments;
+using Edemly.Client.Presentation.Pages.Settings;
 using Edemly.Client.Presentation.Windows;
 namespace Edemly.Client.Presentation.Pages.Main
 {

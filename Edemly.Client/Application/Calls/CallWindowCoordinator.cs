@@ -1,4 +1,7 @@
 using Edemly.Client.Api;
+using Edemly.Client.Infrastructure.Realtime;
+using Edemly.Client.Presentation.Windows.Calls;
+using Edemly.Contracts.Realtime;
 using System.Diagnostics;
 using System.Windows;
 

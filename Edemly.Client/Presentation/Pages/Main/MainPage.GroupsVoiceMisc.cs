@@ -3,6 +3,9 @@
 using Edemly.Client.Application.Localization;
 using Edemly.Client.Infrastructure.Audio;
 using Edemly.Client.Presentation.Pages.Main.Helpers;
+using Edemly.Client.Presentation.Windows.Calls;
+using Edemly.Contracts.Messages;
+using Edemly.Contracts.Users;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;

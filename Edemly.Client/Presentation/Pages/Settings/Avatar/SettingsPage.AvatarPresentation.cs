@@ -30,7 +30,7 @@ namespace Edemly.Client.Presentation.Pages.Settings
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[PAGE_SETTINGS] LoadAvatarFromUrlAsync error: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"[SettingsPage] LoadAvatarFromUrlAsync error: {ex.Message}");
                 ShowInitials();
             }
         }
@@ -58,7 +58,7 @@ namespace Edemly.Client.Presentation.Pages.Settings
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[PAGE_SETTINGS] ShowInitials failed: {ex}");
+                System.Diagnostics.Debug.WriteLine($"[SettingsPage] ShowInitials failed: {ex}");
             }
         }
 
@@ -73,7 +73,7 @@ namespace Edemly.Client.Presentation.Pages.Settings
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[PAGE_SETTINGS] UpdateInitials failed: {ex}");
+                System.Diagnostics.Debug.WriteLine($"[SettingsPage] UpdateInitials failed: {ex}");
             }
         }
 
@@ -97,7 +97,7 @@ namespace Edemly.Client.Presentation.Pages.Settings
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[PAGE_SETTINGS] UpdateAvatarClip failed: {ex}");
+                System.Diagnostics.Debug.WriteLine($"[SettingsPage] UpdateAvatarClip failed: {ex}");
             }
         }
     }

@@ -1,6 +1,7 @@
 #nullable disable
 
 using Edemly.Client.Application.Localization;
+using Edemly.Contracts.Users;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;

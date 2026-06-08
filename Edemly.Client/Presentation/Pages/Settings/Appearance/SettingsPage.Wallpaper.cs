@@ -1,6 +1,7 @@
 #nullable enable
 
 using Edemly.Client.Application.Services;
+using Edemly.Client.Infrastructure.Storage;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -33,7 +34,7 @@ namespace Edemly.Client.Presentation.Pages.Settings
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[PAGE_SETTINGS] SetAppBackgroundImage error: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"[SettingsPage] SetAppBackgroundImage error: {ex.Message}");
                 System.Windows.Application.Current.Resources["BackgroundImage"] = null;
                 ConfigService.Instance.BackgroundImagePath = string.Empty;
             }

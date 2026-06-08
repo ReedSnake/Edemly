@@ -1,4 +1,8 @@
 using Edemly.Client.Api.Core;
+using Edemly.Client.Infrastructure.Notifications;
+using Edemly.Client.Infrastructure.Storage;
+using Edemly.Contracts.Messages;
+using Edemly.Contracts.Realtime;
 using Microsoft.AspNetCore.SignalR.Client;
 using System.Windows;
 namespace Edemly.Client.Infrastructure.Realtime

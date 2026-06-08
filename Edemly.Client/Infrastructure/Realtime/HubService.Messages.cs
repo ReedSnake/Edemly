@@ -1,3 +1,5 @@
+using Edemly.Contracts.Messages;
+using Edemly.Contracts.Users;
 using Microsoft.AspNetCore.SignalR.Client;
 namespace Edemly.Client.Infrastructure.Realtime
 {

@@ -2,6 +2,7 @@
 
 using Edemly.Client.Application.Localization;
 using Edemly.Client.Application.Services;
+using Edemly.Contracts.Messages;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;

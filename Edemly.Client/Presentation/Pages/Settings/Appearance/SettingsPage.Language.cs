@@ -2,6 +2,7 @@
 
 using Edemly.Client.Application.Localization;
 using Edemly.Client.Application.Services;
+using Edemly.Client.Infrastructure.Storage;
 using System.Globalization;
 using System.Windows;
 
@@ -27,7 +28,7 @@ namespace Edemly.Client.Presentation.Pages.Settings
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[PAGE_SETTINGS] InitializeLanguageControls failed: {ex}");
+                System.Diagnostics.Debug.WriteLine($"[SettingsPage] InitializeLanguageControls failed: {ex}");
             }
         }
 
@@ -56,7 +57,7 @@ namespace Edemly.Client.Presentation.Pages.Settings
                 }
                 catch (Exception ex)
                 {
-                    System.Diagnostics.Debug.WriteLine($"[PAGE_SETTINGS] Set culture failed: {ex}");
+                    System.Diagnostics.Debug.WriteLine($"[SettingsPage] Set culture failed: {ex}");
                 }
 
                 LanguageService.Instance.LoadLanguage(languageCode);
@@ -73,7 +74,7 @@ namespace Edemly.Client.Presentation.Pages.Settings
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[PAGE_SETTINGS] ChangeLanguage failed: {ex}");
+                System.Diagnostics.Debug.WriteLine($"[SettingsPage] ChangeLanguage failed: {ex}");
             }
         }
     }

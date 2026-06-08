@@ -8,6 +8,12 @@ using Edemly.Client.Presentation.Rendering.Messages;
 using System.Windows;
 using System.Windows.Controls;
 using Edemly.Client.Api;
+using Edemly.Client.Infrastructure.Realtime;
+using Edemly.Contracts.Messages;
+using Edemly.Client.Infrastructure.Caching;
+using Edemly.Contracts.ChatMembers;
+using Edemly.Contracts.Users;
+using Edemly.Contracts.Chats;
 namespace Edemly.Client.Presentation.Controllers.Chats
 {
     public partial class ChatWorkspaceController : IDisposable

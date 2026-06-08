@@ -31,11 +31,11 @@ namespace Edemly.Client.Presentation.Pages.Settings
             try
             {
                 ThemeService.Instance.SetTheme(themeName);
-                System.Diagnostics.Debug.WriteLine($"[PAGE_SETTINGS] Theme changed to: {themeName}");
+                System.Diagnostics.Debug.WriteLine($"[SettingsPage] Theme changed to: {themeName}");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[PAGE_SETTINGS] ChangeTheme error: {ex}");
+                System.Diagnostics.Debug.WriteLine($"[SettingsPage] ChangeTheme error: {ex}");
             }
         }
 
@@ -67,7 +67,7 @@ namespace Edemly.Client.Presentation.Pages.Settings
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[PAGE_SETTINGS] UpdateThemePreviewSelection failed: {ex}");
+                System.Diagnostics.Debug.WriteLine($"[SettingsPage] UpdateThemePreviewSelection failed: {ex}");
             }
         }
     }

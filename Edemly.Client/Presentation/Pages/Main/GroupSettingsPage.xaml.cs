@@ -4,6 +4,7 @@ using Edemly.Client.Api;
 using Edemly.Client.Models;
 using Edemly.Client.Presentation.Common;
 using Edemly.Client.Presentation.Pages.Main.Helpers;
+using Edemly.Contracts.ChatMembers;
 using System.Windows;
 using System.Windows.Controls;
 

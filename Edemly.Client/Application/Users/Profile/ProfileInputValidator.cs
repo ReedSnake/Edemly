@@ -1,8 +1,7 @@
 #nullable enable
 
+using Edemly.Contracts.Users;
 using System.Text.RegularExpressions;
-
-using Edemly.Client.Application.Localization;
 
 namespace Edemly.Client.Application.Users.Profile
 {

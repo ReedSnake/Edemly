@@ -1,6 +1,5 @@
 ﻿using System.Globalization;
 using System.Net.Http;
-using System.Text.Json;
 using Edemly.Client.Api.Core;
 using Edemly.Contracts.Payments;
 

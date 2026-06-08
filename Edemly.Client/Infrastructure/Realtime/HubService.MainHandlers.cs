@@ -1,5 +1,8 @@
 using Edemly.Client.Application.Users.Profile;
+using Edemly.Contracts.Chats;
+using Edemly.Contracts.Messages;
 using Edemly.Contracts.Realtime;
+using Edemly.Contracts.Users;
 using Microsoft.AspNetCore.SignalR.Client;
 using System.Diagnostics;
 using System.Windows;

@@ -1,4 +1,5 @@
 ﻿using Edemly.Client.Application.Users.Profile;
+using Edemly.Contracts.Users;
 
 namespace Edemly.Client.Api.Users;
 

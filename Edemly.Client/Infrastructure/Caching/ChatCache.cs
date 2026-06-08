@@ -1,4 +1,8 @@
 #nullable disable
+using Edemly.Contracts.Chats;
+using Edemly.Contracts.Messages;
+using Edemly.Contracts.Users;
+
 namespace Edemly.Client.Infrastructure.Caching
 {
     public class ChatCache

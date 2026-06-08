@@ -1,6 +1,7 @@
 #nullable enable
 
 using Edemly.Client.Api;
+using Edemly.Client.Presentation.Pages.Main;
 using System.IO;
 using System.Text;
 using System.Windows;
@@ -50,7 +51,7 @@ namespace Edemly.Client.Presentation.Pages.Payments
                 catch (Exception ex)
                 {
                     MessageBox.ShowError(string.Format(DefaultLanguage.PremiumOpenPageError, ex.Message), DefaultLanguage.PremiumPaymentError);
-                    System.Diagnostics.Debug.WriteLine($"[PAGE_PREMIUM] Failed to open payment HTML: {ex}");
+                    System.Diagnostics.Debug.WriteLine($"[PremiumPage] Failed to open payment HTML: {ex}");
                 }
             }
             catch (Exception ex)

@@ -1,5 +1,6 @@
 #nullable enable
 
+using Edemly.Contracts.Users;
 using System;
 using System.Linq;
 using System.Threading.Tasks;

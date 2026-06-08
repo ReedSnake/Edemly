@@ -3,6 +3,8 @@ using System.Diagnostics;
 using System.Windows;
 using Edemly.Client.Presentation.Windows;
 using Edemly.Client.Api;
+using Edemly.Contracts.ChatMembers;
+using Edemly.Contracts.Chats;
 
 namespace Edemly.Client.Application.Chats
 {

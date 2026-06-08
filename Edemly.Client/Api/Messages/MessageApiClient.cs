@@ -1,4 +1,5 @@
 ﻿using Edemly.Client.Api.Core;
+using Edemly.Contracts.Messages;
 
 namespace Edemly.Client.Api.Messages;
 

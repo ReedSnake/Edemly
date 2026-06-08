@@ -27,7 +27,7 @@
     "no_results": "No results found",
     "retry": "Retry"
   },
-  "page_login": {
+  "LoginPage": {
     "welcome_title": "Hello!",
     "welcome_subtitle": "Welcome back",
     "email_label": "Email",
@@ -43,7 +43,7 @@
     "login_success": "Successfully logged in!",
     "login_failed": "Login failed. Please check your credentials."
   },
-  "page_registration": {
+  "RegistrationPage": {
     "title_line1": "Create",
     "title_line2": "Your Account",
     "user_name_label": "User Name",
@@ -59,7 +59,7 @@
     "username_invalid": "Username can only contain letters, numbers, underscores and hyphens",
     "please_agree_terms": "Please agree to the Terms of Service and Privacy Policy"
   },
-  "page_install": {
+  "InstallPage": {
     "title": "Edemly Installation",
     "description": "Configure initial settings before using Edemly. You can change these later in Settings.",
     "language_label": "Language",
@@ -78,7 +78,7 @@
     "companies_error_fallback": "Error loading companies. Using Personal mode.",
     "shortcut_create_failed": "Failed to create desktop shortcut."
   },
-  "page_settings": {
+  "SettingsPage": {
     "settings_title": "Settings",
     "select_profile_photo": "Select profile photo",
     "uploading": "Uploading...",
@@ -102,7 +102,7 @@
     "theme_settings": "Theme settings:",
     "theme_color": "Theme color"
   },
-  "page_verification": {
+  "VerificationPage": {
     "title": "Verification Code",
     "description": "Please enter the 6-digit verification code that was sent to your email address.",
     "resend_prompt": "Didn't receive the code?",
@@ -117,7 +117,7 @@
     "failed_resend_code": "Failed to resend code",
     "verify_button": "Verify"
   },
-  "page_about": {
+  "AboutAppPage": {
     "title": "About Edemly",
     "greeting": "Hi, dear user!",
     "welcome": "We are the Edemly team, and we are happy to welcome you to our messenger!",
@@ -135,7 +135,7 @@
     "closing": "We create Edemly with you in mind. Every feature is designed to make your life easier and more organized.",
     "thanks": "Thank you for choosing us!"
   },
-  "page_premium": {
+  "PremiumPage": {
     "title": "Edemly Premium",
     "main_title": "Edemly Premium — More opportunities for you!",
     "description": "Want to use Edemly to its full potential? Upgrade to Premium and get advanced planning and organization features!",
@@ -156,7 +156,7 @@
     "payment_failed": "Failed to start payment",
     "open_page_error": "Failed to open payment page: {0}"
   },
-  "page_contact_settings": {
+  "ContactSettingsPage": {
     "title": "Contact Settings",
     "phone_not_specified": "Not specified",
     "email_not_specified": "No email",
@@ -182,7 +182,7 @@
     "delete_note_error_details": "Failed to delete note: {0}",
     "photo_load_error": "Error loading photo: {0}"
   },
-  "page_group_settings": {
+  "GroupSettingsPage": {
     "group_icon": "Group Icon",
     "change_icon": "📷 Change Icon",
     "group_name": "Group Name",
@@ -211,7 +211,7 @@
     "user_id": "User #{0}",
     "loading": "Loading..."
   },
-  "page_calendar": {
+  "CalendarPage": {
     "calendar_title": "Calendar",
     "tasks_header": "TASKS",
     "todays_tasks": "TODAY'S TASKS",

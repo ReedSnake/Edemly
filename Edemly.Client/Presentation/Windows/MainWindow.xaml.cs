@@ -6,6 +6,8 @@ using Edemly.Client.Presentation.Pages.Main;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Interop;
+using Edemly.Client.Infrastructure.Storage;
+using Edemly.Contracts.Users;
 
 namespace Edemly.Client.Presentation.Windows
 {

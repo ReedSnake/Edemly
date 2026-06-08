@@ -1,3 +1,5 @@
+using Edemly.Contracts.Messages;
+
 namespace Edemly.Client.Infrastructure.Realtime
 {
     public interface IHubService : IDisposable

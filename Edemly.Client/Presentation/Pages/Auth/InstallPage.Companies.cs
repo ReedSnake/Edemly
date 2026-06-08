@@ -2,6 +2,7 @@
 
 using Edemly.Client.Application.Localization;
 using Edemly.Client.Application.Services;
+using Edemly.Client.Infrastructure.Storage;
 using System.Diagnostics;
 using System.Windows.Controls;
 
@@ -40,7 +41,7 @@ namespace Edemly.Client.Presentation.Pages.Auth
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[PAGE_INSTALL] LoadCompaniesAsync failed: {ex}");
+                Debug.WriteLine($"[InstallPage] LoadCompaniesAsync failed: {ex}");
                 ResetCompaniesToFallback(DefaultLanguage.CompaniesErrorFallback);
             }
             finally

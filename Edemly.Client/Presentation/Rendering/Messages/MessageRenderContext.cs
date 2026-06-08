@@ -1,5 +1,6 @@
 #nullable disable
 
+using Edemly.Contracts.Messages;
 using System.Windows.Controls;
 
 namespace Edemly.Client.Presentation.Rendering.Messages

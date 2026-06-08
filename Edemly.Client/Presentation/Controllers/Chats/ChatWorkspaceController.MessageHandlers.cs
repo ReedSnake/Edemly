@@ -1,6 +1,8 @@
 #nullable enable
 
 using Edemly.Client.Models;
+using Edemly.Contracts.Messages;
+using Edemly.Contracts.Users;
 using System.Windows;
 using System.Windows.Controls;
 namespace Edemly.Client.Presentation.Controllers.Chats

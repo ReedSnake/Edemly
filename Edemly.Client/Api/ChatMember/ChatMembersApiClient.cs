@@ -1,5 +1,6 @@
 ﻿using Edemly.Client.Api.ChatMembers;
 using Edemly.Client.Api.Core;
+using Edemly.Contracts.ChatMembers;
 
 namespace Edemly.Client.Api.ChatMembers;
 

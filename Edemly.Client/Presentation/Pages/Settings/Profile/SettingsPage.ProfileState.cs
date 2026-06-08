@@ -2,6 +2,7 @@
 
 using Edemly.Client.Application.Localization;
 using Edemly.Client.Application.Users.Profile;
+using Edemly.Contracts.Users;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -86,7 +87,7 @@ namespace Edemly.Client.Presentation.Pages.Settings
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[PAGE_SETTINGS] CheckForChanges failed: {ex}");
+                System.Diagnostics.Debug.WriteLine($"[SettingsPage] CheckForChanges failed: {ex}");
             }
         }
     }

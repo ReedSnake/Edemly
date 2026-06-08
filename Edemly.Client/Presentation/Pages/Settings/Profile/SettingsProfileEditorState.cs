@@ -1,6 +1,7 @@
 #nullable enable
 
 using Edemly.Client.Application.Users.Profile;
+using Edemly.Contracts.Users;
 
 namespace Edemly.Client.Presentation.Pages.Settings
 {

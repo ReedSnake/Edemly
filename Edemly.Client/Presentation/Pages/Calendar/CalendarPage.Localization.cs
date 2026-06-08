@@ -29,7 +29,7 @@ namespace Edemly.Client.Presentation.Pages.Calendar
             _ = UpdateCalendarAsync();
             UpdateTasksList(_selectedDateForTask);
 
-            System.Diagnostics.Debug.WriteLine($"[PAGE_CALENDAR] Theme applied: {ThemeService.Instance.CurrentTheme}");
+            System.Diagnostics.Debug.WriteLine($"[CalendarPage] Theme applied: {ThemeService.Instance.CurrentTheme}");
         }
 
         private void ApplyLocalization()

@@ -4,6 +4,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using Edemly.Client.Api;
+using Edemly.Contracts.Users;
 namespace Edemly.Client.Presentation.Rendering.Chats
 {
     public class UserSearchHandler

@@ -1,4 +1,6 @@
-﻿namespace Edemly.Client.Api.Calls;
+﻿using Edemly.Contracts.Calls;
+
+namespace Edemly.Client.Api.Calls;
 
 public interface ICallApiClient
 {

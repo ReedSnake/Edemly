@@ -1,3 +1,4 @@
+using Edemly.Client.Infrastructure.Storage;
 using System.Diagnostics;
 
 namespace Edemly.Client.Infrastructure.Startup

@@ -1,5 +1,7 @@
 #nullable disable
 
+using Edemly.Contracts.Users;
+
 namespace Edemly.Client.Models
 {
     public class Contact

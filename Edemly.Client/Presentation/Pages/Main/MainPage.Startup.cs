@@ -1,6 +1,7 @@
 #nullable enable
 
 using Edemly.Client.Presentation.Controllers.Chats;
+using Edemly.Client.Presentation.Pages.Auth;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;

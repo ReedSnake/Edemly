@@ -1,6 +1,7 @@
 #nullable enable
 
 using Edemly.Client.Application.Services;
+using Edemly.Client.Infrastructure.Storage;
 using System.Diagnostics;
 using System.Globalization;
 using System.Windows.Controls;
@@ -43,14 +44,14 @@ namespace Edemly.Client.Presentation.Pages.Auth
                 .Cast<ComboBoxItem>()
                 .FirstOrDefault(item => string.Equals(item.Tag as string, languageTag, StringComparison.OrdinalIgnoreCase));
 
-            TryLoadLanguage(languageTag, "[PAGE_INSTALL] LoadLanguage failed");
+            TryLoadLanguage(languageTag, "[InstallPage] LoadLanguage failed");
         }
 
         private void LanguageComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             var languageTag = GetSelectedLanguageTag();
             SaveLanguageSelection(languageTag);
-            TryLoadLanguage(languageTag, "[PAGE_INSTALL] LoadLanguage on selection failed");
+            TryLoadLanguage(languageTag, "[InstallPage] LoadLanguage on selection failed");
             ApplyLanguage();
         }
 
@@ -68,7 +69,7 @@ namespace Edemly.Client.Presentation.Pages.Auth
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[PAGE_INSTALL] Save config language failed: {ex}");
+                Debug.WriteLine($"[InstallPage] Save config language failed: {ex}");
             }
         }
 

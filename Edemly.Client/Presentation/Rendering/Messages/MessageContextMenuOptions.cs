@@ -1,5 +1,7 @@
 #nullable enable
 
+using Edemly.Contracts.Messages;
+
 namespace Edemly.Client.Presentation.Rendering.Messages
 {
     public sealed class MessageContextMenuOptions

@@ -6,6 +6,7 @@ using System.Linq;
 using System.Media;
 using System.Threading.Tasks;
 using Edemly.Client.Models;
+using Edemly.Contracts.Messages;
 
 namespace Edemly.Client.Presentation.Controllers.Chats
 {

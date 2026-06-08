@@ -1,4 +1,6 @@
-﻿namespace Edemly.Client.Api.Payments;
+﻿using Edemly.Contracts.Payments;
+
+namespace Edemly.Client.Api.Payments;
 
 public interface IPaymentApiClient
 {

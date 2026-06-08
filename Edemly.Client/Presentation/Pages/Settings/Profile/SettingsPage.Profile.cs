@@ -44,7 +44,7 @@ namespace Edemly.Client.Presentation.Pages.Settings
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[PAGE_SETTINGS] LoadUserDataAsync error: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"[SettingsPage] LoadUserDataAsync error: {ex.Message}");
             }
         }
 
@@ -76,7 +76,7 @@ namespace Edemly.Client.Presentation.Pages.Settings
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[PAGE_SETTINGS] SaveUserDataAsync error: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"[SettingsPage] SaveUserDataAsync error: {ex.Message}");
                 MessageBox.ShowError(string.Format(DefaultLanguage.ErrorSavingSettings, ex.Message), DefaultLanguage.ErrorTitle);
             }
         }

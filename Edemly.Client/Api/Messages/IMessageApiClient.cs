@@ -1,4 +1,6 @@
-﻿namespace Edemly.Client.Api.Messages;
+﻿using Edemly.Contracts.Messages;
+
+namespace Edemly.Client.Api.Messages;
 
 public interface IMessageApiClient
 {

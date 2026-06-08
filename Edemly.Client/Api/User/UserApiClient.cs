@@ -1,5 +1,6 @@
 ﻿using Edemly.Client.Api.Core;
 using Edemly.Client.Application.Users.Profile;
+using Edemly.Contracts.Users;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text;

@@ -10,6 +10,8 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Media;
 using System.Windows.Shapes;
 using Edemly.Client.Api.Remindings;
+using Edemly.Contracts.Remindings;
+using Edemly.Client.Infrastructure.Storage;
 namespace Edemly.Client.Presentation.Pages.Calendar
 {
     public partial class CalendarPage : ThemedPage

@@ -24,7 +24,7 @@ namespace Edemly.Client.Presentation.Pages.Settings
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[PAGE_SETTINGS] OnProfileUpdated failed: {ex}");
+                System.Diagnostics.Debug.WriteLine($"[SettingsPage] OnProfileUpdated failed: {ex}");
             }
         }
 
@@ -86,7 +86,7 @@ namespace Edemly.Client.Presentation.Pages.Settings
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[PAGE_SETTINGS] ChangePhotoAsync error: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"[SettingsPage] ChangePhotoAsync error: {ex.Message}");
                 MessageBox.ShowError(string.Format(DefaultLanguage.ErrorSavingSettings, ex.Message), DefaultLanguage.ErrorTitle);
             }
             finally
@@ -128,7 +128,7 @@ namespace Edemly.Client.Presentation.Pages.Settings
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[PAGE_SETTINGS] InvalidateCache failed: {ex}");
+                System.Diagnostics.Debug.WriteLine($"[SettingsPage] InvalidateCache failed: {ex}");
             }
         }
 
@@ -140,7 +140,7 @@ namespace Edemly.Client.Presentation.Pages.Settings
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[PAGE_SETTINGS] ForceDownloadAsync failed: {ex}");
+                System.Diagnostics.Debug.WriteLine($"[SettingsPage] ForceDownloadAsync failed: {ex}");
             }
         }
 
@@ -155,7 +155,7 @@ namespace Edemly.Client.Presentation.Pages.Settings
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[PAGE_SETTINGS] NotifyProfileUpdate failed: {ex}");
+                System.Diagnostics.Debug.WriteLine($"[SettingsPage] NotifyProfileUpdate failed: {ex}");
             }
         }
 
@@ -186,7 +186,7 @@ namespace Edemly.Client.Presentation.Pages.Settings
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[PAGE_SETTINGS] RefreshAvatarFromProfileUpdateAsync failed: {ex}");
+                System.Diagnostics.Debug.WriteLine($"[SettingsPage] RefreshAvatarFromProfileUpdateAsync failed: {ex}");
             }
         }
 

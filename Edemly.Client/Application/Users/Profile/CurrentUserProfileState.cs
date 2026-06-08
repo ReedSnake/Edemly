@@ -1,4 +1,5 @@
 using Edemly.Client.Api.Users;
+using Edemly.Contracts.Users;
 namespace Edemly.Client.Application.Users.Profile
 {
     internal static class CurrentUserProfileState

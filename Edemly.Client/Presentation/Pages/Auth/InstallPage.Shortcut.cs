@@ -1,5 +1,6 @@
 #nullable enable
 
+using Edemly.Client.Infrastructure.Storage;
 using System.Diagnostics;
 using System.Windows;
 
@@ -15,7 +16,7 @@ namespace Edemly.Client.Presentation.Pages.Auth
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[PAGE_INSTALL] Cancel navigation failed: {ex}");
+                Debug.WriteLine($"[InstallPage] Cancel navigation failed: {ex}");
 
                 try
                 {
@@ -26,7 +27,7 @@ namespace Edemly.Client.Presentation.Pages.Auth
                 }
                 catch (Exception goBackEx)
                 {
-                    Debug.WriteLine($"[PAGE_INSTALL] GoBack failed: {goBackEx}");
+                    Debug.WriteLine($"[InstallPage] GoBack failed: {goBackEx}");
                 }
             }
         }
@@ -37,7 +38,7 @@ namespace Edemly.Client.Presentation.Pages.Auth
             {
                 var selectedLanguage = GetSelectedLanguageTag();
                 SaveLanguageSelection(selectedLanguage);
-                TryLoadLanguage(selectedLanguage, "[PAGE_INSTALL] LoadLanguage on continue failed");
+                TryLoadLanguage(selectedLanguage, "[InstallPage] LoadLanguage on continue failed");
                 ApplyLanguage();
 
                 var selectedCompanyTag = GetSelectedCompanyTag();

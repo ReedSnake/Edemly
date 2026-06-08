@@ -24,10 +24,10 @@ namespace Edemly.Client.Presentation.Pages.Auth
             _desktopShortcutService = desktopShortcutService ?? throw new ArgumentNullException(nameof(desktopShortcutService));
 
             InitializeComponent();
-            Loaded += Page_install_Loaded;
+            Loaded += InstallPage_Loaded;
         }
 
-        private async void Page_install_Loaded(object sender, RoutedEventArgs e)
+        private async void InstallPage_Loaded(object sender, RoutedEventArgs e)
         {
             InitializeLanguageOptions();
 
@@ -79,7 +79,7 @@ namespace Edemly.Client.Presentation.Pages.Auth
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[PAGE_INSTALL] UpdateCompanyPersonalLabel failed: {ex}");
+                System.Diagnostics.Debug.WriteLine($"[InstallPage] UpdateCompanyPersonalLabel failed: {ex}");
             }
         }
     }

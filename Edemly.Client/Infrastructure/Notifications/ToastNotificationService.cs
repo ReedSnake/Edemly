@@ -1,4 +1,5 @@
 using CommunityToolkit.WinUI.Notifications;
+using Edemly.Contracts.Messages;
 namespace Edemly.Client.Infrastructure.Notifications
 {
     public class ToastNotificationService

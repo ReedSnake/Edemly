@@ -27,7 +27,7 @@
     "no_results": "Нічого не знайдено",
     "retry": "Повторити"
   },
-  "page_login": {
+  "LoginPage": {
     "welcome_title": "Привіт!",
     "welcome_subtitle": "З поверненням",
     "email_label": "Електронна пошта",
@@ -43,7 +43,7 @@
     "login_success": "Успішний вхід!",
     "login_failed": "Помилка входу. Перевірте свої облікові дані."
   },
-  "page_registration": {
+  "RegistrationPage": {
     "title_line1": "Створити",
     "title_line2": "Ваш акаунт",
     "user_name_label": "Ім'я користувача",
@@ -59,7 +59,7 @@
     "username_invalid": "Ім'я користувача може містити лише літери, цифри, підкреслення та дефіси",
     "please_agree_terms": "Будь ласка, погодьтеся з Умовами користування та Політикою конфіденційності"
   },
-  "page_install": {
+  "InstallPage": {
     "title": "Встановлення Edemly",
     "description": "Налаштуйте початкові параметри перед використанням Edemly. Ви завжди зможете змінити їх у налаштуваннях.",
     "language_label": "Мова",
@@ -78,7 +78,7 @@
     "companies_error_fallback": "Помилка під час завантаження списку компаній. Використовується особистий режим.",
     "shortcut_create_failed": "Не вдалося створити ярлик на робочому столі."
   },
-  "page_settings": {
+  "SettingsPage": {
     "settings_title": "Налаштування",
     "select_profile_photo": "Оберіть фото профілю",
     "uploading": "Завантаження...",
@@ -102,7 +102,7 @@
     "theme_settings": "Налаштування теми:",
     "theme_color": "Колір теми"
   },
-  "page_verification": {
+  "VerificationPage": {
     "title": "Код підтвердження",
     "description": "Будь ласка, введіть 6-значний код підтвердження, який був надісланий на вашу електронну адресу.",
     "resend_prompt": "Не отримали код?",
@@ -117,7 +117,7 @@
     "failed_resend_code": "Не вдалося надіслати код повторно",
     "verify_button": "Підтвердити"
   },
-  "page_about": {
+  "AboutAppPage": {
     "title": "Про Edemly",
     "greeting": "Привіт, шановний користувач!",
     "welcome": "Ми команда Edemly і раді вітати вас у нашому месенджері!",
@@ -135,7 +135,7 @@
     "closing": "Ми створюємо Edemly з оглядкою на вас. Кожна функція розроблена, щоб зробити ваше життя простішим та організованішим.",
     "thanks": "Дякуємо, що обрали нас!"
   },
-  "page_premium": {
+  "PremiumPage": {
     "title": "Edemly Premium",
     "main_title": "Edemly Premium — більше можливостей для вас!",
     "description": "Хочете використовувати Edemly на повну? Оновіться до Premium та отримайте розширені функції планування та організації!",
@@ -156,7 +156,7 @@
     "payment_failed": "Не вдалося розпочати оплату",
     "open_page_error": "Не вдалося відкрити сторінку оплати: {0}"
   },
-  "page_contact_settings": {
+  "ContactSettingsPage": {
     "title": "Налаштування контакту",
     "phone_not_specified": "Не вказано",
     "email_not_specified": "Немає email",
@@ -182,7 +182,7 @@
     "delete_note_error_details": "Не вдалося видалити нотатку: {0}",
     "photo_load_error": "Помилка завантаження фото: {0}"
   },
-  "page_group_settings": {
+  "GroupSettingsPage": {
     "group_icon": "Іконка групи",
     "change_icon": "📷 Змінити іконку",
     "group_name": "Назва групи",
@@ -211,7 +211,7 @@
     "user_id": "Користувач #{0}",
     "loading": "Завантаження..."
   },
-  "page_calendar": {
+  "CalendarPage": {
     "calendar_title": "Календар",
     "tasks_header": "ЗАВДАННЯ",
     "todays_tasks": "ЗАВДАННЯ НА СЬОГОДНІ",

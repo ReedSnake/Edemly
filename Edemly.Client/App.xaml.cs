@@ -9,6 +9,9 @@ using System.Diagnostics;
 using System.Windows;
 using Edemly.Client.Presentation.Windows;
 using Edemly.Client.Api;
+using Edemly.Client.Infrastructure.Realtime;
+using Edemly.Client.Infrastructure.Caching;
+using Edemly.Client.Infrastructure.Storage;
 
 namespace Edemly.Client
 {

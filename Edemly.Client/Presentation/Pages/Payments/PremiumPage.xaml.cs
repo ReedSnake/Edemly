@@ -32,11 +32,11 @@ namespace Edemly.Client.Presentation.Pages.Payments
                     rootGrid.SetResourceReference(Panel.BackgroundProperty, "PageBackgroundBrush");
                 }
 
-                System.Diagnostics.Debug.WriteLine("[PAGE_PREMIUM] Theme applied");
+                System.Diagnostics.Debug.WriteLine("[PremiumPage] Theme applied");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[PAGE_PREMIUM] ApplyTheme failed: {ex}");
+                System.Diagnostics.Debug.WriteLine($"[PremiumPage] ApplyTheme failed: {ex}");
             }
         }
     }

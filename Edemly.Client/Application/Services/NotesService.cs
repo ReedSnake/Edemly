@@ -1,5 +1,6 @@
 using Edemly.Client.Api;
 using Edemly.Client.Api.Notes;
+using Edemly.Client.Infrastructure.Storage;
 namespace Edemly.Client.Application.Services
 {
     public class NotesService

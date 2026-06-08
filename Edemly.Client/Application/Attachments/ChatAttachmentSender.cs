@@ -2,6 +2,8 @@
 
 using System.IO;
 using Edemly.Client.Api;
+using Edemly.Client.Infrastructure.Realtime;
+using Edemly.Contracts.Messages;
 
 namespace Edemly.Client.Application.Attachments
 {

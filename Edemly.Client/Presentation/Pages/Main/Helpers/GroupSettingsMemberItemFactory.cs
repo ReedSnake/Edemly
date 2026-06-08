@@ -1,6 +1,7 @@
 #nullable enable
 
 using Edemly.Client.Application.Localization;
+using Edemly.Contracts.ChatMembers;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;

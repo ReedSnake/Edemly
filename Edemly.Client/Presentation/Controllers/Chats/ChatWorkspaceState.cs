@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using Edemly.Client.Models;
+using Edemly.Contracts.Messages;
 
 namespace Edemly.Client.Presentation.Controllers.Chats
 {
