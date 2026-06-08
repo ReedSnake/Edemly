@@ -49,14 +49,14 @@ namespace Edemly.Server.Application.Remindings
             }
         }
 
-        public async Task<ServiceResult> UpdateAsync(int currentUserId, UpdateRemindingDto request)
+        public async Task<ServiceResult> UpdateAsync(int currentUserId, int remindingId, UpdateRemindingDto request)
         {
             try
             {
                 await using var dbContextLease = ResolveDbContext();
                 var ctx = dbContextLease.Context;
 
-                var reminding = await ctx.Set<Reminding>().FirstOrDefaultAsync(item => item.Id == request.Id);
+                var reminding = await ctx.Set<Reminding>().FirstOrDefaultAsync(item => item.Id == remindingId);
                 if (reminding == null)
                 {
                     return ServiceResult.NotFound("Reminding not found");

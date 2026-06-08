@@ -24,7 +24,7 @@ public sealed class FileApiClient : ApiClientBase, IFileApiClient
 
             form.Add(streamContent, "file", Path.GetFileName(filePath));
 
-            var url = UrlHelper.BuildRelativeUrl("api/file/upload-profile-picture");
+            var url = UrlHelper.BuildRelativeUrl("api/users/me/profile-picture");
             var response = await HttpClient.PostAsync(url, form);
 
             if (!response.IsSuccessStatusCode)
@@ -80,9 +80,8 @@ public sealed class FileApiClient : ApiClientBase, IFileApiClient
             streamContent.Headers.ContentType = new MediaTypeHeaderValue(FileContentTypeResolver.GetImageContentType(filePath));
 
             content.Add(streamContent, "file", Path.GetFileName(filePath));
-            content.Add(new StringContent(chatId.ToString()), "chatId");
 
-            var url = UrlHelper.BuildRelativeUrl("api/Chat/upload-icon");
+            var url = UrlHelper.BuildRelativeUrl($"api/chats/{chatId}/icon");
             var response = await HttpClient.PostAsync(url, content);
 
             if (!response.IsSuccessStatusCode)
@@ -118,7 +117,7 @@ public sealed class FileApiClient : ApiClientBase, IFileApiClient
             streamContent.Headers.ContentType = new MediaTypeHeaderValue(FileContentTypeResolver.GetFileContentType(filePath));
             content.Add(streamContent, "file", fileName);
 
-            var url = UrlHelper.BuildRelativeUrl("api/file/upload");
+            var url = UrlHelper.BuildRelativeUrl("api/files");
             var response = await HttpClient.PostAsync(url, content);
 
             if (!response.IsSuccessStatusCode)

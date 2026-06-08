@@ -10,7 +10,7 @@ namespace Edemly.Server.Application.Common.Mappers
         public static readonly Expression<Func<Note, NoteDto>> Projection = note => new NoteDto
         {
             Id = note.Id,
-            UserId = note.UserId,
+            TargetUserId = note.TargetUserId,
             CreatorId = note.CreatorId,
             Content = note.Content
         };
@@ -20,7 +20,7 @@ namespace Edemly.Server.Application.Common.Mappers
             return new NoteDto
             {
                 Id = note.Id,
-                UserId = note.UserId,
+                TargetUserId = note.TargetUserId,
                 CreatorId = note.CreatorId,
                 Content = note.Content
             };

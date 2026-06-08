@@ -4,7 +4,7 @@ public class NoteDto
 {
     public int Id { get; set; }
 
-    public int UserId { get; set; }
+    public int TargetUserId { get; set; }
 
     public int CreatorId { get; set; }
 

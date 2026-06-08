@@ -10,7 +10,7 @@ namespace Edemly.Server.Application.ChatMembers
 
         Task<ServiceResult> AddMemberAsync(int chatId, int targetUserId, ChatMemberRole role);
 
-        Task<ServiceResult> UpdateAsync(int requesterId, UpdateChatMemberDto request);
+        Task<ServiceResult> UpdateAsync(int requesterId, int chatMemberId, UpdateChatMemberDto request);
 
         Task<ServiceResult> DeleteAsync(int requesterId, int chatMemberId);
 

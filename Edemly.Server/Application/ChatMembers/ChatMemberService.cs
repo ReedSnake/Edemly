@@ -56,14 +56,14 @@ namespace Edemly.Server.Application.ChatMembers
             return await AddMemberAsync(dbContextLease.Context, chatId, targetUserId, role);
         }
 
-        public async Task<ServiceResult> UpdateAsync(int requesterId, UpdateChatMemberDto request)
+        public async Task<ServiceResult> UpdateAsync(int requesterId, int chatMemberId, UpdateChatMemberDto request)
         {
             try
             {
                 await using var dbContextLease = ResolveDbContext();
                 var ctx = dbContextLease.Context;
 
-                var member = await ctx.Set<ChatMember>().FindAsync(request.Id);
+                var member = await ctx.Set<ChatMember>().FindAsync(chatMemberId);
                 if (member == null)
                 {
                     return ServiceResult.NotFound("Chat member not found");

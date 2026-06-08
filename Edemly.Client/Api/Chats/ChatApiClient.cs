@@ -11,7 +11,7 @@ public sealed class ChatApiClient : ApiClientBase, IChatApiClient
 
     public Task<List<ChatDto>> GetMyChatsAsync()
     {
-        return GetListAsync<ChatDto>("api/chat/my-chats");
+        return GetListAsync<ChatDto>("api/chats");
     }
 
     public async Task<ChatDto?> CreateOrGetPrivateChatAsync(int userId)
@@ -22,7 +22,7 @@ public sealed class ChatApiClient : ApiClientBase, IChatApiClient
         };
 
         var result = await PostAsync<CreatePrivateChatDto, CreateChatResponseDto>(
-            "api/chat/create-private",
+            "api/chats/private",
             request);
 
         return result?.Chat;
@@ -39,7 +39,7 @@ public sealed class ChatApiClient : ApiClientBase, IChatApiClient
         };
 
         var result = await PostAsync<CreateGroupChatDto, CreateGroupChatResponseDto>(
-            "api/chat/create-group",
+            "api/chats/group",
             request);
 
         return result?.Chat;
@@ -47,7 +47,7 @@ public sealed class ChatApiClient : ApiClientBase, IChatApiClient
 
     public Task<ChatDto?> GetChatByIdAsync(int chatId)
     {
-        return GetAsync<ChatDto>($"api/chat/{chatId}");
+        return GetAsync<ChatDto>($"api/chats/{chatId}");
     }
 
     public Task<(bool Success, string? Error)> UpdateChatAsync(
@@ -58,12 +58,11 @@ public sealed class ChatApiClient : ApiClientBase, IChatApiClient
     {
         var request = new UpdateChatDto
         {
-            Id = chatId,
             Name = name,
             Description = description,
             IconUrl = iconUrl
         };
 
-        return PutAsync("api/chat/update", request);
+        return PutAsync($"api/chats/{chatId}", request);
     }
 }

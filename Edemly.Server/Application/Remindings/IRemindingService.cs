@@ -7,7 +7,7 @@ namespace Edemly.Server.Application.Remindings
     {
         Task<ServiceResult> CreateAsync(int currentUserId, CreateRemindingDto request);
 
-        Task<ServiceResult> UpdateAsync(int currentUserId, UpdateRemindingDto request);
+        Task<ServiceResult> UpdateAsync(int currentUserId, int remindingId, UpdateRemindingDto request);
 
         Task<ServiceResult> DeleteAsync(int currentUserId, int remindingId);
 

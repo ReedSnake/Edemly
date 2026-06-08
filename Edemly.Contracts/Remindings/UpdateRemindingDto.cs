@@ -4,9 +4,6 @@ namespace Edemly.Contracts.Remindings
 {
     public class UpdateRemindingDto
     {
-        [Required]
-        public int Id { get; set; }
-
         [MaxLength(255)]
         public string? Name { get; set; }
 

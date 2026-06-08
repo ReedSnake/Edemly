@@ -8,7 +8,7 @@ public interface IRemindingApiClient
 
     Task<List<RemindingDto>> GetMyRemindingsAsync();
 
-    Task<bool> UpdateRemindingAsync(UpdateRemindingDto model);
+    Task<bool> UpdateRemindingAsync(UpdateRemindingDto model, int requestId);
 
     Task<bool> ToggleRemindingAsync(int id);
 

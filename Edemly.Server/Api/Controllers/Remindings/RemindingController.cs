@@ -6,18 +6,18 @@ using Microsoft.AspNetCore.Mvc;
 namespace Edemly.Server.Api.Controllers.Remindings
 {
     [ApiController]
-    [Route("api/[controller]")]
-    public class RemindingController : ApiControllerBase
+    [Authorize]
+    [Route("api/remindings")]
+    public class RemindingsController : ApiControllerBase
     {
         private readonly IRemindingService _remindingService;
 
-        public RemindingController(IRemindingService remindingService)
+        public RemindingsController(IRemindingService remindingService)
         {
             _remindingService = remindingService;
         }
 
-        [Authorize]
-        [HttpGet("id/{remindingId}")]
+        [HttpGet("{remindingId}")]
         public async Task<IActionResult> GetByIdAsync(int remindingId)
         {
             var unauthorizedResult = RequireCurrentUserId(out var currentUserId);
@@ -29,8 +29,7 @@ namespace Edemly.Server.Api.Controllers.Remindings
             return ToServiceResult(await _remindingService.GetByIdAsync(currentUserId, remindingId));
         }
 
-        [Authorize]
-        [HttpGet("my-remindings")]
+        [HttpGet]
         public async Task<IActionResult> GetByUserAsync()
         {
             var unauthorizedResult = RequireCurrentUserId(out var currentUserId);
@@ -42,8 +41,7 @@ namespace Edemly.Server.Api.Controllers.Remindings
             return ToServiceResult(await _remindingService.GetByUserAsync(currentUserId));
         }
 
-        [Authorize]
-        [HttpPost("create")]
+        [HttpPost]
         public async Task<IActionResult> CreateAsync([FromBody] CreateRemindingDto request)
         {
             var unauthorizedResult = RequireCurrentUserId(out var currentUserId);
@@ -55,9 +53,10 @@ namespace Edemly.Server.Api.Controllers.Remindings
             return ToServiceResult(await _remindingService.CreateAsync(currentUserId, request));
         }
 
-        [Authorize]
-        [HttpPut("update")]
-        public async Task<IActionResult> UpdateAsync([FromBody] UpdateRemindingDto request)
+        [HttpPut("{remindingId}")]
+        public async Task<IActionResult> UpdateAsync(
+            int remindingId,
+            [FromBody] UpdateRemindingDto request)
         {
             var unauthorizedResult = RequireCurrentUserId(out var currentUserId);
             if (unauthorizedResult != null)
@@ -65,12 +64,12 @@ namespace Edemly.Server.Api.Controllers.Remindings
                 return unauthorizedResult;
             }
 
-            return ToServiceResult(await _remindingService.UpdateAsync(currentUserId, request));
+            return ToServiceResult(
+                await _remindingService.UpdateAsync(currentUserId, remindingId, request));
         }
 
-        [Authorize]
-        [HttpPut("toggle-completion/{remindingId}")]
-        public async Task<IActionResult> ToggleAsync(int remindingId)
+        [HttpPatch("{remindingId}/completion")]
+        public async Task<IActionResult> ToggleCompletionAsync(int remindingId)
         {
             var unauthorizedResult = RequireCurrentUserId(out var currentUserId);
             if (unauthorizedResult != null)
@@ -78,11 +77,11 @@ namespace Edemly.Server.Api.Controllers.Remindings
                 return unauthorizedResult;
             }
 
-            return ToServiceResult(await _remindingService.ToggleCompletionAsync(currentUserId, remindingId));
+            return ToServiceResult(
+                await _remindingService.ToggleCompletionAsync(currentUserId, remindingId));
         }
 
-        [Authorize]
-        [HttpDelete("delete/{remindingId}")]
+        [HttpDelete("{remindingId}")]
         public async Task<IActionResult> DeleteAsync(int remindingId)
         {
             var unauthorizedResult = RequireCurrentUserId(out var currentUserId);

@@ -2,11 +2,8 @@
 
 namespace Edemly.Contracts.Notes;
 
-public class CreateNoteDto
+public sealed class SaveContactNoteDto
 {
-    [Required]
-    public int UserId { get; set; }
-
     [Required]
     public string Content { get; set; } = string.Empty;
 }

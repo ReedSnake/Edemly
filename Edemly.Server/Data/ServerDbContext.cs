@@ -48,9 +48,9 @@ namespace Edemly.Server.Data
                 .IsUnique();
 
             modelBuilder.Entity<Note>()
-                .HasOne(n => n.User)
+                .HasOne(n => n.TargetUser)
                 .WithMany(u => u.NotesAboutUser)
-                .HasForeignKey(n => n.UserId)
+                .HasForeignKey(n => n.TargetUserId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<Note>()

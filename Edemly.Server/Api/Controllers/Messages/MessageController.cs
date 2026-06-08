@@ -1,4 +1,3 @@
-using Edemly.Contracts.Messages;
 using Edemly.Server.Application.Messages;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -6,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Edemly.Server.Api.Controllers.Messages
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/chats/{chatId}/messages")]
     public class MessageController : ApiControllerBase
     {
         private readonly IMessageService _messageService;
@@ -17,8 +16,11 @@ namespace Edemly.Server.Api.Controllers.Messages
         }
 
         [Authorize]
-        [HttpGet("chat/{chatId}")]
-        public async Task<IActionResult> GetByChatAsync(int chatId, [FromQuery] int page = 1, [FromQuery] int pageSize = 20)
+        [HttpGet]
+        public async Task<IActionResult> GetByChatAsync(
+            int chatId,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 20)
         {
             var unauthorizedResult = RequireCurrentUserId(out var currentUserId);
             if (unauthorizedResult != null)
@@ -26,7 +28,8 @@ namespace Edemly.Server.Api.Controllers.Messages
                 return unauthorizedResult;
             }
 
-            return ToServiceResult(await _messageService.GetByChatAsync(currentUserId, chatId, page, pageSize));
+            return ToServiceResult(
+                await _messageService.GetByChatAsync(currentUserId, chatId, page, pageSize));
         }
     }
 }

@@ -12,7 +12,7 @@ namespace Edemly.Server.Data.Entities
 
         [Required]
         [Column("user_id")]
-        public int UserId { get; set; }
+        public int TargetUserId { get; set; }
 
         [Required]
         [Column("creator_id")]
@@ -22,8 +22,8 @@ namespace Edemly.Server.Data.Entities
         [Column("content", TypeName = "text")]
         public string Content { get; set; } = string.Empty;
 
-        [ForeignKey(nameof(UserId))]
-        public User User { get; set; } = null!;
+        [ForeignKey(nameof(TargetUserId))]
+        public User TargetUser { get; set; } = null!;
 
         [ForeignKey(nameof(CreatorId))]
         public User Creator { get; set; } = null!;

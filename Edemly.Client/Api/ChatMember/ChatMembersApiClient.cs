@@ -12,6 +12,6 @@ public sealed class ChatMembersApiClient : ApiClientBase, IChatMembersApiClient
 
     public Task<List<ChatMemberDto>> GetChatMembersAsync(int chatId)
     {
-        return GetListAsync<ChatMemberDto>($"api/chatmember/list/{chatId}");
+        return GetListAsync<ChatMemberDto>($"api/chats/{chatId}/members");
     }
 }

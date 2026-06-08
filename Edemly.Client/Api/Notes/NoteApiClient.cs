@@ -12,30 +12,34 @@ public sealed class NoteApiClient : ApiClientBase, INoteApiClient
 
     public async Task<string?> GetContactNoteAsync(int userId)
     {
-        var result = await GetAsync<NoteResponseDto>($"api/user/{userId}/note");
-        return result?.Note;
+        var result = await GetAsync<ContactNoteResponseDto>($"api/users/{userId}/note");
+        return result?.Note?.Content;
     }
 
     public async Task<bool> SaveContactNoteAsync(int userId, string noteText)
     {
-        var request = new SaveContactNoteRequestDto
+        var request = new SaveContactNoteDto
         {
-            UserId = userId,
-            NoteText = noteText
+            Content = noteText
         };
 
-        var result = await PostAsync<SaveContactNoteRequestDto, object>("api/note/create", request);
-        return result != null;
+        var result = await PutAsync($"api/users/{userId}/note", request);
+        return result.Success;
     }
 
     public Task<bool> DeleteContactNoteAsync(int userId)
     {
-        return DeleteAsync($"api/user/{userId}/note");
+        return DeleteAsync($"api/users/{userId}/note");
     }
 
     public async Task<int> GetNotesCountAsync()
     {
-        var result = await GetAsync<NoteCountResponseDto>("api/note/count");
+        var result = await GetAsync<NoteCountResponseDto>("api/notes/count");
         return result?.Count ?? 0;
+    }
+
+    private sealed class ContactNoteResponseDto
+    {
+        public NoteDto? Note { get; set; }
     }
 }

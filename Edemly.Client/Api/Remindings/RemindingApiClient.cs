@@ -11,30 +11,28 @@ public sealed class RemindingApiClient : ApiClientBase, IRemindingApiClient
 
     public Task<RemindingDto?> CreateRemindingAsync(CreateRemindingDto model)
     {
-        return PostAsync<CreateRemindingDto, RemindingDto>(
-            "api/reminding/create",
-            model);
+        return PostAsync<CreateRemindingDto, RemindingDto>("api/remindings", model);
     }
 
     public Task<List<RemindingDto>> GetMyRemindingsAsync()
     {
-        return GetListAsync<RemindingDto>("api/reminding/my-remindings");
+        return GetListAsync<RemindingDto>("api/remindings");
     }
 
-    public async Task<bool> UpdateRemindingAsync(UpdateRemindingDto model)
+    public async Task<bool> UpdateRemindingAsync(UpdateRemindingDto model, int remindingId)
     {
-        var result = await PutAsync("api/reminding/update", model);
+        var result = await PutAsync($"api/remindings/{remindingId}", model);
         return result.Success;
     }
 
     public async Task<bool> ToggleRemindingAsync(int id)
     {
-        var result = await PutAsync<object?>($"api/reminding/toggle-completion/{id}", null);
+        var result = await PatchAsync<object?>($"api/remindings/{id}/completion", null);
         return result.Success;
     }
 
     public Task<bool> DeleteRemindingAsync(int id)
     {
-        return DeleteAsync($"api/reminding/delete/{id}");
+        return DeleteAsync($"api/remindings/{id}");
     }
 }

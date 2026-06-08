@@ -289,7 +289,6 @@ namespace Edemly.Client.Presentation.Pages.Calendar
 
             var model = new UpdateRemindingDto
             {
-                Id = originalTask.Id,
                 Name = title.Text.Trim(),
                 Content = desc?.Text.Trim(),
                 ShowTime = hasTime,
@@ -299,7 +298,7 @@ namespace Edemly.Client.Presentation.Pages.Calendar
                 IsCompleted = originalTask.IsCompleted
             };
 
-            await _apiClient.UpdateRemindingAsync(model);
+            await _apiClient.UpdateRemindingAsync(model, originalTask.Id);
 
             await UpdateCalendarAsync();
             UpdateTasksList(_selectedDateForTask);

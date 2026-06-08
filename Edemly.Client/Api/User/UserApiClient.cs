@@ -19,7 +19,7 @@ public sealed class UserApiClient : ApiClientBase, IUserApiClient
     {
         try
         {
-            var url = UrlHelper.BuildRelativeUrl("api/user/me");
+            var url = UrlHelper.BuildRelativeUrl("api/users/me");
 
             System.Diagnostics.Debug.WriteLine($"[API] GET {HttpClient.BaseAddress}{url}");
 
@@ -43,8 +43,7 @@ public sealed class UserApiClient : ApiClientBase, IUserApiClient
     {
         try
         {
-            var url = UrlHelper.BuildRelativeUrl(
-                $"api/user/search?query={Uri.EscapeDataString(query)}");
+            var url = UrlHelper.BuildRelativeUrl($"api/users/search?query={Uri.EscapeDataString(query)}");
 
             System.Diagnostics.Debug.WriteLine($"[API] GET {HttpClient.BaseAddress}{url}");
 
@@ -68,7 +67,7 @@ public sealed class UserApiClient : ApiClientBase, IUserApiClient
     {
         try
         {
-            var url = UrlHelper.BuildRelativeUrl($"api/user/id/{userId}");
+            var url = UrlHelper.BuildRelativeUrl($"api/users/{userId}");
 
             System.Diagnostics.Debug.WriteLine($"[API] GET {HttpClient.BaseAddress}{url}");
 
@@ -104,7 +103,7 @@ public sealed class UserApiClient : ApiClientBase, IUserApiClient
 
             using var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-            var url = UrlHelper.BuildRelativeUrl("api/user/update");
+            var url = UrlHelper.BuildRelativeUrl("api/users/me");
             var response = await HttpClient.PutAsync(url, content);
 
             if (response.IsSuccessStatusCode)

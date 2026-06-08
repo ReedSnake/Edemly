@@ -122,6 +122,41 @@ public abstract class ApiClientBase
             return false;
         }
     }
+    protected async Task<(bool Success, string? Error)> PatchAsync<TRequest>(
+    string endpoint,
+    TRequest? request)
+    {
+        try
+        {
+            var url = UrlHelper.BuildRelativeUrl(endpoint);
+            System.Diagnostics.Debug.WriteLine($"[API] PATCH {HttpClient.BaseAddress}{url}");
+
+            HttpResponseMessage response;
+
+            if (request == null)
+            {
+                response = await HttpClient.PatchAsync(url, null);
+            }
+            else
+            {
+                response = await HttpClient.PatchAsJsonAsync(url, request, JsonOptions);
+            }
+
+            if (response.IsSuccessStatusCode)
+            {
+                return (true, null);
+            }
+
+            var error = await response.Content.ReadAsStringAsync();
+            return (false, error);
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[API] PATCH {endpoint} failed: {ex.Message}");
+            return (false, ex.Message);
+        }
+    }
+
     protected static T? Deserialize<T>(string json)
     {
         if (string.IsNullOrWhiteSpace(json))

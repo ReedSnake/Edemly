@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Edemly.Server.Api.Controllers.Chats
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/chats")]
     public class ChatController : ApiControllerBase
     {
         private readonly IChatService _chatService;
@@ -21,7 +21,7 @@ namespace Edemly.Server.Api.Controllers.Chats
         }
 
         [Authorize]
-        [HttpPost("create-private")]
+        [HttpPost("private")]
         public async Task<IActionResult> CreatePrivateChatAsync([FromBody] CreatePrivateChatDto request)
         {
             var unauthorizedResult = RequireCurrentUserId(out var currentUserId);
@@ -36,7 +36,7 @@ namespace Edemly.Server.Api.Controllers.Chats
         }
 
         [Authorize]
-        [HttpPost("create-group")]
+        [HttpPost("group")]
         public async Task<IActionResult> CreateGroupChatAsync([FromBody] CreateGroupChatDto request)
         {
             var unauthorizedResult = RequireCurrentUserId(out var requesterId);
@@ -55,7 +55,7 @@ namespace Edemly.Server.Api.Controllers.Chats
         }
 
         [Authorize]
-        [HttpGet("my-chats")]
+        [HttpGet]
         public async Task<IActionResult> GetMyChatsAsync()
         {
             var unauthorizedResult = RequireCurrentUserId(out var currentUserId);
@@ -81,10 +81,11 @@ namespace Edemly.Server.Api.Controllers.Chats
         }
 
         [Authorize]
-        [HttpPut("update")]
-        public async Task<IActionResult> UpdateChatAsync([FromBody] UpdateChatDto request)
+        [HttpPut("{chatId}")]
+        public async Task<IActionResult> UpdateChatAsync(int chatId, [FromBody] UpdateChatDto request)
         {
-            return ToServiceResult(await _chatService.UpdateAsync(request.Id, request.Name, request.Description, request.IconUrl));
+            return ToServiceResult(
+                await _chatService.UpdateAsync(chatId, request.Name, request.Description, request.IconUrl));
         }
     }
 }

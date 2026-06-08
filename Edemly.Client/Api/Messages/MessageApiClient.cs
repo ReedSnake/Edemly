@@ -15,6 +15,6 @@ public sealed class MessageApiClient : ApiClientBase, IMessageApiClient
         int pageSize = 50)
     {
         return GetListAsync<MessageDto>(
-            $"api/message/chat/{chatId}?page={page}&pageSize={pageSize}");
+            $"api/chats/{chatId}/messages?page={page}&pageSize={pageSize}");
     }
 }

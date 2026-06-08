@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Edemly.Server.Api.Controllers.Chats
 {
     [ApiController]
-    [Route("api/chat")]
+    [Route("api/chats")]
     public class ChatFilesController : ApiControllerBase
     {
         private readonly IChatService _chatService;
@@ -25,8 +25,9 @@ namespace Edemly.Server.Api.Controllers.Chats
         }
 
         [Authorize]
-        [HttpPost("upload-icon")]
-        public async Task<IActionResult> UploadIconAsync()
+        [HttpPost("{chatId}/icon")]
+        [RequestSizeLimit(52428800)]
+        public async Task<IActionResult> UploadIconAsync(int chatId, IFormFile file)
         {
             var unauthorizedResult = RequireCurrentUserId(out var currentUserId);
             if (unauthorizedResult != null)
@@ -34,33 +35,45 @@ namespace Edemly.Server.Api.Controllers.Chats
                 return unauthorizedResult;
             }
 
-            var chatIdStr = Request.Form["chatId"].FirstOrDefault();
-            if (string.IsNullOrEmpty(chatIdStr) || !int.TryParse(chatIdStr, out var chatId))
-            {
-                return ToServiceResult(ServiceResult.BadRequest("Invalid chat ID"));
-            }
-
-            var file = Request.Form.Files.FirstOrDefault();
             if (file == null || file.Length == 0)
             {
                 return ToServiceResult(ServiceResult.BadRequest("No file uploaded"));
             }
 
+            var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif" };
+            var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
+
+            if (!allowedExtensions.Contains(extension))
+            {
+                return ToServiceResult(
+                    ServiceResult.BadRequest("Only image files (jpg, jpeg, png, gif) are allowed"));
+            }
+
             try
             {
                 using var stream = file.OpenReadStream();
+
+                var fileName =
+                    $"group_{chatId}_{DateTime.UtcNow.Ticks}{extension}";
+
                 var uploadResult = await _fileStorageService.UploadFileAsync(
                     currentUserId,
                     stream,
-                    $"group_{chatId}_{DateTime.UtcNow.Ticks}{Path.GetExtension(file.FileName)}",
+                    fileName,
                     file.ContentType ?? "image/jpeg");
 
                 if (!uploadResult.Success)
                 {
-                    return ToServiceResult(ServiceResult.BadRequest(uploadResult.Error ?? "Failed to upload file"));
+                    return ToServiceResult(
+                        ServiceResult.BadRequest(uploadResult.Error ?? "Failed to upload file"));
                 }
 
-                var updateResult = await _chatService.UpdateAsync(chatId, name: null, description: null, iconUrl: uploadResult.Url);
+                var updateResult = await _chatService.UpdateAsync(
+                    chatId,
+                    name: null,
+                    description: null,
+                    iconUrl: uploadResult.Url);
+
                 if (!updateResult.Success)
                 {
                     return ToServiceResult(updateResult);
