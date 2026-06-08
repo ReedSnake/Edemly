@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
-namespace Edemly.Server
+namespace Edemly.Server.Infrastructure.BackgroundServices
 {
     public class ServerMaintenanceWorker : BackgroundService
     {

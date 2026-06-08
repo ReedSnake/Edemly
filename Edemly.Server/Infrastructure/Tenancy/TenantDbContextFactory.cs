@@ -2,7 +2,7 @@ using Edemly.Server.Data;
 using Edemly.Server.Data.Entities;
 using Microsoft.EntityFrameworkCore;
 
-namespace Edemly.Server.Services
+namespace Edemly.Server.Infrastructure.Tenancy
 {
     public class TenantDbContextFactory : ITenantDbContextFactory
     {

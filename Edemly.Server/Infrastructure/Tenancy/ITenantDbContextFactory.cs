@@ -1,7 +1,7 @@
 using Edemly.Server.Data;
 using Edemly.Server.Data.Entities;
 
-namespace Edemly.Server.Services
+namespace Edemly.Server.Infrastructure.Tenancy
 {
     public interface ITenantDbContextFactory
     {

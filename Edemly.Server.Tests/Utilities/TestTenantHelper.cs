@@ -1,5 +1,5 @@
 using Edemly.Server.Data.Entities;
-using Edemly.Server.Services;
+using Edemly.Server.Infrastructure.Tenancy;
 using Edemly.Server.Tests.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 

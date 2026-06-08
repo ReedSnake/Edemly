@@ -1,6 +1,8 @@
 using Edemly.Contracts.Payments;
-using Edemly.Server.Api.Services;
+using Edemly.Server.Application.Common;
+using Edemly.Server.Application.Payments;
 using Edemly.Server.Data.Entities;
+using Edemly.Server.Infrastructure.Payments;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;

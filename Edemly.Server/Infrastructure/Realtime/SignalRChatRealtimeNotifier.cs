@@ -1,5 +1,6 @@
+using Edemly.Contracts.Chats;
 using Edemly.Server.Api.Hubs;
-using Edemly.Server.Api.Services;
+using Edemly.Server.Application.Chats;
 using Microsoft.AspNetCore.SignalR;
 
 namespace Edemly.Server.Infrastructure.Realtime

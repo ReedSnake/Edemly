@@ -1,9 +1,13 @@
+using Edemly.Contracts.Messages;
 using Edemly.Server.Api.Middleware; // ITenantProvider
-using Edemly.Server.Api.Services;
+using Edemly.Server.Application.Common.Mappers;
+using Edemly.Server.Application.Messages;
+using Edemly.Server.Application.Remindings;
 using Edemly.Server.Data;
 using Edemly.Server.Data.Entities;
-using Edemly.Server.Services;
-using Edemly.Server.Utils;
+using Edemly.Server.Infrastructure.Caching;
+using Edemly.Server.Infrastructure.Presence;
+using Edemly.Server.Infrastructure.Tenancy;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
@@ -17,14 +21,14 @@ namespace Edemly.Server.Api.Hubs
         private readonly IMessageService _messageService;
         private readonly IRemindingService _remindingService;
         private readonly ServerDbContext _serverDb;
-        private readonly Edemly.Server.Services.UserPresenceService _presenceService;
+        private readonly UserPresenceService _presenceService;
         private readonly ILogger<MainHub> _logger;
         private readonly ITenantProvider _tenantProvider;
         private readonly ITenantDbContextFactory _tenantDbFactory;
         private readonly IMemoryCache _cache;
         private readonly ChatCacheRegistry _cacheRegistry;
 
-        public MainHub(IRemindingService remindingService, IMessageService messageService, ServerDbContext serverDb, Edemly.Server.Services.UserPresenceService presenceService, ILogger<MainHub> logger, ITenantProvider tenantProvider, ITenantDbContextFactory tenantDbFactory, IMemoryCache cache, ChatCacheRegistry cacheRegistry)
+        public MainHub(IRemindingService remindingService, IMessageService messageService, ServerDbContext serverDb, UserPresenceService presenceService, ILogger<MainHub> logger, ITenantProvider tenantProvider, ITenantDbContextFactory tenantDbFactory, IMemoryCache cache, ChatCacheRegistry cacheRegistry)
         {
             _messageService = messageService;
             _remindingService = remindingService;
@@ -330,7 +334,7 @@ namespace Edemly.Server.Api.Hubs
             }
         }
 
-        public Models.UserOnlineStatus? GetUserStatus(int userId)
+        public UserOnlineStatus? GetUserStatus(int userId)
         {
             return _presenceService.GetUserStatus(userId);
         }

@@ -37,6 +37,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Api\Controllers\Admin\**" />
+    <Content Remove="Api\Controllers\Admin\**" />
+    <EmbeddedResource Remove="Api\Controllers\Admin\**" />
+    <None Remove="Api\Controllers\Admin\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.8" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="9.0.0" />
@@ -58,7 +65,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Api\Controllers\Admin\" />
     <Folder Include="wwwroot\\" />
   </ItemGroup>
 

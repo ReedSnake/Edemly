@@ -1,11 +1,27 @@
 using Edemly.Server.Api.Hubs;
 using Edemly.Server.Api.Middleware;
-using Edemly.Server.Api.Services;
+using Edemly.Server.Application.Auth;
+using Edemly.Server.Application.ChatMembers;
+using Edemly.Server.Application.Chats;
+using Edemly.Server.Application.Common;
+using Edemly.Server.Application.Companies;
+using Edemly.Server.Application.Messages;
+using Edemly.Server.Application.Notes;
+using Edemly.Server.Application.Payments;
+using Edemly.Server.Application.Remindings;
+using Edemly.Server.Application.Users;
+using Edemly.Server.Application.Welcome;
 using Edemly.Server.Configuration;
 using Edemly.Server.Data;
+using Edemly.Server.Infrastructure.Auth;
+using Edemly.Server.Infrastructure.BackgroundServices;
+using Edemly.Server.Infrastructure.Caching;
+using Edemly.Server.Infrastructure.Files;
+using Edemly.Server.Infrastructure.Hosting;
+using Edemly.Server.Infrastructure.Payments;
+using Edemly.Server.Infrastructure.Presence;
 using Edemly.Server.Infrastructure.Realtime;
-using Edemly.Server.Services;
-using Edemly.Server.Utils;
+using Edemly.Server.Infrastructure.Tenancy;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -133,7 +149,7 @@ namespace Edemly.Server
             builder.Services.AddScoped<ICompanyService, CompanyService>();
             builder.Services.AddHttpClient<WayForPayService>();
 
-            builder.Services.AddSingleton<Services.UserPresenceService>();
+            builder.Services.AddSingleton<UserPresenceService>();
 
             builder.Services.AddAuthentication(options =>
             {

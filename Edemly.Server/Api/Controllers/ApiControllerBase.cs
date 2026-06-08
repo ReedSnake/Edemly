@@ -1,4 +1,4 @@
-using Edemly.Server.Api.Services;
+using Edemly.Server.Application.Common;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Edemly.Server.Api.Controllers

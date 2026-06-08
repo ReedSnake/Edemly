@@ -1,4 +1,4 @@
-namespace Edemly.Server.Services
+namespace Edemly.Server.Infrastructure.Auth
 {
     public interface IEmailService
     {

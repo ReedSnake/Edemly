@@ -4,7 +4,7 @@ using sib_api_v3_sdk.Model;
 using System.Collections.Concurrent;
 using BrevoConfig = sib_api_v3_sdk.Client.Configuration;
 
-namespace Edemly.Server.Services
+namespace Edemly.Server.Infrastructure.Auth
 {
     internal class VerificationCode
     {

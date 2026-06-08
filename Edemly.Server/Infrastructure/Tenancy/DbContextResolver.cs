@@ -1,9 +1,8 @@
 ﻿using Edemly.Server.Api.Middleware;
 using Edemly.Server.Data;
-using Edemly.Server.Services;
 using Microsoft.EntityFrameworkCore;
 
-namespace Edemly.Server.Utils
+namespace Edemly.Server.Infrastructure.Tenancy
 {
     public class DbContextResolver
     {

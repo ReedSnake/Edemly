@@ -1,6 +1,6 @@
 using System.Security.Claims;
 
-namespace Edemly.Server.Services
+namespace Edemly.Server.Infrastructure.Auth
 {
     public interface IJwtService
     {

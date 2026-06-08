@@ -1,4 +1,4 @@
-namespace Edemly.Server.Models
+namespace Edemly.Server.Infrastructure.Presence
 {
     public class UserOnlineStatus
     {

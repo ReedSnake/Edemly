@@ -1,6 +1,6 @@
 using Edemly.Contracts.Auth;
 using Edemly.Server.Data;
-using Edemly.Server.Services;
+using Edemly.Server.Infrastructure.Tenancy;
 using Edemly.Server.Tests.Infrastructure;
 using Edemly.Server.Tests.TestData;
 using Edemly.Server.Tests.Utilities;

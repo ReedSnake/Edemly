@@ -1,4 +1,7 @@
-using Edemly.Server.Api.Services;
+using Edemly.Contracts.Users;
+using Edemly.Server.Application.Common;
+using Edemly.Server.Application.Users;
+using Edemly.Server.Infrastructure.Files;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.StaticFiles;

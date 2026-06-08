@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace Edemly.Server.Services
+namespace Edemly.Server.Infrastructure.Auth
 {
     [Table("email_codes")]
     public class EmailCode

@@ -1,4 +1,4 @@
-namespace Edemly.Server.Api.Services
+namespace Edemly.Server.Infrastructure.Files
 {
     public interface IFileStorageService
     {

@@ -1,8 +1,9 @@
 using Edemly.Server.Api.Middleware;
 using Edemly.Server.Data;
+using Edemly.Server.Infrastructure.Hosting;
 using Microsoft.EntityFrameworkCore;
 
-namespace Edemly.Server.Api.Services
+namespace Edemly.Server.Infrastructure.Files
 {
     public class FileStorageService : IFileStorageService
     {

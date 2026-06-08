@@ -1,9 +1,11 @@
 using Edemly.Server.Api.Controllers.Payments;
 using Edemly.Server.Api.Middleware;
-using Edemly.Server.Api.Services;
+using Edemly.Server.Application.Payments;
 using Edemly.Server.Data;
 using Edemly.Server.Data.Entities;
-using Edemly.Server.Services;
+using Edemly.Server.Infrastructure.Hosting;
+using Edemly.Server.Infrastructure.Payments;
+using Edemly.Server.Infrastructure.Tenancy;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.Sqlite;

@@ -1,5 +1,5 @@
 using Edemly.Contracts.Companies;
-using Edemly.Server.Api.Services;
+using Edemly.Server.Application.Companies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 

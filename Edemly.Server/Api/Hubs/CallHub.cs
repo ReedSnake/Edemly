@@ -1,13 +1,16 @@
 ﻿using Edemly.Server.Api.Middleware; // ITenantProvider
-using Edemly.Server.Api.Services;
+using Edemly.Server.Application.Messages;
+using Edemly.Server.Application.Remindings;
 using Edemly.Server.Data;
 using Edemly.Server.Data.Entities;
-using Edemly.Server.Services;
+using Edemly.Server.Infrastructure.Presence;
+using Edemly.Server.Infrastructure.Tenancy;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using System.Text.Json;
+
 
 namespace Edemly.Server.Api.Hubs
 {
@@ -17,7 +20,7 @@ namespace Edemly.Server.Api.Hubs
         private readonly IMessageService _messageService;
         private readonly IRemindingService _remindingService;
         private readonly ServerDbContext _serverDb;
-        private readonly Services.UserPresenceService _presenceService;
+        private readonly UserPresenceService _presenceService;
         private readonly ILogger<CallHub> _logger;
         private readonly ITenantProvider _tenantProvider;
         private readonly ITenantDbContextFactory _tenantDbFactory;
@@ -26,7 +29,7 @@ namespace Edemly.Server.Api.Hubs
             IRemindingService remindingService,
             IMessageService messageService,
             ServerDbContext serverDb,
-            Services.UserPresenceService presenceService,
+            UserPresenceService presenceService,
             ILogger<CallHub> logger,
             ITenantProvider tenantProvider,
             ITenantDbContextFactory tenantDbFactory)

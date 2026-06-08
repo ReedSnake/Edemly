@@ -1,11 +1,12 @@
 using Edemly.Contracts.Messages;
 using Edemly.Server.Api.Controllers.Messages;
 using Edemly.Server.Api.Middleware;
-using Edemly.Server.Api.Services;
+using Edemly.Server.Application.Common;
+using Edemly.Server.Application.Messages;
 using Edemly.Server.Data;
 using Edemly.Server.Data.Entities;
-using Edemly.Server.Services;
-using Edemly.Server.Utils;
+using Edemly.Server.Infrastructure.Caching;
+using Edemly.Server.Infrastructure.Tenancy;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.Sqlite;

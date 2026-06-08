@@ -1,4 +1,5 @@
-using Edemly.Server.Api.Services;
+using Edemly.Contracts.ChatMembers;
+using Edemly.Server.Application.ChatMembers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 

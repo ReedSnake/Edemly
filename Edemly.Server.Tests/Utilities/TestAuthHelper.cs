@@ -1,5 +1,5 @@
 using Edemly.Contracts.Auth;
-using Edemly.Server.Services;
+using Edemly.Server.Infrastructure.Auth;
 using Edemly.Server.Tests.Infrastructure;
 using Edemly.Server.Tests.TestData;
 using Microsoft.Extensions.DependencyInjection;

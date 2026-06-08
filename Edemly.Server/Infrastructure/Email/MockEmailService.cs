@@ -1,7 +1,7 @@
 ﻿using Edemly.Server.Configuration;
 using System.Collections.Concurrent;
 
-namespace Edemly.Server.Services
+namespace Edemly.Server.Infrastructure.Auth
 {
     public class MockEmailService : IEmailService
     {

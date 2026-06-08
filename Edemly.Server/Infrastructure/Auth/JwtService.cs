@@ -4,7 +4,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 
-namespace Edemly.Server.Services
+namespace Edemly.Server.Infrastructure.Auth
 {
     public class JwtService : IJwtService
     {

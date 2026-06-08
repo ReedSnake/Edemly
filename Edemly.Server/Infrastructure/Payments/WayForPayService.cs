@@ -1,9 +1,11 @@
 ﻿using Edemly.Contracts.Payments;
+using Edemly.Server.Application.Payments;
 using Edemly.Server.Data.Entities;
+using Edemly.Server.Infrastructure.Hosting;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace Edemly.Server.Api.Services
+namespace Edemly.Server.Infrastructure.Payments
 {
     public class WayForPayService
     {

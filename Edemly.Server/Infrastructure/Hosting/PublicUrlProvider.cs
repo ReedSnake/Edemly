@@ -1,4 +1,4 @@
-namespace Edemly.Server
+namespace Edemly.Server.Infrastructure.Hosting
 {
     public class PublicUrlProvider : IPublicUrlProvider
     {

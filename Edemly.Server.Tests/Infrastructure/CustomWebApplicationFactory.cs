@@ -1,6 +1,8 @@
 using Edemly.Server.Data;
 using Edemly.Server.Data.Entities;
-using Edemly.Server.Services;
+using Edemly.Server.Infrastructure.Auth;
+using Edemly.Server.Infrastructure.BackgroundServices;
+using Edemly.Server.Infrastructure.Tenancy;
 using Edemly.Server.Tests.Utilities;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;

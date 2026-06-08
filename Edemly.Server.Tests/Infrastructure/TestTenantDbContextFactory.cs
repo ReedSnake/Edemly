@@ -1,6 +1,6 @@
 using Edemly.Server.Data;
 using Edemly.Server.Data.Entities;
-using Edemly.Server.Services;
+using Edemly.Server.Infrastructure.Tenancy;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Concurrent;

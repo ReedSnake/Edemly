@@ -1,4 +1,5 @@
 using System.Runtime.InteropServices;
+namespace Edemly.Server.Infrastructure.Hosting;
 
 public static class DaemonHelper
 {

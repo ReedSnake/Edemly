@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Caching.Memory;
 
-namespace Edemly.Server.Utils
+namespace Edemly.Server.Infrastructure.Caching
 {
     public class ChatCacheRegistry //I use this so cache gets cleared when messages in a specific chat get changed in any way
     {

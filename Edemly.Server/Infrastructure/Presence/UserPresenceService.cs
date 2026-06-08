@@ -1,7 +1,6 @@
-using Edemly.Server.Models;
 using System.Collections.Concurrent;
 
-namespace Edemly.Server.Services
+namespace Edemly.Server.Infrastructure.Presence
 {
     public class UserPresenceService
     {
