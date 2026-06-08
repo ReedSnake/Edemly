@@ -7,11 +7,11 @@ using System.Windows.Controls;
 
 namespace Edemly.Client.Presentation.Pages.Info
 {
-    public partial class Page_aboutapp : ThemedPage
+    public partial class AboutAppPage : ThemedPage
     {
         private readonly IExternalNavigationLauncher _externalNavigationLauncher;
 
-        public Page_aboutapp()
+        public AboutAppPage()
         {
             InitializeComponent();
 

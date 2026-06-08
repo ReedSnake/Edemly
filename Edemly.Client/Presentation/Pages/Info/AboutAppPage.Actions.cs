@@ -5,7 +5,7 @@ using System.Windows.Navigation;
 
 namespace Edemly.Client.Presentation.Pages.Info
 {
-    public partial class Page_aboutapp
+    public partial class AboutAppPage
     {
         private void Back_Click(object sender, RoutedEventArgs e)
         {

@@ -155,7 +155,7 @@ namespace Edemly.Client.Presentation.Pages.Main
             var mainWindow = Window.GetWindow(this) as MainWindow;
             if (mainWindow?.MainFrame != null)
             {
-                mainWindow.MainFrame.Navigate(new Page_aboutapp());
+                mainWindow.MainFrame.Navigate(new AboutAppPage());
             }
             CloseMenu();
         }

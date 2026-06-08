@@ -6,7 +6,7 @@ using System.Diagnostics;
 
 namespace Edemly.Client.Presentation.Pages.Info
 {
-    public partial class Page_aboutapp
+    public partial class AboutAppPage
     {
         private void LoadTexts()
         {
