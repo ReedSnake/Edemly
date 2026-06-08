@@ -1,7 +1,7 @@
+using Edemly.Server.Api.Hubs;
 using Edemly.Server.Configuration;
 using Edemly.Server.Data;
 using Edemly.Server.Data.Entities;
-using Edemly.Server.Hubs;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;

@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.SignalR;
 using System.Security.Claims;
 
-namespace Edemly.Server.Hubs
+namespace Edemly.Server.Api.Hubs
 {
     public class JwtUserIdProvider : IUserIdProvider
     {

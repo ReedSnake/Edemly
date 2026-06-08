@@ -1,5 +1,5 @@
+using Edemly.Server.Api.Hubs;
 using Edemly.Server.Api.Services;
-using Edemly.Server.Hubs;
 using Microsoft.AspNetCore.SignalR;
 
 namespace Edemly.Server.Infrastructure.Realtime

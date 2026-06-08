@@ -1,8 +1,8 @@
+using Edemly.Server.Api.Hubs;
 using Edemly.Server.Api.Middleware;
 using Edemly.Server.Api.Services;
 using Edemly.Server.Configuration;
 using Edemly.Server.Data;
-using Edemly.Server.Hubs;
 using Edemly.Server.Infrastructure.Realtime;
 using Edemly.Server.Services;
 using Edemly.Server.Utils;
@@ -183,7 +183,7 @@ namespace Edemly.Server
                 options.EnableDetailedErrors = signalRSettings.EnableDetailedErrors;
             });
 
-            builder.Services.AddSingleton<Microsoft.AspNetCore.SignalR.IUserIdProvider, Hubs.JwtUserIdProvider>();
+            builder.Services.AddSingleton<Microsoft.AspNetCore.SignalR.IUserIdProvider, JwtUserIdProvider>();
 
             builder.Services.AddCors(options =>
             {

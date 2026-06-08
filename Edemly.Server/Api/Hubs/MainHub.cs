@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 
-namespace Edemly.Server.Hubs
+namespace Edemly.Server.Api.Hubs
 {
     [Authorize]
     public class MainHub : Hub
@@ -17,14 +17,14 @@ namespace Edemly.Server.Hubs
         private readonly IMessageService _messageService;
         private readonly IRemindingService _remindingService;
         private readonly ServerDbContext _serverDb;
-        private readonly Services.UserPresenceService _presenceService;
+        private readonly Edemly.Server.Services.UserPresenceService _presenceService;
         private readonly ILogger<MainHub> _logger;
         private readonly ITenantProvider _tenantProvider;
         private readonly ITenantDbContextFactory _tenantDbFactory;
         private readonly IMemoryCache _cache;
         private readonly ChatCacheRegistry _cacheRegistry;
 
-        public MainHub(IRemindingService remindingService, IMessageService messageService, ServerDbContext serverDb, Services.UserPresenceService presenceService, ILogger<MainHub> logger, ITenantProvider tenantProvider, ITenantDbContextFactory tenantDbFactory, IMemoryCache cache, ChatCacheRegistry cacheRegistry)
+        public MainHub(IRemindingService remindingService, IMessageService messageService, ServerDbContext serverDb, Edemly.Server.Services.UserPresenceService presenceService, ILogger<MainHub> logger, ITenantProvider tenantProvider, ITenantDbContextFactory tenantDbFactory, IMemoryCache cache, ChatCacheRegistry cacheRegistry)
         {
             _messageService = messageService;
             _remindingService = remindingService;

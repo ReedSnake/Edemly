@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using System.Text.Json;
 
-namespace Edemly.Server.Hubs
+namespace Edemly.Server.Api.Hubs
 {
     [Authorize]
     public class CallHub : Hub
