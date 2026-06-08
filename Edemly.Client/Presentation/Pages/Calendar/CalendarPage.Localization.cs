@@ -10,7 +10,7 @@ using System.Windows.Shapes;
 
 namespace Edemly.Client.Presentation.Pages.Calendar
 {
-    public partial class Page_calendar
+    public partial class CalendarPage
     {
         protected override void ApplyTheme()
         {
@@ -159,17 +159,17 @@ namespace Edemly.Client.Presentation.Pages.Calendar
 
         private string GetLocalizedCategoryName(int type)
         {
-            return PageCalendarCategoryCatalog.GetLocalizedName(type);
+            return CalendarPageCategoryCatalog.GetLocalizedName(type);
         }
 
         private int GetCategoryTypeByName(string categoryName)
         {
-            return PageCalendarCategoryCatalog.GetTypeByName(categoryName);
+            return CalendarPageCategoryCatalog.GetTypeByName(categoryName);
         }
 
         private static string GetCategoryColor(int type)
         {
-            return PageCalendarCategoryCatalog.GetColor(type);
+            return CalendarPageCategoryCatalog.GetColor(type);
         }
 
         private void UpdateFilterButtonsStyle(string activeFilter)

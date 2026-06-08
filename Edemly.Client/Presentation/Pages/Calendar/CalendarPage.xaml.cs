@@ -12,7 +12,7 @@ using System.Windows.Shapes;
 using Edemly.Client.Api.Remindings;
 namespace Edemly.Client.Presentation.Pages.Calendar
 {
-    public partial class Page_calendar : ThemedPage
+    public partial class CalendarPage : ThemedPage
     {
         private Popup _dayTasksPopup;
 
@@ -22,11 +22,11 @@ namespace Edemly.Client.Presentation.Pages.Calendar
         private string _currentFilter = string.Empty;
         private readonly IRemindingApiClient _apiClient;
 
-        public Page_calendar()
+        public CalendarPage()
         {
             InitializeComponent();
 
-            _dayTasksPopup = PageCalendarPopupFactory.CreateDayTasksPopup();
+            _dayTasksPopup = CalendarPagePopupFactory.CreateDayTasksPopup();
 
             try
             {

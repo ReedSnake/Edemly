@@ -4,7 +4,7 @@ using System.Windows.Controls.Primitives;
 
 namespace Edemly.Client.Presentation.Pages.Calendar.Helpers
 {
-    internal static class PageCalendarPopupFactory
+    internal static class CalendarPagePopupFactory
     {
         internal static Popup CreateDayTasksPopup()
         {

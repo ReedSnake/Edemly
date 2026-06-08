@@ -8,7 +8,7 @@ using System.Windows.Shapes;
 
 namespace Edemly.Client.Presentation.Pages.Calendar
 {
-    public partial class Page_calendar
+    public partial class CalendarPage
     {
         private void ShowAddTaskPanel(DateTime? date = null)
         {
@@ -149,7 +149,7 @@ namespace Edemly.Client.Presentation.Pages.Calendar
                         return;
                     }
 
-                    if (!PageCalendarTimeInputHelper.TryParseTime(timeText, out DateTime parsedTime))
+                    if (!CalendarPageTimeInputHelper.TryParseTime(timeText, out DateTime parsedTime))
                     {
                         MessageBox.Show(DefaultLanguage.InvalidTimeFormat,
                                        DefaultLanguage.WarningTitle,
@@ -256,7 +256,7 @@ namespace Edemly.Client.Presentation.Pages.Calendar
                     return;
                 }
 
-                if (!PageCalendarTimeInputHelper.TryParseTime(timeBox.Text, out DateTime parsed))
+                if (!CalendarPageTimeInputHelper.TryParseTime(timeBox.Text, out DateTime parsed))
                 {
                     MessageBox.Show(DefaultLanguage.InvalidTimeFormat, DefaultLanguage.InvalidDate,
                         MessageBoxButton.OK, MessageBoxImage.Warning);

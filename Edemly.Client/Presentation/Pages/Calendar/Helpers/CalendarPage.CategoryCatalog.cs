@@ -2,7 +2,7 @@
 
 namespace Edemly.Client.Presentation.Pages.Calendar.Helpers
 {
-    internal static class PageCalendarCategoryCatalog
+    internal static class CalendarPageCategoryCatalog
     {
         private static readonly Dictionary<int, string> Colors = new()
         {

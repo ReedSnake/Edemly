@@ -7,7 +7,7 @@ using System.Windows.Input;
 
 namespace Edemly.Client.Presentation.Pages.Calendar
 {
-    public partial class Page_calendar
+    public partial class CalendarPage
     {
         private void CategoryScrollViewer_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
         {
@@ -23,12 +23,12 @@ namespace Edemly.Client.Presentation.Pages.Calendar
 
         private void TimeTextBox_PreviewTextInput(object sender, TextCompositionEventArgs e)
         {
-            e.Handled = PageCalendarTimeInputHelper.HandleTextInput(sender as TextBox, e.Text);
+            e.Handled = CalendarPageTimeInputHelper.HandleTextInput(sender as TextBox, e.Text);
         }
 
         private void TimeTextBox_PreviewKeyDown(object sender, KeyEventArgs e)
         {
-            if (PageCalendarTimeInputHelper.HandlePreviewKeyDown(sender as TextBox, e.Key))
+            if (CalendarPageTimeInputHelper.HandlePreviewKeyDown(sender as TextBox, e.Key))
             {
                 e.Handled = true;
             }

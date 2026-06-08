@@ -6,7 +6,7 @@ using System.Windows.Input;
 
 namespace Edemly.Client.Presentation.Pages.Calendar.Helpers
 {
-    internal static class PageCalendarTimeInputHelper
+    internal static class CalendarPageTimeInputHelper
     {
         internal static bool HandleTextInput(TextBox? textBox, string input)
         {

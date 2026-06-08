@@ -129,7 +129,7 @@ namespace Edemly.Client.Presentation.Pages.Main
 
         private void MyPlannerButton_Click(object sender, RoutedEventArgs e)
         {
-            NavigationService.Navigate(new Page_calendar());
+            NavigationService.Navigate(new CalendarPage());
         }
 
         private void ContactsButton_Click(object sender, RoutedEventArgs e)
