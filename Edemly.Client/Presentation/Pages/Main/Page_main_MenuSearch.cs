@@ -140,7 +140,7 @@ namespace Edemly.Client.Presentation.Pages.Main
 
         private void SettingsButton_Click(object sender, RoutedEventArgs e)
         {
-            NavigationService.Navigate(new Page_settings());
+            NavigationService.Navigate(new SettingsPage());
             CloseMenu();
         }
 

@@ -8,12 +8,12 @@ using System.Windows.Controls;
 using Edemly.Client.Api.Users;  
 namespace Edemly.Client.Presentation.Pages.Settings
 {
-    public partial class Page_settings : ThemedPage
+    public partial class SettingsPage : ThemedPage
     {
         private readonly IApiClients _apiClient;
         private readonly SettingsProfileEditorState _profileState = new();
 
-        public Page_settings()
+        public SettingsPage()
         {
             InitializeComponent();
             _apiClient = App.ApiClients;

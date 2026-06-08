@@ -7,7 +7,7 @@ using System.Windows;
 
 namespace Edemly.Client.Presentation.Pages.Settings
 {
-    public partial class Page_settings
+    public partial class SettingsPage
     {
         private void InitializeLanguageControls()
         {
@@ -64,7 +64,7 @@ namespace Edemly.Client.Presentation.Pages.Settings
 
                 if (NavigationService != null)
                 {
-                    NavigationService.Navigate(new Page_settings());
+                    NavigationService.Navigate(new SettingsPage());
                 }
                 else
                 {

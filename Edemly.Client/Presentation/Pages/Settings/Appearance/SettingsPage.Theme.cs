@@ -8,7 +8,7 @@ using System.Windows.Media;
 
 namespace Edemly.Client.Presentation.Pages.Settings
 {
-    public partial class Page_settings
+    public partial class SettingsPage
     {
         private void ThemeColor_MouseDown(object sender, MouseButtonEventArgs e)
         {

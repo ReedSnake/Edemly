@@ -9,7 +9,7 @@ using System.Windows.Input;
 using Edemly.Client.Api;
 namespace Edemly.Client.Presentation.Pages.Settings
 {
-    public partial class Page_settings
+    public partial class SettingsPage
     {
         private async void OnProfileUpdated(int userId, string newPfpUrl)
         {

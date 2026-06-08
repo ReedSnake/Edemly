@@ -6,7 +6,7 @@ using System.Windows.Input;
 
 namespace Edemly.Client.Presentation.Pages.Settings
 {
-    public partial class Page_settings
+    public partial class SettingsPage
     {
         private static readonly Regex PhoneInputRegex = new(@"^[0-9+\-\s()]+$");
 

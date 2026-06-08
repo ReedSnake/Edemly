@@ -7,7 +7,7 @@ using System.Windows.Controls;
 
 namespace Edemly.Client.Presentation.Pages.Settings
 {
-    public partial class Page_settings
+    public partial class SettingsPage
     {
         private bool TryBuildValidatedRequest(out UpdateUserDto request)
         {

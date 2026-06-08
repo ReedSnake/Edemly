@@ -7,7 +7,7 @@ using System.Windows.Media.Imaging;
 
 namespace Edemly.Client.Presentation.Pages.Settings
 {
-    public partial class Page_settings
+    public partial class SettingsPage
     {
         private async Task LoadAvatarFromUrlAsync(string url)
         {
