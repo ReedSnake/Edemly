@@ -562,33 +562,33 @@ namespace Edemly.Client.Infrastructure.Caching
 
         private async Task SaveToDiskAsync(string path, byte[] data)
         {
+            var tmpPath = $"{path}.{Guid.NewGuid():N}.tmp";
+
             try
             {
                 var dir = Path.GetDirectoryName(path);
 
-                if (!string.IsNullOrWhiteSpace(dir) && !Directory.Exists(dir))
+                if (!string.IsNullOrWhiteSpace(dir))
                 {
                     Directory.CreateDirectory(dir);
                 }
 
-                var tmpPath = path + ".tmp";
                 await File.WriteAllBytesAsync(tmpPath, data);
 
-                try
-                {
-                    if (File.Exists(path))
-                        File.Delete(path);
-                }
-                catch (Exception ex)
-                {
-                    Debug.WriteLine($"[ProfilePictureCache] SaveToDiskAsync delete existing file failed: {ex.Message}");
-                }
-
-                File.Move(tmpPath, path);
+                File.Move(tmpPath, path, overwrite: true);
             }
             catch (Exception ex)
             {
                 Debug.WriteLine($"[ProfilePictureCache] SaveToDiskAsync failed for {path}: {ex.Message}");
+            }
+            finally
+            {
+                try
+                {
+                    if (File.Exists(tmpPath))
+                        File.Delete(tmpPath);
+                }
+                catch { }
             }
         }
 
