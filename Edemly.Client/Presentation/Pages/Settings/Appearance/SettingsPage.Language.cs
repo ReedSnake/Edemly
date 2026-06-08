@@ -1,7 +1,5 @@
 #nullable enable
 
-using Edemly.Client.Application.Localization;
-using Edemly.Client.Application.Services;
 using Edemly.Client.Infrastructure.Storage;
 using System.Globalization;
 using System.Windows;

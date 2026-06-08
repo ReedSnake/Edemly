@@ -1,7 +1,6 @@
 using CommunityToolkit.WinUI.Notifications;
 using Edemly.Client.Application.Calls;
 using Edemly.Client.Application.Chats;
-using Edemly.Client.Application.Services;
 using Edemly.Client.Application.Session;
 using Edemly.Client.Infrastructure.Startup;
 using Edemly.Client.Presentation.Controllers.Chats;
@@ -12,6 +11,8 @@ using Edemly.Client.Api;
 using Edemly.Client.Infrastructure.Realtime;
 using Edemly.Client.Infrastructure.Caching;
 using Edemly.Client.Infrastructure.Storage;
+using Edemly.Client.Application.Auth;
+using Edemly.Client.Application.Notes;
 
 namespace Edemly.Client
 {

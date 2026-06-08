@@ -1,6 +1,6 @@
 using Edemly.Client.Infrastructure.Realtime;
 using System.Net.Http;
-namespace Edemly.Client.Application.Services
+namespace Edemly.Client.Application.Health
 {
     public class ServerHealthService : IDisposable
     {

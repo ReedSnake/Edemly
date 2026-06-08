@@ -1,6 +1,5 @@
 #nullable enable
 
-using Edemly.Client.Application.Services;
 using Edemly.Client.Infrastructure.Storage;
 using System.Diagnostics;
 using System.Globalization;

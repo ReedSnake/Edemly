@@ -1,11 +1,11 @@
 #nullable enable
 
 using Edemly.Client.Api;
-using Edemly.Client.Application.Services;
 using Edemly.Client.Presentation.Common;
 using System.Windows;
 using System.Windows.Controls;
-using Edemly.Client.Api.Users;  
+using Edemly.Client.Api.Users;
+using Edemly.Client.Application.Theme;
 namespace Edemly.Client.Presentation.Pages.Settings
 {
     public partial class SettingsPage : ThemedPage

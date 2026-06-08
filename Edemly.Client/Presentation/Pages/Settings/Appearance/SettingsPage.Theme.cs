@@ -1,10 +1,9 @@
 #nullable enable
 
-using Edemly.Client.Application.Services;
+using Edemly.Client.Application.Theme;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using System.Windows.Media;
 
 namespace Edemly.Client.Presentation.Pages.Settings
 {

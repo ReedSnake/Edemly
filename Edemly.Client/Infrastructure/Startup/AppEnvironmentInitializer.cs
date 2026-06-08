@@ -1,5 +1,5 @@
 using Edemly.Client.Application.Localization;
-using Edemly.Client.Application.Services;
+using Edemly.Client.Application.Theme;
 using Edemly.Client.Infrastructure.Storage;
 using System.Diagnostics;
 using System.Globalization;

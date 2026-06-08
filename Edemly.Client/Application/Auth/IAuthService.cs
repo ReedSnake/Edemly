@@ -1,5 +1,5 @@
 using Edemly.Contracts.Auth;
-namespace Edemly.Client.Application.Services
+namespace Edemly.Client.Application.Auth
 {
     public interface IAuthService
     {

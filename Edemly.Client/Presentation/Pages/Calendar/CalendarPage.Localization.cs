@@ -1,6 +1,6 @@
 #nullable disable
 
-using Edemly.Client.Application.Services;
+using Edemly.Client.Application.Theme;
 using Edemly.Client.Presentation.Common;
 using Edemly.Client.Presentation.Pages.Calendar.Helpers;
 using System.Windows;

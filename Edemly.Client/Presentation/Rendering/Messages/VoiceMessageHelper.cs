@@ -1,7 +1,7 @@
 #nullable disable
 
 using Edemly.Client.Application.Localization;
-using Edemly.Client.Application.Services;
+using Edemly.Client.Application.Theme;
 using Edemly.Contracts.Messages;
 using System.Windows;
 using System.Windows.Controls;

@@ -1,6 +1,6 @@
 #nullable disable
 
-using Edemly.Client.Application.Services;
+using Edemly.Client.Application.Theme;
 using System.Windows.Media;
 
 namespace Edemly.Client.Presentation.Rendering.Messages

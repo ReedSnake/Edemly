@@ -1,7 +1,8 @@
 using Edemly.Client.Api;
 using Edemly.Client.Api.Core;
 using Edemly.Client.Api.Files;
-using Edemly.Client.Application.Services;
+using Edemly.Client.Application.Auth;
+using Edemly.Client.Application.Notes;
 using Edemly.Client.Infrastructure.Caching;
 using Edemly.Client.Infrastructure.Realtime;
 using System.Diagnostics;

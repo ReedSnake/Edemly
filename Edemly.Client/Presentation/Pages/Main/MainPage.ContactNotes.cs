@@ -1,5 +1,6 @@
 #nullable enable
 
+using Edemly.Client.Application.Notes;
 using System.Windows;
 
 namespace Edemly.Client.Presentation.Pages.Main
@@ -158,7 +159,7 @@ namespace Edemly.Client.Presentation.Pages.Main
             }
         }
 
-        private async Task<Edemly.Client.Application.Services.NotesService?> WaitForNotesServiceAsync(int maxRetries = 10, int delayMs = 100)
+        private async Task<NotesService?> WaitForNotesServiceAsync(int maxRetries = 10, int delayMs = 100)
         {
             var retries = 0;
             while (App.NotesService == null && retries < maxRetries)

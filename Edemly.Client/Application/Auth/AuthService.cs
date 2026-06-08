@@ -5,7 +5,8 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
-namespace Edemly.Client.Application.Services
+
+namespace Edemly.Client.Application.Auth
 {
     public class AuthService : IAuthService
     {

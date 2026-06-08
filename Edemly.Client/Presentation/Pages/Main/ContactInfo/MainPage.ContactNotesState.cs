@@ -1,5 +1,6 @@
 #nullable enable
 
+using Edemly.Client.Application.Notes;
 using System.Windows;
 
 namespace Edemly.Client.Presentation.Pages.Main
@@ -17,7 +18,7 @@ namespace Edemly.Client.Presentation.Pages.Main
             ApplyContactNoteState(note ?? string.Empty);
         }
 
-        private async Task ApplyContactNoteAvailabilityAsync(Edemly.Client.Application.Services.NotesService notesService, int userId, int? requestId = null)
+        private async Task ApplyContactNoteAvailabilityAsync(NotesService notesService, int userId, int? requestId = null)
         {
             var canAdd = await notesService.CanAddNoteAsync(userId);
 

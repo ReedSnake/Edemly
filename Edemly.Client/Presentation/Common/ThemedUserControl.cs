@@ -1,4 +1,4 @@
-using Edemly.Client.Application.Services;
+using Edemly.Client.Application.Theme;
 using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
