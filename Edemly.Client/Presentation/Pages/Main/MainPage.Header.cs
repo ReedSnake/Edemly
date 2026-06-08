@@ -7,7 +7,7 @@ using System.Windows.Media;
 
 namespace Edemly.Client.Presentation.Pages.Main
 {
-    public partial class Page_main
+    public partial class MainPage
     {
         private void OnUserStatusChanged(int userId, bool isOnline, DateTime? lastSeen)
         {
@@ -207,7 +207,7 @@ namespace Edemly.Client.Presentation.Pages.Main
                 _chatController.CurrentChatContact.UserId == userId)
             {
                 System.Diagnostics.Debug.WriteLine("[PAGE_MAIN] Updating Contact Info photo");
-                await PageMainAvatarHelper.SetImageSourceAsync(ContactPhotoBackground, normalizedPhotoPath, "[PAGE_MAIN] Contact info");
+                await MainPageAvatarHelper.SetImageSourceAsync(ContactPhotoBackground, normalizedPhotoPath, "[PAGE_MAIN] Contact info");
             }
 
             if (_chatController?.CurrentChatContact != null &&
@@ -222,7 +222,7 @@ namespace Edemly.Client.Presentation.Pages.Main
 
         private async Task SetHeaderAvatarAsync(string photoPath)
         {
-            await PageMainAvatarHelper.SetImageSourceAsync(ChatHeaderAvatarBackground, photoPath, "[CHAT HEADER]");
+            await MainPageAvatarHelper.SetImageSourceAsync(ChatHeaderAvatarBackground, photoPath, "[CHAT HEADER]");
         }
     }
 }

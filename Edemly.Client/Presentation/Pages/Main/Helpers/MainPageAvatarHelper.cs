@@ -5,7 +5,7 @@ using System.Windows.Media.Imaging;
 
 namespace Edemly.Client.Presentation.Pages.Main.Helpers
 {
-    internal static class PageMainAvatarHelper
+    internal static class MainPageAvatarHelper
     {
         internal static bool HasCustomAvatar(string? photoPath)
         {

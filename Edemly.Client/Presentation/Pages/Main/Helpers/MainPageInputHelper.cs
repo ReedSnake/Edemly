@@ -5,7 +5,7 @@ using System.Windows;
 
 namespace Edemly.Client.Presentation.Pages.Main.Helpers;
 
-public static class PageMainInputHelper
+public static class MainPageInputHelper
 {
     public static bool IsPlaceholderText(string text)
     {

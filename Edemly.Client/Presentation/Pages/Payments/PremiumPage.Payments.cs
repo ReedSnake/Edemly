@@ -11,7 +11,7 @@ namespace Edemly.Client.Presentation.Pages.Payments
     {
         private void Back_Click(object sender, RoutedEventArgs e)
         {
-            NavigationService.Navigate(new Page_main());
+            NavigationService.Navigate(new MainPage());
         }
 
         private async void MonthlyButton_Click(object sender, RoutedEventArgs e)

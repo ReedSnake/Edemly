@@ -182,7 +182,7 @@ namespace Edemly.Client.Presentation.Windows
 
                         await RefreshWindowTitleAsync();
 
-                        MainFrame.Navigate(new Page_main());
+                        MainFrame.Navigate(new MainPage());
                         _isAutoLoginCompleted = true;
                         return;
                     }

@@ -2,7 +2,7 @@
 
 namespace Edemly.Client.Presentation.Pages.Main.Helpers
 {
-    internal static class PageMainGlyphs
+    internal static class MainPageGlyphs
     {
         internal const string Menu = "\u2630";
         internal const string Call = "\uD83D\uDCDE";

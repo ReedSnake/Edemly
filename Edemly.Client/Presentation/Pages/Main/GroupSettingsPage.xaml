@@ -1,4 +1,4 @@
-<common:ThemedPage x:Class="Edemly.Client.Presentation.Pages.Main.Page_group_settings"
+<common:ThemedPage x:Class="Edemly.Client.Presentation.Pages.Main.GroupSettingsPage"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:common="clr-namespace:Edemly.Client.Presentation.Common"

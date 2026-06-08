@@ -9,7 +9,7 @@ using System.Windows.Media.Imaging;
 
 namespace Edemly.Client.Presentation.Pages.Main
 {
-    public partial class Page_group_settings
+    public partial class GroupSettingsPage
     {
         private void GroupNameTextBox_TextChanged(object sender, TextChangedEventArgs e)
         {

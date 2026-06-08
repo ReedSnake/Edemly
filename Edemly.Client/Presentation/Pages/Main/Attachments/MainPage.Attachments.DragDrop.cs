@@ -5,13 +5,13 @@ using System.Windows;
 
 namespace Edemly.Client.Presentation.Pages.Main
 {
-    public partial class Page_main
+    public partial class MainPage
     {
         private void MessageTextBox_PreviewDragOver(object sender, DragEventArgs e)
         {
             try
             {
-                e.Effects = PageMainAttachmentInputHelper.HasFiles(e.Data) || PageMainAttachmentInputHelper.HasText(e.Data)
+                e.Effects = MainPageAttachmentInputHelper.HasFiles(e.Data) || MainPageAttachmentInputHelper.HasText(e.Data)
                     ? DragDropEffects.Copy
                     : DragDropEffects.None;
                 e.Handled = true;
@@ -26,7 +26,7 @@ namespace Edemly.Client.Presentation.Pages.Main
         {
             try
             {
-                var droppedFiles = PageMainAttachmentInputHelper.ExtractFiles(e.Data);
+                var droppedFiles = MainPageAttachmentInputHelper.ExtractFiles(e.Data);
                 if (droppedFiles.Count > 0)
                 {
                     e.Handled = true;
@@ -34,7 +34,7 @@ namespace Edemly.Client.Presentation.Pages.Main
                     return;
                 }
 
-                var droppedText = PageMainAttachmentInputHelper.ExtractText(e.Data);
+                var droppedText = MainPageAttachmentInputHelper.ExtractText(e.Data);
                 if (!string.IsNullOrEmpty(droppedText))
                 {
                     InsertTextIntoMessageBox(droppedText);

@@ -4,7 +4,7 @@ using System.Windows;
 
 namespace Edemly.Client.Presentation.Pages.Main
 {
-    public partial class Page_main
+    public partial class MainPage
     {
         private void PrepareContactNotesForDisplay(string? note)
         {

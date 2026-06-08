@@ -10,7 +10,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 namespace Edemly.Client.Presentation.Pages.Main
 {
-    public partial class Page_main
+    public partial class MainPage
     {
         private void CreateGroupButton_Click(object sender, RoutedEventArgs e)
         {
@@ -382,13 +382,13 @@ namespace Edemly.Client.Presentation.Pages.Main
                     try
                     {
                         var currentText = MessageTextBox.Text ?? string.Empty;
-                        _messageTextBeforeRecording = PageMainInputHelper.IsPlaceholderText(currentText) ? string.Empty : currentText;
+                        _messageTextBeforeRecording = MainPageInputHelper.IsPlaceholderText(currentText) ? string.Empty : currentText;
                         MessageTextBox.IsEnabled = false;
                         ApplyTextInputPlaceholderStyle(MessageTextBox, DefaultLanguage.Loading);
                     }
                     catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[VOICE] Setting recording UI failed: {ex}"); }
 
-                    SendButton.Content = PageMainGlyphs.Stop;
+                    SendButton.Content = MainPageGlyphs.Stop;
                     SetThemeResource(SendButton, Control.BackgroundProperty, "ThemeDangerBrush");
                     SendButton.Tag = "recording";
                     SendButton.ToolTip = "Stop and send voice message";
@@ -401,7 +401,7 @@ namespace Edemly.Client.Presentation.Pages.Main
                     MessageBox.ShowError($"{DefaultLanguage.Error}: {ex.Message}", DefaultLanguage.ErrorTitle);
 
                     _isRecording = false;
-                    SendButton.Content = PageMainGlyphs.Microphone;
+                    SendButton.Content = MainPageGlyphs.Microphone;
                     SendButton.Background = Brushes.Transparent;
                     SendButton.Tag = "voice";
                 }
@@ -476,7 +476,7 @@ namespace Edemly.Client.Presentation.Pages.Main
                 }
 
                 SendButton.IsEnabled = false;
-                SendButton.Content = PageMainGlyphs.Loading;
+                SendButton.Content = MainPageGlyphs.Loading;
 
                 var uploadResult = await App.ApiClients.Files.UploadFileAsync(audioPath);
 

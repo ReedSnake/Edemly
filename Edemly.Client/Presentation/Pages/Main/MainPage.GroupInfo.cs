@@ -9,7 +9,7 @@ using System.Windows.Media;
 
 namespace Edemly.Client.Presentation.Pages.Main
 {
-    public partial class Page_main
+    public partial class MainPage
     {
         private async void OpenGroupInfo()
         {
@@ -19,7 +19,7 @@ namespace Edemly.Client.Presentation.Pages.Main
             }
 
             isGroupInfoOpen = true;
-            PageMainInfoPanelHelper.PrepareToShow(GroupInfoPanel, GroupInfoOverlay);
+            MainPageInfoPanelHelper.PrepareToShow(GroupInfoPanel, GroupInfoOverlay);
 
             var groupContact = _chatController.CurrentChatContact;
             GroupInfoNameText.Text = groupContact.Name ?? string.Empty;
@@ -31,7 +31,7 @@ namespace Edemly.Client.Presentation.Pages.Main
             var members = await LoadGroupMembersAsync();
             ApplyGroupSettingsVisibility(members);
 
-            PageMainInfoPanelHelper.SlideIn(GroupInfoTransform);
+            MainPageInfoPanelHelper.SlideIn(GroupInfoTransform);
         }
 
         private void ApplyGroupSettingsVisibility(IReadOnlyCollection<ChatMemberDto> members)
@@ -70,7 +70,7 @@ namespace Edemly.Client.Presentation.Pages.Main
         private Task LoadGroupPhotoAsync()
         {
             var photoPath = _chatController?.CurrentChatContact?.PhotoPath;
-            return PageMainAvatarHelper.SetImageSourceAsync(GroupPhotoBackground, photoPath, "[GROUP INFO]");
+            return MainPageAvatarHelper.SetImageSourceAsync(GroupPhotoBackground, photoPath, "[GROUP INFO]");
         }
 
         private async Task<List<ChatMemberDto>> LoadGroupMembersAsync()
@@ -153,9 +153,9 @@ namespace Edemly.Client.Presentation.Pages.Main
                 VerticalAlignment = VerticalAlignment.Center
             };
 
-            var avatarBrush = PageMainAvatarHelper.CreateAvatarBrush();
+            var avatarBrush = MainPageAvatarHelper.CreateAvatarBrush();
             avatarBorder.Background = avatarBrush;
-            _ = PageMainAvatarHelper.SetImageSourceAsync(avatarBrush, user?.PfpUrl, $"[GROUP INFO] Member {member.UserId}");
+            _ = MainPageAvatarHelper.SetImageSourceAsync(avatarBrush, user?.PfpUrl, $"[GROUP INFO] Member {member.UserId}");
 
             Grid.SetColumn(avatarBorder, 0);
             grid.Children.Add(avatarBorder);
@@ -287,7 +287,7 @@ namespace Edemly.Client.Presentation.Pages.Main
         private async Task CloseGroupInfoAsync()
         {
             isGroupInfoOpen = false;
-            await PageMainInfoPanelHelper.HideAsync(GroupInfoPanel, GroupInfoOverlay, GroupInfoTransform, Dispatcher);
+            await MainPageInfoPanelHelper.HideAsync(GroupInfoPanel, GroupInfoOverlay, GroupInfoTransform, Dispatcher);
         }
 
         private void GroupInfoOverlay_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -305,7 +305,7 @@ namespace Edemly.Client.Presentation.Pages.Main
             if (_chatController.CurrentChatContact != null)
             {
                 CloseGroupInfo();
-                NavigationService.Navigate(new Page_group_settings(_chatController.CurrentChatContact, _chatController.CurrentChatId));
+                NavigationService.Navigate(new GroupSettingsPage(_chatController.CurrentChatContact, _chatController.CurrentChatId));
             }
         }
     }

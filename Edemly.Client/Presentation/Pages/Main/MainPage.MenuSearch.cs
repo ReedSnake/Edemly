@@ -8,7 +8,7 @@ using System.Windows.Media.Animation;
 using Edemly.Client.Presentation.Windows;
 namespace Edemly.Client.Presentation.Pages.Main
 {
-    public partial class Page_main
+    public partial class MainPage
     {
         private void SearchTextBox_GotFocus(object sender, RoutedEventArgs e)
         {

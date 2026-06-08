@@ -6,7 +6,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 namespace Edemly.Client.Presentation.Pages.Main
 {
-    public partial class Page_main
+    public partial class MainPage
     {
         public ObservableCollection<StickerModel> Stickers { get; set; } = new ObservableCollection<StickerModel>();
 

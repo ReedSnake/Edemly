@@ -6,7 +6,7 @@ using System.Windows;
 
 namespace Edemly.Client.Presentation.Pages.Main
 {
-    public partial class Page_main
+    public partial class MainPage
     {
         private void ShowContactInfoPanel(Models.Contact contact)
         {
@@ -14,12 +14,12 @@ namespace Edemly.Client.Presentation.Pages.Main
 
             var requestId = Interlocked.Increment(ref _contactInfoLoadVersion);
 
-            PageMainInfoPanelHelper.PrepareToShow(ContactInfoPanel, ContactInfoOverlay);
+            MainPageInfoPanelHelper.PrepareToShow(ContactInfoPanel, ContactInfoOverlay);
             PopulateContactInfo(contact);
             PrepareContactNotesForDisplay(contact.Note);
             ResetContactPhoto();
             EditContactButton.Visibility = Visibility.Visible;
-            PageMainInfoPanelHelper.SlideIn(ContactInfoTransform);
+            MainPageInfoPanelHelper.SlideIn(ContactInfoTransform);
 
             _ = LoadContactPhotoAsync(contact, requestId);
             _ = LoadContactInfoContentAsync(contact, requestId);
@@ -70,14 +70,14 @@ namespace Edemly.Client.Presentation.Pages.Main
         private async Task LoadContactPhotoAsync(Models.Contact contact, int requestId)
         {
             var requestedPhotoPath = NormalizeContactPhotoPath(contact.PhotoPath);
-            var avatarSource = await PageMainAvatarHelper.ResolveImageSourceAsync(requestedPhotoPath, "[CONTACT INFO]");
+            var avatarSource = await MainPageAvatarHelper.ResolveImageSourceAsync(requestedPhotoPath, "[CONTACT INFO]");
 
             if (!IsContactPhotoRequestCurrent(requestId, contact.UserId, requestedPhotoPath))
             {
                 return;
             }
 
-            PageMainAvatarHelper.ApplyImageSource(ContactPhotoBackground, avatarSource);
+            MainPageAvatarHelper.ApplyImageSource(ContactPhotoBackground, avatarSource);
         }
 
         private bool IsContactInfoRequestCurrent(int requestId, int userId)
@@ -101,7 +101,7 @@ namespace Edemly.Client.Presentation.Pages.Main
 
         private void ResetContactPhoto()
         {
-            PageMainAvatarHelper.ApplyDefaultAvatar(ContactPhotoBackground);
+            MainPageAvatarHelper.ApplyDefaultAvatar(ContactPhotoBackground);
         }
 
         private static string NormalizeContactPhotoPath(string photoPath)

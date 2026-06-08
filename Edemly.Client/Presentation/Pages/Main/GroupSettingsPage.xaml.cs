@@ -9,7 +9,7 @@ using System.Windows.Controls;
 
 namespace Edemly.Client.Presentation.Pages.Main
 {
-    public partial class Page_group_settings : ThemedPage
+    public partial class GroupSettingsPage : ThemedPage
     {
         private readonly Contact _groupContact;
         private readonly int _chatId;
@@ -24,7 +24,7 @@ namespace Edemly.Client.Presentation.Pages.Main
         private string _originalIconUrl = string.Empty;
         private string _pendingIconPath;
 
-        public Page_group_settings(Contact groupContact, int chatId)
+        public GroupSettingsPage(Contact groupContact, int chatId)
         {
             InitializeComponent();
 
@@ -129,7 +129,7 @@ namespace Edemly.Client.Presentation.Pages.Main
 
         private Task LoadGroupIconAsync()
         {
-            return PageMainAvatarHelper.SetImageSourceAsync(GroupIconImage, _groupContact.PhotoPath, "[GROUP SETTINGS]");
+            return MainPageAvatarHelper.SetImageSourceAsync(GroupIconImage, _groupContact.PhotoPath, "[GROUP SETTINGS]");
         }
 
         private void BackButton_Click(object sender, RoutedEventArgs e)

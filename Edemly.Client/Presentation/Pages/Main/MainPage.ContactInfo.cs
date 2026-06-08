@@ -7,7 +7,7 @@ using System.Windows.Input;
 
 namespace Edemly.Client.Presentation.Pages.Main
 {
-    public partial class Page_main
+    public partial class MainPage
     {
         private void ContactMenuButton_Click(object sender, RoutedEventArgs e)
         {
@@ -69,7 +69,7 @@ namespace Edemly.Client.Presentation.Pages.Main
         {
             isContactInfoOpen = false;
             Interlocked.Increment(ref _contactInfoLoadVersion);
-            await PageMainInfoPanelHelper.HideAsync(ContactInfoPanel, ContactInfoOverlay, ContactInfoTransform, Dispatcher);
+            await MainPageInfoPanelHelper.HideAsync(ContactInfoPanel, ContactInfoOverlay, ContactInfoTransform, Dispatcher);
         }
 
         private void ContactInfoOverlay_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)

@@ -4,7 +4,7 @@ using System.Windows;
 
 namespace Edemly.Client.Presentation.Pages.Main.Helpers
 {
-    internal static class PageMainAttachmentInputHelper
+    internal static class MainPageAttachmentInputHelper
     {
         public static IReadOnlyList<string> ExtractFiles(IDataObject? dataObject)
         {

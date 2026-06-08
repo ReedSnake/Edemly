@@ -7,7 +7,7 @@ using System.Windows.Input;
 
 namespace Edemly.Client.Presentation.Pages.Main
 {
-    public partial class Page_main
+    public partial class MainPage
     {
         private void OnPaste(object sender, DataObjectPastingEventArgs e)
         {
@@ -15,10 +15,10 @@ namespace Edemly.Client.Presentation.Pages.Main
             {
                 var clipboardData = Clipboard.GetDataObject();
 
-                if (PageMainAttachmentInputHelper.HasFiles(clipboardData))
+                if (MainPageAttachmentInputHelper.HasFiles(clipboardData))
                 {
                     e.CancelCommand();
-                    _ = RunAttachmentSelectionAsync(PageMainAttachmentInputHelper.ExtractFiles(clipboardData));
+                    _ = RunAttachmentSelectionAsync(MainPageAttachmentInputHelper.ExtractFiles(clipboardData));
                     return;
                 }
 
@@ -40,9 +40,9 @@ namespace Edemly.Client.Presentation.Pages.Main
             {
                 var clipboardData = Clipboard.GetDataObject();
 
-                if (PageMainAttachmentInputHelper.HasFiles(clipboardData))
+                if (MainPageAttachmentInputHelper.HasFiles(clipboardData))
                 {
-                    _ = RunAttachmentSelectionAsync(PageMainAttachmentInputHelper.ExtractFiles(clipboardData));
+                    _ = RunAttachmentSelectionAsync(MainPageAttachmentInputHelper.ExtractFiles(clipboardData));
                     e.Handled = true;
                     return;
                 }
@@ -54,7 +54,7 @@ namespace Edemly.Client.Presentation.Pages.Main
                     return;
                 }
 
-                var clipboardText = PageMainAttachmentInputHelper.ExtractText(clipboardData);
+                var clipboardText = MainPageAttachmentInputHelper.ExtractText(clipboardData);
                 if (!string.IsNullOrEmpty(clipboardText))
                 {
                     InsertTextIntoMessageBox(clipboardText, sender as TextBox);
@@ -83,9 +83,9 @@ namespace Edemly.Client.Presentation.Pages.Main
 
                 var clipboardData = Clipboard.GetDataObject();
 
-                if (PageMainAttachmentInputHelper.HasFiles(clipboardData))
+                if (MainPageAttachmentInputHelper.HasFiles(clipboardData))
                 {
-                    _ = RunAttachmentSelectionAsync(PageMainAttachmentInputHelper.ExtractFiles(clipboardData));
+                    _ = RunAttachmentSelectionAsync(MainPageAttachmentInputHelper.ExtractFiles(clipboardData));
                     e.Handled = true;
                     return;
                 }
@@ -97,7 +97,7 @@ namespace Edemly.Client.Presentation.Pages.Main
                     return;
                 }
 
-                var clipboardText = PageMainAttachmentInputHelper.ExtractText(clipboardData);
+                var clipboardText = MainPageAttachmentInputHelper.ExtractText(clipboardData);
                 if (!string.IsNullOrEmpty(clipboardText))
                 {
                     InsertTextIntoMessageBox(clipboardText, sender as TextBox);
@@ -159,7 +159,7 @@ namespace Edemly.Client.Presentation.Pages.Main
                 return;
             }
 
-            if (PageMainInputHelper.IsPlaceholderText(target.Text))
+            if (MainPageInputHelper.IsPlaceholderText(target.Text))
             {
                 ApplyTextInputActiveStyle(target, string.Empty);
             }

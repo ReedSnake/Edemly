@@ -7,7 +7,7 @@ using System.Windows.Media;
 
 namespace Edemly.Client.Presentation.Pages.Main
 {
-    public partial class Page_main
+    public partial class MainPage
     {
         private void SetThemeResource(FrameworkElement element, DependencyProperty property, string resourceKey)
         {
@@ -125,7 +125,7 @@ namespace Edemly.Client.Presentation.Pages.Main
                     ApplyTextInputPlaceholderStyle(SearchTextBox, DefaultLanguage.SearchPlaceholder);
                 }
 
-                if (MessageTextBox != null && (string.IsNullOrWhiteSpace(MessageTextBox.Text) || PageMainInputHelper.IsPlaceholderText(MessageTextBox.Text)))
+                if (MessageTextBox != null && (string.IsNullOrWhiteSpace(MessageTextBox.Text) || MainPageInputHelper.IsPlaceholderText(MessageTextBox.Text)))
                 {
                     SetMessagePlaceholder();
                 }
@@ -142,11 +142,11 @@ namespace Edemly.Client.Presentation.Pages.Main
 
         private void ApplyStaticButtonGlyphs()
         {
-            if (MenuButton != null) MenuButton.Content = PageMainGlyphs.Menu;
-            if (CallButton != null) CallButton.Content = PageMainGlyphs.Call;
-            if (ContactMenuButton != null) ContactMenuButton.Content = PageMainGlyphs.More;
-            if (CloseStickersButton != null) CloseStickersButton.Content = PageMainGlyphs.Close;
-            if (GroupSettingsIconButton != null) GroupSettingsIconButton.Content = PageMainGlyphs.Settings;
+            if (MenuButton != null) MenuButton.Content = MainPageGlyphs.Menu;
+            if (CallButton != null) CallButton.Content = MainPageGlyphs.Call;
+            if (ContactMenuButton != null) ContactMenuButton.Content = MainPageGlyphs.More;
+            if (CloseStickersButton != null) CloseStickersButton.Content = MainPageGlyphs.Close;
+            if (GroupSettingsIconButton != null) GroupSettingsIconButton.Content = MainPageGlyphs.Settings;
         }
 
         private void UpdateParticipantCountText()
@@ -170,7 +170,7 @@ namespace Edemly.Client.Presentation.Pages.Main
                     else
                     {
                         var currentText = MessageTextBox.Text?.Trim() ?? string.Empty;
-                        if (string.IsNullOrWhiteSpace(currentText) || PageMainInputHelper.IsPlaceholderText(currentText))
+                        if (string.IsNullOrWhiteSpace(currentText) || MainPageInputHelper.IsPlaceholderText(currentText))
                         {
                             SetMessagePlaceholder();
                         }

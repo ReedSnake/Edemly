@@ -13,7 +13,7 @@ using System.Windows.Media;
 
 namespace Edemly.Client.Presentation.Pages.Main
 {
-    public partial class Page_main : ThemedPage
+    public partial class MainPage : ThemedPage
     {
         private bool isMenuOpen;
         private bool isContactInfoOpen;
@@ -32,7 +32,7 @@ namespace Edemly.Client.Presentation.Pages.Main
         private bool _isRecording;
         private string _messageTextBeforeRecording = string.Empty;
 
-        public Page_main()
+        public MainPage()
         {
             InitializeComponent();
 
@@ -71,7 +71,7 @@ namespace Edemly.Client.Presentation.Pages.Main
 
             MessageTextBox.GotFocus += (_, _) =>
             {
-                if (PageMainInputHelper.IsPlaceholderText(MessageTextBox.Text))
+                if (MainPageInputHelper.IsPlaceholderText(MessageTextBox.Text))
                 {
                     ApplyTextInputActiveStyle(MessageTextBox, string.Empty);
                 }
@@ -93,14 +93,14 @@ namespace Edemly.Client.Presentation.Pages.Main
 
         private void InitializeInputPlaceholders()
         {
-            if (string.IsNullOrWhiteSpace(MessageTextBox.Text) || PageMainInputHelper.IsPlaceholderText(MessageTextBox.Text))
+            if (string.IsNullOrWhiteSpace(MessageTextBox.Text) || MainPageInputHelper.IsPlaceholderText(MessageTextBox.Text))
             {
                 SetMessagePlaceholder();
             }
 
-            if (SendButton != null && PageMainInputHelper.IsPlaceholderText(MessageTextBox.Text))
+            if (SendButton != null && MainPageInputHelper.IsPlaceholderText(MessageTextBox.Text))
             {
-                SendButton.Content = PageMainGlyphs.Microphone;
+                SendButton.Content = MainPageGlyphs.Microphone;
                 SendButton.Tag = "voice";
             }
 
@@ -131,7 +131,7 @@ namespace Edemly.Client.Presentation.Pages.Main
                 {
                     if (SendButton != null)
                     {
-                        SendButton.Content = PageMainGlyphs.Stop;
+                        SendButton.Content = MainPageGlyphs.Stop;
                         SendButton.Tag = "recording";
                         SetThemeResource(SendButton, Control.BackgroundProperty, "ThemeDangerBrush");
                     }

@@ -80,7 +80,7 @@ namespace Edemly.Client.Presentation.Pages.Auth
 
                 await App.HubService.ConnectAsync(authResponse.Token);
 
-                NavigationService?.Navigate(new Page_main());
+                NavigationService?.Navigate(new MainPage());
             }
             catch (Exception ex)
             {

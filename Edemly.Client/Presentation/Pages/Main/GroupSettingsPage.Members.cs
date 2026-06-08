@@ -8,7 +8,7 @@ using System.Windows.Media;
 
 namespace Edemly.Client.Presentation.Pages.Main
 {
-    public partial class Page_group_settings
+    public partial class GroupSettingsPage
     {
         private async Task LoadGroupMembersAsync()
         {

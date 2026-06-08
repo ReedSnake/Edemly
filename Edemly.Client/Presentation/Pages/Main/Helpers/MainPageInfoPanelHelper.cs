@@ -7,7 +7,7 @@ using System.Windows.Threading;
 
 namespace Edemly.Client.Presentation.Pages.Main.Helpers
 {
-    internal static class PageMainInfoPanelHelper
+    internal static class MainPageInfoPanelHelper
     {
         private const double HiddenOffset = 400;
         private static readonly Duration SlideDuration = TimeSpan.FromSeconds(0.3);
