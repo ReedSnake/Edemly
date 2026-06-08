@@ -378,6 +378,7 @@ namespace Edemly.Client.Infrastructure.Caching
 
         private async Task<(byte[]? data, string? contentType)> DownloadImageAsync(string url)
         {
+            Debug.WriteLine($"[ProfilePictureCache] DownloadImageAsync url = '{url}'");
             if (string.IsNullOrWhiteSpace(url))
                 throw new ArgumentException("url is null or empty", nameof(url));
 

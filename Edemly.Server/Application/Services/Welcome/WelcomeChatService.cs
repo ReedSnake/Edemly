@@ -7,7 +7,7 @@ namespace Edemly.Server.Api.Services
     {
         private const string WelcomeChatName = "Edemly";
         private const string WelcomeChatDescription = "Official Edemly chat";
-        private const string WelcomeChatIcon = "pack://application:,,,/Assets/logo.png";
+        private const string WelcomeChatIcon = "pack://application:,,,/Assets/Branding/logo.png";
 
         private readonly ILogger<WelcomeChatService> _logger;
 

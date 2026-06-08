@@ -8,7 +8,7 @@ namespace Edemly.Server.Configuration
 
         public string SenderName { get; set; } = "Edemly Team";
 
-        public string LogoUrl { get; set; } = "https://raw.githubusercontent.com/ReedSnake/SmartTravelPlanner/master/logo.png";
+        public string LogoUrl { get; set; } = "https://github.com/ReedSnake/Edemly/blob/main/Edemly.Client/Assets/Branding/logo.png";
 
         public string ServiceName { get; set; } = "Edemly";
 
