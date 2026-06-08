@@ -5,7 +5,7 @@ using System.Diagnostics;
 
 namespace Edemly.Client.Presentation.Pages.Payments
 {
-    public partial class Page_premium
+    public partial class PremiumPage
     {
         private void LoadTexts()
         {

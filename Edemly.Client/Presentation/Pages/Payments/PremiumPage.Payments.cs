@@ -7,7 +7,7 @@ using System.Windows;
 
 namespace Edemly.Client.Presentation.Pages.Payments
 {
-    public partial class Page_premium
+    public partial class PremiumPage
     {
         private void Back_Click(object sender, RoutedEventArgs e)
         {

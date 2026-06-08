@@ -195,7 +195,7 @@ namespace Edemly.Client.Presentation.Pages.Main
 
         private void PremiumButton_Click(object sender, RoutedEventArgs e)
         {
-            NavigationService.Navigate(new Page_premium());
+            NavigationService.Navigate(new PremiumPage());
             CloseMenu();
         }
     }

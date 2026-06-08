@@ -7,14 +7,14 @@ using System.Windows.Controls;
 
 namespace Edemly.Client.Presentation.Pages.Payments
 {
-    public partial class Page_premium : ThemedPage
+    public partial class PremiumPage : ThemedPage
     {
         private const decimal MonthlyAmount = 79.90m;
         private const decimal YearlyAmount = 790.00m;
 
         private readonly IExternalNavigationLauncher _externalNavigationLauncher;
 
-        public Page_premium()
+        public PremiumPage()
         {
             InitializeComponent();
 
