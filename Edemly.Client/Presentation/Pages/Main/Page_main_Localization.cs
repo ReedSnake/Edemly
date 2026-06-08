@@ -125,7 +125,7 @@ namespace Edemly.Client.Presentation.Pages.Main
                     ApplyTextInputPlaceholderStyle(SearchTextBox, DefaultLanguage.SearchPlaceholder);
                 }
 
-                if (MessageTextBox != null && (string.IsNullOrWhiteSpace(MessageTextBox.Text) || IsPlaceholderText(MessageTextBox.Text)))
+                if (MessageTextBox != null && (string.IsNullOrWhiteSpace(MessageTextBox.Text) || PageMainInputHelper.IsPlaceholderText(MessageTextBox.Text)))
                 {
                     SetMessagePlaceholder();
                 }
@@ -170,7 +170,7 @@ namespace Edemly.Client.Presentation.Pages.Main
                     else
                     {
                         var currentText = MessageTextBox.Text?.Trim() ?? string.Empty;
-                        if (string.IsNullOrWhiteSpace(currentText) || IsPlaceholderText(currentText))
+                        if (string.IsNullOrWhiteSpace(currentText) || PageMainInputHelper.IsPlaceholderText(currentText))
                         {
                             SetMessagePlaceholder();
                         }

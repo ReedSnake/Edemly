@@ -6,14 +6,14 @@ using System.Windows.Input;
 
 namespace Edemly.Client.Presentation.Pages.Auth
 {
-    public partial class Page_verification : ThemedPage
+    public partial class VerificationPage : ThemedPage
     {
         private readonly string _userEmail;
         private readonly bool _isRegistration;
         private readonly string _username;
         private readonly bool _rememberMe;
 
-        public Page_verification(
+        public VerificationPage(
             string email = "",
             bool isRegistration = false,
             string username = "",
@@ -130,7 +130,7 @@ namespace Edemly.Client.Presentation.Pages.Auth
 
         private void BackToLoginText_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            NavigationService?.Navigate(new Page_login());
+            NavigationService?.Navigate(new LoginPage());
         }
 
         private void CodeTextBox_KeyDown(object sender, KeyEventArgs e)

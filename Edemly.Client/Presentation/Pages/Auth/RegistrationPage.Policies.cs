@@ -4,7 +4,7 @@ using System.Windows;
 
 namespace Edemly.Client.Presentation.Pages.Auth
 {
-    public partial class Page_registration
+    public partial class RegistrationPage
     {
         private void OpenPolicies_Click(object sender, RoutedEventArgs e)
         {

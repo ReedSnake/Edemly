@@ -182,7 +182,7 @@ namespace Edemly.Client.Presentation.Pages.Main
 
                     App.ClearCurrentUser();
 
-                    NavigationService.Navigate(new Page_login());
+                    NavigationService.Navigate(new LoginPage());
                 }
                 catch (Exception ex)
                 {

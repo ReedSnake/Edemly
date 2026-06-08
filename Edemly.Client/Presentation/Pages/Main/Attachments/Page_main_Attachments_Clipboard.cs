@@ -1,6 +1,5 @@
 #nullable enable
 
-using Edemly.Client.Application.Attachments;
 using Edemly.Client.Presentation.Pages.Main.Helpers;
 using System.Windows;
 using System.Windows.Controls;
@@ -160,7 +159,7 @@ namespace Edemly.Client.Presentation.Pages.Main
                 return;
             }
 
-            if (IsPlaceholderText(target.Text))
+            if (PageMainInputHelper.IsPlaceholderText(target.Text))
             {
                 ApplyTextInputActiveStyle(target, string.Empty);
             }

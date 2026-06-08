@@ -6,9 +6,9 @@ using System.Windows.Input;
 
 namespace Edemly.Client.Presentation.Pages.Auth
 {
-    public partial class Page_login : ThemedPage
+    public partial class LoginPage : ThemedPage
     {
-        public Page_login()
+        public LoginPage()
         {
             InitializeComponent();
         }
@@ -17,7 +17,7 @@ namespace Edemly.Client.Presentation.Pages.Auth
         {
             App.ExitCompany();
 
-            NavigationService?.Navigate(new Page_install());
+            NavigationService?.Navigate(new InstallPage());
         }
 
         private async void LoginButton_Click(object sender, RoutedEventArgs e)
@@ -61,7 +61,7 @@ namespace Edemly.Client.Presentation.Pages.Auth
                 bool rememberMe = RememberMeCheckBox.IsChecked == true;
 
                 NavigationService?.Navigate(
-                    new Page_verification(
+                    new VerificationPage(
                         email,
                         isRegistration: false,
                         rememberMe: rememberMe));
@@ -81,7 +81,7 @@ namespace Edemly.Client.Presentation.Pages.Auth
 
         private void SignUpText_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            NavigationService?.Navigate(new Page_registration());
+            NavigationService?.Navigate(new RegistrationPage());
         }
 
         private void EmailTextBox_KeyDown(object sender, KeyEventArgs e)

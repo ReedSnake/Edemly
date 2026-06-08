@@ -1,19 +1,17 @@
 #nullable enable
 
-using Edemly.Client.Application.Localization;
-using Edemly.Client.Application.Services;
 using System.Diagnostics;
 using System.Windows;
 
 namespace Edemly.Client.Presentation.Pages.Auth
 {
-    public partial class Page_install
+    public partial class InstallPage
     {
         private void CancelButton_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                NavigationService?.Navigate(new Page_login());
+                NavigationService?.Navigate(new LoginPage());
             }
             catch (Exception ex)
             {
@@ -69,7 +67,7 @@ namespace Edemly.Client.Presentation.Pages.Auth
                 }
 
                 await Task.Delay(80);
-                NavigationService?.Navigate(new Page_login());
+                NavigationService?.Navigate(new LoginPage());
             }
             catch (Exception ex)
             {

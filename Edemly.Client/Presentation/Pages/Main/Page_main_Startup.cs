@@ -167,7 +167,7 @@ namespace Edemly.Client.Presentation.Pages.Main
             {
                 if (NavigationService != null)
                 {
-                    NavigationService.Navigate(new Page_login());
+                    NavigationService.Navigate(new LoginPage());
                 }
             }
 

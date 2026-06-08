@@ -2,7 +2,6 @@
 
 using Edemly.Client.Application.Attachments;
 using Edemly.Client.Infrastructure.Attachments;
-using Edemly.Client.Infrastructure.Audio;
 using Edemly.Client.Presentation.Common;
 using Edemly.Client.Presentation.Controllers.Chats;
 using Edemly.Client.Presentation.Dialogs.Attachments;
@@ -72,7 +71,7 @@ namespace Edemly.Client.Presentation.Pages.Main
 
             MessageTextBox.GotFocus += (_, _) =>
             {
-                if (IsPlaceholderText(MessageTextBox.Text))
+                if (PageMainInputHelper.IsPlaceholderText(MessageTextBox.Text))
                 {
                     ApplyTextInputActiveStyle(MessageTextBox, string.Empty);
                 }
@@ -94,12 +93,12 @@ namespace Edemly.Client.Presentation.Pages.Main
 
         private void InitializeInputPlaceholders()
         {
-            if (string.IsNullOrWhiteSpace(MessageTextBox.Text) || IsPlaceholderText(MessageTextBox.Text))
+            if (string.IsNullOrWhiteSpace(MessageTextBox.Text) || PageMainInputHelper.IsPlaceholderText(MessageTextBox.Text))
             {
                 SetMessagePlaceholder();
             }
 
-            if (SendButton != null && IsPlaceholderText(MessageTextBox.Text))
+            if (SendButton != null && PageMainInputHelper.IsPlaceholderText(MessageTextBox.Text))
             {
                 SendButton.Content = PageMainGlyphs.Microphone;
                 SendButton.Tag = "voice";

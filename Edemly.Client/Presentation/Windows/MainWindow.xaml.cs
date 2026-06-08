@@ -32,7 +32,7 @@ namespace Edemly.Client.Presentation.Windows
             {
                 if (!ConfigService.Instance.IsInstalled)
                 {
-                    MainFrame.Navigate(new Page_install());
+                    MainFrame.Navigate(new InstallPage());
                     _isAutoLoginCompleted = true; // avoid waiting in Closing
                     return;
                 }
@@ -197,12 +197,12 @@ namespace Edemly.Client.Presentation.Windows
                     System.Diagnostics.Debug.WriteLine("[MAIN WINDOW] No saved auth data found");
                 }
 
-                MainFrame.Navigate(new Page_login());
+                MainFrame.Navigate(new LoginPage());
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"[MAIN WINDOW] Auto-login error: {ex.Message}");
-                MainFrame.Navigate(new Page_login());
+                MainFrame.Navigate(new LoginPage());
             }
             finally
             {

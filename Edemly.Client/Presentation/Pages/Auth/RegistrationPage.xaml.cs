@@ -9,16 +9,16 @@ using System.Windows.Media;
 
 namespace Edemly.Client.Presentation.Pages.Auth
 {
-    public partial class Page_registration : ThemedPage
+    public partial class RegistrationPage : ThemedPage
     {
         private readonly ILegalDocumentLoader _legalDocumentLoader;
 
-        public Page_registration()
+        public RegistrationPage()
             : this(new LegalDocumentLoader())
         {
         }
 
-        internal Page_registration(ILegalDocumentLoader legalDocumentLoader)
+        internal RegistrationPage(ILegalDocumentLoader legalDocumentLoader)
         {
             _legalDocumentLoader = legalDocumentLoader ?? throw new ArgumentNullException(nameof(legalDocumentLoader));
             InitializeComponent();
@@ -27,7 +27,7 @@ namespace Edemly.Client.Presentation.Pages.Auth
         private void ExitButton_Click(object sender, RoutedEventArgs e)
         {
             App.ExitCompany();
-            NavigationService?.Navigate(new Page_install());
+            NavigationService?.Navigate(new InstallPage());
         }
 
         private async void SignUpButton_Click(object sender, RoutedEventArgs e)
@@ -111,7 +111,7 @@ namespace Edemly.Client.Presentation.Pages.Auth
 
                 var rememberMe = RememberMeCheckBox.IsChecked == true;
                 NavigationService?.Navigate(
-                    new Page_verification(
+                    new VerificationPage(
                         email,
                         isRegistration: true,
                         username: fullName,
@@ -183,7 +183,7 @@ namespace Edemly.Client.Presentation.Pages.Auth
 
         private void SignInText_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            NavigationService?.Navigate(new Page_login());
+            NavigationService?.Navigate(new LoginPage());
         }
 
         private void TextBox_KeyDown(object sender, KeyEventArgs e)

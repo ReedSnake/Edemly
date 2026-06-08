@@ -382,7 +382,7 @@ namespace Edemly.Client.Presentation.Pages.Main
                     try
                     {
                         var currentText = MessageTextBox.Text ?? string.Empty;
-                        _messageTextBeforeRecording = IsPlaceholderText(currentText) ? string.Empty : currentText;
+                        _messageTextBeforeRecording = PageMainInputHelper.IsPlaceholderText(currentText) ? string.Empty : currentText;
                         MessageTextBox.IsEnabled = false;
                         ApplyTextInputPlaceholderStyle(MessageTextBox, DefaultLanguage.Loading);
                     }

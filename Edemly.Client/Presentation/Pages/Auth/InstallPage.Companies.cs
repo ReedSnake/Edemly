@@ -7,7 +7,7 @@ using System.Windows.Controls;
 
 namespace Edemly.Client.Presentation.Pages.Auth
 {
-    public partial class Page_install
+    public partial class InstallPage
     {
         private async Task LoadCompaniesAsync()
         {

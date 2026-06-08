@@ -1,6 +1,5 @@
 #nullable disable
 
-using Edemly.Client.Application.Localization;
 using Edemly.Client.Presentation.Pages.Main.Helpers;
 using System.Windows;
 using System.Windows.Controls;
@@ -11,19 +10,6 @@ namespace Edemly.Client.Presentation.Pages.Main
 {
     public partial class Page_main
     {
-        private bool IsPlaceholderText(string text)
-        {
-            if (string.IsNullOrWhiteSpace(text))
-                return true;
-
-            text = text.Trim();
-
-            return text == DefaultLanguage.TypeMessage
-                || text == DefaultLanguage.Loading
-                || text == "Message..."
-                || text == "Type a message...";
-        }
-
         private void SetMessagePlaceholder()
         {
             if (MessageTextBox == null)
@@ -37,7 +23,7 @@ namespace Edemly.Client.Presentation.Pages.Main
             if (MessageTextBox == null)
                 return;
 
-            if (string.IsNullOrWhiteSpace(text) || IsPlaceholderText(text))
+            if (string.IsNullOrWhiteSpace(text) || PageMainInputHelper.IsPlaceholderText(text))
             {
                 SetMessagePlaceholder();
                 return;
@@ -55,7 +41,7 @@ namespace Edemly.Client.Presentation.Pages.Main
             SendButton.Background = Brushes.Transparent;
             SendButton.ToolTip = null;
 
-            if (IsPlaceholderText(MessageTextBox.Text))
+            if (PageMainInputHelper.IsPlaceholderText(MessageTextBox.Text))
             {
                 SendButton.Content = PageMainGlyphs.Microphone;
                 SendButton.Tag = "voice";
@@ -85,7 +71,7 @@ namespace Edemly.Client.Presentation.Pages.Main
 
             string message = MessageTextBox.Text.Trim();
 
-            if (!string.IsNullOrEmpty(message) && !IsPlaceholderText(message))
+            if (!string.IsNullOrEmpty(message) && !PageMainInputHelper.IsPlaceholderText(message))
             {
                 if (_chatController.CurrentChatId < 0)
                 {
@@ -123,7 +109,7 @@ namespace Edemly.Client.Presentation.Pages.Main
                 }
 
                 string message = MessageTextBox.Text.Trim();
-                if (!string.IsNullOrEmpty(message) && !IsPlaceholderText(message))
+                if (!string.IsNullOrEmpty(message) && !PageMainInputHelper.IsPlaceholderText(message))
                 {
                     await _chatController.SendMessageAsync(message);
                     SetMessagePlaceholder();
