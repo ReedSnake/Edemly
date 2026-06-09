@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Edemly.Server.Api.Controllers.Auth
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/auth")]
     public class AuthController : ApiControllerBase
     {
         private readonly IAuthService _authService;

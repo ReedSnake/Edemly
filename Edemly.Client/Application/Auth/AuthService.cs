@@ -1,86 +1,36 @@
-using Edemly.Contracts.Auth;
+using Edemly.Client.Api;
 using Edemly.Client.Infrastructure.Storage;
+using Edemly.Contracts.Auth;
 using System.Diagnostics;
-using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Text;
-using System.Text.Json;
 
 namespace Edemly.Client.Application.Auth
 {
     public class AuthService : IAuthService
     {
-        private readonly HttpClient _httpClient;
         private readonly IConfigService _configService;
-        private readonly string _baseUrl;
+        private readonly IApiClients _apiClients;
 
         public AuthService(string serverUrl)
         {
             if (string.IsNullOrWhiteSpace(serverUrl))
                 throw new ArgumentException("serverUrl must be provided", nameof(serverUrl));
 
-            _baseUrl = serverUrl.TrimEnd('/');
-            var baseAddress = new Uri(_baseUrl.EndsWith("/") ? _baseUrl : _baseUrl + "/");
-            _httpClient = new HttpClient
-            {
-                BaseAddress = baseAddress,
-                Timeout = TimeSpan.FromSeconds(30)
-            };
             _configService = ConfigService.Instance;
+            _apiClients = App.ApiClients;
 
-            Debug.WriteLine($"[AUTH SERVICE] Created with BaseAddress={_httpClient.BaseAddress}");
+            Debug.WriteLine($"[AUTH SERVICE] Created for serverUrl={serverUrl}");
         }
 
-        public async Task<bool> SendVerificationCodeAsync(string email)
+        public Task<bool> SendVerificationCodeAsync(string email)
         {
-            try
-            {
-                var request = new LoginRequestDto { Email = email };
-                var json = JsonSerializer.Serialize(request);
-                var content = new StringContent(json, Encoding.UTF8, "application/json");
-
-                var requestPath = "api/auth/get-code";
-                Debug.WriteLine($"[AUTH SERVICE] POST {_httpClient.BaseAddress}{requestPath}");
-
-                var response = await _httpClient.PostAsync(requestPath, content);
-
-                if (response.IsSuccessStatusCode)
-                {
-                    return true;
-                }
-
-                return false;
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"[AUTH SERVICE] SendVerificationCodeAsync error: {ex.Message}");
-                return false;
-            }
+            return _apiClients.Auth.GetVerificationCodeAsync(email);
         }
 
         public async Task<AuthResponseDto?> LoginWithCodeAsync(string email, string code)
         {
             try
             {
-                var request = new LoginWithCodeDto { Email = email, Code = code };
-                var json = JsonSerializer.Serialize(request);
-                var content = new StringContent(json, Encoding.UTF8, "application/json");
-
-                var requestPath = "api/auth/login";
-                Debug.WriteLine($"[AUTH SERVICE] POST {_httpClient.BaseAddress}{requestPath}");
-
-                var response = await _httpClient.PostAsync(requestPath, content);
-
-                if (!response.IsSuccessStatusCode)
-                {
-                    return null;
-                }
-
-                var responseJson = await response.Content.ReadAsStringAsync();
-                var authResponse = JsonSerializer.Deserialize<AuthResponseDto>(responseJson, new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true
-                });
+                var authResponse = await _apiClients.Auth.LoginAsync(email, code);
 
                 if (authResponse != null)
                 {
@@ -100,27 +50,7 @@ namespace Edemly.Client.Application.Auth
         {
             try
             {
-                var request = new RegistrationWithCodeDto { Email = email, Code = code, Username = username };
-                var json = JsonSerializer.Serialize(request);
-                var content = new StringContent(json, Encoding.UTF8, "application/json");
-
-                var requestPath = "api/auth/register";
-                Debug.WriteLine($"[AUTH SERVICE] POST {_httpClient.BaseAddress}{requestPath}");
-
-                var response = await _httpClient.PostAsync(requestPath, content);
-
-                if (!response.IsSuccessStatusCode)
-                {
-                    var errorContent = await response.Content.ReadAsStringAsync();
-                    Debug.WriteLine($"[AUTH SERVICE] Register failed: {errorContent}");
-                    return null;
-                }
-
-                var responseJson = await response.Content.ReadAsStringAsync();
-                var authResponse = JsonSerializer.Deserialize<AuthResponseDto>(responseJson, new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true
-                });
+                var authResponse = await _apiClients.Auth.RegisterAsync(email, code, username);
 
                 if (authResponse != null)
                 {
@@ -140,37 +70,21 @@ namespace Edemly.Client.Application.Auth
         {
             try
             {
-                var request = new SessionLoginDto { SessionToken = sessionToken };
-                var json = JsonSerializer.Serialize(request);
-                var content = new StringContent(json, Encoding.UTF8, "application/json");
+                var authResponse = await _apiClients.Auth.SessionLoginAsync(sessionToken);
 
-                var requestPath = "api/auth/session-login";
-                Debug.WriteLine($"[AUTH SERVICE] POST {_httpClient.BaseAddress}{requestPath}");
-
-                var response = await _httpClient.PostAsync(requestPath, content);
-
-                if (!response.IsSuccessStatusCode)
+                if (authResponse == null)
                 {
                     ClearAuthData();
                     return null;
                 }
 
-                var responseJson = await response.Content.ReadAsStringAsync();
-                var authResponse = JsonSerializer.Deserialize<AuthResponseDto>(responseJson, new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true
-                });
-
-                if (authResponse != null)
-                {
-                    SaveAuthData(authResponse);
-                }
-
+                SaveAuthData(authResponse);
                 return authResponse;
             }
             catch (Exception ex)
             {
                 Debug.WriteLine($"[AUTH SERVICE] SessionLoginAsync error: {ex.Message}");
+                ClearAuthData();
                 return null;
             }
         }
@@ -179,17 +93,7 @@ namespace Edemly.Client.Application.Auth
         {
             try
             {
-                var authData = LoadAuthData();
-                if (authData != null)
-                {
-                    _httpClient.DefaultRequestHeaders.Authorization =
-                        new AuthenticationHeaderValue("Bearer", authData.Token);
-
-                    var requestPath = "api/auth/logout";
-                    Debug.WriteLine($"[AUTH SERVICE] POST {_httpClient.BaseAddress}{requestPath}");
-
-                    await _httpClient.PostAsync(requestPath, null);
-                }
+                await _apiClients.Auth.LogoutAsync();
 
                 ClearAuthData();
                 return true;
@@ -197,7 +101,7 @@ namespace Edemly.Client.Application.Auth
             catch (Exception ex)
             {
                 Debug.WriteLine($"[AUTH SERVICE] LogoutAsync error: {ex.Message}");
-                ClearAuthData(); // best-effort cleanup
+                ClearAuthData();
                 return false;
             }
         }
@@ -259,8 +163,11 @@ namespace Edemly.Client.Application.Auth
                 _configService.SetValue<string?>("Username", null);
                 _configService.SetValue<string?>("Email", null);
 
-                try { App.GlobalProfilePictureCache?.SetAuthToken(null); } catch (Exception ex) { Debug.WriteLine($"[AUTH SERVICE] Failed to clear ProfilePictureCache token: {ex.Message}"); }
-                try { App.GlobalFileCache?.SetAuthToken(null); } catch (Exception ex) { Debug.WriteLine($"[AUTH SERVICE] Failed to clear FileCache token: {ex.Message}"); }
+                try { App.GlobalProfilePictureCache?.SetAuthToken(null); }
+                catch (Exception ex) { Debug.WriteLine($"[AUTH SERVICE] Failed to clear ProfilePictureCache token: {ex.Message}"); }
+
+                try { App.GlobalFileCache?.SetAuthToken(null); }
+                catch (Exception ex) { Debug.WriteLine($"[AUTH SERVICE] Failed to clear FileCache token: {ex.Message}"); }
             }
             catch (Exception ex)
             {

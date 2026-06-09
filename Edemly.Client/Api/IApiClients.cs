@@ -7,7 +7,7 @@ using Edemly.Client.Api.Notes;
 using Edemly.Client.Api.Payments;
 using Edemly.Client.Api.Remindings;
 using Edemly.Client.Api.Users;
-
+using Edemly.Client.Api.Auth;
 namespace Edemly.Client.Api;
 
 public interface IApiClients
@@ -21,4 +21,5 @@ public interface IApiClients
     IRemindingApiClient Remindings { get; }
     IChatMembersApiClient ChatMembers { get; }
     IMessageApiClient Messages { get; }
+    IAuthApiClient Auth { get; }
 }

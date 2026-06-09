@@ -8,7 +8,7 @@ using Edemly.Client.Api.Remindings;
 using Edemly.Client.Api.Users;
 using Edemly.Client.Api.ChatMembers;
 using Edemly.Client.Api.Messages;
-
+using Edemly.Client.Api.Auth;
 namespace Edemly.Client.Api;
 
 public sealed class ApiClients : IApiClients
@@ -24,6 +24,7 @@ public sealed class ApiClients : IApiClients
         Remindings = new RemindingApiClient(context);
         ChatMembers = new ChatMembersApiClient(context);
         Messages = new MessageApiClient(context);
+        Auth = new AuthApiClient(context);
     }
 
     public IUserApiClient Users { get; }
@@ -35,5 +36,5 @@ public sealed class ApiClients : IApiClients
     public IRemindingApiClient Remindings { get; }
     public IChatMembersApiClient ChatMembers { get; }
     public IMessageApiClient Messages { get; }
-
+    public IAuthApiClient Auth { get; }
 }
