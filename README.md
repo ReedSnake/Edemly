@@ -1,41 +1,84 @@
+<div align="center">
+
 # Edemly
 
-Edemly is a Windows desktop messenger built with .NET 10, WPF, ASP.NET Core, SignalR, Entity Framework Core, and MySQL.
+Desktop messenger platform built with .NET 10, WPF, ASP.NET Core, SignalR, Entity Framework Core, and MySQL.
+
+</div>
+
+## Contents
+
+* [Technology Stack](#technology-stack)
+* [Core Functionality](#core-functionality)
+* [Projects](#projects)
+* [Repository Structure](#repository-structure)
+* [Documentation](#documentation)
+* [Requirements](#requirements)
+* [Configuration](#configuration)
+* [Build and Run](#build-and-run)
+* [Runtime Notes](#runtime-notes)
+* [Team](#team)
+
+## Technology Stack
+
+| Category       | Technologies                                          |
+| -------------- | ----------------------------------------------------- |
+| Backend        | .NET 10, ASP.NET Core, Entity Framework Core, SignalR |
+| Client         | WPF, XAML                                             |
+| Database       | MySQL                                                 |
+| Authentication | JWT                                                   |
+| Testing        | NUnit, SQLite In-Memory                               |
+
+## Core Functionality
+
+* Private and group chats.
+* Realtime messaging.
+* Voice calls.
+* File attachments and avatars.
+* Email-code login with JWT sessions.
+* Company workspaces with isolated tenant databases.
+* Notes and reminders.
+* Payments and premium subscriptions.
 
 ## Projects
 
-- `Edemly.Server` - backend API, SignalR hubs, EF Core data and migrations, file storage, and MySQL access.
-- `Edemly.Client` - WPF desktop client.
-- `Edemly.Contracts` - shared DTO contracts used by the server and client.
-- `Edemly.Server.Tests` - server test project.
-- `Edemly.Client.Tests` - client test project.
+| Project                                       | Description                                                                                        |
+| --------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| [`Edemly.Server`](Edemly.Server/)             | ASP.NET Core backend, REST API, SignalR hubs, tenant management, file storage, and database access |
+| [`Edemly.Client`](Edemly.Client/)             | WPF desktop client application                                                                     |
+| [`Edemly.Contracts`](Edemly.Contracts/)       | Shared DTO contracts used by the server and client                                                 |
+| [`Edemly.Server.Tests`](Edemly.Server.Tests/) | Server-focused automated tests                                                                     |
+| [`Edemly.Client.Tests`](Edemly.Client.Tests/) | Client-focused automated tests                                                                     |
+| [`docs`](docs/)                               | Technical documentation                                                                            |
 
-## Project Structure
+## Repository Structure
 
 ```text
-Edemly.Contracts/      Shared DTOs grouped by feature area.
-Edemly.Server/         ASP.NET Core API, SignalR hubs, EF Core data, tenant services, and migrations under Data/Migrations/ServerDb and Data/Migrations/CompanyDb.
-Edemly.Client/         WPF desktop app, pages, helpers, API services, local cache models, assets.
-Edemly.Server.Tests/   Server-focused tests.
-Edemly.Client.Tests/   Client-focused tests.
-docs/                  Setup and operational documentation.
-plans/                 Planning notes and review checklists.
+Edemly.Server/
+Edemly.Client/
+Edemly.Contracts/
+Edemly.Server.Tests/
+Edemly.Client.Tests/
+docs/
 ```
 
-## Features
+## Documentation
 
-- Email-code login with JWT sessions.
-- Real-time chats, file attachments, avatars, and voice calls.
-- Company tenant mode with separate tenant databases.
-- Notes, reminders, payments, and premium subscription flow.
-- Swagger/OpenAPI in development mode.
+| Section                                       | Description                                                                                          |
+| --------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| [Documentation Home](docs/README.md)          | Main entry point for project documentation                                                           |
+| [Server Documentation](docs/server/README.md) | Backend architecture, API, authentication, database, realtime communication, testing, and deployment |
+| [Client Documentation](docs/client/README.md) | Desktop client architecture and implementation                                                       |
+| [Shared Documentation](docs/shared/README.md) | Shared contracts and communication conventions                                                       |
 
 ## Requirements
 
-- Windows.
-- .NET 10 SDK.
-- MySQL Server 8 or a compatible MySQL server.
-- EF Core CLI:
+* Windows
+* .NET 10 SDK
+* MySQL Server 8 or compatible MySQL server
+* EF Core CLI
+
+Install the EF Core CLI if needed:
 
 ```powershell
 dotnet tool install --global dotnet-ef
@@ -63,11 +106,13 @@ Create the main database:
 CREATE DATABASE edemly CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 ```
 
-Database details: [docs/DATABASE_SETUP.md](docs/DATABASE_SETUP.md).
+For database details see:
 
-## Build And Run
+* [Database Documentation](docs/server/DATABASE.md)
 
-From the repository root:
+## Build and Run
+
+Restore and build the solution:
 
 ```powershell
 dotnet restore Edemly.sln
@@ -80,7 +125,7 @@ Apply the master database migration:
 dotnet ef database update --project Edemly.Server --startup-project Edemly.Server --context ServerDbContext
 ```
 
-If you need to apply the tenant/company schema manually, use:
+Apply the tenant/company schema if needed:
 
 ```powershell
 dotnet ef database update --project Edemly.Server --startup-project Edemly.Server --context CompanyDbContext
@@ -89,14 +134,13 @@ dotnet ef database update --project Edemly.Server --startup-project Edemly.Serve
 Start the server:
 
 ```powershell
-dotnet run -- 8100
+dotnet run --project Edemly.Server -- 8100
 ```
 
 Start the client in another terminal:
 
 ```powershell
-cd Edemly.Client
-dotnet run -- http://localhost:8100
+dotnet run --project Edemly.Client -- http://localhost:8100
 ```
 
 Swagger is available in development mode:
@@ -105,86 +149,27 @@ Swagger is available in development mode:
 http://localhost:8100/swagger
 ```
 
-## Notes
+## Runtime Notes
 
-- The server port argument is required: `dotnet run -- 8100`.
-- The client server URL argument is required: `dotnet run -- http://localhost:8100`.
-- When `Brevo:ApiKey` is `MOCK_MODE`, login codes are printed to the server console.
-- Server startup applies pending master migrations and tenant migrations for existing companies.
-- Migrations now live in `Edemly.Server/Data/Migrations/ServerDb` and `Edemly.Server/Data/Migrations/CompanyDb`.
-- If you used the old migration chain locally, recreate your local databases before applying the new initial migrations.
-- New registrations may leave `Username`, `FirstName`, and `LastName` empty; `Username` must still be unique when set.
-- The desktop shortcut is optional and disabled by default.
-- Client config and cache files are stored under `%APPDATA%\Edemly`.
+* The server port argument is required.
+* The client server URL argument is required.
+* When `Brevo:ApiKey` is set to `MOCK_MODE`, login codes are printed to the server console.
+* Server startup automatically applies pending master migrations and tenant migrations for existing companies.
+* Server migrations are stored in:
 
-Additional setup details: [docs/SETUP.md](docs/SETUP.md).
+  * `Edemly.Server/Data/Migrations/ServerDb`
+  * `Edemly.Server/Data/Migrations/CompanyDb`
+* If you previously used the old migration chain, recreate local databases before applying the new migrations.
+* New registrations may leave `Username`, `FirstName`, and `LastName` empty.
+* `Username` must remain unique when set.
+* The desktop shortcut is optional and disabled by default.
+* Client configuration and cache files are stored in `%APPDATA%\Edemly`.
 
-## Git Workflow
+## Team
 
-Use typed commit messages so every commit and branch says what area it touches.
-
-Commit format:
-
-```text
-<type>(<scope>): <summary>
-```
-
-Examples:
-
-```text
-feat(auth): add email code verification
-fix(chat): prevent duplicate message rendering
-refactor(contracts): move message DTOs to shared project
-docs(readme): document git workflow
-```
-
-Branch format:
-
-```text
-<type>/<scope>-<short-description>
-```
-
-Examples:
-
-```text
-feat/auth-email-verification
-fix/chat-message-duplicates
-refactor/contracts-message-dtos
-docs/readme-git-workflow
-```
-
-Common types:
-
-| Type | Use for |
-|---|---|
-| `feat` | New feature or user-facing capability |
-| `fix` | Bug fix |
-| `hotfix` | Urgent production fix |
-| `bugfix` | Bug-fix branch name alternative |
-| `docs` | Documentation |
-| `refactor` | Code restructuring without behavior change |
-| `perf` | Performance improvement |
-| `test` | Tests and test infrastructure |
-| `build` | Project files, build config, package references |
-| `ci` | CI/CD workflow changes |
-| `chore` | Maintenance work that does not fit another type |
-| `security` | Security-related change |
-| `release` | Release preparation or versioning |
-| `deps` | Dependency updates |
-| `infra` | Infrastructure or deployment support |
-| `config` | Configuration changes |
-| `migration` | Database/schema migrations |
-| `wip` | Temporary work-in-progress branch only |
-| `spike` | Short investigation or prototype branch |
-| `revert` | Reverting a previous change |
-
-Prefer scopes like `client`, `server`, `contracts`, `auth`, `chat`, `messages`, `companies`, `payments`, `notes`, `remindings`, `files`, `assets`, `docs`, and `tests`.
-
-## Developers
-
-| Contributor | Role |
-|---|---|
-| [Ruslan Zub](https://github.com/ReedSnake) | Team Lead and Full-Stack Developer |
-| [Anastasiia Loshakova](https://github.com/darkkfairy1) | UI concept and client interface work |
-| [Rostislav Nikolenko](https://github.com/NikolenkoRostislav) | Backend developer |
-| [Anastasiia Vlasiuk](https://github.com/AnastasiiaVlasiuk) | UI/UX designer |
+| Member                                                       | Responsibilities                                         |
+| ------------------------------------------------------------ | -------------------------------------------------------- |
+| [Ruslan Zub](https://github.com/ReedSnake)                   | Team Lead, Backend Development, Database Design, Testing |
+| [Anastasiia Loshakova](https://github.com/darkkfairy1)       | Client Development and UI Implementation                 |
+| [Rostislav Nikolenko](https://github.com/NikolenkoRostislav) | Backend Development                                      |
+| [Anastasiia Vlasiuk](https://github.com/AnastasiiaVlasiuk)   | UI/UX Design                                             |
