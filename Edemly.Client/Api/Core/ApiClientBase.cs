@@ -77,6 +77,42 @@ public abstract class ApiClientBase
             return default;
         }
     }
+    protected async Task<bool> PostAsync<TRequest>(
+    string endpoint,
+    TRequest request)
+    {
+        try
+        {
+            var url = UrlHelper.BuildRelativeUrl(endpoint);
+            System.Diagnostics.Debug.WriteLine($"[API] POST {HttpClient.BaseAddress}{url}");
+
+            var response = await HttpClient.PostAsJsonAsync(url, request, JsonOptions);
+
+            return response.IsSuccessStatusCode;
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[API] POST {endpoint} failed: {ex.Message}");
+            return false;
+        }
+    }
+    protected async Task<bool> PostAsync(string endpoint)
+    {
+        try
+        {
+            var url = UrlHelper.BuildRelativeUrl(endpoint);
+            System.Diagnostics.Debug.WriteLine($"[API] POST {HttpClient.BaseAddress}{url}");
+
+            var response = await HttpClient.PostAsync(url, null);
+
+            return response.IsSuccessStatusCode;
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[API] POST {endpoint} failed: {ex.Message}");
+            return false;
+        }
+    }
 
     protected async Task<(bool Success, string? Error)> PutAsync<TRequest>(
         string endpoint,
