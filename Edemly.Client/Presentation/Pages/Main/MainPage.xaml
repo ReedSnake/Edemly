@@ -381,7 +381,57 @@
                       Grid.RowSpan="3"
                       Margin="20,68,20,91"
                       Panel.ZIndex="2">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <Border x:Name="ActiveGroupCallBanner"
+                            Grid.Row="0"
+                            Visibility="Collapsed"
+                            Background="{DynamicResource ThemeSurfaceBrush}"
+                            BorderBrush="{DynamicResource ThemePrimaryLightBrush}"
+                            BorderThickness="1"
+                            CornerRadius="14"
+                            Padding="14,10"
+                            Margin="0,0,0,10">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0"
+                                        Orientation="Vertical"
+                                        VerticalAlignment="Center">
+                                <TextBlock x:Name="ActiveGroupCallTitleText"
+                                           Text="Group call"
+                                           FontSize="14"
+                                           FontWeight="SemiBold"
+                                           Foreground="{DynamicResource ThemeTextPrimaryBrush}" />
+
+                                <TextBlock x:Name="ActiveGroupCallMetaText"
+                                           Text=""
+                                           FontSize="12"
+                                           Foreground="{DynamicResource ThemeTextSecondaryBrush}"
+                                           Margin="0,2,0,0" />
+                            </StackPanel>
+
+                            <Button x:Name="JoinActiveGroupCallButton"
+                                    Grid.Column="1"
+                                    Content="Join"
+                                    MinWidth="82"
+                                    Height="34"
+                                    Margin="14,0,0,0"
+                                    Style="{StaticResource RoundedButton12Style}"
+                                    Background="{DynamicResource ThemeSecondaryBrush}"
+                                    Foreground="{DynamicResource ThemeOnSecondaryTextBrush}"
+                                    Click="JoinActiveGroupCallButton_Click" />
+                        </Grid>
+                    </Border>
+
                     <ScrollViewer x:Name="MessagesScrollViewer"
+                                  Grid.Row="1"
                                   VerticalScrollBarVisibility="Hidden"
                                   Padding="0"
                                   PanningMode="VerticalFirst"

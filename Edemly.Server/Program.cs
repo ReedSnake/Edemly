@@ -1,6 +1,7 @@
 using Edemly.Server.Api.Hubs;
 using Edemly.Server.Api.Middleware;
 using Edemly.Server.Application.Auth;
+using Edemly.Server.Application.Calls;
 using Edemly.Server.Application.ChatMembers;
 using Edemly.Server.Application.Chats;
 using Edemly.Server.Application.Common;
@@ -140,6 +141,7 @@ namespace Edemly.Server
             builder.Services.AddScoped<IMessageService, MessageService>();
             builder.Services.AddScoped<IChatService, ChatService>();
             builder.Services.AddScoped<IChatRealtimeNotifier, SignalRChatRealtimeNotifier>();
+            builder.Services.AddScoped<ICallService, CallService>();
             builder.Services.AddScoped<IChatMemberService, ChatMemberService>();
             builder.Services.AddScoped<INoteService, NoteService>();
             builder.Services.AddScoped<IRemindingService, RemindingService>();

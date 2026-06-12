@@ -16,6 +16,8 @@ namespace Edemly.Client.Infrastructure.Realtime
         public const string CallAccepted = "CallAccepted";
         public const string CallRejected = "CallRejected";
         public const string CallEnded = "CallEnded";
+        public const string CallParticipantUpdated = "CallParticipantUpdated";
+        public const string GroupCallUpdated = "GroupCallUpdated";
         public const string Offer = "Offer";
         public const string Answer = "Answer";
         public const string IceCandidate = "IceCandidate";
@@ -33,6 +35,7 @@ namespace Edemly.Client.Infrastructure.Realtime
         public const string AcceptCall = "AcceptCall";
         public const string RejectCall = "RejectCall";
         public const string EndCall = "EndCall";
+        public const string SetCallMuted = "SetCallMuted";
         public const string SendOffer = "SendOffer";
         public const string SendAnswer = "SendAnswer";
         public const string SendIceCandidate = "SendIceCandidate";

@@ -1,62 +1,34 @@
-﻿using Edemly.Server.Api.Middleware; // ITenantProvider
-using Edemly.Server.Application.Messages;
-using Edemly.Server.Application.Remindings;
-using Edemly.Server.Data;
-using Edemly.Server.Data.Entities;
-using Edemly.Server.Infrastructure.Presence;
-using Edemly.Server.Infrastructure.Tenancy;
+using Edemly.Server.Application.Calls;
+using Edemly.Server.Application.Common;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
-using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
-using System.Text.Json;
-
 
 namespace Edemly.Server.Api.Hubs
 {
     [Authorize]
     public class CallHub : Hub
     {
-        private readonly IMessageService _messageService;
-        private readonly IRemindingService _remindingService;
-        private readonly ServerDbContext _serverDb;
-        private readonly UserPresenceService _presenceService;
+        private static readonly TimeSpan PendingCallTimeout = TimeSpan.FromSeconds(30);
+
+        private readonly ICallService _callService;
+        private readonly IServiceScopeFactory _scopeFactory;
+        private readonly IHubContext<CallHub> _hubContext;
+        private readonly IHubContext<MainHub> _mainHubContext;
         private readonly ILogger<CallHub> _logger;
-        private readonly ITenantProvider _tenantProvider;
-        private readonly ITenantDbContextFactory _tenantDbFactory;
 
         public CallHub(
-            IRemindingService remindingService,
-            IMessageService messageService,
-            ServerDbContext serverDb,
-            UserPresenceService presenceService,
-            ILogger<CallHub> logger,
-            ITenantProvider tenantProvider,
-            ITenantDbContextFactory tenantDbFactory)
+            ICallService callService,
+            IServiceScopeFactory scopeFactory,
+            IHubContext<CallHub> hubContext,
+            IHubContext<MainHub> mainHubContext,
+            ILogger<CallHub> logger)
         {
-            _messageService = messageService;
-            _remindingService = remindingService;
-            _serverDb = serverDb;
-            _presenceService = presenceService;
+            _callService = callService;
+            _scopeFactory = scopeFactory;
+            _hubContext = hubContext;
+            _mainHubContext = mainHubContext;
             _logger = logger;
-            _tenantProvider = tenantProvider;
-            _tenantDbFactory = tenantDbFactory;
-        }
-
-        private DbContext ResolveDbContext(out bool isTenant)
-        {
-            var company = TenantRequestContext.GetCurrentCompany(Context?.GetHttpContext(), _tenantProvider);
-
-            if (company != null)
-            {
-                isTenant = true;
-                _logger.LogDebug("ResolveDbContext: using tenant DB for company '{Company}'", company.Name);
-                return _tenantDbFactory.CreateCompanyDbContext(company);
-            }
-
-            isTenant = false;
-            _logger.LogDebug("ResolveDbContext: using master DB (no tenant resolved)");
-            return _serverDb;
         }
 
         public override async Task OnConnectedAsync()
@@ -68,9 +40,27 @@ namespace Edemly.Server.Api.Hubs
                 {
                     uid = GetUserId();
                 }
-                catch (Exception) { /* ignore here - log below */ }
+                catch (Exception)
+                {
+                    // Authentication failures are surfaced by hub methods.
+                }
 
-                _logger.LogInformation("CallHub OnConnected: connectionId={ConnId} userId={UserId}", Context.ConnectionId, uid?.ToString() ?? "<unknown>");
+                _logger.LogInformation(
+                    "CallHub OnConnected: connectionId={ConnId} userId={UserId}",
+                    Context.ConnectionId,
+                    uid?.ToString() ?? "<unknown>");
+
+                if (uid.HasValue)
+                {
+                    var activeGroupCalls = await _callService.GetActiveGroupCallsForUserAsync(uid.Value);
+                    if (activeGroupCalls.Success && activeGroupCalls.Data != null)
+                    {
+                        foreach (var groupCall in activeGroupCalls.Data)
+                        {
+                            await Clients.Caller.SendAsync("GroupCallUpdated", groupCall);
+                        }
+                    }
+                }
             }
             catch (Exception ex)
             {
@@ -80,106 +70,104 @@ namespace Edemly.Server.Api.Hubs
             await base.OnConnectedAsync();
         }
 
+        public override async Task OnDisconnectedAsync(Exception? exception)
+        {
+            try
+            {
+                var userId = GetUserId();
+                _logger.LogInformation(
+                    "CallHub OnDisconnected: connectionId={ConnId} userId={UserId}",
+                    Context.ConnectionId,
+                    userId);
+
+                var result = await _callService.EndActiveCallsForUserAsync(userId, "Disconnected");
+                if (result.Success && result.Data != null)
+                {
+                    foreach (var endedCall in result.Data)
+                    {
+                        if (endedCall.GroupCall != null)
+                        {
+                            await Clients.Users(ToSignalRUserIds(endedCall.MemberUserIds)).SendAsync(
+                                "GroupCallUpdated",
+                                endedCall.GroupCall);
+                        }
+
+                        if (endedCall.SystemMessageUpdate != null)
+                        {
+                            await _mainHubContext.Clients.Users(ToSignalRUserIds(endedCall.MemberUserIds)).SendAsync(
+                                "ReceiveMessageUpdate",
+                                endedCall.SystemMessageUpdate);
+                        }
+
+                        if (endedCall.CallEnded)
+                        {
+                            await Clients.Users(ToSignalRUserIds(endedCall.MemberUserIds)).SendAsync(
+                                "CallEnded",
+                                endedCall.Ended);
+                        }
+                    }
+                }
+                else if (!result.Success)
+                {
+                    _logger.LogDebug(
+                        "CallHub OnDisconnected: active call cleanup skipped for user {UserId}: {Reason}",
+                        userId,
+                        result.Message);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogDebug(ex, "CallHub OnDisconnected cleanup failed");
+            }
+
+            await base.OnDisconnectedAsync(exception);
+        }
+
         [HubMethodName("StartCall")]
         public async Task StartCallAsync(int chatId, string callUid, string? metadata = null)
         {
             var initiatorId = GetUserId();
-            _logger.LogInformation("StartCall: initiator={Initiator} chatId={ChatId} callUid={CallUid}", initiatorId, chatId, callUid);
+            _logger.LogInformation(
+                "StartCall: initiator={Initiator} chatId={ChatId} callUid={CallUid}",
+                initiatorId,
+                chatId,
+                callUid);
 
-            JsonElement? metadataElement = null;
-            if (!string.IsNullOrWhiteSpace(metadata))
+            var result = await _callService.StartCallAsync(initiatorId, chatId, callUid, metadata);
+            var call = GetDataOrThrow(result);
+
+            if (call.SystemMessage != null)
             {
-                try
-                {
-                    using var doc = JsonDocument.Parse(metadata);
-                    metadataElement = doc.RootElement.Clone();
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogDebug(ex, "StartCall: failed to parse metadata JSON string");
-                }
+                await _mainHubContext.Clients.Users(ToSignalRUserIds(call.MemberUserIds)).SendAsync(
+                    "ReceiveMessage",
+                    call.SystemMessage);
             }
 
-            DbContext membersCtx = ResolveDbContext(out var isTenant);
-            try
+            if (call.RejectedAsBusy)
             {
-                var memberIds = await membersCtx.Set<ChatMember>()
-                    .Where(cm => cm.ChatId == chatId)
-                    .Select(cm => cm.UserId)
-                    .ToListAsync();
-
-                if (memberIds == null || memberIds.Count == 0)
-                    throw new HubException("Chat has no members");
-
-                var call = new Call
-                {
-                    ChatId = chatId,
-                    InitiatorId = initiatorId,
-                    CallUid = callUid,
-                    Metadata = metadataElement.HasValue ? metadataElement.Value.GetRawText() : metadata,
-                    StartedAt = DateTime.UtcNow,
-                    Status = CallStatus.Pending // Set to Pending initially
-                };
-
-                _serverDb.Calls.Add(call);
-                await _serverDb.SaveChangesAsync();
-
-                var payload = new
-                {
-                    CallId = call.Id,
-                    CallUid = callUid,
-                    ChatId = chatId,
-                    InitiatorId = initiatorId,
-                    Metadata = call.Metadata,
-                    StartedAt = call.StartedAt
-                };
-
-                var userStrings = memberIds.Select(id => id.ToString()).ToList();
-                await Clients.Users(userStrings).SendAsync("IncomingCall", payload);
-
-                await Clients.User(initiatorId.ToString()).SendAsync("Calling", new { CallId = call.Id, CallUid = callUid });
-
-                _ = Task.Run(async () =>
-                {
-                    try
-                    {
-                        await Task.Delay(TimeSpan.FromSeconds(30));
-
-                        var pendingCall = await _serverDb.Calls.FindAsync(call.Id);
-                        if (pendingCall != null && pendingCall.Status == CallStatus.Pending)
-                        {
-                            pendingCall.Status = CallStatus.Missed;
-                            pendingCall.EndedAt = DateTime.UtcNow;
-                            await _serverDb.SaveChangesAsync();
-
-                            try
-                            {
-                                await Clients.User(initiatorId.ToString()).SendAsync("CallRejected", new { CallId = call.Id, UserId = (int?)null, Reason = "No answer" });
-                            }
-                            catch (Exception ex)
-                            {
-                                _logger.LogDebug(ex, "CallHub timeout: failed to notify initiator {InitiatorId}", initiatorId);
-                            }
-
-                            try
-                            {
-                                await Clients.Users(userStrings).SendAsync("CallEnded", new { CallId = call.Id, UserId = initiatorId });
-                            }
-                            catch (Exception ex)
-                            {
-                                _logger.LogDebug(ex, "CallHub timeout: failed to notify members for CallId={CallId}", call.Id);
-                            }
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogDebug(ex, "Error handling call timeout");
-                    }
-                });
+                throw new HubException(CallService.LineBusyMessage);
             }
-            finally
+
+            if (call.IncomingRecipientUserIds.Count > 0)
             {
-                if (isTenant) membersCtx.Dispose();
+                await Clients.Users(ToSignalRUserIds(call.IncomingRecipientUserIds)).SendAsync("IncomingCall", call.IncomingCall);
+            }
+
+            if (call.GroupCall != null)
+            {
+                await Clients.Users(ToSignalRUserIds(call.MemberUserIds)).SendAsync(
+                    "GroupCallUpdated",
+                    call.GroupCall);
+            }
+
+            await Clients.User(call.InitiatorId.ToString()).SendAsync("Calling", call.Calling);
+
+            if (call.ExpiresWhenPending)
+            {
+                SchedulePendingCallTimeout(
+                    call.IncomingCall.CallId,
+                    call.InitiatorId,
+                    call.MemberUserIds);
             }
         }
 
@@ -189,25 +177,23 @@ namespace Edemly.Server.Api.Hubs
             var userId = GetUserId();
             _logger.LogInformation("AcceptCall: user={User} callId={CallId}", userId, callId);
 
-            var call = await _serverDb.Calls.FindAsync(callId);
-            if (call == null) throw new HubException("Call not found");
+            var result = await _callService.AcceptCallAsync(userId, callId);
+            var accepted = GetDataOrThrow(result);
 
-            DbContext membersCtx = ResolveDbContext(out var isTenant);
-            try
+            await Clients.Users(ToSignalRUserIds(accepted.MemberUserIds)).SendAsync("CallAccepted", accepted.Accepted);
+
+            if (accepted.SystemMessageUpdate != null)
             {
-                var memberIds = await membersCtx.Set<ChatMember>()
-                    .Where(cm => cm.ChatId == call.ChatId)
-                    .Select(cm => cm.UserId.ToString())
-                    .ToListAsync();
-
-                await Clients.Users(memberIds).SendAsync("CallAccepted", new { CallId = callId, UserId = userId });
-
-                call.Status = CallStatus.InProgress;
-                await _serverDb.SaveChangesAsync();
+                await _mainHubContext.Clients.Users(ToSignalRUserIds(accepted.GroupCallRecipientUserIds)).SendAsync(
+                    "ReceiveMessageUpdate",
+                    accepted.SystemMessageUpdate);
             }
-            finally
+
+            if (accepted.GroupCall != null)
             {
-                if (isTenant) membersCtx.Dispose();
+                await Clients.Users(ToSignalRUserIds(accepted.GroupCallRecipientUserIds)).SendAsync(
+                    "GroupCallUpdated",
+                    accepted.GroupCall);
             }
         }
 
@@ -215,37 +201,47 @@ namespace Edemly.Server.Api.Hubs
         public async Task RejectCallAsync(int callId, string? reason = null)
         {
             var userId = GetUserId();
-            _logger.LogInformation("RejectCall: user={User} callId={CallId} reason={Reason}", userId, callId, reason);
+            _logger.LogInformation(
+                "RejectCall: user={User} callId={CallId} reason={Reason}",
+                userId,
+                callId,
+                reason);
 
-            var call = await _serverDb.Calls.FindAsync(callId);
-            if (call == null) throw new HubException("Call not found");
+            var result = await _callService.RejectCallAsync(userId, callId, reason);
+            var rejected = GetDataOrThrow(result);
 
-            DbContext membersCtx = ResolveDbContext(out var isTenant);
-            try
+            if (rejected.SystemMessageUpdate != null)
             {
-                var memberIds = await membersCtx.Set<ChatMember>()
-                    .Where(cm => cm.ChatId == call.ChatId)
-                    .Select(cm => cm.UserId.ToString())
-                    .ToListAsync();
+                await _mainHubContext.Clients.Users(ToSignalRUserIds(rejected.MemberUserIds)).SendAsync(
+                    "ReceiveMessageUpdate",
+                    rejected.SystemMessageUpdate);
+            }
 
-                call.EndedAt = DateTime.UtcNow;
-                call.Status = CallStatus.Ended;
-                await _serverDb.SaveChangesAsync();
+            if (rejected.GroupCall != null)
+            {
+                await Clients.Users(ToSignalRUserIds(rejected.MemberUserIds)).SendAsync(
+                    "GroupCallUpdated",
+                    rejected.GroupCall);
+            }
 
-                await Clients.Users(memberIds).SendAsync("CallEnded", new { CallId = callId, UserId = userId, Reason = reason });
+            if (rejected.CallEnded && rejected.Ended != null)
+            {
+                await Clients.Users(ToSignalRUserIds(rejected.MemberUserIds)).SendAsync("CallEnded", rejected.Ended);
+            }
 
+            foreach (var recipientUserId in rejected.RejectedRecipientUserIds)
+            {
                 try
                 {
-                    await Clients.User(call.InitiatorId.ToString()).SendAsync("CallRejected", new { CallId = callId, UserId = userId, Reason = reason });
+                    await Clients.User(recipientUserId.ToString()).SendAsync("CallRejected", rejected.Rejected);
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogDebug(ex, "CallHub RejectCall: failed to notify initiator {Initiator}", call.InitiatorId);
+                    _logger.LogDebug(
+                        ex,
+                        "CallHub RejectCall: failed to notify user {UserId}",
+                        recipientUserId);
                 }
-            }
-            finally
-            {
-                if (isTenant) membersCtx.Dispose();
             }
         }
 
@@ -255,27 +251,45 @@ namespace Edemly.Server.Api.Hubs
             var userId = GetUserId();
             _logger.LogInformation("EndCall: user={User} callId={CallId}", userId, callId);
 
-            var call = await _serverDb.Calls.FindAsync(callId);
-            if (call == null) throw new HubException("Call not found");
+            var result = await _callService.EndCallAsync(userId, callId);
+            var ended = GetDataOrThrow(result);
 
-            call.EndedAt = DateTime.UtcNow;
-            call.Status = CallStatus.Ended;
-            await _serverDb.SaveChangesAsync();
-
-            DbContext membersCtx = ResolveDbContext(out var isTenant);
-            try
+            if (ended.SystemMessageUpdate != null)
             {
-                var memberIds = await membersCtx.Set<ChatMember>()
-                    .Where(cm => cm.ChatId == call.ChatId)
-                    .Select(cm => cm.UserId.ToString())
-                    .ToListAsync();
+                await _mainHubContext.Clients.Users(ToSignalRUserIds(ended.MemberUserIds)).SendAsync(
+                    "ReceiveMessageUpdate",
+                    ended.SystemMessageUpdate);
+            }
 
-                await Clients.Users(memberIds).SendAsync("CallEnded", new { CallId = callId, UserId = userId });
-            }
-            finally
+            if (ended.GroupCall != null)
             {
-                if (isTenant) membersCtx.Dispose();
+                await Clients.Users(ToSignalRUserIds(ended.MemberUserIds)).SendAsync(
+                    "GroupCallUpdated",
+                    ended.GroupCall);
             }
+
+            if (ended.CallEnded)
+            {
+                await Clients.Users(ToSignalRUserIds(ended.MemberUserIds)).SendAsync("CallEnded", ended.Ended);
+            }
+        }
+
+        [HubMethodName("SetCallMuted")]
+        public async Task SetCallMutedAsync(int callId, bool isMuted)
+        {
+            var userId = GetUserId();
+            _logger.LogDebug(
+                "SetCallMuted: user={User} callId={CallId} isMuted={IsMuted}",
+                userId,
+                callId,
+                isMuted);
+
+            var result = await _callService.SetParticipantMutedAsync(userId, callId, isMuted);
+            var updated = GetDataOrThrow(result);
+
+            await Clients.Users(ToSignalRUserIds(updated.RecipientUserIds)).SendAsync(
+                "CallParticipantUpdated",
+                updated.Updated);
         }
 
         [HubMethodName("SendOffer")]
@@ -310,45 +324,127 @@ namespace Edemly.Server.Api.Hubs
         public async Task SendAudioChunkAsync(int? targetUserId, byte[] chunk, int callId, long sequenceId, long timestampMs)
         {
             var userId = GetUserId();
-            _logger.LogDebug("SendAudioChunk: from={From} to={To} callId={CallId} bytes={Len} seq={Seq} ts={Ts}", userId, targetUserId?.ToString() ?? "<all>", callId, chunk?.Length ?? 0, sequenceId, timestampMs);
+            _logger.LogDebug(
+                "SendAudioChunk: from={From} to={To} callId={CallId} bytes={Len} seq={Seq} ts={Ts}",
+                userId,
+                targetUserId?.ToString() ?? "<all>",
+                callId,
+                chunk?.Length ?? 0,
+                sequenceId,
+                timestampMs);
 
             if (targetUserId.HasValue)
             {
-                await Clients.User(targetUserId.Value.ToString()).SendAsync("AudioChunk", userId, chunk, callId, sequenceId, timestampMs);
-                return;
-            }
-
-            var call = await _serverDb.Calls.FindAsync(callId);
-            if (call == null)
-            {
-                _logger.LogDebug("SendAudioChunk: call not found for callId={CallId}", callId);
+                await Clients.User(targetUserId.Value.ToString()).SendAsync(
+                    "AudioChunk",
+                    userId,
+                    chunk,
+                    callId,
+                    sequenceId,
+                    timestampMs);
                 return;
             }
 
             try
             {
-                DbContext membersCtx = ResolveDbContext(out var isTenant);
-                try
+                var recipientsResult = await _callService.GetAudioBroadcastRecipientsAsync(userId, callId);
+                if (!recipientsResult.Success)
                 {
-                    var memberIds = await membersCtx.Set<ChatMember>()
-                        .Where(cm => cm.ChatId == call.ChatId)
-                        .Select(cm => cm.UserId.ToString())
-                        .ToListAsync();
-
-                    var recipients = memberIds.Where(id => id != userId.ToString()).ToList();
-                    if (recipients.Count == 0) return;
-
-                    await Clients.Users(recipients).SendAsync("AudioChunk", userId, chunk, callId, sequenceId, timestampMs);
+                    _logger.LogDebug(
+                        "SendAudioChunk: failed to resolve recipients for callId={CallId}: {Reason}",
+                        callId,
+                        recipientsResult.Message);
+                    return;
                 }
-                finally
+
+                var recipients = recipientsResult.Data?.RecipientUserIds ?? Array.Empty<int>();
+                if (recipients.Count == 0)
                 {
-                    if (isTenant) membersCtx.Dispose();
+                    return;
                 }
+
+                await Clients.Users(ToSignalRUserIds(recipients)).SendAsync(
+                    "AudioChunk",
+                    userId,
+                    chunk,
+                    callId,
+                    sequenceId,
+                    timestampMs);
             }
             catch (Exception ex)
             {
                 _logger.LogDebug(ex, "SendAudioChunk broadcast failed for callId={CallId}", callId);
             }
+        }
+
+        private void SchedulePendingCallTimeout(
+            int callId,
+            int initiatorId,
+            IReadOnlyList<int> memberUserIds)
+        {
+            var recipients = ToSignalRUserIds(memberUserIds);
+
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    await Task.Delay(PendingCallTimeout);
+
+                    using var scope = _scopeFactory.CreateScope();
+                    var callService = scope.ServiceProvider.GetRequiredService<ICallService>();
+
+                    var result = await callService.MarkPendingCallMissedAsync(callId);
+                    if (!result.Success)
+                    {
+                        _logger.LogDebug(
+                            "Call timeout skipped for callId={CallId}: {Reason}",
+                            callId,
+                            result.Message);
+                        return;
+                    }
+
+                    if (result.Data?.Missed != true)
+                    {
+                        return;
+                    }
+
+                    await _hubContext.Clients.User(initiatorId.ToString()).SendAsync(
+                        "CallRejected",
+                        new CallRejectedNotification(callId, null, "No answer"));
+
+                    if (result.Data.SystemMessageUpdate != null)
+                    {
+                        await _mainHubContext.Clients.Users(recipients).SendAsync(
+                            "ReceiveMessageUpdate",
+                            result.Data.SystemMessageUpdate);
+                    }
+
+                    await _hubContext.Clients.Users(recipients).SendAsync(
+                        "CallEnded",
+                        new CallEndedNotification(callId, initiatorId));
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogDebug(ex, "Error handling call timeout");
+                }
+            });
+        }
+
+        private static T GetDataOrThrow<T>(ServiceResult<T> result)
+        {
+            if (result.Success && result.Data is not null)
+            {
+                return result.Data;
+            }
+
+            throw new HubException(result.Message ?? "Call operation failed");
+        }
+
+        private static IReadOnlyList<string> ToSignalRUserIds(IEnumerable<int> userIds)
+        {
+            return userIds
+                .Select(userId => userId.ToString())
+                .ToList();
         }
 
         private int GetUserId()
@@ -367,7 +463,9 @@ namespace Edemly.Server.Api.Hubs
             }
 
             if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int parsed))
+            {
                 throw new HubException("User not authenticated");
+            }
 
             return parsed;
         }

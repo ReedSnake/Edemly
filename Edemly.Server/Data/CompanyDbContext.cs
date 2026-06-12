@@ -20,6 +20,7 @@ namespace Edemly.Server.Data
         public DbSet<Payment> Payments { get; set; } = null!;
         public DbSet<Email> Emails { get; set; } = null!;
         public DbSet<Call> Calls { get; set; } = null!;
+        public DbSet<CallParticipant> CallParticipants { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -91,6 +92,59 @@ namespace Edemly.Server.Data
                 .Property(c => c.Status)
                 .HasConversion<string>()
                 .HasMaxLength(20);
+
+            modelBuilder.Entity<Call>()
+                .Property(c => c.Scope)
+                .HasMaxLength(20);
+
+            modelBuilder.Entity<Call>()
+                .Property(c => c.MediaKind)
+                .HasMaxLength(20);
+
+            modelBuilder.Entity<Call>()
+                .Property(c => c.EndReason)
+                .HasMaxLength(200);
+
+            modelBuilder.Entity<Call>()
+                .HasIndex(c => new { c.ChatId, c.Status });
+
+            modelBuilder.Entity<Call>()
+                .HasIndex(c => c.CallUid)
+                .IsUnique();
+
+            modelBuilder.Entity<Call>()
+                .HasIndex(c => c.ActiveChatId)
+                .IsUnique();
+
+            modelBuilder.Entity<CallParticipant>().ToTable("call_participant");
+
+            modelBuilder.Entity<CallParticipant>()
+                .Property(cp => cp.Status)
+                .HasConversion<string>()
+                .HasMaxLength(20);
+
+            modelBuilder.Entity<CallParticipant>()
+                .HasOne(cp => cp.Call)
+                .WithMany(c => c.Participants)
+                .HasForeignKey(cp => cp.CallId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<CallParticipant>()
+                .HasOne(cp => cp.User)
+                .WithMany()
+                .HasForeignKey(cp => cp.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<CallParticipant>()
+                .HasIndex(cp => new { cp.CallId, cp.UserId })
+                .IsUnique();
+
+            modelBuilder.Entity<CallParticipant>()
+                .HasIndex(cp => new { cp.UserId, cp.Status });
+
+            modelBuilder.Entity<CallParticipant>()
+                .HasIndex(cp => cp.CurrentLockUserId)
+                .IsUnique();
         }
     }
 }

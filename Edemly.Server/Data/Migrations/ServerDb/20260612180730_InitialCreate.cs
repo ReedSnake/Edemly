@@ -1,12 +1,15 @@
-﻿using Microsoft.EntityFrameworkCore.Metadata;
+﻿using System;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace Edemly.Server.Data.Migrations.CompanyDb
+namespace Edemly.Server.Data.Migrations.ServerDb
 {
+    /// <inheritdoc />
     public partial class InitialCreate : Migration
     {
+        /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AlterDatabase()
@@ -36,7 +39,24 @@ namespace Edemly.Server.Data.Migrations.CompanyDb
                 .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
-                name: "Emails",
+                name: "Companies",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    Name = table.Column<string>(type: "varchar(255)", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    DbName = table.Column<string>(type: "longtext", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4")
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Companies", x => x.Id);
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
+
+            migrationBuilder.CreateTable(
+                name: "email",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
@@ -46,7 +66,7 @@ namespace Edemly.Server.Data.Migrations.CompanyDb
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Emails", x => x.Id);
+                    table.PrimaryKey("PK_email", x => x.Id);
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
 
@@ -117,8 +137,18 @@ namespace Edemly.Server.Data.Migrations.CompanyDb
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     Metadata = table.Column<string>(type: "longtext", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
+                    Scope = table.Column<string>(type: "varchar(20)", maxLength: 20, nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    MediaKind = table.Column<string>(type: "varchar(20)", maxLength: 20, nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
                     StartedAt = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    AnsweredAt = table.Column<DateTime>(type: "datetime(6)", nullable: true),
                     EndedAt = table.Column<DateTime>(type: "datetime(6)", nullable: true),
+                    EndedByUserId = table.Column<int>(type: "int", nullable: true),
+                    EndReason = table.Column<string>(type: "varchar(200)", maxLength: 200, nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    SystemMessageId = table.Column<int>(type: "int", nullable: true),
+                    ActiveChatId = table.Column<int>(type: "int", nullable: true),
                     Status = table.Column<string>(type: "varchar(20)", maxLength: 20, nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4")
                 },
@@ -315,15 +345,78 @@ namespace Edemly.Server.Data.Migrations.CompanyDb
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
 
+            migrationBuilder.CreateTable(
+                name: "call_participant",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    CallId = table.Column<int>(type: "int", nullable: false),
+                    UserId = table.Column<int>(type: "int", nullable: false),
+                    Status = table.Column<string>(type: "varchar(20)", maxLength: 20, nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    InvitedAt = table.Column<DateTime>(type: "datetime(6)", nullable: true),
+                    JoinedAt = table.Column<DateTime>(type: "datetime(6)", nullable: true),
+                    LeftAt = table.Column<DateTime>(type: "datetime(6)", nullable: true),
+                    IsMuted = table.Column<bool>(type: "tinyint(1)", nullable: false),
+                    CurrentLockUserId = table.Column<int>(type: "int", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_call_participant", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_call_participant_call_CallId",
+                        column: x => x.CallId,
+                        principalTable: "call",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_call_participant_user_UserId",
+                        column: x => x.UserId,
+                        principalTable: "user",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
+
             migrationBuilder.CreateIndex(
-                name: "IX_call_ChatId",
+                name: "IX_call_ActiveChatId",
                 table: "call",
-                column: "ChatId");
+                column: "ActiveChatId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_call_CallUid",
+                table: "call",
+                column: "CallUid",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_call_ChatId_Status",
+                table: "call",
+                columns: new[] { "ChatId", "Status" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_call_InitiatorId",
                 table: "call",
                 column: "InitiatorId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_call_participant_CallId_UserId",
+                table: "call_participant",
+                columns: new[] { "CallId", "UserId" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_call_participant_CurrentLockUserId",
+                table: "call_participant",
+                column: "CurrentLockUserId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_call_participant_UserId_Status",
+                table: "call_participant",
+                columns: new[] { "UserId", "Status" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_chat_member_chat_id",
@@ -334,6 +427,12 @@ namespace Edemly.Server.Data.Migrations.CompanyDb
                 name: "IX_chat_member_user_id",
                 table: "chat_member",
                 column: "user_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Companies_Name",
+                table: "Companies",
+                column: "Name",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_login_info_email",
@@ -396,16 +495,20 @@ namespace Edemly.Server.Data.Migrations.CompanyDb
                 unique: true);
         }
 
+        /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "call");
+                name: "call_participant");
 
             migrationBuilder.DropTable(
                 name: "chat_member");
 
             migrationBuilder.DropTable(
-                name: "Emails");
+                name: "Companies");
+
+            migrationBuilder.DropTable(
+                name: "email");
 
             migrationBuilder.DropTable(
                 name: "message");
@@ -421,6 +524,9 @@ namespace Edemly.Server.Data.Migrations.CompanyDb
 
             migrationBuilder.DropTable(
                 name: "session_info");
+
+            migrationBuilder.DropTable(
+                name: "call");
 
             migrationBuilder.DropTable(
                 name: "chat");

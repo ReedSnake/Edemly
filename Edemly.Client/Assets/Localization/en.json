@@ -369,17 +369,18 @@
   "call": {
     "incoming_call": "Incoming Call",
     "outgoing_call": "Outgoing Call",
+    "in_call": "In call",
     "call_ended": "Call Ended",
     "calling": "Calling...",
     "connecting": "Connecting...",
+    "participant_joined": "Participant joined",
     "accept": "Accept",
     "decline": "Decline",
     "end_call": "End Call",
     "mute": "Mute",
     "unmute": "Unmute",
     "duration": "Duration: {0}",
-    "call_failed": "Call failed",
-    "no_active_call": "No active call"
+    "call_failed": "Call failed"
   },
   "connection": {
     "connected": "Connected",

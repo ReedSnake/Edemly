@@ -93,7 +93,7 @@ namespace Edemly.Client.Presentation.Controllers.Chats
 
         private void OnMessageUpdated(MessageDto message)
         {
-            System.Windows.Application.Current.Dispatcher.Invoke(() =>
+            System.Windows.Application.Current.Dispatcher.Invoke(async () =>
             {
                 _cache.UpdateMessage(message.ChatId, message);
 
@@ -108,7 +108,14 @@ namespace Edemly.Client.Presentation.Controllers.Chats
 
                 if (message.ChatId == CurrentChatId)
                 {
-                    _messageRenderer.UpdateMessageInUI(message);
+                    if (message.Type == MessageTypeCodes.Call)
+                    {
+                        await RefreshCurrentChatMessagesAsync();
+                    }
+                    else
+                    {
+                        _messageRenderer.UpdateMessageInUI(message);
+                    }
                 }
 
                 if (_chatLastMessage.ContainsKey(message.ChatId) &&

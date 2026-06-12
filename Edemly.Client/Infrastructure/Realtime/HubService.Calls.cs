@@ -36,6 +36,12 @@ namespace Edemly.Client.Infrastructure.Realtime
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"[HUB] StartCall failed: {ex.Message}");
+                if (IsLineBusyError(ex))
+                {
+                    throw new InvalidOperationException("Line busy", ex);
+                }
+
+                throw;
             }
         }
 
@@ -52,6 +58,12 @@ namespace Edemly.Client.Infrastructure.Realtime
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"[HUB] AcceptCall failed: {ex.Message}");
+                if (IsLineBusyError(ex))
+                {
+                    throw new InvalidOperationException("Line busy", ex);
+                }
+
+                throw;
             }
         }
 
@@ -88,6 +100,15 @@ namespace Edemly.Client.Infrastructure.Realtime
             {
                 Debug.WriteLine($"[HUB] EndCall failed: {ex.Message}");
             }
+        }
+
+        public async Task SetCallMutedAsync(int callId, bool isMuted)
+        {
+            var conn = await GetReadyCallConnectionAsync();
+            if (conn == null) return;
+
+            var cts = new CancellationTokenSource(HubSettings.ShortOperationTimeout);
+            await conn.InvokeAsync(HubMethods.SetCallMuted, callId, isMuted, cts.Token);
         }
 
         public async Task SendOfferAsync(int targetUserId, string sdp, string callUid)
@@ -177,6 +198,12 @@ namespace Edemly.Client.Infrastructure.Realtime
             return conn?.State == HubConnectionState.Connected
                 ? conn
                 : null;
+        }
+
+        private static bool IsLineBusyError(Exception ex)
+        {
+            return ex.Message.Contains("Line busy", StringComparison.OrdinalIgnoreCase)
+                || ex.InnerException?.Message.Contains("Line busy", StringComparison.OrdinalIgnoreCase) == true;
         }
     }
 }

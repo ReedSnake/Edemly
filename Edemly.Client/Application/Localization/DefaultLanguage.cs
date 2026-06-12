@@ -381,9 +381,11 @@ namespace Edemly.Client.Application.Localization
 
         public static string IncomingCall => Lang.GetText("call", "incoming_call", "Incoming Call");
         public static string OutgoingCall => Lang.GetText("call", "outgoing_call", "Outgoing Call");
+        public static string InCall => Lang.GetText("call", "in_call", "In call");
         public static string CallEnded => Lang.GetText("call", "call_ended", "Call Ended");
         public static string Calling => Lang.GetText("call", "calling", "Calling...");
         public static string Connecting => Lang.GetText("call", "connecting", "Connecting...");
+        public static string ParticipantJoined => Lang.GetText("call", "participant_joined", "Participant joined");
         public static string Accept => Lang.GetText("call", "accept", "Accept");
         public static string Decline => Lang.GetText("call", "decline", "Decline");
         public static string EndCall => Lang.GetText("call", "end_call", "End Call");
@@ -391,7 +393,7 @@ namespace Edemly.Client.Application.Localization
         public static string Unmute => Lang.GetText("call", "unmute", "Unmute");
         public static string CallDuration => Lang.GetText("call", "duration", "Duration: {0}");
         public static string CallFailed => Lang.GetText("call", "call_failed", "Call failed");
-        public static string NoActiveCall => Lang.GetText("call", "no_active_call", "No active call");
+        public static string LineBusy => Lang.GetText("call", "line_busy", "Line busy");
 
         public static string Connected => Lang.GetText("connection", "connected", "Connected");
         public static string Disconnected => Lang.GetText("connection", "disconnected", "Disconnected");

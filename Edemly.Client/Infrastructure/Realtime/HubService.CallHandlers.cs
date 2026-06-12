@@ -50,19 +50,22 @@ namespace Edemly.Client.Infrastructure.Realtime
                 }
 
                 HubEventDispatcher.Dispatch(() =>
-                    CallingReceived?.Invoke(payload.CallId, payload.CallUid));
+                    CallingReceived?.Invoke(payload));
             });
 
             conn.On<object>(HubMethods.CallAccepted, data =>
             {
-                var d = HubPayloadParser.Deserialize<CallSimpleEventDto>(
+                var d = HubPayloadParser.Deserialize<CallAcceptedEventDto>(
                     data,
                     HubMethods.CallAccepted);
 
                 if (d != null)
                 {
                     HubEventDispatcher.Dispatch(() =>
-                        CallAcceptedReceived?.Invoke(d.CallId, d.UserId));
+                    {
+                        CallAcceptedDetailsReceived?.Invoke(d);
+                        CallAcceptedReceived?.Invoke(d.CallId, d.UserId);
+                    });
                 }
             });
 
@@ -88,7 +91,33 @@ namespace Edemly.Client.Infrastructure.Realtime
                 if (d != null)
                 {
                     HubEventDispatcher.Dispatch(() =>
-                        CallEndedReceived?.Invoke(d.CallId, d.UserId));
+                    CallEndedReceived?.Invoke(d.CallId, d.UserId));
+                }
+            });
+
+            conn.On<object>(HubMethods.CallParticipantUpdated, data =>
+            {
+                var d = HubPayloadParser.Deserialize<CallParticipantUpdatedEventDto>(
+                    data,
+                    HubMethods.CallParticipantUpdated);
+
+                if (d != null)
+                {
+                    HubEventDispatcher.Dispatch(() =>
+                        CallParticipantUpdatedReceived?.Invoke(d));
+                }
+            });
+
+            conn.On<object>(HubMethods.GroupCallUpdated, data =>
+            {
+                var d = HubPayloadParser.Deserialize<GroupCallEventDto>(
+                    data,
+                    HubMethods.GroupCallUpdated);
+
+                if (d != null)
+                {
+                    HubEventDispatcher.Dispatch(() =>
+                        GroupCallUpdated?.Invoke(d));
                 }
             });
 
@@ -167,6 +196,8 @@ namespace Edemly.Client.Infrastructure.Realtime
                 conn.Remove(HubMethods.CallAccepted);
                 conn.Remove(HubMethods.CallRejected);
                 conn.Remove(HubMethods.CallEnded);
+                conn.Remove(HubMethods.CallParticipantUpdated);
+                conn.Remove(HubMethods.GroupCallUpdated);
                 conn.Remove(HubMethods.Offer);
                 conn.Remove(HubMethods.Answer);
                 conn.Remove(HubMethods.IceCandidate);

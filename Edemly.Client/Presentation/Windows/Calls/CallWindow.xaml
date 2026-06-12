@@ -41,55 +41,6 @@
                        TextWrapping="Wrap" />
         </Border>
 
-        <Grid x:Name="ListViewGrid">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="*" />
-                <RowDefinition Height="Auto" />
-            </Grid.RowDefinitions>
-
-            <TextBlock Grid.Row="0"
-                       Style="{StaticResource CallSectionTitleStyle}"
-                       Text="Active calls" />
-
-            <ScrollViewer Grid.Row="1"
-                          Margin="8"
-                          VerticalScrollBarVisibility="Hidden">
-
-                <Border Height="273"
-                        Background="{DynamicResource ThemeSurfaceBrush}"
-                        CornerRadius="20"
-                        Padding="10">
-
-                    <StackPanel x:Name="CallsListPanel" />
-                </Border>
-            </ScrollViewer>
-
-            <StackPanel Grid.Row="2"
-                        Orientation="Horizontal"
-                        HorizontalAlignment="Right"
-                        Margin="8">
-
-                <Button x:Name="RefreshListButton"
-                        Style="{StaticResource PrimaryButtonStyle}"
-                        Content="Refresh"
-                        Width="147"
-                        Height="36"
-                        Margin="4"
-                        Padding="14,0"
-                        Click="RefreshListButton_Click" />
-
-                <Button x:Name="CloseButton"
-                        Style="{StaticResource PrimaryButtonStyle}"
-                        Content="Close"
-                        Width="119"
-                        Height="36"
-                        Margin="4"
-                        Padding="14,0"
-                        Click="CloseButton_Click" />
-            </StackPanel>
-        </Grid>
-
         <Border x:Name="IncomingPrompt"
                 Style="{StaticResource CallOverlayPanelStyle}"
                 Background="{DynamicResource ThemeSecondaryBrush}">
@@ -192,23 +143,143 @@
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
-            <TextBlock x:Name="CallTitle"
-                       Grid.Row="0"
-                       Style="{StaticResource CallSectionTitleStyle}"
-                       Text="Call" />
+            <Grid Grid.Row="0"
+                  Margin="8,8,8,4">
 
-            <StackPanel Grid.Row="1"
-                        Margin="8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
 
-                <TextBlock x:Name="CallInfoText"
-                           Foreground="{DynamicResource ThemeTextPrimaryBrush}"
-                           TextWrapping="Wrap" />
+                <StackPanel Grid.Column="0"
+                            Orientation="Vertical">
 
-                <Grid x:Name="WebViewHost"
-                      Height="240"
-                      Margin="0,8,0,0"
-                      Background="{DynamicResource ThemeSurfaceAltBrush}" />
-            </StackPanel>
+                    <TextBlock x:Name="CallTitle"
+                               Style="{StaticResource CallSectionTitleStyle}"
+                               Text="Call" />
+
+                    <TextBlock x:Name="CallInfoText"
+                               Foreground="{DynamicResource ThemeTextSecondaryBrush}"
+                               FontSize="12"
+                               TextWrapping="Wrap" />
+                </StackPanel>
+
+                <StackPanel Grid.Column="1"
+                            Orientation="Vertical"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Center">
+
+                    <TextBlock x:Name="CallDurationText"
+                               Text="00:00"
+                               FontSize="16"
+                               FontWeight="SemiBold"
+                               Foreground="{DynamicResource ThemeTextPrimaryBrush}"
+                               HorizontalAlignment="Right" />
+
+                    <TextBlock x:Name="CallMediaKindText"
+                               Text="Audio"
+                               FontSize="11"
+                               Foreground="{DynamicResource ThemeTextSecondaryBrush}"
+                               HorizontalAlignment="Right" />
+                </StackPanel>
+            </Grid>
+
+            <Grid Grid.Row="1"
+                  Margin="8">
+
+                <Border x:Name="DirectCallPanel"
+                        CornerRadius="18"
+                        Padding="24"
+                        Background="{DynamicResource ThemeSurfaceAltBrush}"
+                        BorderBrush="{DynamicResource ThemeBorderLightBrush}"
+                        BorderThickness="1">
+
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <Border Grid.RowSpan="2"
+                                Opacity="0.18"
+                                CornerRadius="16"
+                                IsHitTestVisible="False">
+                            <Border.Background>
+                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                    <GradientStop Color="#FF243447" Offset="0" />
+                                    <GradientStop Color="#FF52656D" Offset="1" />
+                                </LinearGradientBrush>
+                            </Border.Background>
+                        </Border>
+
+                        <StackPanel Grid.Row="0"
+                                    Orientation="Vertical"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center">
+
+                            <Border x:Name="DirectAvatarBorder"
+                                    Width="128"
+                                    Height="128"
+                                    CornerRadius="64"
+                                    BorderBrush="{DynamicResource ThemeBorderLightBrush}"
+                                    BorderThickness="3"
+                                    Background="{DynamicResource ThemeBorderLightBrush}">
+
+                                <Image x:Name="DirectAvatarImage"
+                                       Stretch="UniformToFill" />
+                            </Border>
+
+                            <TextBlock x:Name="DirectParticipantNameText"
+                                       Text="Participant"
+                                       FontSize="22"
+                                       FontWeight="SemiBold"
+                                       Foreground="{DynamicResource ThemeTextPrimaryBrush}"
+                                       HorizontalAlignment="Center"
+                                       TextAlignment="Center"
+                                       TextWrapping="Wrap"
+                                       MaxWidth="320"
+                                       Margin="0,16,0,0" />
+
+                            <TextBlock x:Name="DirectParticipantStatusText"
+                                       Text="Connected"
+                                       FontSize="13"
+                                       Foreground="{DynamicResource ThemeTextSecondaryBrush}"
+                                       HorizontalAlignment="Center"
+                                       Margin="0,4,0,0" />
+                        </StackPanel>
+
+                        <Border Grid.Row="1"
+                                CornerRadius="14"
+                                Padding="12,7"
+                                HorizontalAlignment="Center"
+                                Background="{DynamicResource ThemeSurfaceBrush}"
+                                BorderBrush="{DynamicResource ThemeBorderLightBrush}"
+                                BorderThickness="1">
+
+                            <TextBlock x:Name="DirectMicStatusText"
+                                       Text="Mic on"
+                                       FontSize="12"
+                                       Foreground="{DynamicResource ThemeTextPrimaryBrush}" />
+                        </Border>
+                    </Grid>
+                </Border>
+
+                <Border x:Name="GroupCallPanel"
+                        Visibility="Collapsed"
+                        CornerRadius="18"
+                        Padding="14"
+                        Background="{DynamicResource ThemeBackgroundDarkBrush}"
+                        BorderBrush="{DynamicResource ThemeBorderLightBrush}"
+                        BorderThickness="1">
+
+                    <ScrollViewer VerticalScrollBarVisibility="Hidden"
+                                  HorizontalScrollBarVisibility="Disabled">
+                        <WrapPanel x:Name="GroupParticipantsPanel"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center" />
+                    </ScrollViewer>
+                </Border>
+            </Grid>
 
             <StackPanel Grid.Row="2"
                         Orientation="Horizontal"

@@ -16,6 +16,7 @@ namespace Edemly.Client.Presentation.Rendering.Messages
         private readonly PhotoMessageRenderer _photoRenderer;
         private readonly FileMessageRenderer _fileRenderer;
         private readonly VoiceMessageRenderer _voiceRenderer;
+        private readonly CallSystemMessageRenderer _callSystemRenderer;
 
         public MessageRenderer(StackPanel messagesPanel, int currentUserId)
         {
@@ -35,6 +36,7 @@ namespace Edemly.Client.Presentation.Rendering.Messages
             _photoRenderer = new PhotoMessageRenderer(themeProvider, timeFormatter, bubbleFactory, contextMenuFactory, actions);
             _fileRenderer = new FileMessageRenderer(themeProvider, timeFormatter, bubbleFactory, contextMenuFactory, actions);
             _voiceRenderer = new VoiceMessageRenderer(contextMenuFactory);
+            _callSystemRenderer = new CallSystemMessageRenderer();
         }
 
         public void SetGroupChatMode(bool isGroupChat)
@@ -64,6 +66,9 @@ namespace Edemly.Client.Presentation.Rendering.Messages
                 case 4:
                 case 5:
                     _fileRenderer.Render(message, context, isHistorical);
+                    break;
+                case MessageTypeCodes.Call:
+                    _callSystemRenderer.Render(message, context, isHistorical);
                     break;
             }
         }

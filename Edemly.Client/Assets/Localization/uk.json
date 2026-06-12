@@ -369,17 +369,18 @@
   "call": {
     "incoming_call": "Вхідний дзвінок",
     "outgoing_call": "Вихідний дзвінок",
+    "in_call": "У дзвінку",
     "call_ended": "Дзвінок завершено",
     "calling": "Дзвінок...",
     "connecting": "З'єднання...",
+    "participant_joined": "Учасник приєднався",
     "accept": "Прийняти",
     "decline": "Відхилити",
     "end_call": "Завершити",
     "mute": "Вимкнути звук",
     "unmute": "Увімкнути звук",
     "duration": "Тривалість: {0}",
-    "call_failed": "Дзвінок не вдався",
-    "no_active_call": "Немає активного дзвінка"
+    "call_failed": "Дзвінок не вдався"
   },
   "connection": {
     "connected": "Підключено",

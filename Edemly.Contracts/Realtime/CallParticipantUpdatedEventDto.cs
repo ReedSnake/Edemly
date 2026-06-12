@@ -2,11 +2,13 @@ using Edemly.Contracts.Calls;
 
 namespace Edemly.Contracts.Realtime;
 
-public sealed class CallAcceptedEventDto
+public sealed class CallParticipantUpdatedEventDto
 {
     public int CallId { get; set; }
+
     public int UserId { get; set; }
-    public string Scope { get; set; } = CallScopes.Direct;
-    public string MediaKind { get; set; } = CallMediaKinds.Audio;
+
+    public bool IsMuted { get; set; }
+
     public IReadOnlyList<CallParticipantDto> Participants { get; set; } = Array.Empty<CallParticipantDto>();
 }

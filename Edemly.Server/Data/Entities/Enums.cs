@@ -1,5 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
+using Edemly.Contracts.Messages;
+
 namespace Edemly.Server.Data.Entities
 {
     public enum SubscriptionStatus
@@ -44,22 +46,25 @@ namespace Edemly.Server.Data.Entities
     public enum MessageType
     {
         [Display(Name = "txt")]
-        Txt = 0,
+        Txt = MessageTypeCodes.Text,
 
         [Display(Name = "voice")]
-        Voice = 1,
+        Voice = MessageTypeCodes.Voice,
 
         [Display(Name = "video")]
-        Video = 2,
+        Video = MessageTypeCodes.Video,
 
         [Display(Name = "photo")]
-        Photo = 3,
+        Photo = MessageTypeCodes.Photo,
 
         [Display(Name = "file")]
-        File = 4,           // Загальний файл
+        File = MessageTypeCodes.File,           // Загальний файл
 
         [Display(Name = "document")]
-        Document = 5        // Документ (pdf, doc, docx)
+        Document = MessageTypeCodes.Document,       // Документ (pdf, doc, docx)
+
+        [Display(Name = "call")]
+        Call = MessageTypeCodes.Call
     }
 
     public enum PaymentStatus
