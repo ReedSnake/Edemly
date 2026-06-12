@@ -582,10 +582,17 @@ namespace Edemly.Client.Presentation.Pages.Main
                     return;
                 }
 
+                CallWindow idleCallWindow = null;
                 foreach (Window w in System.Windows.Application.Current.Windows)
                 {
                     if (w is CallWindow cw)
                     {
+                        if (!cw.HasActiveSession)
+                        {
+                            idleCallWindow ??= cw;
+                            continue;
+                        }
+
                         try
                         {
                             if (!cw.IsVisible)
@@ -634,6 +641,21 @@ namespace Edemly.Client.Presentation.Pages.Main
                 }
                 catch { }
 
+                CallWindow callWindow;
+                try
+                {
+                    callWindow = idleCallWindow ?? new CallWindow(App.CallSessionController);
+                    callWindow.Owner = System.Windows.Application.Current.MainWindow;
+                    try { callWindow.RegisterHubHandlers(); } catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[CALL] RegisterHubHandlers failed: {ex}"); }
+                    callWindow.Show();
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[CALL] Failed to open CallWindow: {ex}");
+                    MessageBox.ShowError($"Failed to open call window: {ex.Message}", "Error");
+                    return;
+                }
+
                 try
                 {
                     await App.HubService.StartCallAsync(_chatController.CurrentChatId, callUid, null);
@@ -641,27 +663,25 @@ namespace Edemly.Client.Presentation.Pages.Main
                 catch (Exception ex)
                 {
                     System.Diagnostics.Debug.WriteLine($"[CALL] StartCallAsync threw: {ex}");
-                    MessageBox.ShowError($"Failed to start call: {ex.Message}", "Error");
-                    return;
-                }
+                    callWindow.Close();
+                    var errorMessage = IsLineBusyError(ex)
+                        ? DefaultLanguage.LineBusy
+                        : $"{DefaultLanguage.CallFailed}: {ex.Message}";
 
-                try
-                {
-                    var win = new CallWindow();
-                    win.Owner = System.Windows.Application.Current.MainWindow;
-                    try { win.RegisterHubHandlers(); } catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[CALL] RegisterHubHandlers failed: {ex}"); }
-                    win.Show();
-                }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine($"[CALL] Failed to open CallWindow: {ex}");
-                    MessageBox.ShowError($"Failed to open call window: {ex.Message}", "Error");
+                    MessageBox.ShowError(errorMessage, DefaultLanguage.ErrorTitle);
+                    return;
                 }
             }
             catch (Exception ex)
             {
                 MessageBox.ShowError($"{DefaultLanguage.CallFailed}: {ex.Message}", DefaultLanguage.ErrorTitle);
             }
+        }
+
+        private static bool IsLineBusyError(Exception ex)
+        {
+            return ex.Message.Contains("Line busy", StringComparison.OrdinalIgnoreCase)
+                || ex.InnerException?.Message.Contains("Line busy", StringComparison.OrdinalIgnoreCase) == true;
         }
     }
 }

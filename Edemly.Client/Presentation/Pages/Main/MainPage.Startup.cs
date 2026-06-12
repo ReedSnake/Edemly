@@ -192,8 +192,10 @@ namespace Edemly.Client.Presentation.Pages.Main
 
                 App.HubService.UserStatusChanged -= OnUserStatusChanged;
                 App.HubService.ProfileUpdated -= OnProfileUpdated;
+                App.HubService.GroupCallUpdated -= OnGroupCallUpdated;
                 App.HubService.UserStatusChanged += OnUserStatusChanged;
                 App.HubService.ProfileUpdated += OnProfileUpdated;
+                App.HubService.GroupCallUpdated += OnGroupCallUpdated;
 
                 if (_isFirstLoad)
                 {
@@ -269,6 +271,7 @@ namespace Edemly.Client.Presentation.Pages.Main
         {
             App.HubService.UserStatusChanged -= OnUserStatusChanged;
             App.HubService.ProfileUpdated -= OnProfileUpdated;
+            App.HubService.GroupCallUpdated -= OnGroupCallUpdated;
 
             DisposeCancellationTokenSourceSafely();
         }

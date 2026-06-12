@@ -7,6 +7,7 @@ using Edemly.Client.Presentation.Common;
 using Edemly.Client.Presentation.Controllers.Chats;
 using Edemly.Client.Presentation.Dialogs.Attachments;
 using Edemly.Client.Presentation.Pages.Main.Helpers;
+using Edemly.Contracts.Realtime;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -29,6 +30,7 @@ namespace Edemly.Client.Presentation.Pages.Main
         private IClipboardImageTempFileStore _clipboardImageTempFileStore = null!;
         private IAttachmentWorkflowCoordinator _attachmentWorkflowCoordinator = null!;
         private readonly HashSet<int> _selectedParticipants = new();
+        private readonly Dictionary<int, GroupCallEventDto> _activeGroupCallsByChatId = new();
         private VoiceRecorder? _voiceRecorder;
         private bool _isRecording;
         private string _messageTextBeforeRecording = string.Empty;

@@ -27,6 +27,11 @@ namespace Edemly.Client
             () => GlobalChatController,
             () => CurrentUserId,
             EnsureMainWindowAvailable);
+        private static readonly CallSessionState _callSessionState = new();
+        private static readonly CallSessionController _callSessionController = new(
+            _callSessionState,
+            () => _serviceRegistry.HubService,
+            () => CurrentUserId);
         private static readonly ClientSessionManager _sessionManager = new(
             _session,
             _serviceRegistry,
@@ -35,9 +40,9 @@ namespace Edemly.Client
             _chatActivationService.ClearCache);
         private static readonly CallWindowCoordinator _callWindowCoordinator = new(
             () => _serviceRegistry.HubService,
-            () => _serviceRegistry.ApiClients,
             () => AuthToken,
-            () => Current?.MainWindow);
+            () => Current?.MainWindow,
+            _callSessionController);
         private static readonly AppRealtimeCoordinator _realtimeCoordinator = new(
             () => _serviceRegistry.HubService,
             () => _serviceRegistry.HubService as HubService,
@@ -56,6 +61,8 @@ namespace Edemly.Client
         public static IApiClients ApiClients => _serviceRegistry.ApiClients;
         public static IAuthService AuthService => _serviceRegistry.AuthService;
         public static IHubService HubService => _serviceRegistry.HubService;
+        public static CallSessionState CallSessionState => _callSessionState;
+        public static CallSessionController CallSessionController => _callSessionController;
         public static NotesService? NotesService => _serviceRegistry.NotesService;
 
         public static ChatCache GlobalChatCache => _serviceRegistry.ChatCache;

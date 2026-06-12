@@ -17,4 +17,10 @@ public class CallDto
     public DateTime? EndedAt { get; set; }
 
     public string Status { get; set; } = string.Empty;
+
+    public string Scope { get; set; } = CallScopes.Direct;
+
+    public string MediaKind { get; set; } = CallMediaKinds.Audio;
+
+    public IReadOnlyList<CallParticipantDto> Participants { get; set; } = Array.Empty<CallParticipantDto>();
 }

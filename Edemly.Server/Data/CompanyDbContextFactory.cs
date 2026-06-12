@@ -23,7 +23,7 @@ namespace Edemly.Server.Data
 
             optionsBuilder.UseMySql(
                 connectionString,
-                ServerVersion.AutoDetect(connectionString),
+                ServerVersion.Create(new Version(8, 0, 36), Pomelo.EntityFrameworkCore.MySql.Infrastructure.ServerType.MySql),
                 options => options.EnableRetryOnFailure()
                     .MigrationsAssembly("Edemly.Server")
             );

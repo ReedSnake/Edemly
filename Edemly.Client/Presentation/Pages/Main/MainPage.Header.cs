@@ -95,6 +95,7 @@ namespace Edemly.Client.Presentation.Pages.Main
                     onlinePanel.Visibility = Visibility.Collapsed;
                 }
 
+                RefreshActiveGroupCallBanner();
                 return;
             }
 
@@ -146,6 +147,7 @@ namespace Edemly.Client.Presentation.Pages.Main
             }
 
             await SetHeaderAvatarAsync(contact.PhotoPath);
+            RefreshActiveGroupCallBanner();
         }
 
         private async void OnProfileUpdated(int userId, string newPfpUrl)

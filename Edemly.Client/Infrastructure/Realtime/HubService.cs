@@ -42,9 +42,13 @@ namespace Edemly.Client.Infrastructure.Realtime
 
         public event Action<int, int>? CallAcceptedReceived; // callId, userId
 
+        public event Action<CallAcceptedEventDto>? CallAcceptedDetailsReceived;
+
         public event Action<int, int, string?>? CallRejectedReceived; // callId, userId, reason
 
         public event Action<int, int>? CallEndedReceived; // callId, userId
+
+        public event Action<CallParticipantUpdatedEventDto>? CallParticipantUpdatedReceived;
 
         public event Action<SignalDataDto>? OfferReceived;
 
@@ -52,7 +56,9 @@ namespace Edemly.Client.Infrastructure.Realtime
 
         public event Action<SignalIceDto>? IceCandidateReceived;
 
-        public event Action<int, string?>? CallingReceived; // callId, callUid
+        public event Action<CallingEventDto>? CallingReceived;
+
+        public event Action<GroupCallEventDto>? GroupCallUpdated;
 
         public event Action<int, byte[], int, long, long>? AudioChunkReceived; // fromUserId, chunk, callId, sequenceId, timestampMs
 
