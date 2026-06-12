@@ -36,6 +36,7 @@ It is used for:
 * SignalR realtime event payloads.
 * File upload response models.
 * Payment-related communication models.
+* Shared message type constants used by chat and call system messages.
 
 The project should stay focused on communication contracts. It should not become a place for application logic, UI models, database entities, API clients, service implementations, or infrastructure code.
 
@@ -46,7 +47,7 @@ The project is organized by feature area.
 | Folder      | Responsibility                               |
 | ----------- | -------------------------------------------- |
 | Auth        | Authentication and session-related contracts |
-| Calls       | Call-related API contracts                   |
+| Calls       | Call metadata, participant, lifecycle, and system-message contracts |
 | ChatMembers | Chat membership contracts                    |
 | Chats       | Chat contracts                               |
 | Companies   | Company workspace and admin contracts        |
@@ -76,6 +77,8 @@ Request and response contracts should be separated when the client input and ser
 General DTOs are acceptable when the same shape is naturally used in multiple places, for example when displaying a user, chat, or message.
 
 Realtime DTOs should be kept stable because both server hub handlers and client SignalR handlers depend on them.
+
+Call-related realtime contracts are participant-oriented. They include direct and group call payloads, participant updates, accepted/rejected events, and shared call metadata constants for `Direct`/`Group` scopes and `Audio`/`Video` media kinds.
 
 ## Validation
 

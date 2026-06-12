@@ -33,7 +33,7 @@ Desktop messenger platform built with .NET 10, WPF, ASP.NET Core, SignalR, Entit
 
 * Private and group chats.
 * Realtime messaging.
-* Voice calls.
+* Direct and group voice calls.
 * File attachments and avatars.
 * Email-code login with JWT sessions.
 * Company workspaces with isolated tenant databases.
@@ -151,7 +151,7 @@ http://localhost:8100/swagger
 
 ## Runtime Notes
 
-* The server port argument is required.
+* The server port argument is optional. If it is not passed, the server uses `PORT`, `ASPNETCORE_PORT`, or defaults to `8100`.
 * The client server URL argument is required.
 * When `Brevo:ApiKey` is set to `MOCK_MODE`, login codes are printed to the server console.
 * Server startup automatically applies pending master migrations and tenant migrations for existing companies.

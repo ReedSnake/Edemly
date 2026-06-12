@@ -44,49 +44,44 @@ The project is not intended to represent strict Clean Architecture. Application 
 
 ```text
 Edemly.Server/
-├─ Api/
-│  ├─ Controllers/
-│  ├─ Hubs/
-│  └─ Middleware/
-│
-├─ Application/
-│  ├─ Auth/
-│  ├─ Chats/
-│  ├─ ChatMembers/
-│  ├─ Common/
-│  ├─ Companies/
-│  ├─ Files/
-│  ├─ Messages/
-│  ├─ Notes/
-│  ├─ Payments/
-│  ├─ Remindings/
-│  ├─ Users/
-│  └─ Welcome/
-│
-├─ Configuration/
-│
-├─ Data/
-│  ├─ Entities/
-│  ├─ Migrations/
-│  │  ├─ ServerDb/
-│  │  └─ CompanyDb/
-│  ├─ CompanyDbContext.cs
-│  └─ ServerDbContext.cs
-│
-├─ Infrastructure/
-│  ├─ Auth/
-│  ├─ BackgroundServices/
-│  ├─ Caching/
-│  ├─ Email/
-│  ├─ Files/
-│  ├─ Hosting/
-│  ├─ Payments/
-│  ├─ Presence/
-│  ├─ Realtime/
-│  └─ Tenancy/
-│
-├─ Program.cs
-└─ appsettings.json
+|-- Api/
+|   |-- Controllers/
+|   |-- Hubs/
+|   `-- Middleware/
+|-- Application/
+|   |-- Auth/
+|   |-- Calls/
+|   |-- Chats/
+|   |-- ChatMembers/
+|   |-- Common/
+|   |-- Companies/
+|   |-- Messages/
+|   |-- Notes/
+|   |-- Payments/
+|   |-- Remindings/
+|   |-- Users/
+|   `-- Welcome/
+|-- Configuration/
+|-- Data/
+|   |-- Entities/
+|   |-- Migrations/
+|   |   |-- ServerDb/
+|   |   `-- CompanyDb/
+|   |-- CompanyDbContext.cs
+|   `-- ServerDbContext.cs
+|-- Infrastructure/
+|   |-- Auth/
+|   |-- BackgroundServices/
+|   |-- Caching/
+|   |-- Email/
+|   |-- Files/
+|   |-- Hosting/
+|   |-- Payments/
+|   |-- Presence/
+|   |-- Realtime/
+|   `-- Tenancy/
+|-- Program.cs
+`-- appsettings.json
 ```
 
 The server project is separated from shared contracts and test projects:
@@ -175,6 +170,9 @@ Detailed database structure, tenant provisioning, and migration strategy are des
 | ChatService          | Chat creation, retrieval, and chat-level operations                |
 | ChatMemberService    | Chat membership and member permissions                             |
 | MessageService       | Message creation, retrieval, updates, and deletion                 |
+| CallService          | Call lifecycle, participants, system messages, and call state      |
+| MainHub              | Realtime chat, message, group, presence, and WebRTC signaling entry point |
+| CallHub              | Realtime call lifecycle and participant-state entry point          |
 | CompanyService       | Company workspace and tenant-related operations                    |
 | FileStorageService   | File saving and public file access                                 |
 | RemindingService     | Reminder-related operations                                        |

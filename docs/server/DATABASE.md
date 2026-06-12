@@ -59,12 +59,12 @@ Production credentials and secrets should not be committed to the repository. Th
 
 The server contains two database contexts and two design-time factories:
 
-```
+```text
 Data/
-├─ ServerDbContext.cs
-├─ CompanyDbContext.cs
-├─ ServerDbContextFactory.cs
-└─ CompanyDbContextFactory.cs
+|-- ServerDbContext.cs
+|-- CompanyDbContext.cs
+|-- ServerDbContextFactory.cs
+`-- CompanyDbContextFactory.cs
 ```
 
 ServerDbContextFactory and CompanyDbContextFactory are used by Entity Framework tools when creating or applying migrations.
@@ -82,6 +82,7 @@ Notes
 Remindings
 Payments
 Calls
+CallParticipants
 Emails
 ```
 
@@ -114,20 +115,21 @@ It does not show every technical table or every column. Supporting entities such
 
 The main database model contains the following core entities:
 
-| Entity     | Purpose                                                 |
-| ---------- | ------------------------------------------------------- |
-| User       | User profile and account-related data                   |
-| LoginInfo  | Authentication credentials and email verification state |
-| Session    | User session information                                |
-| Chat       | Private or group chat                                   |
-| ChatMember | User membership in a chat                               |
-| Message    | Text, file, voice, or other chat message content        |
-| Note       | User-created note about another user                    |
-| Reminding  | Reminder/task data                                      |
-| Payment    | Payment and subscription-related data                   |
-| Call       | Call-related data                                       |
-| Company    | Company workspace metadata                              |
-| Email      | Email addresses used by company-related functionality   |
+| Entity          | Purpose                                                 |
+| --------------- | ------------------------------------------------------- |
+| User            | User profile and account-related data                   |
+| LoginInfo       | Authentication credentials and email verification state |
+| Session         | User session information                                |
+| Chat            | Private or group chat                                   |
+| ChatMember      | User membership in a chat                               |
+| Message         | Text, file, voice, call, or other chat message content  |
+| Note            | User-created note about another user                    |
+| Reminding       | Reminder/task data                                      |
+| Payment         | Payment and subscription-related data                   |
+| Call            | Call lifecycle and chat-level call metadata             |
+| CallParticipant | Per-user call participation, mute, and join/leave state |
+| Company         | Company workspace metadata                              |
+| Email           | Email addresses used by company-related functionality   |
 
 Most relationships are shown in the diagram above. The main special cases are:
 
@@ -135,6 +137,8 @@ Most relationships are shown in the diagram above. The main special cases are:
 * User and Session have a one-to-zero-or-one relationship.
 * Note has two relationships to User: creator and target user.
 * Call is connected to both Chat and the initiating User.
+* CallParticipant connects a Call to each invited or joined User.
+* Call stores lifecycle metadata such as scope, media kind, answered time, ended time, end reason, active chat id, and related system message id.
 * Company is not part of the main entity graph. It stores tenant metadata such as company name and physical database name.
 * Email is a supporting entity for company-related functionality.
 
@@ -153,16 +157,22 @@ Most other relationships use cascade delete behavior. This means that deleting a
 
 The database model defines several indexes and uniqueness constraints.
 
-| Entity    | Constraint            |
-| --------- | --------------------- |
-| LoginInfo | Email is unique       |
-| User      | Username is unique    |
-| User      | LoginInfoId is unique |
-| User      | PhoneNumber is unique |
-| Session   | UserId is unique      |
-| Company   | Name is unique        |
+| Entity          | Constraint or index                      |
+| --------------- | ---------------------------------------- |
+| LoginInfo       | Email is unique                          |
+| User            | Username is unique                       |
+| User            | LoginInfoId is unique                    |
+| User            | PhoneNumber is unique                    |
+| Session         | UserId is unique                         |
+| Company         | Name is unique in ServerDbContext        |
+| Call            | CallUid is unique                        |
+| Call            | ActiveChatId is unique when present      |
+| Call            | ChatId and Status are indexed            |
+| CallParticipant | CallId and UserId are unique             |
+| CallParticipant | UserId and Status are indexed            |
+| CallParticipant | CurrentLockUserId is unique when present |
 
-These constraints prevent duplicate accounts, duplicate user identities, duplicate active session records per user, and duplicate company workspace names.
+These constraints prevent duplicate accounts, duplicate user identities, duplicate active session records per user, duplicate company workspace names, duplicate call identifiers, and duplicate participant rows for the same user in one call.
 
 ## Enum Storage
 
@@ -170,16 +180,19 @@ Several enum properties are stored as strings in the database.
 
 The following properties use string conversion:
 
-| Entity     | Property           |
-| ---------- | ------------------ |
-| User       | SubscriptionStatus |
-| Chat       | Type               |
-| ChatMember | Role               |
-| Message    | Type               |
-| Payment    | Status             |
-| Call       | Status             |
+| Entity          | Property           |
+| --------------- | ------------------ |
+| User            | SubscriptionStatus |
+| Chat            | Type               |
+| ChatMember      | Role               |
+| Message         | Type               |
+| Payment         | Status             |
+| Call            | Status             |
+| CallParticipant | Status             |
 
 Enum values are limited to a maximum length of 20 characters where configured.
+
+`Call.Scope` and `Call.MediaKind` are stored as strings with a maximum length of 20. They currently use shared contract constants instead of EF enum conversion.
 
 String-based enum storage makes database values easier to read, but enum renaming should be handled carefully because renamed enum values can affect existing data.
 
@@ -208,8 +221,8 @@ The general flow is:
 
 The important rule is that one request should resolve to one active database context model:
 
-* global operation → ServerDbContext
-* tenant operation → selected CompanyDbContext
+* global operation -> ServerDbContext
+* tenant operation -> selected CompanyDbContext
 
 A request should not operate on all company databases at once.
 
@@ -251,24 +264,24 @@ edemly_company_example_company
 
 The project contains separate migration folders for the main database and company databases:
 
-```
+```text
 Data/Migrations/
-├─ ServerDb/
-└─ CompanyDb/
+|-- ServerDb/
+`-- CompanyDb/
 ```
 
 The current migration structure is:
 
-```
+```text
 Data/Migrations/ServerDb/
-├─ 20260603154841_InitialCreate.cs
-├─ 20260603154841_InitialCreate.Designer.cs
-└─ ServerDbContextModelSnapshot.cs
+|-- 20260612180730_InitialCreate.cs
+|-- 20260612180730_InitialCreate.Designer.cs
+`-- ServerDbContextModelSnapshot.cs
 
 Data/Migrations/CompanyDb/
-├─ 20260603154859_InitialCreate.cs
-├─ 20260603154859_InitialCreate.Designer.cs
-└─ CompanyDbContextModelSnapshot.cs
+|-- 20260612180748_InitialCreate.cs
+|-- 20260612180748_InitialCreate.Designer.cs
+`-- CompanyDbContextModelSnapshot.cs
 ```
 
 Because the server uses two DbContexts, migrations should be created with an explicit context.

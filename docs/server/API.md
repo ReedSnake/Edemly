@@ -33,7 +33,9 @@ Edemly Server exposes HTTP endpoints for authentication, users, chats, chat memb
 
 The API is used by the WPF desktop client.
 
-Most application operations are exposed through REST-style controllers. Realtime communication is handled separately through SignalR hubs and is documented in REALTIME.md.
+Most application operations are exposed through REST-style controllers. Realtime communication is handled separately through SignalR hubs and is documented in [REALTIME.md](REALTIME.md).
+
+Call lifecycle operations are not exposed through an HTTP controller. They currently run through the authenticated `/call` SignalR hub and the server-side `CallService`.
 
 ## API Conventions
 
@@ -48,7 +50,7 @@ Common conventions:
 | Request body   | Create and update operations usually receive DTOs from Edemly.Contracts |
 | File upload    | File endpoints use multipart form-data                                  |
 | Pagination     | Message retrieval supports page and pageSize query parameters           |
-| Responses      | Controllers return service results converted to HTTP responses          |
+| Responses      | Most application controllers return service results converted to HTTP responses |
 
 Routes are documented as they currently exist in the server controllers.
 
@@ -80,7 +82,7 @@ In endpoint tables, the Auth column uses the following values:
 
 ## Response Model
 
-Controllers use service result objects internally and convert them to HTTP responses.
+Most application controllers use service result objects internally and convert them to HTTP responses.
 
 Common response types include:
 
@@ -112,6 +114,7 @@ Exact response bodies may differ by endpoint and are defined by server controlle
 | Files        | api/files                                       |
 | Payments     | api/Payment                                     |
 | Companies    | api/admin/companies                             |
+| Realtime hubs | /main and /call                                 |
 
 ## Auth Endpoints
 

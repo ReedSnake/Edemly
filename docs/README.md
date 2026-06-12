@@ -54,32 +54,29 @@ Documentation shared between the server and client projects.
 
 ```text
 docs/
-├─ README.md
-│
-├─ server/
-│  ├─ README.md
-│  ├─ ARCHITECTURE.md
-│  ├─ API.md
-│  ├─ AUTH.md
-│  ├─ DATABASE.md
-│  ├─ FILE_STORAGE.md
-│  ├─ REALTIME.md
-│  ├─ TESTING.md
-│  └─ DEPLOYMENT.md
-│
-├─ client/
-│  ├─ README.md
-│  ├─ ARCHITECTURE.md
-│  ├─ UI_STRUCTURE.md
-│  ├─ API_CLIENTS.md
-│  ├─ REALTIME.md
-│  ├─ CACHING.md
-│  ├─ THEMING.md
-│  └─ TESTING.md
-│
-└─ shared/
-   ├─ README.md
-   └─ CONTRACTS.md
+|-- README.md
+|-- server/
+|   |-- README.md
+|   |-- ARCHITECTURE.md
+|   |-- API.md
+|   |-- AUTH.md
+|   |-- DATABASE.md
+|   |-- FILE_STORAGE.md
+|   |-- REALTIME.md
+|   |-- TESTING.md
+|   `-- DEPLOYMENT.md
+|-- client/
+|   |-- README.md
+|   |-- ARCHITECTURE.md
+|   |-- UI_STRUCTURE.md
+|   |-- API_CLIENTS.md
+|   |-- REALTIME.md
+|   |-- CACHING.md
+|   |-- THEMING.md
+|   `-- TESTING.md
+`-- shared/
+    |-- README.md
+    `-- CONTRACTS.md
 ```
 
 ## Related Resources

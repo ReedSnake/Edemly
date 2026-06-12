@@ -115,7 +115,7 @@ The generated JWT contains identity claims such as:
 | email       | User email                                           |
 | jti         | Unique token identifier                              |
 | userId      | User identifier used by controllers and server logic |
-| role        | User role                                            |
+| role / ClaimTypes.Role | User role used by ASP.NET Core authorization |
 
 Controllers usually read the current user id from the userId claim.
 
@@ -180,6 +180,8 @@ SignalR connections also use JWT authentication.
 For hub connections, the token can be passed through the access_token query parameter.
 
 This is used because WebSocket clients commonly cannot send authorization headers in the same way as normal HTTP requests.
+
+The current bearer configuration accepts query-string tokens for `/main`, `/call`, and the legacy `/hubs` path.
 
 SignalR user identification is handled by JwtUserIdProvider. It resolves the connected user id from available JWT claims.
 
