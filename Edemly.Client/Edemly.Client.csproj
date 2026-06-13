@@ -9,6 +9,11 @@
 		<EnableWindowsTargeting>true</EnableWindowsTargeting>
 		<RootNamespace>Edemly.Client</RootNamespace>
 		<AssemblyName>Edemly.Client</AssemblyName>
+		<AssemblyTitle>Edemly</AssemblyTitle>
+		<Product>Edemly</Product>
+		<Company>NSO</Company>
+		<PackageId>NSO.Edemly</PackageId>
+		<Version>1.0.0</Version>
 		<ApplicationIcon>Assets\Branding\app-icon.ico</ApplicationIcon>
 		<StartupObject>Edemly.Client.App</StartupObject>
 	</PropertyGroup>

@@ -11,6 +11,12 @@ services:
       - "3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$${MYSQL_ROOT_PASSWORD} --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
 
   minio:
     image: minio/minio:latest
@@ -25,6 +31,20 @@ services:
     volumes:
       - minio_data:/data
 
+  minio-init:
+    image: minio/mc:latest
+    container_name: edemly-local-minio-init
+    depends_on:
+      - minio
+    entrypoint: >
+      /bin/sh -c "
+      until mc alias set local http://minio:9000 edemly_admin edemly_password; do
+        echo 'Waiting for MinIO...';
+        sleep 2;
+      done;
+      mc mb --ignore-existing local/edemly-uploads;
+      "
+
   static:
     image: nginx:alpine
     container_name: edemly-local-static
@@ -32,34 +52,49 @@ services:
       - "8080:80"
     volumes:
       - ./static:/usr/share/nginx/html:ro
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost/ >/dev/null 2>&1 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
 
   server1:
-    profiles:
-      - server
     build:
       context: ../..
       dockerfile: Edemly.Server/Dockerfile
     container_name: edemly-local-server1
     environment:
       PORT: 8080
+      ASPNETCORE_ENVIRONMENT: Development
       ConnectionStrings__DefaultConnection: Server=mysql;Port=3306;Database=edemly;User Id=root;Password=securepass;
+      Brevo__ApiKey: MOCK_MODE
       PublicBaseUrl: http://localhost:3500
       WayForPay__TestMode: "true"
       WayForPay__DomainName: http://localhost:3500
       WayForPay__ReturnUrl: http://localhost:3500/api/payment/return
       FileStorage__Provider: Minio
       FileStorage__Minio__Endpoint: minio:9000
+      FileStorage__Minio__AccessKey: edemly_admin
+      FileStorage__Minio__SecretKey: edemly_password
+      FileStorage__Minio__BucketName: edemly-uploads
+      FileStorage__Minio__AutoCreateBucket: "true"
       MINIO_ROOT_USER: edemly_admin
       MINIO_ROOT_PASSWORD: edemly_password
     depends_on:
-      - mysql
-      - minio
+      mysql:
+        condition: service_healthy
+      minio-init:
+        condition: service_completed_successfully
     ports:
       - "3501:8080"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8080/health >/dev/null || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 60s
 
   gateway:
-    profiles:
-      - gateway
     build:
       context: ../..
       dockerfile: Edemly.Gateway/Dockerfile
@@ -69,7 +104,31 @@ services:
     volumes:
       - ./gateway/appsettings.json:/app/appsettings.json:ro
     depends_on:
-      - server1
+      server1:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8080/gateway/health >/dev/null || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+
+  gateway2:
+    build:
+      context: ../..
+      dockerfile: Edemly.Gateway/Dockerfile
+    container_name: edemly-local-gateway2
+    ports:
+      - "3600:8080"
+    volumes:
+      - ./gateway/appsettings.json:/app/appsettings.json:ro
+    depends_on:
+      server1:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8080/gateway/health >/dev/null || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
 
 volumes:
   mysql_data:

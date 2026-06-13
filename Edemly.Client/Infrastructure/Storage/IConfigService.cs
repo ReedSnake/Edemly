@@ -10,7 +10,10 @@ namespace Edemly.Client.Infrastructure.Storage
         string Company { get; set; }
         bool CreateDesktopShortcut { get; set; }
         string ExePath { get; }
+        string ServerUrl { get; set; }
         string HubServerUrl { get; set; }
+        string ClientConfigUrl { get; set; }
+        string UpdateFeedUrl { get; set; }
 
         string BackgroundImagePath { get; set; }
 

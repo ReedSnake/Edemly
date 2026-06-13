@@ -16,7 +16,7 @@
       "hubBaseUrl": "http://localhost:3600",
       "paymentBaseUrl": "http://localhost:3600",
       "priority": 10,
-      "enabled": false
+      "enabled": true
     }
   ],
   "updates": {

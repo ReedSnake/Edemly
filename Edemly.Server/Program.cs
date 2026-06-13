@@ -376,6 +376,12 @@ namespace Edemly.Server
 
             app.UseEndpoints(endpoints =>
             {
+                endpoints.MapGet("/health", () => Results.Ok(new
+                {
+                    status = "ok",
+                    service = "Edemly.Server"
+                }));
+
                 endpoints.MapControllers();
                 endpoints.MapHub<MainHub>("/main");
                 endpoints.MapHub<CallHub>("/call");

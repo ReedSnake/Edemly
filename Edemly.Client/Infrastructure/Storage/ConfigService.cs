@@ -62,10 +62,28 @@ namespace Edemly.Client.Infrastructure.Storage
 
         public string ExePath => Environment.ProcessPath ?? string.Empty;
 
+        public string ServerUrl
+        {
+            get => GetValue("ServerUrl", string.Empty);
+            set => SetValue("ServerUrl", value);
+        }
+
         public string HubServerUrl
         {
             get => GetValue("HubServerUrl", string.Empty);
             set => SetValue("HubServerUrl", value);
+        }
+
+        public string ClientConfigUrl
+        {
+            get => GetValue("ClientConfigUrl", string.Empty);
+            set => SetValue("ClientConfigUrl", value);
+        }
+
+        public string UpdateFeedUrl
+        {
+            get => GetValue("UpdateFeedUrl", string.Empty);
+            set => SetValue("UpdateFeedUrl", value);
         }
 
         public string BackgroundImagePath

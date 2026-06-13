@@ -124,13 +124,15 @@ namespace Edemly.Client
         [STAThread]
         private static void Main(string[] args)
         {
-            VelopackApp.Build().Run();
+            VelopackApp.Build()
+                .SetAppUserModelId(AppId)
+                .Run();
             App app = new();
             app.InitializeComponent();
             app.Run();
         }
 
-        protected override void OnStartup(StartupEventArgs e)
+        protected override async void OnStartup(StartupEventArgs e)
         {
             AppEnvironmentInitializer.ApplySavedPreferences(this, ConfigService.Instance);
             RegisterToastActivationHandler();
@@ -139,11 +141,13 @@ namespace Edemly.Client
 
             RegisterGlobalExceptionHandlers();
 
-            var launchConfiguration = AppLaunchConfigurationResolver.Resolve(Environment.GetCommandLineArgs(), ConfigService.Instance);
+            var launchConfiguration = await AppLaunchConfigurationResolver.ResolveAsync(
+                Environment.GetCommandLineArgs(),
+                ConfigService.Instance);
             if (launchConfiguration == null)
             {
                 MessageBox.Show(
-                    "Server URL is missing.\n\nPlease provide it as the first command-line argument.\nExample:\n    Edemly.exe https://your-server.com",
+                    "Server configuration is missing.\n\nStart the local static site or provide a server URL.\nExamples:\n    Edemly.exe http://localhost:3500\n    Edemly.exe --config-url http://localhost:8080/client.json",
                     "Configuration Error",
                     MessageBoxButton.OK,
                     MessageBoxImage.Error);
@@ -154,6 +158,9 @@ namespace Edemly.Client
 
             Debug.WriteLine($"[APP] Using server URL: {launchConfiguration.BaseServerUrl}");
             Debug.WriteLine($"[APP] Using hub server URL: {launchConfiguration.HubServerUrl}");
+            Debug.WriteLine($"[APP] Selected server: {launchConfiguration.SelectedServerName}");
+            Debug.WriteLine($"[APP] Client config URL: {launchConfiguration.ClientConfigUrl}");
+            Debug.WriteLine($"[APP] Update feed URL: {launchConfiguration.UpdateFeedUrl}");
 
             BaseServerUrlNoCompany = launchConfiguration.BaseServerUrl;
             HubServerUrlNoCompany = launchConfiguration.HubServerUrl;
@@ -168,6 +175,7 @@ namespace Edemly.Client
                 var mainWindow = new MainWindow();
                 Current.MainWindow = mainWindow;
                 mainWindow.Show();
+                StartAutoUpdateCheck(launchConfiguration.UpdateFeedUrl);
             }
             catch (Exception ex)
             {
@@ -372,6 +380,17 @@ namespace Edemly.Client
             return string.IsNullOrWhiteSpace(HubServerUrlNoCompany)
                 ? GetBaseServerUrl()
                 : HubServerUrlNoCompany;
+        }
+
+        private static void StartAutoUpdateCheck(string updateFeedUrl)
+        {
+            if (string.IsNullOrWhiteSpace(updateFeedUrl))
+            {
+                Debug.WriteLine("[APP UPDATE] Update feed URL is empty. Auto-update check skipped.");
+                return;
+            }
+
+            _ = Task.Run(() => AppUpdateService.CheckForUpdatesAsync(updateFeedUrl));
         }
     }
 }
