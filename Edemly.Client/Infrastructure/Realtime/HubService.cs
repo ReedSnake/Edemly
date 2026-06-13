@@ -20,6 +20,7 @@ namespace Edemly.Client.Infrastructure.Realtime
         private readonly System.Collections.Generic.HashSet<HubConnection> _handlersRegisteredSet = new System.Collections.Generic.HashSet<HubConnection>();
         private readonly System.Collections.Generic.HashSet<HubConnection> _callHandlersRegisteredSet = new System.Collections.Generic.HashSet<HubConnection>();
         private readonly object _stateLock = new object();
+        private readonly SemaphoreSlim _callConnectionLock = new(1, 1);
         private string? _lastAccessToken;
 
         public event Action<MessageDto>? MessageReceived;

@@ -8,20 +8,16 @@ namespace Edemly.Client.Presentation.Pages.Auth
 {
     public partial class InstallPage: ThemedPage
     {
-        private const string ShortcutFileName = "Edemly.lnk";
-
         private readonly ICompanyCatalogLoader _companyCatalogLoader;
-        private readonly IDesktopShortcutService _desktopShortcutService;
 
         public InstallPage()
-            : this(new CompanyCatalogLoader(), new DesktopShortcutService())
+            : this(new CompanyCatalogLoader())
         {
         }
 
-        internal InstallPage(ICompanyCatalogLoader companyCatalogLoader, IDesktopShortcutService desktopShortcutService)
+        internal InstallPage(ICompanyCatalogLoader companyCatalogLoader)
         {
             _companyCatalogLoader = companyCatalogLoader ?? throw new ArgumentNullException(nameof(companyCatalogLoader));
-            _desktopShortcutService = desktopShortcutService ?? throw new ArgumentNullException(nameof(desktopShortcutService));
 
             InitializeComponent();
             Loaded += InstallPage_Loaded;
@@ -48,8 +44,6 @@ namespace Edemly.Client.Presentation.Pages.Auth
 
             CompanyLabelText.Text = DefaultLanguage.CompanyLabel;
             CompanyDescText.Text = DefaultLanguage.CompanyDesc;
-
-            DesktopShortcutLabel.Text = DefaultLanguage.DesktopShortcutLabel;
 
             NoteTextBlock.Text = DefaultLanguage.NoteInitial;
 

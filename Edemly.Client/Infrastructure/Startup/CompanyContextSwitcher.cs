@@ -9,6 +9,7 @@ namespace Edemly.Client.Infrastructure.Startup
         private readonly Func<string> _baseServerUrlProvider;
         private readonly Func<string> _hubServerUrlProvider;
         private readonly Func<string?> _authTokenProvider;
+        private readonly Action<string?> _connectRealtimeInBackground;
         private readonly Action _unsubscribeHubEvents;
         private readonly Action _subscribeHubEvents;
         private readonly Action _disposeChatManager;
@@ -19,6 +20,7 @@ namespace Edemly.Client.Infrastructure.Startup
             Func<string> baseServerUrlProvider,
             Func<string> hubServerUrlProvider,
             Func<string?> authTokenProvider,
+            Action<string?> connectRealtimeInBackground,
             Action unsubscribeHubEvents,
             Action subscribeHubEvents,
             Action disposeChatManager,
@@ -28,6 +30,7 @@ namespace Edemly.Client.Infrastructure.Startup
             _baseServerUrlProvider = baseServerUrlProvider ?? throw new ArgumentNullException(nameof(baseServerUrlProvider));
             _hubServerUrlProvider = hubServerUrlProvider ?? throw new ArgumentNullException(nameof(hubServerUrlProvider));
             _authTokenProvider = authTokenProvider ?? throw new ArgumentNullException(nameof(authTokenProvider));
+            _connectRealtimeInBackground = connectRealtimeInBackground ?? throw new ArgumentNullException(nameof(connectRealtimeInBackground));
             _unsubscribeHubEvents = unsubscribeHubEvents ?? throw new ArgumentNullException(nameof(unsubscribeHubEvents));
             _subscribeHubEvents = subscribeHubEvents ?? throw new ArgumentNullException(nameof(subscribeHubEvents));
             _disposeChatManager = disposeChatManager ?? throw new ArgumentNullException(nameof(disposeChatManager));
@@ -94,7 +97,7 @@ namespace Edemly.Client.Infrastructure.Startup
                 if (!string.IsNullOrEmpty(authToken))
                 {
                     _serviceRegistry.SetAuthToken(authToken);
-                    _ = _serviceRegistry.HubService.ConnectAsync(authToken);
+                    _connectRealtimeInBackground(authToken);
                 }
             }
             catch (Exception ex)

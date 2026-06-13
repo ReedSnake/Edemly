@@ -158,7 +158,7 @@ namespace Edemly.Client.Presentation.Pages.Main
             }
 
             _hasStartedAsyncInitialization = true;
-            await InitializeAsync(showConnectionWarning: false);
+            await InitializeAsync();
             return true;
         }
 
@@ -181,13 +181,13 @@ namespace Edemly.Client.Presentation.Pages.Main
             _ = Dispatcher.BeginInvoke((Action)NavigateToLogin);
         }
 
-        private async Task InitializeAsync(bool showConnectionWarning)
+        private async Task InitializeAsync()
         {
             try
             {
                 if (!App.HubService.IsConnected)
                 {
-                    await ConnectToHubAsync(showConnectionWarning);
+                    App.ConnectRealtimeInBackground(App.AuthToken);
                 }
 
                 App.HubService.UserStatusChanged -= OnUserStatusChanged;
@@ -211,42 +211,6 @@ namespace Edemly.Client.Presentation.Pages.Main
             catch (Exception ex)
             {
                 MessageBox.ShowError(string.Format(DefaultLanguage.ErrorOccurred + ": {0}", ex.Message), DefaultLanguage.ErrorTitle);
-            }
-        }
-
-        private async Task ConnectToHubAsync(bool showConnectionWarning)
-        {
-            if (string.IsNullOrWhiteSpace(App.AuthToken))
-            {
-                RedirectToLogin();
-                return;
-            }
-
-            try
-            {
-                var connected = await App.HubService.ConnectAsync(App.AuthToken);
-                if (!connected)
-                {
-                    if (showConnectionWarning)
-                    {
-                        MessageBox.ShowWarning(DefaultLanguage.ConnectionLost, DefaultLanguage.ErrorTitle);
-                    }
-                    else
-                    {
-                        System.Diagnostics.Debug.WriteLine("[PAGE_MAIN] Hub connection was not established during page startup.");
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                if (showConnectionWarning)
-                {
-                    MessageBox.ShowError($"{DefaultLanguage.Error}: {ex.Message}", DefaultLanguage.ErrorTitle);
-                }
-                else
-                {
-                    System.Diagnostics.Debug.WriteLine($"[PAGE_MAIN] Startup hub connect failed: {ex.Message}");
-                }
             }
         }
 

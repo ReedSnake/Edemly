@@ -56,7 +56,6 @@ namespace Edemly.Client.Application.Localization
         public static string LanguageDesc => Lang.GetText("InstallPage", "language_desc", "Choose application language");
         public static string CompanyLabel => Lang.GetText("InstallPage", "company_label", "Company (optional)");
         public static string CompanyDesc => Lang.GetText("InstallPage", "company_desc", "Select a company for tenant installs or leave as Personal for single-instance use");
-        public static string DesktopShortcutLabel => Lang.GetText("InstallPage", "desktop_shortcut_label", "Create desktop shortcut");
         public static string NoteInitial => Lang.GetText("InstallPage", "note_initial", "Initial setup. Companies list is loaded from server. \"Personal\" is always the first option.");
         public static string CancelButton => Lang.GetText("InstallPage", "cancel_button", "CANCEL");
         public static string ContinueButton => Lang.GetText("InstallPage", "continue_button", "CONTINUE");
@@ -66,7 +65,6 @@ namespace Edemly.Client.Application.Localization
         public static string CompaniesLoadFailed => Lang.GetText("InstallPage", "companies_load_failed", "Could not load companies list. Using Personal mode.");
         public static string SelectCompanyNote => Lang.GetText("InstallPage", "select_company_note", "Select a company or keep Personal.");
         public static string CompaniesErrorFallback => Lang.GetText("InstallPage", "companies_error_fallback", "Error loading companies. Using Personal mode.");
-        public static string ShortcutCreateFailed => Lang.GetText("InstallPage", "shortcut_create_failed", "Failed to create desktop shortcut.");
 
         public static string SettingsTitle => Lang.GetText("SettingsPage", "settings_title", "Settings");
         public static string SelectProfilePhotoTitle => Lang.GetText("SettingsPage", "select_profile_photo", "Select profile photo");

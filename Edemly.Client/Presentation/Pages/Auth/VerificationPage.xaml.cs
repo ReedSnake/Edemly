@@ -79,7 +79,7 @@ namespace Edemly.Client.Presentation.Pages.Auth
 
                 await App.RefreshCurrentUserProfileAsync();
 
-                await App.HubService.ConnectAsync(authResponse.Token);
+                App.ConnectRealtimeInBackground(authResponse.Token);
 
                 NavigationService?.Navigate(new MainPage());
             }

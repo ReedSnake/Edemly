@@ -69,10 +69,10 @@ With no argument, the client reads:
 http://localhost:8080/client.json
 ```
 
-Direct server mode still works:
+Direct server mode still works, but pass the hub endpoint explicitly:
 
 ```powershell
-dotnet run --project Edemly.Client -- http://localhost:3500
+dotnet run --project Edemly.Client -- http://localhost:3500 --hub-server http://localhost:3500
 ```
 
 ## Build And Publish A Baseline Installer

@@ -25,6 +25,8 @@ namespace Edemly.Client
         private static Edemly.Client.Presentation.Controls.ConnectionStatusBar? _statusBar;
         private static AppUpdateCheckResult? _pendingUpdate;
         private static int _updateInstallStarted;
+        private static readonly object _realtimeConnectGate = new();
+        private static IHubService? _realtimeConnectInProgressHubService;
         private static readonly ChatActivationService _chatActivationService = new(
             () => _serviceRegistry.ApiClients,
             () => GlobalChatController,
@@ -57,6 +59,7 @@ namespace Edemly.Client
             GetBaseServerUrl,
             GetHubServerUrl,
             () => AuthToken,
+            ConnectRealtimeInBackground,
             _realtimeCoordinator.UnsubscribeHubEvents,
             _realtimeCoordinator.SubscribeHubEvents,
             DisposeGlobalChatController,
@@ -151,7 +154,7 @@ namespace Edemly.Client
             if (launchConfiguration == null)
             {
                 MessageBox.Show(
-                    "Server configuration is missing.\n\nStart the local static site or provide a server URL.\nExamples:\n    Edemly.exe http://localhost:3500\n    Edemly.exe --config-url http://localhost:8080/client.json",
+                    "Server configuration is missing.\n\nStart the local static site or provide server URLs.\nExamples:\n    Edemly.exe http://localhost:3500 --hub-server http://localhost:3500\n    Edemly.exe --config-url http://localhost:8080/client.json",
                     "Configuration Error",
                     MessageBoxButton.OK,
                     MessageBoxImage.Error);
@@ -304,6 +307,81 @@ namespace Edemly.Client
             return _callWindowCoordinator.EnsureHubConnectedAndRestoreCallsAsync();
         }
 
+        public static void ConnectRealtimeInBackground(string? token)
+        {
+            if (string.IsNullOrWhiteSpace(token))
+            {
+                _realtimeCoordinator.RefreshConnectionState();
+                return;
+            }
+
+            IHubService hubService;
+            try
+            {
+                hubService = _serviceRegistry.HubService;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[APP REALTIME] Hub service is not ready: {ex}");
+                return;
+            }
+
+            if (hubService.IsConnected)
+            {
+                _realtimeCoordinator.RefreshConnectionState();
+                return;
+            }
+
+            ShowRealtimeConnecting();
+
+            lock (_realtimeConnectGate)
+            {
+                if (ReferenceEquals(_realtimeConnectInProgressHubService, hubService))
+                {
+                    return;
+                }
+
+                _realtimeConnectInProgressHubService = hubService;
+            }
+
+            _ = Task.Run(async () =>
+            {
+                var connected = false;
+
+                try
+                {
+                    connected = await hubService.ConnectAsync(token);
+                    if (!connected)
+                    {
+                        Debug.WriteLine("[APP REALTIME] Background hub connection was not established.");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"[APP REALTIME] Background hub connection failed: {ex}");
+                }
+                finally
+                {
+                    lock (_realtimeConnectGate)
+                    {
+                        if (ReferenceEquals(_realtimeConnectInProgressHubService, hubService))
+                        {
+                            _realtimeConnectInProgressHubService = null;
+                        }
+                    }
+
+                    if (connected || hubService.IsConnected)
+                    {
+                        _realtimeCoordinator.RefreshConnectionState();
+                    }
+                    else
+                    {
+                        ShowRealtimeDisconnectedIfStillAuthenticated(token);
+                    }
+                }
+            });
+        }
+
         public static void ClearCurrentUser()
         {
             _sessionManager.ClearCurrentUser();
@@ -372,6 +450,51 @@ namespace Edemly.Client
         private static void HideStatusBar()
         {
             Current?.Dispatcher?.Invoke(() => _statusBar?.Hide());
+        }
+
+        private static void ShowRealtimeConnecting()
+        {
+            var dispatcher = Current?.Dispatcher;
+            if (dispatcher == null)
+            {
+                return;
+            }
+
+            dispatcher.BeginInvoke(new Action(() =>
+            {
+                if (string.IsNullOrWhiteSpace(AuthToken) || _serviceRegistry.HubService.IsConnected)
+                {
+                    return;
+                }
+
+                _statusBar?.ShowReconnecting();
+            }));
+        }
+
+        private static void ShowRealtimeDisconnectedIfStillAuthenticated(string token)
+        {
+            var dispatcher = Current?.Dispatcher;
+            if (dispatcher == null)
+            {
+                return;
+            }
+
+            dispatcher.BeginInvoke(new Action(() =>
+            {
+                if (string.IsNullOrWhiteSpace(AuthToken) ||
+                    !string.Equals(AuthToken, token, StringComparison.Ordinal))
+                {
+                    return;
+                }
+
+                if (_serviceRegistry.HubService.IsConnected)
+                {
+                    _realtimeCoordinator.RefreshConnectionState();
+                    return;
+                }
+
+                _statusBar?.ShowDisconnected();
+            }));
         }
 
         private static string GetBaseServerUrl()

@@ -20,127 +20,26 @@ namespace Edemly.Client.Infrastructure.Realtime
                     return true;
                 }
 
-                if (_connection != null)
-                {
-                    try { UnregisterHandlers(_connection); } catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[HUB] UnregisterHandlers failed: {ex}"); }
-                    try { await _connection.DisposeAsync(); } catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[HUB] Dispose old connection failed: {ex}"); }
-                    _connection = null;
-                }
+                await DisposeExistingConnectionsAsync();
 
                 var mainHubUrl = BuildHubUrl("main");
-                var callHubUrl = BuildHubUrl("call");
 
                 _connection = HubConnectionFactory.Create(mainHubUrl, token);
-
-                try
-                {
-                    _callConnection = HubConnectionFactory.Create(callHubUrl, token);
-                }
-                catch (Exception ex)
-                {
-                    _callConnection = null;
-                    System.Diagnostics.Debug.WriteLine($"[HUB][WARN] Failed to build call connection: {ex}");
-                }
-
                 RegisterHandlers(_connection);
 
-                if (_callConnection != null)
+                if (!await TryStartWithRetriesAsync(_connection, "main"))
                 {
-                    RegisterCallHandlers(_callConnection);
-                }
-                else
-                {
-                    try
-                    {
-                        RegisterCallHandlers(_connection);
-                    }
-                    catch (Exception ex)
-                    {
-                        System.Diagnostics.Debug.WriteLine($"[HUB][WARN] Failed to register call handlers on main connection: {ex}");
-                    }
+                    throw new InvalidOperationException("Failed to start SignalR main connection");
                 }
 
-                bool started = false;
-
-                try
+                if (!_allowReconnect || _disposed)
                 {
-                    var wsCandidate = HubConnectionFactory.Create(mainHubUrl, token, webSocketsOnly: true);
-
-                    System.Diagnostics.Debug.WriteLine("[HUB] Trying WebSockets-first connection (skip negotiation)...");
-                    started = await TryStartWithRetriesAsync(wsCandidate, "ws-first");
-                    if (started)
-                    {
-                        try { if (_connection != null) { UnregisterHandlers(_connection); await _connection.DisposeAsync(); } } catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[HUB] Failed to dispose previous connection: {ex}"); }
-                        _connection = wsCandidate;
-                        System.Diagnostics.Debug.WriteLine("[HUB] Using WebSockets-first connection.");
-                        RegisterHandlers(_connection);
-                        try
-                        {
-                            if (_callConnection == null)
-                            {
-                                RegisterCallHandlers(_connection);
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            System.Diagnostics.Debug.WriteLine($"[HUB][WARN] Failed to register call handlers on ws-first main connection: {ex}");
-                        }
-                    }
-                    else
-                    {
-                        try { await wsCandidate.DisposeAsync(); } catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[HUB] Dispose wsCandidate failed: {ex}"); }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine($"[HUB][WARN] WebSockets-first build/start failed: {ex}");
+                    await DisposeExistingConnectionsAsync();
+                    OnConnectionStateChanged(false);
+                    return false;
                 }
 
-                if (!started)
-                {
-                    System.Diagnostics.Debug.WriteLine("[HUB] Falling back to default negotiated connection...");
-                    started = await TryStartWithRetriesAsync(_connection, "negotiated");
-                    if (!started)
-                    {
-                        throw new InvalidOperationException("Failed to start SignalR connection (both ws-first and negotiated attempts failed)");
-                    }
-                }
-
-                if (_callConnection != null)
-                {
-                    var wsCallCandidate = HubConnectionFactory.Create(callHubUrl, token, webSocketsOnly: true);
-
-                    bool callStarted = false;
-                    try
-                    {
-                        callStarted = await TryStartWithRetriesAsync(wsCallCandidate, "call-ws-first");
-                        if (callStarted)
-                        {
-                            try { if (_callConnection != null) { UnregisterCallHandlers(_callConnection); await _callConnection.DisposeAsync(); } } catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[HUB] Failed to dispose previous call connection: {ex}"); }
-                            _callConnection = wsCallCandidate;
-                            RegisterCallHandlers(_callConnection);
-                        }
-                        else
-                        {
-                            try { await wsCallCandidate.DisposeAsync(); } catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[HUB] Dispose wsCallCandidate failed: {ex}"); }
-                            callStarted = await TryStartWithRetriesAsync(_callConnection, "call-negotiated");
-                            if (!callStarted)
-                            {
-                                System.Diagnostics.Debug.WriteLine("[HUB][WARN] Failed to start call connection (both ws-first and negotiated)");
-                            }
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        System.Diagnostics.Debug.WriteLine($"[HUB][WARN] Call connection attempts failed: {ex}");
-                    }
-                }
-                else
-                {
-                    System.Diagnostics.Debug.WriteLine("[HUB][WARN] Call connection was not created (null).");
-                }
-
-                System.Diagnostics.Debug.WriteLine($"[HUB] Main connection state after start: {_connection?.State}; Call connection state: {_callConnection?.State}");
+                System.Diagnostics.Debug.WriteLine($"[HUB] Main connection state after start: {_connection?.State}");
 
                 OnConnectionStateChanged(true);
                 StartConnectionCheckTimer();
@@ -149,6 +48,8 @@ namespace Edemly.Client.Infrastructure.Realtime
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"[HUB][ERROR] ConnectAsync failed: {ex}");
+                _allowReconnect = false;
+                await DisposeExistingConnectionsAsync();
                 OnConnectionStateChanged(false);
                 return false;
             }
@@ -161,28 +62,89 @@ namespace Edemly.Client.Infrastructure.Realtime
                 if (_callConnection != null && _callConnection.State == HubConnectionState.Connected) return true;
 
                 var callHubUrl = BuildHubUrl("call");
-
-                var conn = HubConnectionFactory.Create(callHubUrl, _lastAccessToken);
-
-                RegisterCallHandlers(conn);
-
-                var started = await TryStartWithRetriesAsync(conn, "call-temp");
-                if (started)
-                {
-                    try { if (_callConnection != null) { UnregisterCallHandlers(_callConnection); await _callConnection.DisposeAsync(); } } catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[HUB] Failed to dispose previous call connection: {ex}"); }
-                    _callConnection = conn;
-                    System.Diagnostics.Debug.WriteLine("[HUB] Call connection created and started on demand.");
-                    return true;
-                }
-
-                try { await conn.DisposeAsync(); } catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[HUB] Dispose conn failed: {ex}"); }
-                System.Diagnostics.Debug.WriteLine("[HUB][WARN] Failed to start on-demand call connection.");
-                return false;
+                return await StartCallConnectionAsync(callHubUrl, _lastAccessToken, "call-on-demand");
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"[HUB][ERROR] EnsureCallConnectionAsync failed: {ex}");
                 return false;
+            }
+        }
+
+        private async Task<bool> StartCallConnectionAsync(string callHubUrl, string? token, string tag)
+        {
+            if (string.IsNullOrWhiteSpace(token))
+            {
+                return false;
+            }
+
+            await _callConnectionLock.WaitAsync();
+            try
+            {
+                if (!_allowReconnect || _disposed)
+                {
+                    return false;
+                }
+
+                if (_callConnection != null && _callConnection.State == HubConnectionState.Connected)
+                {
+                    return true;
+                }
+
+                if (_callConnection != null)
+                {
+                    try { UnregisterCallHandlers(_callConnection); } catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[HUB] Unregister old call handlers failed: {ex}"); }
+                    try { await _callConnection.DisposeAsync(); } catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[HUB] Dispose old call connection failed: {ex}"); }
+                    _callConnection = null;
+                }
+
+                var conn = HubConnectionFactory.Create(callHubUrl, token);
+                RegisterCallHandlers(conn);
+
+                if (await TryStartWithRetriesAsync(conn, tag))
+                {
+                    if (!_allowReconnect || _disposed)
+                    {
+                        try { UnregisterCallHandlers(conn); } catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[HUB] Unregister late call handlers failed: {ex}"); }
+                        try { await conn.DisposeAsync(); } catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[HUB] Dispose late call connection failed: {ex}"); }
+                        return false;
+                    }
+
+                    _callConnection = conn;
+                    System.Diagnostics.Debug.WriteLine($"[HUB] Call connection started via {tag}.");
+                    return true;
+                }
+
+                try { UnregisterCallHandlers(conn); } catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[HUB] Unregister failed call handlers failed: {ex}"); }
+                try { await conn.DisposeAsync(); } catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[HUB] Dispose failed call connection failed: {ex}"); }
+                System.Diagnostics.Debug.WriteLine($"[HUB][WARN] Failed to start call connection via {tag}.");
+                return false;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[HUB][WARN] Call connection start failed via {tag}: {ex}");
+                return false;
+            }
+            finally
+            {
+                _callConnectionLock.Release();
+            }
+        }
+
+        private async Task DisposeExistingConnectionsAsync()
+        {
+            if (_connection != null)
+            {
+                try { UnregisterHandlers(_connection); } catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[HUB] UnregisterHandlers failed: {ex}"); }
+                try { await _connection.DisposeAsync(); } catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[HUB] Dispose old connection failed: {ex}"); }
+                _connection = null;
+            }
+
+            if (_callConnection != null)
+            {
+                try { UnregisterCallHandlers(_callConnection); } catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[HUB] UnregisterCallHandlers failed: {ex}"); }
+                try { await _callConnection.DisposeAsync(); } catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[HUB] Dispose old call connection failed: {ex}"); }
+                _callConnection = null;
             }
         }
 
@@ -270,13 +232,13 @@ namespace Edemly.Client.Infrastructure.Realtime
         private async Task<bool> TryStartWithRetriesAsync(HubConnection? conn, string tag)
         {
             if (conn == null) return false;
-            const int maxAttempts = 3;
+            const int maxAttempts = 2;
             for (int attempt = 1; attempt <= maxAttempts; attempt++)
             {
                 try
                 {
                     System.Diagnostics.Debug.WriteLine($"[HUB][{tag}] Start attempt {attempt}...");
-                    var cts = new CancellationTokenSource(HubSettings.StartConnectionTimeout);
+                    using var cts = new CancellationTokenSource(HubSettings.StartConnectionTimeout);
                     await conn.StartAsync(cts.Token);
                     System.Diagnostics.Debug.WriteLine($"[HUB][{tag}] Started. State={conn.State}");
                     return true;
@@ -284,12 +246,12 @@ namespace Edemly.Client.Infrastructure.Realtime
                 catch (TaskCanceledException tce)
                 {
                     System.Diagnostics.Debug.WriteLine($"[HUB][{tag}] Start attempt {attempt} canceled/timeout: {tce.Message}");
-                    if (attempt < maxAttempts) await Task.Delay(TimeSpan.FromSeconds(1 * attempt));
+                    if (attempt < maxAttempts) await Task.Delay(TimeSpan.FromMilliseconds(500 * attempt));
                 }
                 catch (Exception ex)
                 {
                     System.Diagnostics.Debug.WriteLine($"[HUB][{tag}] Start attempt {attempt} failed: {ex.Message}");
-                    if (attempt < maxAttempts) await Task.Delay(TimeSpan.FromSeconds(1 * attempt));
+                    if (attempt < maxAttempts) await Task.Delay(TimeSpan.FromMilliseconds(500 * attempt));
                 }
             }
             return false;

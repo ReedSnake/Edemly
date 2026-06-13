@@ -66,7 +66,6 @@
     "language_desc": "Choose application language",
     "company_label": "Company (optional)",
     "company_desc": "Select a company for tenant installs or leave as Personal for single-instance use",
-    "desktop_shortcut_label": "Create desktop shortcut",
     "note_initial": "Initial setup. Companies list is loaded from server. \"Personal\" is always the first option.",
     "cancel_button": "CANCEL",
     "continue_button": "CONTINUE",
@@ -75,8 +74,7 @@
     "server_not_provided": "Server URL not provided.",
     "companies_load_failed": "Could not load companies list. Using Personal mode.",
     "select_company_note": "Select a company or keep Personal.",
-    "companies_error_fallback": "Error loading companies. Using Personal mode.",
-    "shortcut_create_failed": "Failed to create desktop shortcut."
+    "companies_error_fallback": "Error loading companies. Using Personal mode."
   },
   "SettingsPage": {
     "settings_title": "Settings",

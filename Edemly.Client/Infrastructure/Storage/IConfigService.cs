@@ -8,7 +8,6 @@ namespace Edemly.Client.Infrastructure.Storage
 
         bool IsInstalled { get; set; }
         string Company { get; set; }
-        bool CreateDesktopShortcut { get; set; }
         string ExePath { get; }
         string ServerUrl { get; set; }
         string HubServerUrl { get; set; }

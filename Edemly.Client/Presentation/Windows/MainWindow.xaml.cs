@@ -174,12 +174,7 @@ namespace Edemly.Client.Presentation.Windows
 
                         await App.RefreshCurrentUserProfileAsync();
 
-                        bool connected = await App.HubService.ConnectAsync(sessionResponse.Token);
-
-                        if (connected)
-                        {
-                            System.Diagnostics.Debug.WriteLine("[MAIN WINDOW] Hub connection successful");
-                        }
+                        App.ConnectRealtimeInBackground(sessionResponse.Token);
 
                         await RefreshWindowTitleAsync();
 

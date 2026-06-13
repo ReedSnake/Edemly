@@ -45,7 +45,7 @@ namespace Edemly.Client.Infrastructure.Realtime
     public static class HubSettings
     {
         public static readonly TimeSpan ShortOperationTimeout = TimeSpan.FromSeconds(10);
-        public static readonly TimeSpan StartConnectionTimeout = TimeSpan.FromSeconds(30);
+        public static readonly TimeSpan StartConnectionTimeout = TimeSpan.FromSeconds(8);
         public static readonly TimeSpan ConnectionCheckInitialDelay = TimeSpan.FromSeconds(5);
         public static readonly TimeSpan ConnectionCheckPeriod = TimeSpan.FromSeconds(10);
         public static readonly TimeSpan WebSocketKeepAliveInterval = TimeSpan.FromSeconds(20);

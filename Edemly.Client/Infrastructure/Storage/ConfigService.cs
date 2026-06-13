@@ -54,12 +54,6 @@ namespace Edemly.Client.Infrastructure.Storage
             set => SetValue("Company", value);
         }
 
-        public bool CreateDesktopShortcut
-        {
-            get => GetValue("CreateDesktopShortcut", false);
-            set => SetValue("CreateDesktopShortcut", value);
-        }
-
         public string ExePath => Environment.ProcessPath ?? string.Empty;
 
         public string ServerUrl

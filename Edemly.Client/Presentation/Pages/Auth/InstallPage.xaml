@@ -101,27 +101,6 @@
                                     <ComboBox x:Name="CompanyComboBox" />
                                 </StackPanel>
 
-                                <StackPanel Orientation="Horizontal"
-                                            VerticalAlignment="Center"
-                                            Margin="0,5,0,0">
-
-                                    <CheckBox x:Name="DesktopShortcutCheckBox"
-                                              IsChecked="False"
-                                              VerticalAlignment="Center"
-                                              Cursor="Hand">
-                                        <CheckBox.LayoutTransform>
-                                            <ScaleTransform ScaleX="1.2"
-                                                            ScaleY="1.2" />
-                                        </CheckBox.LayoutTransform>
-                                    </CheckBox>
-
-                                    <TextBlock x:Name="DesktopShortcutLabel"
-                                               Text="Create a shortcut on Desktop"
-                                               Style="{StaticResource BodyTextStyle}"
-                                               FontSize="15"
-                                               VerticalAlignment="Center"
-                                               Margin="10,0,0,0" />
-                                </StackPanel>
                             </StackPanel>
                         </Border>
 

@@ -157,10 +157,9 @@ Start the client in another terminal. With no arguments it reads `http://localho
 dotnet run --project Edemly.Client
 ```
 
-The direct server argument is still supported for local testing without the static site:
+Direct server mode is still supported for local testing without the static site. Pass the hub endpoint explicitly so the local command is self-contained:
 
 ```powershell
-dotnet run --project Edemly.Client -- http://localhost:3500
 dotnet run --project Edemly.Client -- http://localhost:3500 --hub-server http://localhost:3500
 ```
 
@@ -202,7 +201,7 @@ http://localhost:8080
 
 The client startup order is:
 
-1. Use a direct server URL argument if one is provided.
+1. Use direct server arguments if they are provided (`server URL` plus `--hub-server`).
 2. Otherwise read static bootstrap config from `--config-url`, `EDEMLY_CLIENT_CONFIG_URL`, saved config, or `http://localhost:8080/client.json`.
 3. Pick the first enabled healthy server by `priority`; health is checked through `/health`.
 4. Save the selected server, hub server, config URL, and update feed URL to `%APPDATA%\Edemly\config.json`.
@@ -255,7 +254,7 @@ For the full manual test sequence, including gateway fallback and Redis scale-ou
 
 * The server port argument is optional. If it is not passed, the server uses `PORT`, `ASPNETCORE_PORT`, or defaults to `8100`.
 * The client can start without arguments when `client.json` is available from the static site.
-* The client server URL argument is still supported for local testing and overrides static discovery.
+* Direct client server arguments are still supported for local testing and override static discovery when both the API URL and `--hub-server` are provided.
 * `--config-url`, `EDEMLY_CLIENT_CONFIG_URL`, `--update-url`, and `EDEMLY_UPDATE_FEED_URL` can override static bootstrap and update locations.
 * The optional client `--hub-server` argument overrides the server used for SignalR hubs and is saved in `%APPDATA%\Edemly\config.json`.
 * Velopack update installation is skipped when the client is not installed by Velopack.
@@ -270,7 +269,6 @@ For the full manual test sequence, including gateway fallback and Redis scale-ou
 * If you previously used the old migration chain, recreate local databases before applying the new migrations.
 * New registrations may leave `Username`, `FirstName`, and `LastName` empty.
 * `Username` must remain unique when set.
-* The desktop shortcut is optional and disabled by default.
 * Client configuration and cache files are stored in `%APPDATA%\Edemly`.
 
 ## Team

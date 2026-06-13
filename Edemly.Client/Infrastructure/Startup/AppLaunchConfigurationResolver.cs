@@ -28,7 +28,7 @@ namespace Edemly.Client.Infrastructure.Startup
                     return BuildConfiguration(
                         config,
                         args.ServerUrl,
-                        discoveredHubServerUrl: null,
+                        discoveredHubServerUrl: args.ServerUrl,
                         selectedServerName: "command-line",
                         clientConfigUrl: ResolveClientConfigUrl(args, config),
                         updateFeedUrl: ResolveUpdateFeedUrl(args.UpdateFeedUrl, config?.UpdateFeedUrl, null),
