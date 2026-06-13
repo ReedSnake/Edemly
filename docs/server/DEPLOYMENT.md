@@ -96,6 +96,8 @@ The generated installer and package files are ignored by Git. Commit only placeh
 
 For release creation, version fields, mandatory update policy, and local installer testing, see [Client Releases and Updates](RELEASES.md).
 
+For a full manual local test sequence, including hot-publishing without restarting Docker, gateway fallback, and Redis scale-out notes, see [Local Docker And Update Runbook](LOCAL_DOCKER_RUNBOOK.md).
+
 ## Not Done
 
 The following deployment work still needs a real environment or release artifacts:

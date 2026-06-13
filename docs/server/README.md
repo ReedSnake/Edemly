@@ -14,6 +14,7 @@ The server is built with ASP.NET Core and provides REST APIs, SignalR realtime c
 * [File Storage](#file-storage)
 * [Testing](#testing)
 * [Deployment](#deployment)
+* [Local Docker Runbook](#local-docker-runbook)
 * [Client Releases](#client-releases)
 * [Related Resources](#related-resources)
 
@@ -128,6 +129,20 @@ Topics include:
 * Database setup
 * Hosting
 * Production considerations
+
+---
+
+## [Local Docker Runbook](LOCAL_DOCKER_RUNBOOK.md)
+
+Step-by-step local testing guide for Docker startup, static bootstrap, installer downloads, optional updates, mandatory updates, gateway fallback, and Redis scale-out planning.
+
+Topics include:
+
+* Running the local Docker stack
+* Publishing client updates without restarting the static container
+* Testing optional and mandatory updates
+* Testing gateway fallback
+* Redis backplane and distributed state analysis
 
 ---
 

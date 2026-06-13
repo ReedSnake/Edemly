@@ -75,6 +75,7 @@ docs/
 | [Server Documentation](docs/server/README.md) | Backend architecture, API, authentication, database, realtime communication, testing, and deployment |
 | [Client Documentation](docs/client/README.md) | Desktop client architecture and implementation                                                       |
 | [Shared Documentation](docs/shared/README.md) | Shared contracts and communication conventions                                                       |
+| [Local Docker Runbook](docs/server/LOCAL_DOCKER_RUNBOOK.md) | Step-by-step local Docker, installer, update, fallback, and Redis planning guide |
 
 ## Requirements
 
@@ -246,6 +247,8 @@ Release instructions live in [Client Releases and Updates](docs/server/RELEASES.
 Quick `dotnet run` testing does not need installer/update artifacts.
 
 The local static site is a bind mount into nginx, so new Velopack artifacts can be published into `deployment/local/static/updates/windows/stable` while Docker keeps running. Update `deployment/local/static/client.json`, restart only the installed Edemly client, and it will read the new feed on startup. Full hot-publish and mandatory-update test steps are in [Client Releases and Updates](docs/server/RELEASES.md).
+
+For the full manual test sequence, including gateway fallback and Redis scale-out notes, use [Local Docker And Update Runbook](docs/server/LOCAL_DOCKER_RUNBOOK.md).
 
 ## Runtime Notes
 
