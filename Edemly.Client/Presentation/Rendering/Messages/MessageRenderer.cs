@@ -1,6 +1,8 @@
 #nullable disable
 
 using Edemly.Contracts.Messages;
+using System.Diagnostics;
+using System.IO;
 using System.Windows.Controls;
 
 namespace Edemly.Client.Presentation.Rendering.Messages
@@ -52,24 +54,75 @@ namespace Edemly.Client.Presentation.Rendering.Messages
                 _isGroupChat,
                 senderName ?? string.Empty);
 
+            if (message.Type != MessageTypeCodes.Photo && IsImageAttachment(message))
+            {
+                Debug.WriteLine($"[MessageRenderer] Rendering image attachment as photo. Message='{message.Id}', Type='{message.Type}', ContentUrl='{message.ContentUrl}', FileName='{message.FileName}'.");
+                _photoRenderer.Render(message, context, isHistorical);
+                return;
+            }
+
             switch (message.Type)
             {
-                case 0:
+                case MessageTypeCodes.Text:
                     _textRenderer.Render(message, context, isHistorical);
                     break;
-                case 1:
+                case MessageTypeCodes.Voice:
                     _voiceRenderer.Render(message, context, isHistorical);
                     break;
-                case 3:
+                case MessageTypeCodes.Photo:
                     _photoRenderer.Render(message, context, isHistorical);
                     break;
-                case 4:
-                case 5:
+                case MessageTypeCodes.File:
+                case MessageTypeCodes.Document:
                     _fileRenderer.Render(message, context, isHistorical);
                     break;
                 case MessageTypeCodes.Call:
                     _callSystemRenderer.Render(message, context, isHistorical);
                     break;
+                default:
+                    Debug.WriteLine($"[MessageRenderer] Unsupported message type '{message.Type}' for message '{message.Id}'. ContentUrl='{message.ContentUrl}'.");
+                    break;
+            }
+        }
+
+        private static bool IsImageAttachment(MessageDto message)
+        {
+            return HasImageExtension(message.FileName) || HasImageExtension(message.ContentUrl);
+        }
+
+        private static bool HasImageExtension(string value)
+        {
+            var extension = GetExtension(value);
+            return extension is ".png" or ".jpg" or ".jpeg" or ".gif" or ".bmp" or ".webp";
+        }
+
+        private static string GetExtension(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return string.Empty;
+            }
+
+            try
+            {
+                if (Uri.TryCreate(value, UriKind.Absolute, out var absoluteUri))
+                {
+                    return Path.GetExtension(absoluteUri.AbsolutePath).ToLowerInvariant();
+                }
+
+                var path = value;
+                var queryIndex = path.IndexOf('?');
+                if (queryIndex >= 0)
+                {
+                    path = path[..queryIndex];
+                }
+
+                return Path.GetExtension(path).ToLowerInvariant();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[MessageRenderer] Failed to resolve file extension for '{value}': {ex.Message}");
+                return string.Empty;
             }
         }
 

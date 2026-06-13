@@ -98,28 +98,36 @@ namespace Edemly.Client.Infrastructure.Caching
 
         public async Task<string?> GetOrDownloadAsync(string fileUrl, string originalFileName)
         {
-            if (string.IsNullOrEmpty(fileUrl))
+            if (string.IsNullOrWhiteSpace(fileUrl))
                 return null;
 
-            var cacheKey = GetCacheKey(fileUrl);
+            var cacheKeys = GetCacheKeys(fileUrl);
+            var cacheKey = cacheKeys[0];
 
-            try
+            foreach (var candidateKey in cacheKeys)
             {
-                if (_filePathCache.TryGetValue(cacheKey, out var cachedPath) && File.Exists(cachedPath))
+                try
                 {
-                    return cachedPath;
+                    if (_filePathCache.TryGetValue(candidateKey, out var cachedPath) && File.Exists(cachedPath))
+                    {
+                        CachePathAliases(cacheKeys, cachedPath);
+                        return cachedPath;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"[FileCache] Memory cache check failed: {ex.Message}");
                 }
             }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"[FileCache] Memory cache check failed: {ex.Message}");
-            }
 
-            var diskPath = FindDiskCachePath(cacheKey);
-            if (diskPath != null && File.Exists(diskPath))
+            foreach (var candidateKey in cacheKeys)
             {
-                try { _filePathCache.TryAdd(cacheKey, diskPath); } catch (Exception ex) { Debug.WriteLine($"[FileCache] Failed to add disk cache path: {ex.Message}"); }
-                return diskPath;
+                var diskPath = FindDiskCachePath(candidateKey);
+                if (diskPath != null && File.Exists(diskPath))
+                {
+                    CachePathAliases(cacheKeys, diskPath);
+                    return diskPath;
+                }
             }
 
             var task = _download_tasks_get(cacheKey, fileUrl, originalFileName);
@@ -159,7 +167,7 @@ namespace Edemly.Client.Infrastructure.Caching
                 await SaveToDiskAsync(diskPath, data);
                 EnsureSaved(diskPath);
 
-                _filePathCache[cacheKey] = diskPath;
+                CachePathAliases(GetCacheKeys(fileUrl), diskPath);
 
                 DownloadCompleted?.Invoke(fileUrl, diskPath);
                 return diskPath;
@@ -209,14 +217,19 @@ namespace Edemly.Client.Infrastructure.Caching
                 }
 
                 var fileData = await File.ReadAllBytesAsync(filePath);
-                var cacheKey = GetCacheKey(fileUrl);
+                var cacheKeys = GetCacheKeys(fileUrl);
+                var cacheKey = cacheKeys[0];
                 var diskPath = GetDiskCachePath(cacheKey, Path.GetExtension(filePath));
 
-                DeleteDiskCacheFiles(cacheKey);
+                foreach (var key in cacheKeys)
+                {
+                    DeleteDiskCacheFiles(key);
+                }
+
                 await SaveToDiskAsync(diskPath, fileData);
                 EnsureSaved(diskPath);
 
-                _filePathCache[cacheKey] = diskPath;
+                CachePathAliases(cacheKeys, diskPath);
                 Debug.WriteLine($"[FileCache] Cached local file for URL '{fileUrl}' -> '{diskPath}'");
                 return diskPath;
             }
@@ -230,20 +243,21 @@ namespace Edemly.Client.Infrastructure.Caching
 
         public void InvalidateCache(string fileUrl)
         {
-            if (string.IsNullOrEmpty(fileUrl))
+            if (string.IsNullOrWhiteSpace(fileUrl))
                 return;
 
-            var cacheKey = GetCacheKey(fileUrl);
-
-            if (_file_path_cache_try_remove(cacheKey, out var filePath))
+            foreach (var cacheKey in GetCacheKeys(fileUrl))
             {
-                if (File.Exists(filePath))
+                if (_file_path_cache_try_remove(cacheKey, out var filePath))
                 {
-                    try { File.Delete(filePath); } catch (Exception ex) { Debug.WriteLine($"[FileCache] Failed to delete cached file {filePath}: {ex.Message}"); }
+                    if (File.Exists(filePath))
+                    {
+                        try { File.Delete(filePath); } catch (Exception ex) { Debug.WriteLine($"[FileCache] Failed to delete cached file {filePath}: {ex.Message}"); }
+                    }
                 }
-            }
 
-            DeleteDiskCacheFiles(cacheKey);
+                DeleteDiskCacheFiles(cacheKey);
+            }
         }
 
         private bool _file_path_cache_try_remove(string cacheKey, out string? filePath)
@@ -284,6 +298,75 @@ namespace Edemly.Client.Infrastructure.Caching
             {
                 var hash = md5.ComputeHash(Encoding.UTF8.GetBytes(url));
                 return BitConverter.ToString(hash).Replace("-", "").ToLower();
+            }
+        }
+
+        private IReadOnlyList<string> GetCacheKeys(string url)
+        {
+            var keys = new List<string>();
+
+            void AddKey(string value)
+            {
+                if (string.IsNullOrWhiteSpace(value))
+                    return;
+
+                var key = GetCacheKey(value);
+                if (!keys.Contains(key))
+                {
+                    keys.Add(key);
+                }
+            }
+
+            AddKey(NormalizeCacheIdentity(url));
+            AddKey(url);
+            return keys;
+        }
+
+        private string NormalizeCacheIdentity(string url)
+        {
+            if (string.IsNullOrWhiteSpace(url))
+            {
+                return string.Empty;
+            }
+
+            var trimmed = url.Trim();
+            if (Uri.TryCreate(trimmed, UriKind.Absolute, out var absoluteUri) &&
+                (absoluteUri.Scheme == Uri.UriSchemeHttp || absoluteUri.Scheme == Uri.UriSchemeHttps))
+            {
+                if (absoluteUri.AbsolutePath.IndexOf("/uploads/", StringComparison.OrdinalIgnoreCase) >= 0)
+                {
+                    return absoluteUri.PathAndQuery;
+                }
+
+                if (Uri.TryCreate(_serverBaseUrl, UriKind.Absolute, out var baseUri) &&
+                    string.Equals(absoluteUri.Host, baseUri.Host, StringComparison.OrdinalIgnoreCase) &&
+                    absoluteUri.Port == baseUri.Port)
+                {
+                    return absoluteUri.PathAndQuery;
+                }
+
+                return absoluteUri.ToString();
+            }
+
+            if (trimmed.StartsWith('/'))
+            {
+                return trimmed;
+            }
+
+            if (trimmed.StartsWith("uploads/", StringComparison.OrdinalIgnoreCase))
+            {
+                return "/" + trimmed;
+            }
+
+            return trimmed;
+        }
+
+        private void CachePathAliases(IEnumerable<string> cacheKeys, string diskPath)
+        {
+            foreach (var key in cacheKeys)
+            {
+                try { _filePathCache[key] = diskPath; }
+                catch (Exception ex) { Debug.WriteLine($"[FileCache] Failed to add cache alias: {ex.Message}"); }
             }
         }
 

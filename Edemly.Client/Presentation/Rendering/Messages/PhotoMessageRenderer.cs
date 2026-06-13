@@ -110,27 +110,33 @@ namespace Edemly.Client.Presentation.Rendering.Messages
             {
                 if (string.IsNullOrEmpty(url))
                 {
+                    System.Diagnostics.Debug.WriteLine("[PhotoMessageRenderer] Photo message has empty ContentUrl.");
                     return;
                 }
 
+                System.Diagnostics.Debug.WriteLine($"[PhotoMessageRenderer] Loading chat photo '{url}'.");
                 var localPath = await App.GlobalFileCache.GetOrDownloadAsync(url, "image.jpg");
                 if (string.IsNullOrWhiteSpace(localPath) || !File.Exists(localPath))
                 {
+                    System.Diagnostics.Debug.WriteLine($"[PhotoMessageRenderer] Chat photo is not available in cache. Url='{url}', LocalPath='{localPath}'.");
                     return;
                 }
 
+                System.Diagnostics.Debug.WriteLine($"[PhotoMessageRenderer] Chat photo resolved '{url}' -> '{localPath}'.");
                 var bitmap = LoadBitmapFromFile(localPath);
                 if (bitmap != null)
                 {
                     await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
                     {
                         imageControl.Source = bitmap;
+                        imageControl.InvalidateMeasure();
+                        imageControl.InvalidateVisual();
                     });
                 }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Failed to load photo: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"[PhotoMessageRenderer] Failed to load photo '{url}': {ex.Message}");
             }
         }
 
@@ -138,18 +144,26 @@ namespace Edemly.Client.Presentation.Rendering.Messages
         {
             try
             {
+                var fileBytes = File.ReadAllBytes(path);
+                if (fileBytes.Length == 0)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[PhotoMessageRenderer] Cached photo file is empty: {path}");
+                    return null;
+                }
+
+                using var stream = new MemoryStream(fileBytes);
                 var bitmap = new BitmapImage();
+                bitmap.CreateOptions = BitmapCreateOptions.PreservePixelFormat;
                 bitmap.BeginInit();
                 bitmap.CacheOption = BitmapCacheOption.OnLoad;
-                bitmap.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
-                bitmap.UriSource = new Uri(path, UriKind.Absolute);
+                bitmap.StreamSource = stream;
                 bitmap.EndInit();
                 bitmap.Freeze();
                 return bitmap;
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Failed to load cached photo file: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"[PhotoMessageRenderer] Failed to load cached photo file '{path}': {ex.Message}");
                 return null;
             }
         }
