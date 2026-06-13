@@ -77,6 +77,11 @@ BenchmarkDotNet.Artifacts/
 project.lock.json
 project.fragment.lock.json
 artifacts/
+.artifacts/
+
+# Local Velopack release artifacts
+deployment/local/static/updates/windows/stable/*
+!deployment/local/static/updates/windows/stable/.gitkeep
 
 # ASP.NET Scaffolding
 ScaffoldingReadMe.txt

@@ -92,7 +92,7 @@ NSO.Edemly-win-Setup.exe
 NSO.Edemly-1.0.0-full.nupkg
 ```
 
-The generated installer and package files are ignored by Git. Commit only placeholders and documentation.
+Generated installer, package, and `releases.win.json` feed files are ignored by Git. The repository keeps only `.gitkeep` in the local release output directory.
 
 For release creation, version fields, mandatory update policy, and local installer testing, see [Client Releases and Updates](RELEASES.md).
 
@@ -103,7 +103,7 @@ For a full manual local test sequence, including hot-publishing without restarti
 The following deployment work still needs a real environment or release artifacts:
 
 * Validate `docker compose -f deployment/local/docker-compose.yml config` and `up --build` on a machine with Docker Desktop.
-* Generate real Velopack Windows artifacts and replace the placeholder `releases.win.json`.
+* Generate real Velopack Windows artifacts locally.
 * Decide production static URLs and replace local `localhost` bootstrap/update URLs.
 * Add production secrets handling for database, JWT, Brevo, MinIO, and WayForPay.
 * Add CI/CD publishing for Docker images and Velopack artifacts.

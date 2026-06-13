@@ -4,18 +4,79 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Edemly Local</title>
-  <style>
-    body { font-family: Arial, sans-serif; margin: 40px; line-height: 1.5; color: #17202a; }
-    a { color: #0b6f63; }
-    code { background: #eef3f2; padding: 2px 5px; border-radius: 4px; }
-  </style>
+  <link rel="stylesheet" href="/assets/styles.css">
+  <script src="/assets/app.js" defer></script>
 </head>
-<body>
-  <h1>Edemly Local</h1>
-  <p><a href="/client.json">Client bootstrap config</a></p>
-  <p><a href="/download/">Download Edemly</a></p>
-  <p><a href="/updates/windows/stable/releases.win.json">Windows stable update feed</a></p>
-  <p>Current local release: <code>1.0.0</code></p>
-  <p>Publish Velopack artifacts to <code>/updates/windows/stable</code>.</p>
+<body data-page="home">
+  <header class="site-header">
+    <a class="brand" href="/">
+      <span class="brand-mark" aria-hidden="true">E</span>
+      <span>Edemly Local</span>
+    </a>
+    <nav class="site-nav" aria-label="Primary navigation">
+      <a href="/">Overview</a>
+      <a href="/download/">Download</a>
+      <a href="/status/">Status</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="hero-copy">
+        <p class="eyebrow">Local deployment profile</p>
+        <h1>Install, update, and test Edemly from one local static site.</h1>
+        <p class="lead">
+          This nginx site serves client bootstrap config, the Windows installer,
+          and Velopack update feeds while Docker keeps running.
+        </p>
+        <div class="hero-actions">
+          <a class="button primary" href="/download/">Download installer</a>
+          <a class="button" href="/status/">View live config</a>
+        </div>
+      </div>
+      <div class="signal-scene" aria-hidden="true">
+        <span class="signal-ring ring-one"></span>
+        <span class="signal-ring ring-two"></span>
+        <span class="signal-node node-static">static</span>
+        <span class="signal-node node-api">api</span>
+        <span class="signal-node node-hub">hub</span>
+      </div>
+    </section>
+
+    <section class="grid two">
+      <article class="panel">
+        <p class="panel-kicker">Current release</p>
+        <h2 data-config="latestVersion">Loading...</h2>
+        <p>
+          Minimum required version:
+          <strong data-config="minimumRequiredVersion">Loading...</strong>
+        </p>
+        <p>
+          Mandatory update:
+          <strong data-config="mandatory">Loading...</strong>
+        </p>
+      </article>
+
+      <article class="panel">
+        <p class="panel-kicker">Static endpoints</p>
+        <h2>Bootstrap and updates</h2>
+        <p><a href="/client.json">client.json</a></p>
+        <p><a data-config-href="updateFeed" href="/updates/windows/stable/releases.win.json">Velopack release feed</a></p>
+      </article>
+    </section>
+
+    <section class="panel">
+      <div class="section-heading">
+        <div>
+          <p class="panel-kicker">Configured servers</p>
+          <h2>Gateway map</h2>
+        </div>
+        <a class="text-link" href="/status/">Open status details</a>
+      </div>
+      <div class="endpoint-grid" data-server-list>
+        <p class="muted">Loading server list...</p>
+      </div>
+    </section>
+  </main>
 </body>
 </html>

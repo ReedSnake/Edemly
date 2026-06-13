@@ -112,7 +112,7 @@ deployment/local/static/updates/windows/stable/
 `-- NSO.Edemly-1.0.0-full.nupkg
 ```
 
-Installer and package artifacts are ignored by Git. Commit the updated docs, `client.json`, and version metadata, not generated binaries.
+Installer, package, and generated release feed artifacts are ignored by Git. Commit the updated docs, `client.json`, and version metadata, not generated binaries.
 
 ## Test Locally
 

@@ -109,6 +109,8 @@ deployment/local/static/updates/windows/stable/
 `-- NSO.Edemly-1.0.0-full.nupkg
 ```
 
+These generated files are ignored by Git. The repository keeps only `.gitkeep` in this directory so the folder exists before the first local release is packed.
+
 Set the baseline metadata in:
 
 ```text

@@ -4,16 +4,75 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Download Edemly</title>
-  <style>
-    body { font-family: Arial, sans-serif; margin: 40px; line-height: 1.5; color: #17202a; }
-    a { color: #0b6f63; font-weight: 700; }
-  </style>
+  <link rel="stylesheet" href="/assets/styles.css">
+  <script src="/assets/app.js" defer></script>
 </head>
-<body>
-  <h1>Download Edemly</h1>
-  <p>Current local release: <code>1.0.0</code></p>
-  <p>Publish the Windows installer to <code>/updates/windows/stable/NSO.Edemly-win-Setup.exe</code>.</p>
-  <p><a href="/updates/windows/stable/NSO.Edemly-win-Setup.exe">Download installer</a></p>
-  <p>Velopack update feed: <a href="/updates/windows/stable/releases.win.json">releases.win.json</a></p>
+<body data-page="download">
+  <header class="site-header">
+    <a class="brand" href="/">
+      <span class="brand-mark" aria-hidden="true">E</span>
+      <span>Edemly Local</span>
+    </a>
+    <nav class="site-nav" aria-label="Primary navigation">
+      <a href="/">Overview</a>
+      <a href="/download/">Download</a>
+      <a href="/status/">Status</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero compact">
+      <div class="hero-copy">
+        <p class="eyebrow">Windows installer</p>
+        <h1>Download Edemly</h1>
+        <p class="lead">
+          Current local release:
+          <strong data-config="latestVersion">Loading...</strong>
+        </p>
+        <div class="hero-actions">
+          <a class="button primary" data-config-href="installer" href="/updates/windows/stable/NSO.Edemly-win-Setup.exe">
+            Download installer
+          </a>
+          <a class="button" data-config-href="updateFeed" href="/updates/windows/stable/releases.win.json">
+            View update feed
+          </a>
+        </div>
+      </div>
+      <div class="download-orbit" aria-hidden="true">
+        <span class="package-card">Setup.exe</span>
+        <span class="package-card ghost">.nupkg</span>
+      </div>
+    </section>
+
+    <section class="grid two">
+      <article class="panel">
+        <p class="panel-kicker">Installer path</p>
+        <h2>Static download</h2>
+        <p><code data-config="installerUrl">Loading...</code></p>
+      </article>
+
+      <article class="panel">
+        <p class="panel-kicker">Update policy</p>
+        <h2 data-update-mode>Loading...</h2>
+        <p>Minimum required version: <strong data-config="minimumRequiredVersion">Loading...</strong></p>
+      </article>
+    </section>
+
+    <section class="panel">
+      <div class="section-heading">
+        <div>
+          <p class="panel-kicker">Hot publish</p>
+          <h2>No Docker restart needed</h2>
+        </div>
+        <button class="button small" type="button" data-copy="#publish-command">Copy command</button>
+      </div>
+      <pre id="publish-command"><code>vpk pack -u NSO.Edemly -v 1.0.1 -p .artifacts\client\win-x64\1.0.1 -e Edemly.exe -o deployment\local\static\updates\windows\stable --packTitle Edemly</code></pre>
+      <p class="muted">
+        The static container serves this folder through a bind mount, so new release files are visible immediately.
+      </p>
+    </section>
+  </main>
+
+  <div class="toast" data-toast hidden>Copied</div>
 </body>
 </html>
