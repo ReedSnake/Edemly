@@ -1,27 +1,40 @@
 using Edemly.Server.Api.Middleware;
+using Edemly.Server.Configuration;
 using Edemly.Server.Data;
 using Edemly.Server.Infrastructure.Hosting;
+using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.EntityFrameworkCore;
+using Minio;
+using Minio.DataModel.Args;
+using Minio.Exceptions;
 
 namespace Edemly.Server.Infrastructure.Files
 {
     public class FileStorageService : IFileStorageService
     {
-        private readonly Configuration.FileStorageSettings _settings;
+        private static readonly SemaphoreSlim MinioBucketLock = new(1, 1);
+        private static readonly FileExtensionContentTypeProvider ContentTypeProvider = new();
+
+        private readonly FileStorageSettings _settings;
         private readonly ILogger<FileStorageService> _logger;
         private readonly IWebHostEnvironment _environment;
         private readonly long _maxFileSize;
         private readonly string? _publicBaseUrl;
         private readonly ITenantProvider _tenantProvider;
         private readonly ServerDbContext _serverDb;
+        private readonly IMinioClient? _minioClient;
+        private readonly bool _useMinio;
+        private readonly string _minioBucketName;
+        private readonly string _minioObjectPrefix;
 
         public FileStorageService(
-            Configuration.FileStorageSettings settings,
+            FileStorageSettings settings,
             IWebHostEnvironment environment,
             ILogger<FileStorageService> logger,
             IPublicUrlProvider publicUrlProvider,
             ITenantProvider tenantProvider,
-            ServerDbContext serverDb)
+            ServerDbContext serverDb,
+            IEnumerable<IMinioClient> minioClients)
         {
             _settings = settings;
             _environment = environment;
@@ -29,6 +42,15 @@ namespace Edemly.Server.Infrastructure.Files
             _tenantProvider = tenantProvider;
             _serverDb = serverDb;
             _maxFileSize = settings.MaxFileSizeMB * 1024 * 1024;
+            _useMinio = settings.UseMinio;
+            _minioClient = minioClients.FirstOrDefault();
+            _minioBucketName = settings.Minio.BucketName;
+            _minioObjectPrefix = NormalizeObjectPrefix(settings.Minio.ObjectPrefix);
+
+            if (_useMinio && _minioClient == null)
+            {
+                throw new InvalidOperationException("MinIO file storage is enabled, but IMinioClient is not registered.");
+            }
 
             string baseUrl = settings.BaseUrl ?? string.Empty;
             if (baseUrl.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
@@ -52,7 +74,10 @@ namespace Edemly.Server.Infrastructure.Files
                 }
             }
 
-            InitializeDirectories();
+            if (!_useMinio)
+            {
+                InitializeDirectories();
+            }
         }
 
         private void InitializeDirectories()
@@ -100,32 +125,26 @@ namespace Edemly.Server.Infrastructure.Files
                 var timestamp = DateTime.UtcNow.ToString("yyyyMMdd_HHmmss");
                 var uniqueId = Guid.NewGuid().ToString("N").Substring(0, 8);
                 var safeFileName = $"user_{userId}_{timestamp}_{uniqueId}{extension}";
-
                 var tenantFolder = GetTenantFolder();
-                var relativePath = Path.Combine(tenantFolder, _settings.ProfilePicturesFolder, safeFileName).Replace('\\', '/');
-                var fullPath = GetFullPath(_settings.StoragePath, tenantFolder, _settings.ProfilePicturesFolder, safeFileName);
+                var relativePath = CombineUrlSegments(tenantFolder, _settings.ProfilePicturesFolder, safeFileName);
 
-                Directory.CreateDirectory(Path.GetDirectoryName(fullPath)!);
-
-                using (var outStream = new FileStream(fullPath, FileMode.Create))
+                if (_useMinio)
                 {
-                    await fileStream.CopyToAsync(outStream);
-                }
-
-                string url;
-                if (!string.IsNullOrEmpty(_publicBaseUrl))
-                {
-                    var publicPath = string.IsNullOrEmpty(tenantFolder)
-                        ? $"{_settings.ProfilePicturesFolder.Trim('/')}/{safeFileName}"
-                        : $"{tenantFolder}/{_settings.ProfilePicturesFolder.Trim('/')}/{safeFileName}";
-
-                    url = $"{_publicBaseUrl}/{publicPath}";
+                    await UploadMinioObjectAsync(
+                        relativePath,
+                        fileStream,
+                        ResolveContentType(fileName, "application/octet-stream"));
                 }
                 else
                 {
-                    url = $"/{relativePath.TrimStart('/')}";
+                    var fullPath = GetFullPath(_settings.StoragePath, tenantFolder, _settings.ProfilePicturesFolder, safeFileName);
+                    Directory.CreateDirectory(Path.GetDirectoryName(fullPath)!);
+
+                    using var outStream = new FileStream(fullPath, FileMode.Create);
+                    await fileStream.CopyToAsync(outStream);
                 }
 
+                var url = BuildPublicUrl(relativePath);
                 _logger.LogInformation("Uploaded profile picture for user {UserId}: {Url}", userId, url);
                 return (true, url, null);
             }
@@ -148,32 +167,23 @@ namespace Edemly.Server.Infrastructure.Files
                 var safeName = Path.GetFileNameWithoutExtension(fileName).Replace(" ", "_").Replace("..", "");
                 var extension = Path.GetExtension(fileName);
                 var safeFileName = $"user_{userId}_{timestamp}_{safeName}{extension}";
-
                 var tenantFolder = GetTenantFolder();
-                var relativePath = Path.Combine(tenantFolder, _settings.FilesFolder, safeFileName).Replace('\\', '/');
-                var fullPath = GetFullPath(_settings.StoragePath, tenantFolder, _settings.FilesFolder, safeFileName);
+                var relativePath = CombineUrlSegments(tenantFolder, _settings.FilesFolder, safeFileName);
 
-                Directory.CreateDirectory(Path.GetDirectoryName(fullPath)!);
-
-                using (var outStream = new FileStream(fullPath, FileMode.Create))
+                if (_useMinio)
                 {
-                    await fileStream.CopyToAsync(outStream);
-                }
-
-                string url;
-                if (!string.IsNullOrEmpty(_publicBaseUrl))
-                {
-                    var publicPath = string.IsNullOrEmpty(tenantFolder)
-                        ? $"{_settings.FilesFolder.Trim('/')}/{safeFileName}"
-                        : $"{tenantFolder}/{_settings.FilesFolder.Trim('/')}/{safeFileName}";
-
-                    url = $"{_publicBaseUrl}/{publicPath}";
+                    await UploadMinioObjectAsync(relativePath, fileStream, contentType);
                 }
                 else
                 {
-                    url = $"/{relativePath.TrimStart('/')}";
+                    var fullPath = GetFullPath(_settings.StoragePath, tenantFolder, _settings.FilesFolder, safeFileName);
+                    Directory.CreateDirectory(Path.GetDirectoryName(fullPath)!);
+
+                    using var outStream = new FileStream(fullPath, FileMode.Create);
+                    await fileStream.CopyToAsync(outStream);
                 }
 
+                var url = BuildPublicUrl(relativePath);
                 _logger.LogInformation("Uploaded file for user {UserId}: {Url}", userId, url);
                 return (true, url, null);
             }
@@ -190,14 +200,20 @@ namespace Edemly.Server.Infrastructure.Files
             {
                 var relativePath = ParseRelativePath(fileUrl);
 
-                if (!_tenantProvider.IsTenant)
+                if (!await CanAccessRelativePathAsync(relativePath))
                 {
-                    var segments = relativePath.Split(Path.DirectorySeparatorChar, StringSplitOptions.RemoveEmptyEntries);
-                    if (segments.Length > 0 && await _serverDb.Companies.AnyAsync(c => c.Name == segments[0]))
-                        return (false, "Access denied: master cannot delete tenant files");
+                    return (false, "Access denied");
                 }
 
-                var fullPath = Path.Combine(_environment.WebRootPath ?? Directory.GetCurrentDirectory(), _settings.StoragePath, relativePath);
+                if (_useMinio)
+                {
+                    return await DeleteMinioObjectAsync(relativePath);
+                }
+
+                var fullPath = Path.Combine(
+                    _environment.WebRootPath ?? Directory.GetCurrentDirectory(),
+                    _settings.StoragePath,
+                    relativePath.Replace('/', Path.DirectorySeparatorChar));
 
                 if (File.Exists(fullPath))
                 {
@@ -221,22 +237,25 @@ namespace Edemly.Server.Infrastructure.Files
             {
                 var relativePath = ParseRelativePath(fileUrl);
 
-                if (!_tenantProvider.IsTenant)
+                if (!await CanAccessRelativePathAsync(relativePath))
                 {
-                    var segments = relativePath.Split(Path.DirectorySeparatorChar, StringSplitOptions.RemoveEmptyEntries);
-                    if (segments.Length > 0 && await _serverDb.Companies.AnyAsync(c => c.Name == segments[0]))
-                    {
-                        _logger.LogWarning("Access denied: master attempting to access tenant file {Path}", relativePath);
-                        return null;
-                    }
+                    _logger.LogWarning("Access denied while reading file {Path}", relativePath);
+                    return null;
                 }
 
-                var fullPath = Path.Combine(_environment.WebRootPath ?? Directory.GetCurrentDirectory(), _settings.StoragePath, relativePath);
+                if (_useMinio)
+                {
+                    return await GetMinioObjectAsync(relativePath);
+                }
 
-                if (File.Exists(fullPath))
-                    return new FileStream(fullPath, FileMode.Open, FileAccess.Read, FileShare.Read);
+                var fullPath = Path.Combine(
+                    _environment.WebRootPath ?? Directory.GetCurrentDirectory(),
+                    _settings.StoragePath,
+                    relativePath.Replace('/', Path.DirectorySeparatorChar));
 
-                return null;
+                return File.Exists(fullPath)
+                    ? new FileStream(fullPath, FileMode.Open, FileAccess.Read, FileShare.Read)
+                    : null;
             }
             catch (Exception ex)
             {
@@ -245,15 +264,205 @@ namespace Edemly.Server.Infrastructure.Files
             }
         }
 
+        private async Task UploadMinioObjectAsync(string relativePath, Stream fileStream, string? contentType)
+        {
+            await EnsureMinioBucketAsync();
+
+            if (fileStream.CanSeek)
+            {
+                fileStream.Position = 0;
+            }
+
+            var putObjectArgs = new PutObjectArgs()
+                .WithBucket(_minioBucketName)
+                .WithObject(BuildMinioObjectName(relativePath))
+                .WithStreamData(fileStream)
+                .WithObjectSize(fileStream.Length)
+                .WithContentType(string.IsNullOrWhiteSpace(contentType) ? "application/octet-stream" : contentType);
+
+            await _minioClient!.PutObjectAsync(putObjectArgs);
+        }
+
+        private async Task<Stream?> GetMinioObjectAsync(string relativePath)
+        {
+            try
+            {
+                var memoryStream = new MemoryStream();
+                var getObjectArgs = new GetObjectArgs()
+                    .WithBucket(_minioBucketName)
+                    .WithObject(BuildMinioObjectName(relativePath))
+                    .WithCallbackStream(stream => stream.CopyTo(memoryStream));
+
+                await _minioClient!.GetObjectAsync(getObjectArgs);
+                memoryStream.Position = 0;
+                return memoryStream;
+            }
+            catch (ObjectNotFoundException)
+            {
+                return null;
+            }
+            catch (BucketNotFoundException)
+            {
+                return null;
+            }
+        }
+
+        private async Task<(bool Success, string? Error)> DeleteMinioObjectAsync(string relativePath)
+        {
+            var objectName = BuildMinioObjectName(relativePath);
+            if (!await MinioObjectExistsAsync(objectName))
+            {
+                return (false, "File not found");
+            }
+
+            var removeObjectArgs = new RemoveObjectArgs()
+                .WithBucket(_minioBucketName)
+                .WithObject(objectName);
+
+            await _minioClient!.RemoveObjectAsync(removeObjectArgs);
+            _logger.LogInformation("Deleted MinIO object: {ObjectName}", objectName);
+            return (true, null);
+        }
+
+        private async Task<bool> MinioObjectExistsAsync(string objectName)
+        {
+            try
+            {
+                var statObjectArgs = new StatObjectArgs()
+                    .WithBucket(_minioBucketName)
+                    .WithObject(objectName);
+
+                await _minioClient!.StatObjectAsync(statObjectArgs);
+                return true;
+            }
+            catch (ObjectNotFoundException)
+            {
+                return false;
+            }
+            catch (BucketNotFoundException)
+            {
+                return false;
+            }
+        }
+
+        private async Task EnsureMinioBucketAsync()
+        {
+            if (!_settings.Minio.AutoCreateBucket)
+            {
+                return;
+            }
+
+            await MinioBucketLock.WaitAsync();
+            try
+            {
+                var bucketExistsArgs = new BucketExistsArgs()
+                    .WithBucket(_minioBucketName);
+
+                var exists = await _minioClient!.BucketExistsAsync(bucketExistsArgs);
+                if (exists)
+                {
+                    return;
+                }
+
+                var makeBucketArgs = new MakeBucketArgs()
+                    .WithBucket(_minioBucketName);
+
+                await _minioClient.MakeBucketAsync(makeBucketArgs);
+            }
+            finally
+            {
+                MinioBucketLock.Release();
+            }
+        }
+
+        private async Task<bool> CanAccessRelativePathAsync(string relativePath)
+        {
+            if (_tenantProvider.IsTenant)
+            {
+                return true;
+            }
+
+            var firstSegment = relativePath
+                .Split('/', StringSplitOptions.RemoveEmptyEntries)
+                .FirstOrDefault();
+
+            return string.IsNullOrWhiteSpace(firstSegment) ||
+                !await _serverDb.Companies.AnyAsync(c => c.Name == firstSegment);
+        }
+
+        private string BuildPublicUrl(string relativePath)
+        {
+            if (!string.IsNullOrWhiteSpace(_publicBaseUrl))
+            {
+                return $"{_publicBaseUrl.TrimEnd('/')}/{relativePath.TrimStart('/')}";
+            }
+
+            return "/" + relativePath.TrimStart('/');
+        }
+
+        private string BuildMinioObjectName(string relativePath)
+        {
+            return CombineUrlSegments(_minioObjectPrefix, relativePath);
+        }
+
         private string ParseRelativePath(string fileUrl)
         {
-            string path = fileUrl;
-            if (!string.IsNullOrEmpty(_publicBaseUrl) && fileUrl.StartsWith(_publicBaseUrl, StringComparison.OrdinalIgnoreCase))
-                path = fileUrl.Substring(_publicBaseUrl.Length);
-            else if (!string.IsNullOrEmpty(_settings.BaseUrl) && fileUrl.StartsWith(_settings.BaseUrl, StringComparison.OrdinalIgnoreCase))
-                path = fileUrl.Substring(_settings.BaseUrl.Length);
+            var path = fileUrl.Split('?', 2)[0];
 
-            return path.TrimStart('/').Replace('/', Path.DirectorySeparatorChar);
+            if (Uri.TryCreate(fileUrl, UriKind.Absolute, out var absoluteUri))
+            {
+                path = absoluteUri.AbsolutePath;
+            }
+            else if (!string.IsNullOrEmpty(_publicBaseUrl) &&
+                path.StartsWith(_publicBaseUrl, StringComparison.OrdinalIgnoreCase))
+            {
+                path = path.Substring(_publicBaseUrl.Length);
+            }
+
+            var baseUrl = _settings.BaseUrl ?? string.Empty;
+            if (!string.IsNullOrWhiteSpace(baseUrl))
+            {
+                var basePath = Uri.TryCreate(baseUrl, UriKind.Absolute, out var baseUri)
+                    ? baseUri.AbsolutePath
+                    : baseUrl;
+
+                if (path.StartsWith(basePath, StringComparison.OrdinalIgnoreCase))
+                {
+                    path = path.Substring(basePath.Length);
+                }
+            }
+
+            path = path.TrimStart('/').Replace('\\', '/');
+            var segments = path.Split('/', StringSplitOptions.RemoveEmptyEntries);
+            if (segments.Length >= 3 && string.Equals(segments[1], "uploads", StringComparison.OrdinalIgnoreCase))
+            {
+                return CombineUrlSegments(segments[0], string.Join("/", segments.Skip(2)));
+            }
+
+            return path;
+        }
+
+        private static string CombineUrlSegments(params string?[] parts)
+        {
+            return string.Join(
+                "/",
+                parts
+                    .Where(part => !string.IsNullOrWhiteSpace(part))
+                    .Select(part => part!.Trim().Trim('/').Replace('\\', '/')));
+        }
+
+        private static string NormalizeObjectPrefix(string? prefix)
+        {
+            return string.IsNullOrWhiteSpace(prefix)
+                ? string.Empty
+                : prefix.Trim().Trim('/').Replace('\\', '/');
+        }
+
+        private static string ResolveContentType(string fileName, string fallback)
+        {
+            return ContentTypeProvider.TryGetContentType(fileName, out var contentType)
+                ? contentType
+                : fallback;
         }
     }
 }

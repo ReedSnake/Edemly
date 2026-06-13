@@ -1,0 +1,76 @@
+name: edemly-local
+
+services:
+  mysql:
+    image: mysql:8.4
+    container_name: edemly-local-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: securepass
+      MYSQL_DATABASE: edemly
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  minio:
+    image: minio/minio:latest
+    container_name: edemly-local-minio
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: edemly_admin
+      MINIO_ROOT_PASSWORD: edemly_password
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+
+  static:
+    image: nginx:alpine
+    container_name: edemly-local-static
+    ports:
+      - "8080:80"
+    volumes:
+      - ./static:/usr/share/nginx/html:ro
+
+  server1:
+    profiles:
+      - server
+    build:
+      context: ../..
+      dockerfile: Edemly.Server/Dockerfile
+    container_name: edemly-local-server1
+    environment:
+      PORT: 8080
+      ConnectionStrings__DefaultConnection: Server=mysql;Port=3306;Database=edemly;User Id=root;Password=securepass;
+      PublicBaseUrl: http://localhost:3500
+      WayForPay__TestMode: "true"
+      WayForPay__DomainName: http://localhost:3500
+      WayForPay__ReturnUrl: http://localhost:3500/api/payment/return
+      FileStorage__Provider: Minio
+      FileStorage__Minio__Endpoint: minio:9000
+      MINIO_ROOT_USER: edemly_admin
+      MINIO_ROOT_PASSWORD: edemly_password
+    depends_on:
+      - mysql
+      - minio
+    ports:
+      - "3501:8080"
+
+  gateway:
+    profiles:
+      - gateway
+    build:
+      context: ../..
+      dockerfile: Edemly.Gateway/Dockerfile
+    container_name: edemly-local-gateway
+    ports:
+      - "3500:8080"
+    volumes:
+      - ./gateway/appsettings.json:/app/appsettings.json:ro
+    depends_on:
+      - server1
+
+volumes:
+  mysql_data:
+  minio_data:

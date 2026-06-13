@@ -47,6 +47,7 @@ namespace Edemly.Client.Infrastructure.Caching
 
             _httpClient = new HttpClient();
             _serverBaseUrl = NormalizeBaseUrl(serverBaseUrl);
+            Debug.WriteLine($"[FileCache] Initialized. BaseUrl='{_serverBaseUrl}', CachePath='{_diskCachePath}'");
 
             _tokenProvider = tokenProvider;
         }
@@ -156,8 +157,9 @@ namespace Edemly.Client.Infrastructure.Caching
 
                 var diskPath = GetDiskCachePath(cacheKey, ext);
                 await SaveToDiskAsync(diskPath, data);
+                EnsureSaved(diskPath);
 
-                try { _filePathCache.TryAdd(cacheKey, diskPath); } catch (Exception ex) { Debug.WriteLine($"[FileCache] Failed to add download cache path: {ex.Message}"); }
+                _filePathCache[cacheKey] = diskPath;
 
                 DownloadCompleted?.Invoke(fileUrl, diskPath);
                 return diskPath;
@@ -180,7 +182,8 @@ namespace Edemly.Client.Infrastructure.Caching
                 var diskPath = GetDiskCachePath(cacheKey, Path.GetExtension(fileName));
 
                 await SaveToDiskAsync(diskPath, fileData);
-                try { _filePathCache.TryAdd(cacheKey, diskPath); } catch (Exception ex) { Debug.WriteLine($"[FileCache] Failed to add local cache path: {ex.Message}"); }
+                EnsureSaved(diskPath);
+                _filePathCache[cacheKey] = diskPath;
 
                 return diskPath;
             }
@@ -190,6 +193,40 @@ namespace Edemly.Client.Infrastructure.Caching
                 return null;
             }
         }
+
+        public async Task<string?> CacheLocalFileAsync(string fileUrl, string filePath)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(fileUrl))
+                {
+                    return await CacheLocalFileAsync(filePath);
+                }
+
+                if (string.IsNullOrWhiteSpace(filePath) || !File.Exists(filePath))
+                {
+                    return null;
+                }
+
+                var fileData = await File.ReadAllBytesAsync(filePath);
+                var cacheKey = GetCacheKey(fileUrl);
+                var diskPath = GetDiskCachePath(cacheKey, Path.GetExtension(filePath));
+
+                DeleteDiskCacheFiles(cacheKey);
+                await SaveToDiskAsync(diskPath, fileData);
+                EnsureSaved(diskPath);
+
+                _filePathCache[cacheKey] = diskPath;
+                Debug.WriteLine($"[FileCache] Cached local file for URL '{fileUrl}' -> '{diskPath}'");
+                return diskPath;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[FileCache] CacheLocalFileAsync by URL failed: {ex.Message}");
+                return null;
+            }
+        }
+
 
         public void InvalidateCache(string fileUrl)
         {
@@ -206,11 +243,7 @@ namespace Edemly.Client.Infrastructure.Caching
                 }
             }
 
-            var disk = FindDiskCachePath(cacheKey);
-            if (disk != null && File.Exists(disk))
-            {
-                try { File.Delete(disk); } catch (Exception ex) { Debug.WriteLine($"[FileCache] Failed to delete disk cache {disk}: {ex.Message}"); }
-            }
+            DeleteDiskCacheFiles(cacheKey);
         }
 
         private bool _file_path_cache_try_remove(string cacheKey, out string? filePath)
@@ -277,6 +310,29 @@ namespace Edemly.Client.Infrastructure.Caching
             return null;
         }
 
+        private void DeleteDiskCacheFiles(string cacheKey)
+        {
+            try
+            {
+                var dir = new DirectoryInfo(_diskCachePath);
+                foreach (var file in dir.GetFiles(cacheKey + ".*"))
+                {
+                    try
+                    {
+                        file.Delete();
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine($"[FileCache] Failed to delete disk cache {file.FullName}: {ex.Message}");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[FileCache] DeleteDiskCacheFiles failed: {ex.Message}");
+            }
+        }
+
         private async Task<(byte[] data, string? contentType)> DownloadFileWithRetriesAsync(string url, int maxAttempts = 3)
         {
             int attempt = 0;
@@ -285,7 +341,7 @@ namespace Edemly.Client.Infrastructure.Caching
             {
                 try
                 {
-                    var res = await DownloadFileAsync(url);
+                    var res = await DownloadFileAsync(url, allowFallback: true);
                     return res;
                 }
                 catch (Exception ex)
@@ -299,21 +355,31 @@ namespace Edemly.Client.Infrastructure.Caching
             throw last ?? new InvalidOperationException("Download failed");
         }
 
-        private async Task<(byte[] data, string? contentType)> DownloadFileAsync(string url)
+        private async Task<(byte[] data, string? contentType)> DownloadFileAsync(string url, bool allowFallback)
         {
-            string requestUrl = url;
-            if (!requestUrl.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+            string requestUrl = BuildRequestUrl(url);
+
+            try
             {
-                if (requestUrl.StartsWith('/')) requestUrl = requestUrl.TrimStart('/');
-                requestUrl = _serverBaseUrl + requestUrl;
+                return await DownloadFileFromResolvedUrlAsync(requestUrl);
             }
+            catch (Exception ex) when (allowFallback)
+            {
+                var fallbackUrl = BuildDownloadEndpointUrl(url);
+                if (string.Equals(fallbackUrl, requestUrl, StringComparison.OrdinalIgnoreCase))
+                {
+                    throw;
+                }
 
+                Debug.WriteLine($"[FileCache] Direct download failed for '{requestUrl}', trying fallback '{fallbackUrl}'. Error: {ex.Message}");
+                return await DownloadFileFromResolvedUrlAsync(fallbackUrl);
+            }
+        }
+
+        private async Task<(byte[] data, string? contentType)> DownloadFileFromResolvedUrlAsync(string requestUrl)
+        {
             string? token = await ResolveTokenAsync();
-            var request = new HttpRequestMessage(HttpMethod.Get, requestUrl);
-            if (!string.IsNullOrEmpty(token))
-                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
-
-            using var resp = await _httpClient.SendAsync(request);
+            using var resp = await SendAuthorizedGetAsync(requestUrl, token);
             if (resp.IsSuccessStatusCode)
             {
                 var contentType = resp.Content.Headers.ContentType?.MediaType;
@@ -321,43 +387,76 @@ namespace Edemly.Client.Infrastructure.Caching
                 return (data, contentType);
             }
 
-            var body = string.Empty;
-            try { body = await resp.Content.ReadAsStringAsync(); } catch (Exception ex) { Debug.WriteLine($"[FileCache] Failed to read error response body: {ex.Message}"); }
+            var body = await SafeReadResponseBodyAsync(resp);
             Debug.WriteLine($"[FileCache] Download failed {resp.StatusCode} for '{requestUrl}'. Body: {body}");
 
             if (resp.StatusCode == System.Net.HttpStatusCode.Unauthorized && _tokenProvider != null)
             {
-                try
+                var refreshed = await ResolveTokenAsync();
+                if (!string.IsNullOrEmpty(refreshed) && refreshed != token)
                 {
-                    var refreshed = await ResolveTokenAsync();
-                    if (!string.IsNullOrEmpty(refreshed) && refreshed != token)
+                    Debug.WriteLine("[FileCache] Retrying download with refreshed token");
+                    using var resp2 = await SendAuthorizedGetAsync(requestUrl, refreshed);
+                    if (resp2.IsSuccessStatusCode)
                     {
-                        Debug.WriteLine("[FileCache] Retrying download with refreshed token");
-                        var retryReq = new HttpRequestMessage(HttpMethod.Get, requestUrl);
-                        retryReq.Headers.Authorization = new AuthenticationHeaderValue("Bearer", refreshed);
-                        using var resp2 = await _httpClient.SendAsync(retryReq);
-                        if (resp2.IsSuccessStatusCode)
-                        {
-                            var ct = resp2.Content.Headers.ContentType?.MediaType;
-                            var d = await resp2.Content.ReadAsByteArrayAsync();
-                            return (d, ct);
-                        }
-                        var body2 = string.Empty;
-                        try { body2 = await resp2.Content.ReadAsStringAsync(); } catch (Exception ex) { Debug.WriteLine($"[FileCache] Failed to read retry response body: {ex.Message}"); }
-                        Debug.WriteLine($"[FileCache] Retry failed: {resp2.StatusCode}. Body: {body2}");
-                        resp2.EnsureSuccessStatusCode();
+                        var ct = resp2.Content.Headers.ContentType?.MediaType;
+                        var d = await resp2.Content.ReadAsByteArrayAsync();
+                        return (d, ct);
                     }
-                }
-                catch (Exception ex)
-                {
-                    Debug.WriteLine($"[FileCache] Retry after 401 failed: {ex.Message}");
-                }
 
-                resp.EnsureSuccessStatusCode(); // will throw 401
+                    var body2 = await SafeReadResponseBodyAsync(resp2);
+                    Debug.WriteLine($"[FileCache] Retry failed: {resp2.StatusCode}. Body: {body2}");
+                    resp2.EnsureSuccessStatusCode();
+                }
             }
 
             resp.EnsureSuccessStatusCode();
             throw new InvalidOperationException("Download failed unexpectedly.");
+        }
+
+        private Task<HttpResponseMessage> SendAuthorizedGetAsync(string requestUrl, string? token)
+        {
+            var request = new HttpRequestMessage(HttpMethod.Get, requestUrl);
+            if (!string.IsNullOrEmpty(token))
+            {
+                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            }
+
+            return _httpClient.SendAsync(request);
+        }
+
+        private string BuildRequestUrl(string url)
+        {
+            if (Uri.TryCreate(url, UriKind.Absolute, out var absoluteUri) &&
+                (absoluteUri.Scheme == Uri.UriSchemeHttp || absoluteUri.Scheme == Uri.UriSchemeHttps))
+            {
+                return absoluteUri.ToString();
+            }
+
+            if (string.IsNullOrWhiteSpace(_serverBaseUrl))
+            {
+                return url;
+            }
+
+            if (Uri.TryCreate(_serverBaseUrl, UriKind.Absolute, out var baseUri))
+            {
+                return new Uri(baseUri, url).ToString();
+            }
+
+            var requestUrl = url;
+            if (requestUrl.StartsWith('/')) requestUrl = requestUrl.TrimStart('/');
+            return _serverBaseUrl + requestUrl;
+        }
+
+        private string BuildDownloadEndpointUrl(string fileUrl)
+        {
+            var endpoint = "api/files/download?fileUrl=" + Uri.EscapeDataString(fileUrl);
+            if (Uri.TryCreate(_serverBaseUrl, UriKind.Absolute, out var baseUri))
+            {
+                return new Uri(baseUri, endpoint).ToString();
+            }
+
+            return _serverBaseUrl + endpoint;
         }
 
         private static async Task<string> SafeReadResponseBodyAsync(HttpResponseMessage resp)
@@ -383,6 +482,8 @@ namespace Edemly.Client.Infrastructure.Caching
                 "image/jpeg" => ".jpg",
                 "image/jpg" => ".jpg",
                 "image/png" => ".png",
+                "image/gif" => ".gif",
+                "image/webp" => ".webp",
                 "application/pdf" => ".pdf",
                 _ => null
             };
@@ -403,23 +504,40 @@ namespace Edemly.Client.Infrastructure.Caching
 
         private async Task SaveToDiskAsync(string path, byte[] data)
         {
+            var dir = Path.GetDirectoryName(path);
+
+            if (!string.IsNullOrWhiteSpace(dir))
+            {
+                Directory.CreateDirectory(dir);
+            }
+
+            var tmp = $"{path}.{Guid.NewGuid():N}.tmp";
             try
             {
-                var dir = Path.GetDirectoryName(path);
-
-                if (!string.IsNullOrWhiteSpace(dir) && !Directory.Exists(dir))
-                {
-                    Directory.CreateDirectory(dir);
-                }
-
-                var tmp = path + ".tmp";
                 await File.WriteAllBytesAsync(tmp, data);
-                try { if (File.Exists(path)) File.Delete(path); } catch (Exception ex) { Debug.WriteLine($"[FileCache] SaveToDiskAsync delete failed for {path}: {ex.Message}"); }
-                File.Move(tmp, path);
+                File.Move(tmp, path, overwrite: true);
             }
-            catch (Exception ex)
+            finally
             {
-                Debug.WriteLine($"[FileCache] SaveToDiskAsync failed for {path}: {ex.Message}");
+                try
+                {
+                    if (File.Exists(tmp))
+                    {
+                        File.Delete(tmp);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"[FileCache] Failed to delete temp cache file '{tmp}': {ex.Message}");
+                }
+            }
+        }
+
+        private static void EnsureSaved(string path)
+        {
+            if (!File.Exists(path))
+            {
+                throw new IOException($"Cache file was not written: {path}");
             }
         }
 

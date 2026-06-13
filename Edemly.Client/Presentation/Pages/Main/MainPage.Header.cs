@@ -169,6 +169,13 @@ namespace Edemly.Client.Presentation.Pages.Main
             var normalizedPhotoPath = string.IsNullOrWhiteSpace(newPfpUrl)
                 ? Models.Contact.DefaultAvatarPath
                 : newPfpUrl;
+            string oldUrl = null;
+
+            if (_chatController?.CurrentChatContact != null &&
+                _chatController.CurrentChatContact.UserId == userId)
+            {
+                oldUrl = _chatController.CurrentChatContact.PhotoPath;
+            }
 
             if (_chatController?.CurrentChatContact != null &&
                 _chatController.CurrentChatContact.UserId == userId)
@@ -181,13 +188,6 @@ namespace Edemly.Client.Presentation.Pages.Main
                 var cache = App.GlobalProfilePictureCache;
                 if (cache != null)
                 {
-                    string oldUrl = null;
-
-                    if (_chatController?.CurrentChatContact != null && _chatController.CurrentChatContact.UserId == userId)
-                    {
-                        oldUrl = _chatController.CurrentChatContact.PhotoPath;
-                    }
-
                     if (!string.IsNullOrEmpty(oldUrl) && oldUrl != newPfpUrl)
                     {
                         try { cache.InvalidateCache(oldUrl); } catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[PAGE_MAIN] InvalidateCache failed: {ex}"); }

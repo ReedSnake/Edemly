@@ -6,6 +6,7 @@ using Edemly.Contracts.ChatMembers;
 using Edemly.Contracts.Chats;
 using Edemly.Contracts.Messages;
 using Edemly.Contracts.Users;
+using System.Diagnostics;
 namespace Edemly.Client.Application.Chats
 {
     public class ChatLoader
@@ -60,8 +61,9 @@ namespace Edemly.Client.Application.Chats
 
                 return new List<MessageDto>();
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                Debug.WriteLine($"[CHAT LOADER] LoadChatMessagesAsync failed for chat {chatId}, page {page}, pageSize {pageSize}: {ex.Message}");
                 return new List<MessageDto>();
             }
         }

@@ -6,6 +6,7 @@ using Microsoft.Win32;
 using System.IO;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Media.Imaging;
 using Edemly.Client.Api;
 namespace Edemly.Client.Presentation.Pages.Settings
 {
@@ -75,6 +76,7 @@ namespace Edemly.Client.Presentation.Pages.Settings
                 }
 
                 InvalidatePreviousAvatar(previousAvatarPath);
+                InvalidatePreviousAvatar(dialog.FileName);
                 await WarmAvatarCacheAsync(upload.Url);
 
                 UpdateSavedProfile(request);
@@ -108,10 +110,30 @@ namespace Edemly.Client.Presentation.Pages.Settings
 
         private async Task PreviewSelectedAvatarAsync(string filePath)
         {
-            var localBitmap = await App.GlobalProfilePictureCache.CacheLocalFileAsync(filePath);
+            var localBitmap = await LoadLocalAvatarPreviewAsync(filePath);
             if (localBitmap != null)
             {
                 ShowAvatarImage(localBitmap);
+            }
+        }
+
+        private static Task<BitmapImage?> LoadLocalAvatarPreviewAsync(string filePath)
+        {
+            try
+            {
+                var bitmap = new BitmapImage();
+                bitmap.BeginInit();
+                bitmap.CacheOption = BitmapCacheOption.OnLoad;
+                bitmap.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
+                bitmap.UriSource = new Uri(filePath, UriKind.Absolute);
+                bitmap.EndInit();
+                bitmap.Freeze();
+                return Task.FromResult<BitmapImage?>(bitmap);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[SettingsPage] Local avatar preview failed: {ex.Message}");
+                return Task.FromResult<BitmapImage?>(null);
             }
         }
 

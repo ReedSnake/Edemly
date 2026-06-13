@@ -44,7 +44,11 @@ public abstract class ApiClientBase
             var response = await HttpClient.GetAsync(url);
 
             if (!response.IsSuccessStatusCode)
+            {
+                var body = await SafeReadResponseBodyAsync(response);
+                System.Diagnostics.Debug.WriteLine($"[API] GET {HttpClient.BaseAddress}{url} failed: {(int)response.StatusCode} {response.ReasonPhrase}. Body: {body}");
                 return default;
+            }
 
             return await ReadJsonAsync<T>(response);
         }
@@ -206,6 +210,21 @@ public abstract class ApiClientBase
         {
             System.Diagnostics.Debug.WriteLine($"[API] JSON parse failed: {ex.Message}");
             return default;
+        }
+    }
+
+    private static async Task<string> SafeReadResponseBodyAsync(HttpResponseMessage response)
+    {
+        try
+        {
+            return response.Content == null
+                ? string.Empty
+                : await response.Content.ReadAsStringAsync();
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[API] Failed to read response body: {ex.Message}");
+            return string.Empty;
         }
     }
 }

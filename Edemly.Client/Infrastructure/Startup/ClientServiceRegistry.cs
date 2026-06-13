@@ -33,7 +33,7 @@ public sealed class ClientServiceRegistry : IDisposable
     public ProfilePictureCache ProfilePictureCache { get; private set; } = null!;
     public FileCache FileCache { get; private set; } = null!;
 
-    public void Initialize(string apiBase, string cacheScope)
+    public void Initialize(string apiBase, string hubBase, string cacheScope)
     {
         _httpClient = new HttpClient
         {
@@ -45,7 +45,7 @@ public sealed class ClientServiceRegistry : IDisposable
         ApiClients = new ApiClients(_apiContext);
 
         AuthService = new AuthService(apiBase);
-        HubService = new HubService(apiBase);
+        HubService = new HubService(hubBase);
 
         ProfilePictureCache = new ProfilePictureCache(apiBase, _authTokenProvider, cacheScope);
         FileCache = new FileCache(apiBase, _authTokenProvider, cacheScope);
@@ -79,6 +79,15 @@ public sealed class ClientServiceRegistry : IDisposable
         catch (Exception ex)
         {
             Debug.WriteLine($"[SERVICE REGISTRY] ProfilePictureCache.SetAuthToken failed: {ex}");
+        }
+
+        try
+        {
+            FileCache?.SetAuthToken(token);
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"[SERVICE REGISTRY] FileCache.SetAuthToken failed: {ex}");
         }
     }
 

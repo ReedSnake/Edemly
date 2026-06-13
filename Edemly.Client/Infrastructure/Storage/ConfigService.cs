@@ -60,10 +60,12 @@ namespace Edemly.Client.Infrastructure.Storage
             set => SetValue("CreateDesktopShortcut", value);
         }
 
-        public string ExePath
+        public string ExePath => Environment.ProcessPath ?? string.Empty;
+
+        public string HubServerUrl
         {
-            get => GetValue("ExePath", System.Reflection.Assembly.GetEntryAssembly()?.Location ?? string.Empty);
-            set => SetValue("ExePath", value);
+            get => GetValue("HubServerUrl", string.Empty);
+            set => SetValue("HubServerUrl", value);
         }
 
         public string BackgroundImagePath

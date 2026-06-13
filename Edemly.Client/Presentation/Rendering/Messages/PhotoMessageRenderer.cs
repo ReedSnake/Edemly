@@ -7,6 +7,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Imaging;
 
 namespace Edemly.Client.Presentation.Rendering.Messages
 {
@@ -112,7 +113,13 @@ namespace Edemly.Client.Presentation.Rendering.Messages
                     return;
                 }
 
-                var bitmap = await App.GlobalProfilePictureCache.GetOrDownloadAsync(url);
+                var localPath = await App.GlobalFileCache.GetOrDownloadAsync(url, "image.jpg");
+                if (string.IsNullOrWhiteSpace(localPath) || !File.Exists(localPath))
+                {
+                    return;
+                }
+
+                var bitmap = LoadBitmapFromFile(localPath);
                 if (bitmap != null)
                 {
                     await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
@@ -124,6 +131,26 @@ namespace Edemly.Client.Presentation.Rendering.Messages
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"Failed to load photo: {ex.Message}");
+            }
+        }
+
+        private static BitmapImage LoadBitmapFromFile(string path)
+        {
+            try
+            {
+                var bitmap = new BitmapImage();
+                bitmap.BeginInit();
+                bitmap.CacheOption = BitmapCacheOption.OnLoad;
+                bitmap.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
+                bitmap.UriSource = new Uri(path, UriKind.Absolute);
+                bitmap.EndInit();
+                bitmap.Freeze();
+                return bitmap;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Failed to load cached photo file: {ex.Message}");
+                return null;
             }
         }
     }

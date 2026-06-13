@@ -101,7 +101,7 @@ namespace Edemly.Server.Api.Controllers.Files
             }
         }
 
-        [AllowAnonymous]
+        [Authorize]
         [HttpGet("download")]
         public async Task<IActionResult> DownloadFileAsync([FromQuery] string fileUrl)
         {
@@ -131,6 +131,41 @@ namespace Edemly.Server.Api.Controllers.Files
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error downloading file");
+                return StatusCode(500, new { message = "Internal server error" });
+            }
+        }
+
+        [Authorize]
+        [HttpGet("/uploads/{**filePath}")]
+        [HttpGet("/{company}/uploads/{**filePath}")]
+        public async Task<IActionResult> GetUploadedFileAsync(string filePath)
+        {
+            if (string.IsNullOrWhiteSpace(filePath))
+            {
+                return ToServiceResult(ServiceResult.BadRequest("File path is required"));
+            }
+
+            try
+            {
+                var requestPath = HttpContext.Request.Path.Value ?? filePath;
+                var stream = await _fileStorageService.GetFileAsync(requestPath);
+
+                if (stream == null)
+                {
+                    return ToServiceResult(ServiceResult.NotFound("File not found"));
+                }
+
+                var fileName = Path.GetFileName(filePath);
+                if (!_fileContentTypeProvider.TryGetContentType(fileName, out var contentType))
+                {
+                    contentType = "application/octet-stream";
+                }
+
+                return File(stream, contentType);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error reading uploaded file {FilePath}", filePath);
                 return StatusCode(500, new { message = "Internal server error" });
             }
         }

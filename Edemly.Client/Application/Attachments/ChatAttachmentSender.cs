@@ -2,6 +2,7 @@
 
 using System.IO;
 using Edemly.Client.Api;
+using Edemly.Client.Infrastructure.Caching;
 using Edemly.Client.Infrastructure.Realtime;
 using Edemly.Contracts.Messages;
 
@@ -13,11 +14,13 @@ namespace Edemly.Client.Application.Attachments
 
         private readonly IApiClients _apiClient;
         private readonly IHubService _hubService;
+        private readonly FileCache _fileCache;
 
-        public ChatAttachmentSender(IApiClients apiClient, IHubService hubService)
+        public ChatAttachmentSender(IApiClients apiClient, IHubService hubService, FileCache fileCache)
         {
             _apiClient = apiClient ?? throw new ArgumentNullException(nameof(apiClient));
             _hubService = hubService ?? throw new ArgumentNullException(nameof(hubService));
+            _fileCache = fileCache ?? throw new ArgumentNullException(nameof(fileCache));
         }
 
         public async Task<AttachmentSendResult> SendAsync(int chatId, AttachmentDescriptor descriptor, string caption)
@@ -44,6 +47,8 @@ namespace Edemly.Client.Application.Attachments
                 {
                     return AttachmentSendResult.Fail(string.Format(DefaultLanguage.UploadFailed, uploadResult.Error));
                 }
+
+                await _fileCache.CacheLocalFileAsync(uploadResult.Url, descriptor.FilePath);
 
                 var message = new CreateMessageDto
                 {

@@ -45,6 +45,7 @@ Desktop messenger platform built with .NET 10, WPF, ASP.NET Core, SignalR, Entit
 | Project                                       | Description                                                                                        |
 | --------------------------------------------- | -------------------------------------------------------------------------------------------------- |
 | [`Edemly.Server`](Edemly.Server/)             | ASP.NET Core backend, REST API, SignalR hubs, tenant management, file storage, and database access |
+| [`Edemly.Gateway`](Edemly.Gateway/)           | Local reverse proxy for API, uploads, payment callbacks, and SignalR hub routing                   |
 | [`Edemly.Client`](Edemly.Client/)             | WPF desktop client application                                                                     |
 | [`Edemly.Contracts`](Edemly.Contracts/)       | Shared DTO contracts used by the server and client                                                 |
 | [`Edemly.Server.Tests`](Edemly.Server.Tests/) | Server-focused automated tests                                                                     |
@@ -55,10 +56,12 @@ Desktop messenger platform built with .NET 10, WPF, ASP.NET Core, SignalR, Entit
 
 ```text
 Edemly.Server/
+Edemly.Gateway/
 Edemly.Client/
 Edemly.Contracts/
 Edemly.Server.Tests/
 Edemly.Client.Tests/
+deployment/local/
 docs/
 ```
 
@@ -77,6 +80,7 @@ docs/
 * .NET 10 SDK
 * MySQL Server 8 or compatible MySQL server
 * EF Core CLI
+* Optional: Docker Desktop for the staged local deployment profile
 
 Install the EF Core CLI if needed:
 
@@ -134,26 +138,65 @@ dotnet ef database update --project Edemly.Server --startup-project Edemly.Serve
 Start the server:
 
 ```powershell
-dotnet run --project Edemly.Server -- 8100
+dotnet run --project Edemly.Server -- 3500
 ```
 
 Start the client in another terminal:
 
 ```powershell
-dotnet run --project Edemly.Client -- http://localhost:8100
+dotnet run --project Edemly.Client -- http://localhost:3500
+```
+
+If SignalR hubs should use a different server or gateway endpoint, pass it explicitly:
+
+```powershell
+dotnet run --project Edemly.Client -- http://localhost:3500 --hub-server http://localhost:3500
 ```
 
 Swagger is available in development mode:
 
 ```text
-http://localhost:8100/swagger
+http://localhost:3500/swagger
+```
+
+## Local Deployment Profile
+
+The staged local deployment lives under `deployment/local` and is intentionally split so local testing can continue without starting every service.
+
+Start only infrastructure:
+
+```powershell
+docker compose -f deployment/local/docker-compose.yml up mysql minio static
+```
+
+Start the containerized server and gateway when needed:
+
+```powershell
+docker compose -f deployment/local/docker-compose.yml --profile server --profile gateway up --build gateway
+```
+
+With the gateway profile, the public entry point is:
+
+```text
+http://localhost:3500
+```
+
+The gateway routes `/main` and `/call` to a fixed hub upstream, routes payment callbacks to a fixed payment upstream, and keeps API/uploads separate so more server destinations can be added later.
+
+The local static site is available at:
+
+```text
+http://localhost:8080
 ```
 
 ## Runtime Notes
 
 * The server port argument is optional. If it is not passed, the server uses `PORT`, `ASPNETCORE_PORT`, or defaults to `8100`.
-* The client server URL argument is required.
+* The client server URL argument is still supported for local testing.
+* The optional client `--hub-server` argument overrides the server used for SignalR hubs and is saved in `%APPDATA%\Edemly\config.json`.
 * When `Brevo:ApiKey` is set to `MOCK_MODE`, login codes are printed to the server console.
+* Local MinIO defaults are `edemly_admin` / `edemly_password` on ports `9000` and `9001`.
+* Local payment URLs are controlled by `PublicBaseUrl`, `WayForPay:DomainName`, and `WayForPay:ReturnUrl`.
 * Server startup automatically applies pending master migrations and tenant migrations for existing companies.
 * Server migrations are stored in:
 

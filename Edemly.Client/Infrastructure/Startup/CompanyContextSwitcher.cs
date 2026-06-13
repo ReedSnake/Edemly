@@ -7,6 +7,7 @@ namespace Edemly.Client.Infrastructure.Startup
     {
         private readonly ClientServiceRegistry _serviceRegistry;
         private readonly Func<string> _baseServerUrlProvider;
+        private readonly Func<string> _hubServerUrlProvider;
         private readonly Func<string?> _authTokenProvider;
         private readonly Action _unsubscribeHubEvents;
         private readonly Action _subscribeHubEvents;
@@ -16,6 +17,7 @@ namespace Edemly.Client.Infrastructure.Startup
         public CompanyContextSwitcher(
             ClientServiceRegistry serviceRegistry,
             Func<string> baseServerUrlProvider,
+            Func<string> hubServerUrlProvider,
             Func<string?> authTokenProvider,
             Action unsubscribeHubEvents,
             Action subscribeHubEvents,
@@ -24,6 +26,7 @@ namespace Edemly.Client.Infrastructure.Startup
         {
             _serviceRegistry = serviceRegistry ?? throw new ArgumentNullException(nameof(serviceRegistry));
             _baseServerUrlProvider = baseServerUrlProvider ?? throw new ArgumentNullException(nameof(baseServerUrlProvider));
+            _hubServerUrlProvider = hubServerUrlProvider ?? throw new ArgumentNullException(nameof(hubServerUrlProvider));
             _authTokenProvider = authTokenProvider ?? throw new ArgumentNullException(nameof(authTokenProvider));
             _unsubscribeHubEvents = unsubscribeHubEvents ?? throw new ArgumentNullException(nameof(unsubscribeHubEvents));
             _subscribeHubEvents = subscribeHubEvents ?? throw new ArgumentNullException(nameof(subscribeHubEvents));
@@ -79,10 +82,11 @@ namespace Edemly.Client.Infrastructure.Startup
                 }
 
                 var cacheScope = string.IsNullOrWhiteSpace(config.Company) ? "personal" : config.Company.Trim();
-                _serviceRegistry.Initialize(apiBase, cacheScope);
+                var hubBase = _hubServerUrlProvider();
+                _serviceRegistry.Initialize(apiBase, hubBase, cacheScope);
 
                 Debug.WriteLine(
-                    $"[COMPANY SWITCH] Switched company to '{config.Company ?? "(personal)"}', apiBase={apiBase}, cacheScope={cacheScope}");
+                    $"[COMPANY SWITCH] Switched company to '{config.Company ?? "(personal)"}', apiBase={apiBase}, hubBase={hubBase}, cacheScope={cacheScope}");
 
                 _subscribeHubEvents();
 

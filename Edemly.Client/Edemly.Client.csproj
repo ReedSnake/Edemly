@@ -10,11 +10,16 @@
 		<RootNamespace>Edemly.Client</RootNamespace>
 		<AssemblyName>Edemly.Client</AssemblyName>
 		<ApplicationIcon>Assets\Branding\app-icon.ico</ApplicationIcon>
+		<StartupObject>Edemly.Client.App</StartupObject>
 	</PropertyGroup>
-
 	<ItemGroup>
 		<Resource Include="Assets\**" Exclude="Assets\Unused\**" />
 	</ItemGroup>
+	<ItemGroup>
+		<ApplicationDefinition Remove="App.xaml"/>
+		<Page Include="App.xaml"/>
+	</ItemGroup>
+	
 
 	<ItemGroup>
 	  <Resource Remove="Assets\Audio\message-notification.wav" />
@@ -65,6 +70,8 @@
 		<PackageReference Include="Microsoft.Web.WebView2" Version="1.0.1587.40" />
 
 		<PackageReference Include="NAudio" Version="2.2.1" />
+
+		<PackageReference Include="Velopack" Version="1.2.0" />
 	</ItemGroup>
 
 	<ItemGroup>

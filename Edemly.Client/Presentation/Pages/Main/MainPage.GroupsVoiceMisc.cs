@@ -492,6 +492,11 @@ namespace Edemly.Client.Presentation.Pages.Main
 
                 System.Diagnostics.Debug.WriteLine($"[VOICE] File uploaded successfully: {uploadResult.Url}");
 
+                if (!string.IsNullOrWhiteSpace(uploadResult.Url))
+                {
+                    await App.GlobalFileCache.CacheLocalFileAsync(uploadResult.Url, audioPath);
+                }
+
                 var message = new CreateMessageDto
                 {
                     ChatId = _chatController.CurrentChatId,

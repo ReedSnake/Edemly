@@ -23,6 +23,7 @@ using Edemly.Server.Infrastructure.Payments;
 using Edemly.Server.Infrastructure.Presence;
 using Edemly.Server.Infrastructure.Realtime;
 using Edemly.Server.Infrastructure.Tenancy;
+using Minio;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -93,7 +94,24 @@ namespace Edemly.Server
             var fileStorageSettings = builder.Configuration.GetSection("FileStorage").Get<FileStorageSettings>()
                 ?? new FileStorageSettings();
 
+            ApplyMinioEnvironmentFallbacks(fileStorageSettings);
             builder.Services.AddSingleton(fileStorageSettings);
+
+            if (fileStorageSettings.UseMinio)
+            {
+                if (string.IsNullOrWhiteSpace(fileStorageSettings.Minio.AccessKey) ||
+                    string.IsNullOrWhiteSpace(fileStorageSettings.Minio.SecretKey))
+                {
+                    throw new InvalidOperationException("FileStorage:Minio access key and secret key must be configured when FileStorage:Provider is Minio.");
+                }
+
+                builder.Services.AddSingleton<IMinioClient>(_ =>
+                    new MinioClient()
+                        .WithEndpoint(fileStorageSettings.Minio.Endpoint)
+                        .WithCredentials(fileStorageSettings.Minio.AccessKey, fileStorageSettings.Minio.SecretKey)
+                        .WithSSL(fileStorageSettings.Minio.Secure)
+                        .Build());
+            }
 
             builder.Services.AddSingleton<ChatCacheRegistry>();
 
@@ -343,7 +361,6 @@ namespace Edemly.Server
 
             app.UseCors("DefaultPolicy");
 
-            app.UseStaticFiles();
             app.UseDefaultFiles();
 
             app.UseMiddleware<TenantResolutionMiddleware>();
@@ -354,6 +371,8 @@ namespace Edemly.Server
             app.UseAuthorization();
 
             app.UseMiddleware<EnsureUploadsAuthMiddleware>();
+
+            app.UseStaticFiles();
 
             app.UseEndpoints(endpoints =>
             {
@@ -396,6 +415,28 @@ namespace Edemly.Server
             invalidPort = portStr;
             port = 0;
             return false;
+        }
+
+        private static void ApplyMinioEnvironmentFallbacks(FileStorageSettings settings)
+        {
+            if (!settings.UseMinio)
+            {
+                return;
+            }
+
+            settings.Minio.Endpoint = Environment.GetEnvironmentVariable("MINIO_ENDPOINT")
+                ?? settings.Minio.Endpoint;
+            settings.Minio.AccessKey = Environment.GetEnvironmentVariable("MINIO_ACCESS_KEY")
+                ?? Environment.GetEnvironmentVariable("MINIO_ROOT_USER")
+                ?? settings.Minio.AccessKey;
+            settings.Minio.SecretKey = Environment.GetEnvironmentVariable("MINIO_SECRET_KEY")
+                ?? Environment.GetEnvironmentVariable("MINIO_ROOT_PASSWORD")
+                ?? settings.Minio.SecretKey;
+
+            if (bool.TryParse(Environment.GetEnvironmentVariable("MINIO_SECURE"), out var secure))
+            {
+                settings.Minio.Secure = secure;
+            }
         }
     }
 }

@@ -88,6 +88,13 @@ namespace Edemly.Server.Api.Middleware
             }
 
             var segments = path.Split('/', System.StringSplitOptions.RemoveEmptyEntries);
+            if (segments.Length > 1 &&
+                string.Equals(segments[0], "uploads", System.StringComparison.OrdinalIgnoreCase) &&
+                !IsReservedUploadsFolder(segments[1]))
+            {
+                return new TenantCandidate(segments[1], "uploads-path", ShouldRewritePath: false);
+            }
+
             if (segments.Length > 0)
             {
                 var first = segments[0]?.Trim() ?? string.Empty;
@@ -120,6 +127,12 @@ namespace Edemly.Server.Api.Middleware
         {
             return segments.Length >= 2
                 && string.Equals(segments[1], "uploads", System.StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static bool IsReservedUploadsFolder(string segment)
+        {
+            return string.Equals(segment, "profile-pictures", System.StringComparison.OrdinalIgnoreCase)
+                || string.Equals(segment, "files", System.StringComparison.OrdinalIgnoreCase);
         }
 
         private sealed record TenantCandidate(string TenantName, string Source, bool ShouldRewritePath);

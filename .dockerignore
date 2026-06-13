@@ -1,0 +1,9 @@
+.git
+.vs
+**/bin
+**/obj
+**/.user
+**/*.user
+**/*.suo
+deployment/local/static/updates/windows/stable/*.exe
+deployment/local/static/updates/windows/stable/*.nupkg

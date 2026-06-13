@@ -13,6 +13,7 @@ using Edemly.Client.Infrastructure.Caching;
 using Edemly.Client.Infrastructure.Storage;
 using Edemly.Client.Application.Auth;
 using Edemly.Client.Application.Notes;
+using Velopack;
 
 namespace Edemly.Client
 {
@@ -52,6 +53,7 @@ namespace Edemly.Client
         private static readonly CompanyContextSwitcher _companyContextSwitcher = new(
             _serviceRegistry,
             GetBaseServerUrl,
+            GetHubServerUrl,
             () => AuthToken,
             _realtimeCoordinator.UnsubscribeHubEvents,
             _realtimeCoordinator.SubscribeHubEvents,
@@ -112,11 +114,20 @@ namespace Edemly.Client
         }
 
         public static string BaseServerUrlNoCompany { get; private set; } = string.Empty;
+        public static string HubServerUrlNoCompany { get; private set; } = string.Empty;
 
         public static string? CurrentUsername
         {
             get => _session.UserName;
             set => _session.UserName = value;
+        }
+        [STAThread]
+        private static void Main(string[] args)
+        {
+            VelopackApp.Build().Run();
+            App app = new();
+            app.InitializeComponent();
+            app.Run();
         }
 
         protected override void OnStartup(StartupEventArgs e)
@@ -142,9 +153,14 @@ namespace Edemly.Client
             }
 
             Debug.WriteLine($"[APP] Using server URL: {launchConfiguration.BaseServerUrl}");
+            Debug.WriteLine($"[APP] Using hub server URL: {launchConfiguration.HubServerUrl}");
 
             BaseServerUrlNoCompany = launchConfiguration.BaseServerUrl;
-            _serviceRegistry.Initialize(launchConfiguration.ApiBaseUrl, launchConfiguration.CacheScope);
+            HubServerUrlNoCompany = launchConfiguration.HubServerUrl;
+            _serviceRegistry.Initialize(
+                launchConfiguration.ApiBaseUrl,
+                launchConfiguration.HubServerUrl,
+                launchConfiguration.CacheScope);
             SubscribeHubEvents();
 
             try
@@ -349,6 +365,13 @@ namespace Edemly.Client
         private static string GetBaseServerUrl()
         {
             return BaseServerUrlNoCompany ?? string.Empty;
+        }
+
+        private static string GetHubServerUrl()
+        {
+            return string.IsNullOrWhiteSpace(HubServerUrlNoCompany)
+                ? GetBaseServerUrl()
+                : HubServerUrlNoCompany;
         }
     }
 }

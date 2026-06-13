@@ -462,9 +462,7 @@ namespace Edemly.Client.Infrastructure.Caching
                 throw new InvalidOperationException($"Unsupported URI scheme: {uri.Scheme}");
             }
 
-            string requestUrl = url;
-            if (requestUrl.StartsWith("/")) requestUrl = requestUrl.TrimStart('/');
-            requestUrl = _serverBaseUrl + requestUrl;
+            string requestUrl = BuildRequestUrl(url);
 
             string? token2 = await ResolveTokenAsync();
             Debug.WriteLine($"[ProfilePictureCache] Downloading relative URL '{requestUrl}' - token present: {(string.IsNullOrEmpty(token2) ? "no" : "yes (masked)")}");
@@ -512,6 +510,23 @@ namespace Edemly.Client.Infrastructure.Caching
             respFinal.EnsureSuccessStatusCode();
 
             return (null, null);
+        }
+
+        private string BuildRequestUrl(string url)
+        {
+            if (string.IsNullOrWhiteSpace(_serverBaseUrl))
+            {
+                return url;
+            }
+
+            if (Uri.TryCreate(_serverBaseUrl, UriKind.Absolute, out var baseUri))
+            {
+                return new Uri(baseUri, url).ToString();
+            }
+
+            var requestUrl = url;
+            if (requestUrl.StartsWith("/")) requestUrl = requestUrl.TrimStart('/');
+            return _serverBaseUrl + requestUrl;
         }
 
         private static async Task<string> SafeReadResponseBodyAsync(HttpResponseMessage resp)

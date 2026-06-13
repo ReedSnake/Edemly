@@ -58,6 +58,8 @@ namespace Edemly.Server.Application.Messages
 
         public async Task<ServiceResult<List<MessageDto>>> GetByChatAsync(int currentUserId, int chatId, int page, int pageSize)
         {
+            page = Math.Max(page, 1);
+            pageSize = Math.Clamp(pageSize, 1, 100);
             string cacheKey = ChatCacheRegistry.GetCacheKey(chatId, page, pageSize);
 
             try
@@ -78,11 +80,17 @@ namespace Edemly.Server.Application.Messages
 
                 var messages = await ctx.Set<Message>()
                     .Where(m => m.ChatId == chatId)
-                    .OrderBy(m => m.SentAt)
+                    .OrderByDescending(m => m.SentAt)
+                    .ThenByDescending(m => m.Id)
                     .Skip((page - 1) * pageSize)
                     .Take(pageSize)
                     .Select(MessageMappings.Projection)
                     .ToListAsync();
+
+                messages = messages
+                    .OrderBy(m => m.SentAt)
+                    .ThenBy(m => m.Id)
+                    .ToList();
 
                 _memoryCache.Set(cacheKey, messages, TimeSpan.FromMinutes(5));
                 _chatCacheRegistry.RegisterKey(chatId, page, pageSize);
@@ -119,6 +127,7 @@ namespace Edemly.Server.Application.Messages
                 MessageDto? message = await ctx.Set<Message>()
                     .Where(m => m.ChatId == chatId)
                     .OrderByDescending(m => m.SentAt)
+                    .ThenByDescending(m => m.Id)
                     .Select(MessageMappings.Projection)
                     .FirstOrDefaultAsync();
 

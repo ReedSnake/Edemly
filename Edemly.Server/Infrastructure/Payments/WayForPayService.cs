@@ -45,13 +45,6 @@ namespace Edemly.Server.Infrastructure.Payments
 
         private (string DomainName, string ReturnUrl) ResolveUrls()
         {
-            var request = _httpContextAccessor.HttpContext?.Request;
-            if (request != null)
-            {
-                string dynamicDomain = $"{request.Scheme}://{request.Host}";
-                return (dynamicDomain, $"{dynamicDomain}/api/payment/return");
-            }
-
             var domainFromConfig = _config["WayForPay:DomainName"];
             if (!string.IsNullOrWhiteSpace(domainFromConfig))
             {
@@ -64,6 +57,13 @@ namespace Edemly.Server.Infrastructure.Payments
             {
                 string domain = $"{u.Scheme}://{u.Host}{(u.IsDefaultPort ? "" : ":" + u.Port)}";
                 return (domain, $"{domain}/api/payment/return");
+            }
+
+            var request = _httpContextAccessor.HttpContext?.Request;
+            if (request != null)
+            {
+                string dynamicDomain = $"{request.Scheme}://{request.Host}";
+                return (dynamicDomain, $"{dynamicDomain}/api/payment/return");
             }
 
             throw new InvalidOperationException("Cannot resolve DomainName. No HTTP context, config, or public URL available.");
