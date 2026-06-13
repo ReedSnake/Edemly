@@ -32,6 +32,7 @@ namespace Edemly.Client.Presentation.Controllers.Chats
         private Dictionary<int, DateTime?> _lastMessageDate => _runtimeState.LastMessageDate;
         private Dictionary<int, DateTime> _chatLastMessageTime => _runtimeState.ChatLastMessageTime;
         private Dictionary<int, MessageDto> _chatLastMessage => _runtimeState.ChatLastMessage;
+        private Dictionary<int, Contact> _chatContactsByChatId => _runtimeState.ChatContactsByChatId;
         private HashSet<int> _chatsWithUnreadMessages => _runtimeState.ChatsWithUnreadMessages;
         private Dictionary<int, int> _chatTypes => _runtimeState.ChatTypes;
         private Dictionary<int, Contact> _groupContacts => _runtimeState.GroupContacts;
@@ -62,7 +63,6 @@ namespace Edemly.Client.Presentation.Controllers.Chats
         private readonly TimeSpan _sortDebouncePeriod = TimeSpan.FromMilliseconds(250);
 
         private const string DEFAULT_AVATAR_PATH = "pack://application:,,,/Assets/Avatars/default-avatar.png";
-        private const int MAX_PARALLEL_LOADS = 5;
         private const int INITIAL_MESSAGE_COUNT = 10;
 
         public Contact? CurrentChatContact
@@ -149,89 +149,14 @@ namespace Edemly.Client.Presentation.Controllers.Chats
                     return;
                 }
 
-                var newChats = chats.Where(c => !_chatToUserMap.ContainsKey(c.Id)).ToList();
-
-                if (newChats.Count == 0)
-                {
-                    foreach (var chat in chats.Where(c => _chatToUserMap.ContainsKey(c.Id)))
-                    {
-                        if (chat.LastMessageTime.HasValue)
-                        {
-                            _chatLastMessageTime[chat.Id] = chat.LastMessageTime.Value;
-                        }
-                    }
-                    SortAllChats();
-                    return;
-                }
-
                 foreach (var chat in chats)
                 {
-                    if (chat.LastMessageTime.HasValue)
-                    {
-                        _chatLastMessageTime[chat.Id] = chat.LastMessageTime.Value;
-                    }
-                    else
-                    {
-                        _chatLastMessageTime[chat.Id] = DateTime.UtcNow;
-                    }
-                    _chatTypes[chat.Id] = chat.Type;
+                    ApplyChatSummary(chat);
+                    EnsureChatListContact(chat);
                 }
-
-                var privateChats = newChats.Where(c => c.Type == 0).ToList();
-                var groupChats = newChats.Where(c => c.Type == 1 || c.Type == 2).ToList();
-
-                var privateChatIds = privateChats.Select(c => c.Id).ToList();
-                Dictionary<int, List<ChatMemberDto>>? chatMembersMap = null;
-
-                if (privateChatIds.Count > 0)
-                {
-                    chatMembersMap = await _chatLoader.LoadChatMembersBatchAsync(privateChatIds);
-                }
-
-                var userIds = new List<int>();
-                if (chatMembersMap != null)
-                {
-                    foreach (var members in chatMembersMap.Values)
-                    {
-                        userIds.AddRange(members.Where(m => m.UserId != CurrentUserId).Select(m => m.UserId));
-                    }
-                }
-
-                Dictionary<int, UserDto>? usersMap = null;
-                if (userIds.Count > 0)
-                {
-                    usersMap = await _chatLoader.LoadUsersBatchAsync(userIds);
-                }
-
-                var privateChatTasks = privateChats.Select(chat =>
-                    LoadAndAddPrivateChatOptimizedAsync(chat, chatMembersMap, usersMap)
-                ).ToList();
-
-                var groupChatTasks = groupChats.Select(chat =>
-                    LoadAndAddGroupChatAsync(chat)
-                ).ToList();
-
-                var semaphore = new SemaphoreSlim(MAX_PARALLEL_LOADS);
-                var allTasks = privateChatTasks.Concat(groupChatTasks).Select(async task =>
-                {
-                    await semaphore.WaitAsync();
-                    try
-                    {
-                        await task;
-                    }
-                    finally
-                    {
-                        semaphore.Release();
-                    }
-                }).ToList();
-
-                await Task.WhenAll(allTasks);
 
                 SortAllChats();
-
-                await RefreshAllPrivateChatStatusesAsync();
-
-                await LoadLastMessageTextsAsync();
+                HydratePrivateChatsInBackground(chats.Where(c => c.Type == 0).ToList());
             }
             catch (Exception ex)
             {
@@ -469,6 +394,133 @@ namespace Edemly.Client.Presentation.Controllers.Chats
 
         #region Private Methods
 
+        private void ApplyChatSummary(ChatDto chat)
+        {
+            _chatTypes[chat.Id] = chat.Type;
+            _chatLastMessageTime[chat.Id] = chat.LastMessageTime ?? chat.CreatedAt;
+
+            if (string.IsNullOrWhiteSpace(chat.LastMessageText) &&
+                !chat.LastMessageSenderId.HasValue)
+            {
+                _chatLastMessage.Remove(chat.Id);
+                return;
+            }
+
+            var lastMessageTime = chat.LastMessageTime ?? chat.CreatedAt;
+            if (_chatLastMessage.TryGetValue(chat.Id, out var existing) &&
+                existing.SentAt > lastMessageTime)
+            {
+                return;
+            }
+
+            _chatLastMessage[chat.Id] = new MessageDto
+            {
+                ChatId = chat.Id,
+                SenderId = chat.LastMessageSenderId ?? 0,
+                Text = chat.LastMessageText ?? string.Empty,
+                SentAt = lastMessageTime,
+                Type = MessageTypeCodes.Text
+            };
+        }
+
+        private void EnsureChatListContact(ChatDto chat)
+        {
+            if (chat.Type == 0)
+            {
+                EnsureDirectChatSummaryContact(chat);
+                return;
+            }
+
+            EnsureGroupChatSummaryContact(chat);
+        }
+
+        private void EnsureDirectChatSummaryContact(ChatDto chat)
+        {
+            var displayName = string.IsNullOrWhiteSpace(chat.Name)
+                ? $"Chat {chat.Id}"
+                : chat.Name;
+
+            if (!_chatContactsByChatId.TryGetValue(chat.Id, out var contact))
+            {
+                contact = new Models.Contact(0, displayName, string.Empty, photoPath: DEFAULT_AVATAR_PATH);
+                _chatContactsByChatId[chat.Id] = contact;
+            }
+            else if (!string.Equals(contact.Name, displayName, StringComparison.Ordinal))
+            {
+                contact.Name = displayName;
+            }
+
+            if (!_chatToUserMap.TryGetValue(chat.Id, out var userId) || userId <= 0)
+            {
+                _chatToUserMap[chat.Id] = 0;
+            }
+        }
+
+        private void EnsureGroupChatSummaryContact(ChatDto chat)
+        {
+            var photoPath = string.IsNullOrEmpty(chat.IconUrl) ? DEFAULT_AVATAR_PATH : chat.IconUrl;
+            var groupName = string.IsNullOrWhiteSpace(chat.Name)
+                ? $"Group {chat.Id}"
+                : chat.Name;
+
+            if (!_groupContacts.TryGetValue(chat.Id, out var contact))
+            {
+                contact = Models.Contact.CreateGroup(chat.Id, groupName, photoPath);
+                _groupContacts[chat.Id] = contact;
+            }
+            else
+            {
+                contact.Name = groupName;
+                contact.PhotoPath = photoPath;
+            }
+
+            _chatContactsByChatId[chat.Id] = contact;
+            _chatToUserMap[chat.Id] = -chat.Id;
+        }
+
+        private void HydratePrivateChatsInBackground(List<ChatDto> privateChats)
+        {
+            if (privateChats.Count == 0)
+            {
+                return;
+            }
+
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    var privateChatIds = privateChats.Select(chat => chat.Id).ToList();
+                    var chatMembersMap = await _chatLoader.LoadChatMembersBatchAsync(privateChatIds);
+
+                    var userIds = chatMembersMap.Values
+                        .SelectMany(members => members)
+                        .Where(member => member.UserId != CurrentUserId)
+                        .Select(member => member.UserId)
+                        .Distinct()
+                        .ToList();
+
+                    var usersMap = userIds.Count == 0
+                        ? new Dictionary<int, UserDto>()
+                        : await _chatLoader.LoadUsersBatchAsync(userIds);
+
+                    await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
+                    {
+                        foreach (var chat in privateChats)
+                        {
+                            LoadAndAddPrivateChatOptimizedAsync(chat, chatMembersMap, usersMap).GetAwaiter().GetResult();
+                            UpdateChatButtonIfExists(chat.Id);
+                        }
+                    });
+
+                    await RefreshAllPrivateChatStatusesAsync();
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[CHAT MANAGER] HydratePrivateChatsInBackground error: {ex.Message}");
+                }
+            });
+        }
+
         private Task LoadAndAddPrivateChatOptimizedAsync(
             ChatDto chat,
             Dictionary<int, List<ChatMemberDto>>? chatMembersMap,
@@ -476,7 +528,9 @@ namespace Edemly.Client.Presentation.Controllers.Chats
         {
             try
             {
-                if (_chatToUserMap.ContainsKey(chat.Id))
+                if (_chatToUserMap.TryGetValue(chat.Id, out var existingUserId) &&
+                    existingUserId > 0 &&
+                    _contacts.ContainsKey(existingUserId))
                 {
                     return Task.CompletedTask;
                 }
@@ -509,6 +563,11 @@ namespace Edemly.Client.Presentation.Controllers.Chats
                     _chatToUserMap[chat.Id] = contact.UserId;
                 }
 
+                lock (_chatContactsByChatId)
+                {
+                    _chatContactsByChatId[chat.Id] = contact;
+                }
+
                 return Task.CompletedTask;
             }
             catch (Exception ex)
@@ -522,28 +581,7 @@ namespace Edemly.Client.Presentation.Controllers.Chats
         {
             try
             {
-                if (_chatToUserMap.ContainsKey(chat.Id))
-                {
-                    return Task.CompletedTask;
-                }
-
-                var photoPath = string.IsNullOrEmpty(chat.IconUrl) ? DEFAULT_AVATAR_PATH : chat.IconUrl;
-
-                string groupName = string.IsNullOrWhiteSpace(chat.Name)
-                    ? $"Group {chat.Id}"
-                    : chat.Name;
-
-                var contact = Models.Contact.CreateGroup(chat.Id, groupName, photoPath);
-
-                lock (_groupContacts)
-                {
-                    _groupContacts[chat.Id] = contact;
-                }
-
-                lock (_chatToUserMap)
-                {
-                    _chatToUserMap[chat.Id] = -chat.Id;
-                }
+                EnsureGroupChatSummaryContact(chat);
 
                 return Task.CompletedTask;
             }

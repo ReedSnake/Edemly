@@ -15,6 +15,7 @@ namespace Edemly.Client.Presentation.Controllers.Chats
         public Dictionary<int, DateTime?> LastMessageDate { get; } = new();
         public Dictionary<int, DateTime> ChatLastMessageTime { get; } = new();
         public Dictionary<int, MessageDto> ChatLastMessage { get; } = new();
+        public Dictionary<int, Contact> ChatContactsByChatId { get; } = new();
         public HashSet<int> ChatsWithUnreadMessages { get; } = new();
         public Dictionary<int, int> ChatTypes { get; } = new();
         public Dictionary<int, Contact> GroupContacts { get; } = new();

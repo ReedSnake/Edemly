@@ -194,17 +194,28 @@ namespace Edemly.Server.Application.Chats
                     .Where(c => c.ChatMembers.Any(cm => cm.UserId == currentUserId))
                     .ToListAsync();
 
+                var chatIds = chats
+                    .Select(chat => chat.Id)
+                    .ToList();
+
+                var lastMessagesByChatId = chatIds.Count == 0
+                    ? new Dictionary<int, Message>()
+                    : await ctx.Set<Message>()
+                        .AsNoTracking()
+                        .Where(message => chatIds.Contains(message.ChatId))
+                        .GroupBy(message => message.ChatId)
+                        .Select(group => group
+                            .OrderByDescending(message => message.SentAt)
+                            .ThenByDescending(message => message.Id)
+                            .First())
+                        .ToDictionaryAsync(message => message.ChatId);
+
                 var result = new List<ChatDto>();
 
                 foreach (var chat in chats)
                 {
                     var displayName = ResolveDisplayName(chat, currentUserId);
-
-                    var lastMessage = await ctx.Set<Message>()
-                        .AsNoTracking()
-                        .Where(m => m.ChatId == chat.Id)
-                        .OrderByDescending(m => m.SentAt)
-                        .FirstOrDefaultAsync();
+                    lastMessagesByChatId.TryGetValue(chat.Id, out var lastMessage);
 
                     result.Add(ChatMappings.ToDto(chat, displayName, lastMessage));
                 }

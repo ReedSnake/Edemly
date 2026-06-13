@@ -42,6 +42,11 @@ namespace Edemly.Client.Application.Chats
         {
             contact = null;
 
+            if (_runtimeState.ChatContactsByChatId.TryGetValue(chatId, out contact))
+            {
+                return true;
+            }
+
             if (!_runtimeState.ChatToUserMap.TryGetValue(chatId, out var userId))
             {
                 return false;

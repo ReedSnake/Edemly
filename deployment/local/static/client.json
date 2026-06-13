@@ -5,17 +5,9 @@
     {
       "name": "local-primary",
       "apiBaseUrl": "http://localhost:3500",
-      "hubBaseUrl": "http://localhost:3700",
+      "hubBaseUrl": "http://localhost:3500",
       "paymentBaseUrl": "http://localhost:3500",
       "priority": 0,
-      "enabled": true
-    },
-    {
-      "name": "local-backup",
-      "apiBaseUrl": "http://localhost:3600",
-      "hubBaseUrl": "http://localhost:3700",
-      "paymentBaseUrl": "http://localhost:3600",
-      "priority": 10,
       "enabled": true
     }
   ],
