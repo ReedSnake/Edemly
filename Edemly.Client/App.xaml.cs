@@ -23,6 +23,8 @@ namespace Edemly.Client
         private static readonly ClientUserSession _session = new();
         private static readonly ClientServiceRegistry _serviceRegistry = new(() => Task.FromResult(AuthToken));
         private static Edemly.Client.Presentation.Controls.ConnectionStatusBar? _statusBar;
+        private static AppUpdateCheckResult? _pendingUpdate;
+        private static int _updateInstallStarted;
         private static readonly ChatActivationService _chatActivationService = new(
             () => _serviceRegistry.ApiClients,
             () => GlobalChatController,
@@ -78,7 +80,9 @@ namespace Edemly.Client
             get => _statusBar;
             set
             {
+                DetachUpdateStatusBarHandlers(_statusBar);
                 _statusBar = value;
+                AttachUpdateStatusBarHandlers(_statusBar);
                 _realtimeCoordinator.RefreshConnectionState();
             }
         }
@@ -175,7 +179,7 @@ namespace Edemly.Client
                 var mainWindow = new MainWindow();
                 Current.MainWindow = mainWindow;
                 mainWindow.Show();
-                StartAutoUpdateCheck(launchConfiguration.UpdateFeedUrl);
+                StartAutoUpdateCheck(launchConfiguration.UpdateFeedUrl, launchConfiguration.UpdatePolicy);
             }
             catch (Exception ex)
             {
@@ -382,7 +386,7 @@ namespace Edemly.Client
                 : HubServerUrlNoCompany;
         }
 
-        private static void StartAutoUpdateCheck(string updateFeedUrl)
+        private static void StartAutoUpdateCheck(string updateFeedUrl, AppUpdatePolicy updatePolicy)
         {
             if (string.IsNullOrWhiteSpace(updateFeedUrl))
             {
@@ -390,7 +394,121 @@ namespace Edemly.Client
                 return;
             }
 
-            _ = Task.Run(() => AppUpdateService.CheckForUpdatesAsync(updateFeedUrl));
+            _ = Task.Run(async () =>
+            {
+                var update = await AppUpdateService.CheckForUpdateAsync(updateFeedUrl, updatePolicy);
+                if (!update.HasUpdate)
+                {
+                    Debug.WriteLine($"[APP UPDATE] {update.StatusMessage}");
+                    return;
+                }
+
+                _pendingUpdate = update;
+                await ShowPendingUpdateAsync(update);
+
+                if (update.IsMandatory)
+                {
+                    await InstallPendingUpdateAsync(update);
+                }
+            });
+        }
+
+        private static void AttachUpdateStatusBarHandlers(Edemly.Client.Presentation.Controls.ConnectionStatusBar? statusBar)
+        {
+            if (statusBar == null)
+            {
+                return;
+            }
+
+            statusBar.UpdateNowRequested -= OnUpdateNowRequested;
+            statusBar.UpdateNowRequested += OnUpdateNowRequested;
+        }
+
+        private static void DetachUpdateStatusBarHandlers(Edemly.Client.Presentation.Controls.ConnectionStatusBar? statusBar)
+        {
+            if (statusBar == null)
+            {
+                return;
+            }
+
+            statusBar.UpdateNowRequested -= OnUpdateNowRequested;
+        }
+
+        private static void OnUpdateNowRequested(object? sender, EventArgs e)
+        {
+            _ = InstallPendingUpdateAsync(_pendingUpdate);
+        }
+
+        private static async Task ShowPendingUpdateAsync(AppUpdateCheckResult update)
+        {
+            var dispatcher = Current?.Dispatcher;
+            if (dispatcher == null)
+            {
+                return;
+            }
+
+            await dispatcher.InvokeAsync(() =>
+            {
+                _statusBar?.ShowUpdateAvailable(update.Version, update.IsMandatory);
+            });
+        }
+
+        private static async Task InstallPendingUpdateAsync(AppUpdateCheckResult? update)
+        {
+            if (update == null || !update.HasUpdate)
+            {
+                return;
+            }
+
+            if (System.Threading.Interlocked.Exchange(ref _updateInstallStarted, 1) == 1)
+            {
+                return;
+            }
+
+            try
+            {
+                await ShowUpdateInstallingAsync(update, null);
+                await AppUpdateService.DownloadAndApplyUpdateAsync(
+                    update,
+                    progress => _ = ShowUpdateInstallingAsync(update, progress));
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[APP UPDATE] Failed to install update: {ex}");
+                await ShowUpdateFailedAsync(update, ex.Message);
+            }
+            finally
+            {
+                System.Threading.Interlocked.Exchange(ref _updateInstallStarted, 0);
+            }
+        }
+
+        private static async Task ShowUpdateInstallingAsync(AppUpdateCheckResult update, int? progress)
+        {
+            var dispatcher = Current?.Dispatcher;
+            if (dispatcher == null)
+            {
+                return;
+            }
+
+            await dispatcher.InvokeAsync(() =>
+            {
+                _statusBar?.ShowUpdateInstalling(update.Version, progress, update.IsMandatory);
+            });
+        }
+
+        private static async Task ShowUpdateFailedAsync(AppUpdateCheckResult update, string message)
+        {
+            var dispatcher = Current?.Dispatcher;
+            if (dispatcher == null)
+            {
+                return;
+            }
+
+            await dispatcher.InvokeAsync(() =>
+            {
+                _statusBar?.ShowUpdateFailed(message, update.IsMandatory);
+            });
         }
     }
 }

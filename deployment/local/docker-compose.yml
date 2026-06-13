@@ -130,6 +130,24 @@ services:
       timeout: 5s
       retries: 6
 
+  hub-gateway:
+    build:
+      context: ../..
+      dockerfile: Edemly.Gateway/Dockerfile
+    container_name: edemly-local-hub-gateway
+    ports:
+      - "3700:8080"
+    volumes:
+      - ./gateway/appsettings.json:/app/appsettings.json:ro
+    depends_on:
+      server1:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8080/gateway/health >/dev/null || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+
 volumes:
   mysql_data:
   minio_data:

@@ -119,7 +119,7 @@ namespace Edemly.Client.Infrastructure.Realtime
 
                 if (string.IsNullOrWhiteSpace(_authTokenProvider()))
                 {
-                    statusBar.Hide();
+                    statusBar.HideConnectionStatus();
                     return;
                 }
 

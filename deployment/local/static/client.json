@@ -5,7 +5,7 @@
     {
       "name": "local-primary",
       "apiBaseUrl": "http://localhost:3500",
-      "hubBaseUrl": "http://localhost:3500",
+      "hubBaseUrl": "http://localhost:3700",
       "paymentBaseUrl": "http://localhost:3500",
       "priority": 0,
       "enabled": true
@@ -13,13 +13,17 @@
     {
       "name": "local-backup",
       "apiBaseUrl": "http://localhost:3600",
-      "hubBaseUrl": "http://localhost:3600",
+      "hubBaseUrl": "http://localhost:3700",
       "paymentBaseUrl": "http://localhost:3600",
       "priority": 10,
       "enabled": true
     }
   ],
   "updates": {
-    "windowsStableUrl": "http://localhost:8080/updates/windows/stable"
+    "windowsStableUrl": "http://localhost:8080/updates/windows/stable",
+    "installerUrl": "http://localhost:8080/updates/windows/stable/NSO.Edemly-win-Setup.exe",
+    "latestVersion": "1.0.0",
+    "minimumRequiredVersion": "1.0.0",
+    "mandatory": false
   }
 }

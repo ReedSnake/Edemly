@@ -14,6 +14,7 @@ The server is built with ASP.NET Core and provides REST APIs, SignalR realtime c
 * [File Storage](#file-storage)
 * [Testing](#testing)
 * [Deployment](#deployment)
+* [Client Releases](#client-releases)
 * [Related Resources](#related-resources)
 
 ## [Architecture](ARCHITECTURE.md)
@@ -127,6 +128,20 @@ Topics include:
 * Database setup
 * Hosting
 * Production considerations
+
+---
+
+## [Client Releases](RELEASES.md)
+
+Describes local Windows client release creation and update hosting.
+
+Topics include:
+
+* Static `client.json` update metadata
+* Optional and mandatory update behavior
+* Velopack packaging
+* Local static download site
+* Docker URLs for API, payment, and hubs
 
 ## Related Resources
 

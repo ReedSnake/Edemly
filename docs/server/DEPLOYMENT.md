@@ -33,6 +33,7 @@ docker compose -f deployment/local/docker-compose.yml up mysql minio minio-init 
 | `server1` | `3501` | Internal backend instance exposed for debugging. |
 | `gateway` | `3500` | Primary public API, upload, payment, and SignalR gateway. |
 | `gateway2` | `3600` | Backup gateway for client fallback testing. |
+| `hub-gateway` | `3700` | Dedicated public SignalR gateway for `/main` and `/call`. |
 
 Default local MinIO credentials:
 
@@ -53,8 +54,9 @@ http://localhost:8080/client.json
 The local bootstrap file points to:
 
 ```text
-http://localhost:3500
-http://localhost:3600
+API/payment: http://localhost:3500
+API/payment fallback: http://localhost:3600
+hubs: http://localhost:3700
 ```
 
 The client checks `/health` on each enabled server and selects the first healthy endpoint by priority.
@@ -71,6 +73,8 @@ The gateway routes:
 | `/uploads` | Authenticated upload downloads on `server1`. |
 | `/health` | Backend health check on `server1`. |
 | `/gateway/health` | Gateway process health check. |
+
+The local client config uses the dedicated `hub-gateway` endpoint for SignalR while keeping API/payment fallback separate. All gateways still proxy to the same `server1` backend so SignalR events remain in one server process.
 
 ## Static Updates
 
@@ -89,6 +93,8 @@ NSO.Edemly-1.0.0-full.nupkg
 ```
 
 The generated installer and package files are ignored by Git. Commit only placeholders and documentation.
+
+For release creation, version fields, mandatory update policy, and local installer testing, see [Client Releases and Updates](RELEASES.md).
 
 ## Not Done
 

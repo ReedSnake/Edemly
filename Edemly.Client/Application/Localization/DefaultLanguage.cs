@@ -399,6 +399,11 @@ namespace Edemly.Client.Application.Localization
         public static string Disconnected => Lang.GetText("connection", "disconnected", "Disconnected");
         public static string Reconnecting => Lang.GetText("connection", "reconnecting", "Reconnecting...");
         public static string ConnectionLost => Lang.GetText("connection", "connection_lost", "Connection lost");
+        public static string UpdateAvailable => Lang.GetText("updates", "available", "Edemly {0} is available.");
+        public static string UpdateMandatoryAvailable => Lang.GetText("updates", "mandatory_available", "A required Edemly update {0} is available.");
+        public static string UpdateInstalling => Lang.GetText("updates", "installing", "Installing Edemly {0}...");
+        public static string UpdateDownloadingProgress => Lang.GetText("updates", "downloading_progress", "Downloading Edemly {0}: {1}%");
+        public static string UpdateFailed => Lang.GetText("updates", "failed", "Update failed: {0}");
 
         public static string Validation => Lang.GetText("validation", "validation", "Validation");
         public static string Required => Lang.GetText("validation", "required", "This field is required");

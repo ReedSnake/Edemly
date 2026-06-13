@@ -32,6 +32,7 @@ namespace Edemly.Client.Infrastructure.Startup
                         selectedServerName: "command-line",
                         clientConfigUrl: ResolveClientConfigUrl(args, config),
                         updateFeedUrl: ResolveUpdateFeedUrl(args.UpdateFeedUrl, config?.UpdateFeedUrl, null),
+                        updatePolicy: AppUpdatePolicy.Optional,
                         tenantArg: args.TenantArg,
                         hubServerArg: args.HubServerArg);
                 }
@@ -55,6 +56,7 @@ namespace Edemly.Client.Infrastructure.Startup
                             selectedServerName: selectedServer.Name ?? "static",
                             clientConfigUrl: clientConfigUrl,
                             updateFeedUrl: updateFeedUrl,
+                            updatePolicy: BuildUpdatePolicy(bootstrap.Updates),
                             tenantArg: args.TenantArg,
                             hubServerArg: args.HubServerArg);
                     }
@@ -70,6 +72,7 @@ namespace Edemly.Client.Infrastructure.Startup
                         selectedServerName: "saved",
                         clientConfigUrl: clientConfigUrl,
                         updateFeedUrl: ResolveUpdateFeedUrl(args.UpdateFeedUrl, config.UpdateFeedUrl, null),
+                        updatePolicy: AppUpdatePolicy.Optional,
                         tenantArg: args.TenantArg,
                         hubServerArg: args.HubServerArg);
                 }
@@ -90,6 +93,7 @@ namespace Edemly.Client.Infrastructure.Startup
             string selectedServerName,
             string clientConfigUrl,
             string updateFeedUrl,
+            AppUpdatePolicy? updatePolicy,
             string? tenantArg,
             string? hubServerArg)
         {
@@ -111,7 +115,8 @@ namespace Edemly.Client.Infrastructure.Startup
                 cacheScope,
                 updateFeedUrl,
                 clientConfigUrl,
-                selectedServerName);
+                selectedServerName,
+                updatePolicy ?? AppUpdatePolicy.Optional);
         }
 
         private static LaunchArguments ParseArguments(string[] commandLineArgs)
@@ -274,6 +279,20 @@ namespace Edemly.Client.Infrastructure.Startup
             }
 
             return string.Empty;
+        }
+
+        private static AppUpdatePolicy BuildUpdatePolicy(ClientBootstrapUpdates? updates)
+        {
+            if (updates == null)
+            {
+                return AppUpdatePolicy.Optional;
+            }
+
+            return new AppUpdatePolicy(
+                updates.LatestVersion ?? string.Empty,
+                updates.MinimumRequiredVersion ?? string.Empty,
+                updates.Mandatory,
+                updates.InstallerUrl ?? string.Empty);
         }
 
         private static async Task<ClientBootstrapConfig?> TryLoadBootstrapConfigAsync(
@@ -502,6 +521,10 @@ namespace Edemly.Client.Infrastructure.Startup
         private sealed class ClientBootstrapUpdates
         {
             public string? WindowsStableUrl { get; set; }
+            public string? LatestVersion { get; set; }
+            public string? MinimumRequiredVersion { get; set; }
+            public bool Mandatory { get; set; }
+            public string? InstallerUrl { get; set; }
         }
     }
 }

@@ -9,7 +9,8 @@ namespace Edemly.Client.Infrastructure.Startup
             string cacheScope,
             string updateFeedUrl,
             string clientConfigUrl,
-            string selectedServerName)
+            string selectedServerName,
+            AppUpdatePolicy updatePolicy)
         {
             BaseServerUrl = baseServerUrl;
             ApiBaseUrl = apiBaseUrl;
@@ -18,6 +19,7 @@ namespace Edemly.Client.Infrastructure.Startup
             UpdateFeedUrl = updateFeedUrl;
             ClientConfigUrl = clientConfigUrl;
             SelectedServerName = selectedServerName;
+            UpdatePolicy = updatePolicy;
         }
 
         public string BaseServerUrl { get; }
@@ -27,5 +29,6 @@ namespace Edemly.Client.Infrastructure.Startup
         public string UpdateFeedUrl { get; }
         public string ClientConfigUrl { get; }
         public string SelectedServerName { get; }
+        public AppUpdatePolicy UpdatePolicy { get; }
     }
 }
