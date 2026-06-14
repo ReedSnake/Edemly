@@ -46,6 +46,10 @@ namespace Edemly.Server.Data
                 .HasIndex(s => s.UserId)
                 .IsUnique();
 
+            modelBuilder.Entity<Session>()
+                .HasIndex(s => s.SessionToken)
+                .IsUnique();
+
             modelBuilder.Entity<Note>()
                 .HasOne(n => n.TargetUser)
                 .WithMany(u => u.NotesAboutUser)
@@ -57,6 +61,10 @@ namespace Edemly.Server.Data
                 .WithMany(u => u.NotesCreatedByUser)
                 .HasForeignKey(n => n.CreatorId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Note>()
+                .HasIndex(n => new { n.CreatorId, n.TargetUserId })
+                .IsUnique();
 
             modelBuilder.Entity<User>()
                 .Property(u => u.SubscriptionStatus)
@@ -73,10 +81,20 @@ namespace Edemly.Server.Data
                 .HasConversion<string>()
                 .HasMaxLength(20);
 
+            modelBuilder.Entity<ChatMember>()
+                .HasIndex(cm => new { cm.ChatId, cm.UserId })
+                .IsUnique();
+
+            modelBuilder.Entity<ChatMember>()
+                .HasIndex(cm => new { cm.UserId, cm.ChatId });
+
             modelBuilder.Entity<Message>()
                 .Property(m => m.Type)
                 .HasConversion<string>()
                 .HasMaxLength(20);
+
+            modelBuilder.Entity<Message>()
+                .HasIndex(m => new { m.ChatId, m.SentAt, m.Id });
 
             modelBuilder.Entity<Payment>()
                 .Property(p => p.Status)
@@ -86,6 +104,16 @@ namespace Edemly.Server.Data
             modelBuilder.Entity<Payment>()
                 .Property(p => p.Amount)
                 .HasPrecision(10, 2);
+
+            modelBuilder.Entity<Payment>()
+                .HasIndex(p => p.TransactionId)
+                .IsUnique();
+
+            modelBuilder.Entity<Payment>()
+                .HasIndex(p => new { p.UserId, p.Date });
+
+            modelBuilder.Entity<Reminding>()
+                .HasIndex(r => new { r.UserId, r.LastTime, r.IsCompleted });
 
             modelBuilder.Entity<Call>().ToTable("call");
             modelBuilder.Entity<Call>()

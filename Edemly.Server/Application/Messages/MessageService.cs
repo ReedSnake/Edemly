@@ -13,6 +13,8 @@ namespace Edemly.Server.Application.Messages
 {
     public class MessageService : TenantAwareServiceBase, IMessageService
     {
+        private static readonly TimeSpan MessageCacheDuration = TimeSpan.FromMinutes(5);
+
         private readonly ILogger<MessageService> _logger;
         private readonly ChatCacheRegistry _chatCacheRegistry;
         private readonly IMemoryCache _memoryCache;
@@ -40,14 +42,16 @@ namespace Edemly.Server.Application.Messages
 
                 var msg = await ctx.Set<Message>()
                     .AsNoTracking()
-                    .FirstOrDefaultAsync(message => message.Id == messageId);
+                    .Where(message => message.Id == messageId)
+                    .Select(MessageMappings.Projection)
+                    .FirstOrDefaultAsync();
 
                 if (msg == null)
                 {
                     return ServiceResult<MessageDto>.NotFound("Message not found");
                 }
 
-                return ServiceResult<MessageDto>.Ok(MessageMappings.ToDto(msg));
+                return ServiceResult<MessageDto>.Ok(msg);
             }
             catch (Exception ex)
             {
@@ -79,6 +83,7 @@ namespace Edemly.Server.Application.Messages
                 }
 
                 var messages = await ctx.Set<Message>()
+                    .AsNoTracking()
                     .Where(m => m.ChatId == chatId)
                     .OrderByDescending(m => m.SentAt)
                     .ThenByDescending(m => m.Id)
@@ -87,12 +92,9 @@ namespace Edemly.Server.Application.Messages
                     .Select(MessageMappings.Projection)
                     .ToListAsync();
 
-                messages = messages
-                    .OrderBy(m => m.SentAt)
-                    .ThenBy(m => m.Id)
-                    .ToList();
+                messages.Reverse();
 
-                _memoryCache.Set(cacheKey, messages, TimeSpan.FromMinutes(5));
+                _memoryCache.Set(cacheKey, messages, MessageCacheDuration);
                 _chatCacheRegistry.RegisterKey(chatId, page, pageSize);
 
                 return ServiceResult<List<MessageDto>>.Ok(messages);
@@ -125,6 +127,7 @@ namespace Edemly.Server.Application.Messages
                 }
 
                 MessageDto? message = await ctx.Set<Message>()
+                    .AsNoTracking()
                     .Where(m => m.ChatId == chatId)
                     .OrderByDescending(m => m.SentAt)
                     .ThenByDescending(m => m.Id)
@@ -133,8 +136,7 @@ namespace Edemly.Server.Application.Messages
 
                 if (message != null)
                 {
-                    _memoryCache.Set(cacheKey, message, TimeSpan.FromMinutes(5));
-                    _chatCacheRegistry.RegisterKey(chatId, 1, 1);
+                    _memoryCache.Set(cacheKey, message, MessageCacheDuration);
                     return ServiceResult<MessageDto>.Ok(message);
                 }
 
@@ -257,13 +259,6 @@ namespace Edemly.Server.Application.Messages
             }
         }
 
-        private static Task<bool> IsInChatAsync(DbContext ctx, int currentUserId, int chatId)
-        {
-            return ctx.Set<ChatMember>()
-                .AsNoTracking()
-                .AnyAsync(chatMember => chatMember.UserId == currentUserId && chatMember.ChatId == chatId);
-        }
-
         private static async Task<bool> CanDeleteMessageAsync(DbContext ctx, int requesterId, Message message)
         {
             if (message.SenderId == requesterId)
@@ -271,20 +266,26 @@ namespace Edemly.Server.Application.Messages
                 return true;
             }
 
-            var currentMember = await ctx.Set<ChatMember>()
+            var requesterRole = await ctx.Set<ChatMember>()
                 .AsNoTracking()
-                .FirstOrDefaultAsync(chatMember => chatMember.UserId == requesterId && chatMember.ChatId == message.ChatId);
+                .Where(chatMember => chatMember.UserId == requesterId && chatMember.ChatId == message.ChatId)
+                .Select(chatMember => (ChatMemberRole?)chatMember.Role)
+                .FirstOrDefaultAsync();
 
-            if (currentMember == null)
-            {
-                return false;
-            }
-
-            return currentMember.Role == ChatMemberRole.Admin || currentMember.Role == ChatMemberRole.Creator;
+            return requesterRole == ChatMemberRole.Admin || requesterRole == ChatMemberRole.Creator;
         }
 
         private static async Task<ServiceResult?> ValidateChatAccessAsync(DbContext ctx, int currentUserId, int chatId)
         {
+            var isMember = await ctx.Set<ChatMember>()
+                .AsNoTracking()
+                .AnyAsync(chatMember => chatMember.UserId == currentUserId && chatMember.ChatId == chatId);
+
+            if (isMember)
+            {
+                return null;
+            }
+
             var chatExists = await ctx.Set<Chat>()
                 .AsNoTracking()
                 .AnyAsync(chat => chat.Id == chatId);
@@ -294,12 +295,7 @@ namespace Edemly.Server.Application.Messages
                 return ServiceResult.NotFound("Chat not found");
             }
 
-            if (!await IsInChatAsync(ctx, currentUserId, chatId))
-            {
-                return ServiceResult.Forbidden();
-            }
-
-            return null;
+            return ServiceResult.Forbidden();
         }
 
         private static ServiceResult<T> ToDataFailure<T>(ServiceResult result)

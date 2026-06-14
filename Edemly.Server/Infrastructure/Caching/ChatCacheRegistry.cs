@@ -1,10 +1,11 @@
-﻿using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Caching.Memory;
+using System.Collections.Concurrent;
 
 namespace Edemly.Server.Infrastructure.Caching
 {
-    public class ChatCacheRegistry //I use this so cache gets cleared when messages in a specific chat get changed in any way
+    public class ChatCacheRegistry
     {
-        private readonly Dictionary<int, Dictionary<(int page, int size), string>> _registry = new();
+        private readonly ConcurrentDictionary<int, ConcurrentDictionary<(int page, int size), string>> _registry = new();
 
         public static string GetCacheKey(int chatId, int page, int pageSize) => $"chat:{chatId}:messages:page:{page}:size:{pageSize}";
 
@@ -12,16 +13,19 @@ namespace Edemly.Server.Infrastructure.Caching
 
         public void RegisterKey(int chatId, int page, int pageSize)
         {
-            if (!_registry.ContainsKey(chatId))
-                _registry[chatId] = new Dictionary<(int, int), string>();
+            var pages = _registry.GetOrAdd(
+                chatId,
+                _ => new ConcurrentDictionary<(int page, int size), string>());
 
-            _registry[chatId][(page, pageSize)] = ChatCacheRegistry.GetCacheKey(chatId, page, pageSize);
+            pages[(page, pageSize)] = GetCacheKey(chatId, page, pageSize);
         }
 
         public IEnumerable<string> GetKeys(int chatId)
         {
             if (_registry.TryGetValue(chatId, out var pages))
-                return pages.Values;
+            {
+                return pages.Values.ToArray();
+            }
 
             return Enumerable.Empty<string>();
         }
@@ -30,12 +34,12 @@ namespace Edemly.Server.Infrastructure.Caching
         {
             cache.Remove(GetLastMessageCacheKey(chatId));
 
-            if (_registry.TryGetValue(chatId, out var pages))
+            if (_registry.TryRemove(chatId, out var pages))
             {
                 foreach (var key in pages.Values)
+                {
                     cache.Remove(key);
-
-                pages.Clear();
+                }
             }
         }
     }

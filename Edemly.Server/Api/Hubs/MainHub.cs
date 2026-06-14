@@ -62,17 +62,19 @@ namespace Edemly.Server.Api.Hubs
         {
             var userId = GetUserId();
 
-            var chatMemberUserIds = await GetChatMemberIdsAsync(messageDto.ChatId);
-
-            if (!chatMemberUserIds.Contains(userId.ToString()))
-            {
-                throw new HubException("User is not a member of this chat");
-            }
-
             DbContext ctx = ResolveDbContext(out var isTenant);
             try
             {
+                var chatMemberUserIds = await GetChatMemberUserIdsAsync(ctx, messageDto.ChatId);
+
+                if (!chatMemberUserIds.Contains(userId))
+                {
+                    throw new HubException("User is not a member of this chat");
+                }
+
                 var chat = await ctx.Set<Chat>().FirstOrDefaultAsync(c => c.Id == messageDto.ChatId);
+                var sentAt = DateTime.UtcNow;
+
                 if (chat == null)
                 {
                     _logger.LogWarning("SendMessage: Chat {ChatId} not found. Creating placeholder chat.", messageDto.ChatId);
@@ -81,7 +83,8 @@ namespace Edemly.Server.Api.Hubs
                     {
                         Name = $"Chat {messageDto.ChatId}",
                         Type = ChatType.Group,
-                        CreatedAt = DateTime.UtcNow
+                        CreatedAt = sentAt,
+                        LastMessageTime = sentAt
                     };
 
                     ctx.Set<Chat>().Add(placeholder);
@@ -96,35 +99,25 @@ namespace Edemly.Server.Api.Hubs
                     ChatId = chat.Id,
                     SenderId = userId,
                     Text = messageDto.Text,
-                    SentAt = DateTime.UtcNow,
+                    SentAt = sentAt,
                     Type = (MessageType)messageDto.Type,
                     ContentUrl = messageDto.ContentUrl,
                     FileName = messageDto.FileName
                 };
 
+                chat.LastMessageTime = msg.SentAt;
                 ctx.Set<Message>().Add(msg);
                 await ctx.SaveChangesAsync();
                 _cacheRegistry.ClearChat(msg.ChatId, _cache);
 
-                try
-                {
-                    chat.LastMessageTime = msg.SentAt;
-                    ctx.Set<Chat>().Update(chat);
-                    await ctx.SaveChangesAsync();
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogWarning(ex, "Failed to update LastMessageTime for chat {ChatId}", chat.Id);
-                }
-
                 var messageToSend = MessageMappings.ToDto(msg);
 
-                var recipients = chatMemberUserIds;
+                var recipients = ToSignalRUserIds(chatMemberUserIds);
                 if (chat.Id != messageDto.ChatId)
                 {
                     try
                     {
-                        recipients = await ctx.Set<ChatMember>().Where(cm => cm.ChatId == chat.Id).Select(cm => cm.UserId.ToString()).ToListAsync();
+                        recipients = ToSignalRUserIds(await GetChatMemberUserIdsAsync(ctx, chat.Id));
                     }
                     catch (Exception ex)
                     {
@@ -145,8 +138,6 @@ namespace Edemly.Server.Api.Hubs
         {
             var userId = GetUserId();
 
-            var validationResult = await ValidateMessageAccessAsync(messageDto.ChatId, messageDto.Id, userId, requireSender: true);
-
             DbContext ctx = ResolveDbContext(out var isTenant);
             try
             {
@@ -154,6 +145,17 @@ namespace Edemly.Server.Api.Hubs
                 if (message == null)
                 {
                     throw new HubException("Message not found");
+                }
+
+                var chatMemberUserIds = await GetChatMemberUserIdsAsync(ctx, messageDto.ChatId);
+                if (!chatMemberUserIds.Contains(userId))
+                {
+                    throw new HubException("User is not a member of this chat");
+                }
+
+                if (message.SenderId != userId)
+                {
+                    throw new HubException("You can only update your own messages");
                 }
 
                 if (!string.IsNullOrEmpty(messageDto.Text)) message.Text = messageDto.Text;
@@ -167,7 +169,7 @@ namespace Edemly.Server.Api.Hubs
 
                 var updatedMessageDto = MessageMappings.ToDto(message);
 
-                await Clients.Users(validationResult.ChatMemberIds).SendAsync("ReceiveMessageUpdate", updatedMessageDto);
+                await Clients.Users(ToSignalRUserIds(chatMemberUserIds)).SendAsync("ReceiveMessageUpdate", updatedMessageDto);
             }
             finally
             {
@@ -180,8 +182,6 @@ namespace Edemly.Server.Api.Hubs
         {
             var userId = GetUserId();
 
-            var validationResult = await ValidateMessageDeletionAsync(chatId, messageId, userId);
-
             DbContext ctx = ResolveDbContext(out var isTenant);
             try
             {
@@ -191,11 +191,31 @@ namespace Edemly.Server.Api.Hubs
                     throw new HubException("Message not found");
                 }
 
+                var chatMembers = await ctx.Set<ChatMember>()
+                    .AsNoTracking()
+                    .Where(cm => cm.ChatId == chatId)
+                    .Select(cm => new { cm.UserId, cm.Role })
+                    .ToListAsync();
+
+                var userChatMember = chatMembers.FirstOrDefault(cm => cm.UserId == userId);
+                if (userChatMember == null)
+                {
+                    throw new HubException("User is not a member of this chat");
+                }
+
+                bool isAdmin = userChatMember.Role == ChatMemberRole.Admin || userChatMember.Role == ChatMemberRole.Creator;
+                bool isSender = message.SenderId == userId;
+
+                if (!isAdmin && !isSender)
+                {
+                    throw new HubException("You don't have permission to delete this message");
+                }
+
                 ctx.Set<Message>().Remove(message);
                 await ctx.SaveChangesAsync();
                 _cacheRegistry.ClearChat(chatId, _cache);
 
-                await Clients.Users(validationResult.ChatMemberIds).SendAsync("ReceiveMessageDelete", messageId, chatId);
+                await Clients.Users(ToSignalRUserIds(chatMembers.Select(cm => cm.UserId))).SendAsync("ReceiveMessageDelete", messageId, chatId);
             }
             finally
             {
@@ -216,10 +236,7 @@ namespace Edemly.Server.Api.Hubs
             DbContext ctx = ResolveDbContext(out var isTenant);
             try
             {
-                return await ctx.Set<ChatMember>()
-                    .Where(cm => cm.ChatId == chatId)
-                    .Select(cm => cm.UserId.ToString())
-                    .ToListAsync();
+                return ToSignalRUserIds(await GetChatMemberUserIdsAsync(ctx, chatId));
             }
             finally
             {
@@ -227,93 +244,21 @@ namespace Edemly.Server.Api.Hubs
             }
         }
 
-        private async Task<(Message Message, List<string> ChatMemberIds)> ValidateMessageAccessAsync(
-            int chatId,
-            int messageId,
-            int userId,
-            bool requireSender = false)
+        private static Task<List<int>> GetChatMemberUserIdsAsync(DbContext ctx, int chatId)
         {
-            DbContext ctx = ResolveDbContext(out var isTenant);
-            try
-            {
-                var query = from Message in ctx.Set<Message>()
-                            where Message.Id == messageId && Message.ChatId == chatId
-                            join cm in ctx.Set<ChatMember>() on chatId equals cm.ChatId
-                            select new { Message, cm };
-
-                var results = await query.ToListAsync();
-
-                if (!results.Any())
-                {
-                    throw new HubException("Message not found");
-                }
-
-                var message = results.First().Message;
-                var chatMemberIds = results.Select(r => r.cm.UserId.ToString()).Distinct().ToList();
-
-                if (!chatMemberIds.Contains(userId.ToString()))
-                {
-                    throw new HubException("User is not a member of this chat");
-                }
-
-                if (requireSender && message.SenderId != userId)
-                {
-                    throw new HubException("You can only update your own messages");
-                }
-
-                return (message, chatMemberIds);
-            }
-            finally
-            {
-                if (isTenant) ctx.Dispose();
-            }
+            return ctx.Set<ChatMember>()
+                .AsNoTracking()
+                .Where(cm => cm.ChatId == chatId)
+                .Select(cm => cm.UserId)
+                .ToListAsync();
         }
 
-        private async Task<(Message Message, ChatMember ChatMember, List<string> ChatMemberIds)> ValidateMessageDeletionAsync(
-            int chatId,
-            int messageId,
-            int userId)
+        private static List<string> ToSignalRUserIds(IEnumerable<int> userIds)
         {
-            DbContext ctx = ResolveDbContext(out var isTenant);
-            try
-            {
-                var query = from Message in ctx.Set<Message>()
-                            where Message.Id == messageId && Message.ChatId == chatId
-                            from cm in ctx.Set<ChatMember>()
-                            where cm.ChatId == chatId
-                            select new { Message, cm };
-
-                var results = await query.ToListAsync();
-
-                if (!results.Any())
-                {
-                    throw new HubException("Message not found");
-                }
-
-                var message = results.First().Message;
-                var userChatMember = results.FirstOrDefault(r => r.cm.UserId == userId)?.cm;
-
-                if (userChatMember == null)
-                {
-                    throw new HubException("User is not a member of this chat");
-                }
-
-                bool isAdmin = userChatMember.Role == ChatMemberRole.Admin || userChatMember.Role == ChatMemberRole.Creator;
-                bool isSender = message.SenderId == userId;
-
-                if (!isAdmin && !isSender)
-                {
-                    throw new HubException("You don't have permission to delete this message");
-                }
-
-                var chatMemberIds = results.Select(r => r.cm.UserId.ToString()).Distinct().ToList();
-
-                return (message, userChatMember, chatMemberIds);
-            }
-            finally
-            {
-                if (isTenant) ctx.Dispose();
-            }
+            return userIds
+                .Select(userId => userId.ToString())
+                .Distinct()
+                .ToList();
         }
 
         [HubMethodName("NotifyGroupCreated")]

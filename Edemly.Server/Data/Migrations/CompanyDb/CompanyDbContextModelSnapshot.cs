@@ -239,9 +239,10 @@ namespace Edemly.Server.Data.Migrations.CompanyDb
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ChatId");
+                    b.HasIndex("ChatId", "UserId")
+                        .IsUnique();
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("UserId", "ChatId");
 
                     b.ToTable("chat_member");
                 });
@@ -334,9 +335,9 @@ namespace Edemly.Server.Data.Migrations.CompanyDb
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ChatId");
-
                     b.HasIndex("SenderId");
+
+                    b.HasIndex("ChatId", "SentAt", "Id");
 
                     b.ToTable("message");
                 });
@@ -365,9 +366,10 @@ namespace Edemly.Server.Data.Migrations.CompanyDb
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CreatorId");
-
                     b.HasIndex("TargetUserId");
+
+                    b.HasIndex("CreatorId", "TargetUserId")
+                        .IsUnique();
 
                     b.ToTable("notes");
                 });
@@ -411,7 +413,10 @@ namespace Edemly.Server.Data.Migrations.CompanyDb
 
                     b.HasKey("Id");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("TransactionId")
+                        .IsUnique();
+
+                    b.HasIndex("UserId", "Date");
 
                     b.ToTable("payment");
                 });
@@ -466,7 +471,7 @@ namespace Edemly.Server.Data.Migrations.CompanyDb
 
                     b.HasKey("Id");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("UserId", "LastTime", "IsCompleted");
 
                     b.ToTable("reminding");
                 });
@@ -495,6 +500,9 @@ namespace Edemly.Server.Data.Migrations.CompanyDb
                         .HasColumnName("user_id");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("SessionToken")
+                        .IsUnique();
 
                     b.HasIndex("UserId")
                         .IsUnique();
