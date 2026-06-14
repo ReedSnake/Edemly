@@ -8,3 +8,6 @@
 .artifacts
 deployment/local/static/updates/windows/stable/*
 !deployment/local/static/updates/windows/stable/.gitkeep
+deployment/local/static/downloads/windows/**
+!deployment/local/static/downloads/windows/
+!deployment/local/static/downloads/windows/.gitkeep

@@ -4,75 +4,65 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Download Edemly</title>
-  <link rel="stylesheet" href="/assets/styles.css">
-  <script src="/assets/app.js" defer></script>
+  <meta name="description" content="Download Edemly for Windows and view previous versions and release notes.">
+  <link rel="stylesheet" href="../assets/styles.css">
+  <script src="../assets/app.js" defer></script>
 </head>
 <body data-page="download">
   <header class="site-header">
-    <a class="brand" href="/">
+    <a class="brand" href="../">
       <span class="brand-mark" aria-hidden="true">E</span>
-      <span>Edemly Local</span>
+      <span>Edemly</span>
     </a>
     <nav class="site-nav" aria-label="Primary navigation">
-      <a href="/">Overview</a>
-      <a href="/download/">Download</a>
-      <a href="/status/">Status</a>
+      <a href="../">Overview</a>
+      <a href="../release/">Releases</a>
+      <a href="../download/">Download</a>
     </nav>
   </header>
 
   <main>
-    <section class="hero compact">
+    <section class="hero compact download-hero clean-download-hero">
       <div class="hero-copy">
-        <p class="eyebrow">Windows installer</p>
+        <p class="eyebrow">Windows desktop app</p>
         <h1>Download Edemly</h1>
         <p class="lead">
-          Current local release:
-          <strong data-config="latestVersion">Loading...</strong>
+          Install the latest version or choose one of the previous releases below. Each version includes short notes about what changed.
         </p>
         <div class="hero-actions">
-          <a class="button primary" data-config-href="installer" href="/updates/windows/stable/NSO.Edemly-win-Setup.exe">
-            Download installer
-          </a>
-          <a class="button" data-config-href="updateFeed" href="/updates/windows/stable/releases.win.json">
-            View update feed
+          <a class="button primary" data-config-href="installer" href="../downloads/windows/1.0.2/NSO.Edemly-win-Setup.exe">
+            Download latest version
           </a>
         </div>
       </div>
-      <div class="download-orbit" aria-hidden="true">
-        <span class="package-card">Setup.exe</span>
-        <span class="package-card ghost">.nupkg</span>
-      </div>
     </section>
 
-    <section class="grid two">
-      <article class="panel">
-        <p class="panel-kicker">Installer path</p>
-        <h2>Static download</h2>
-        <p><code data-config="installerUrl">Loading...</code></p>
-      </article>
-
-      <article class="panel">
-        <p class="panel-kicker">Update policy</p>
-        <h2 data-update-mode>Loading...</h2>
-        <p>Minimum required version: <strong data-config="minimumRequiredVersion">Loading...</strong></p>
-      </article>
+    <section class="download-release latest-release" data-release-latest aria-live="polite">
+      <p class="muted">Loading latest release...</p>
     </section>
 
-    <section class="panel">
-      <div class="section-heading">
-        <div>
-          <p class="panel-kicker">Hot publish</p>
-          <h2>No Docker restart needed</h2>
-        </div>
-        <button class="button small" type="button" data-copy="#publish-command">Copy command</button>
+    <section class="install-flow">
+      <div>
+        <p class="eyebrow">How to install</p>
+        <h2>Three quick steps.</h2>
       </div>
-      <pre id="publish-command"><code>vpk pack -u NSO.Edemly -v 1.0.1 -p .artifacts\client\win-x64\1.0.1 -e Edemly.exe -o deployment\local\static\updates\windows\stable --packTitle Edemly</code></pre>
-      <p class="muted">
-        The static container serves this folder through a bind mount, so new release files are visible immediately.
-      </p>
+      <ol class="plain-steps">
+        <li><strong>Download</strong><span>Save the Windows installer to your computer.</span></li>
+        <li><strong>Install</strong><span>Open the file and follow the setup instructions.</span></li>
+        <li><strong>Launch</strong><span>Open Edemly, sign in or create an account, and start communicating.</span></li>
+      </ol>
+    </section>
+
+    <section class="version-history">
+      <div class="version-heading">
+        <h2>Previous versions</h2>
+        <p>Supported releases can be downloaded. Archived releases stay visible for history but do not expose installers.</p>
+      </div>
+
+      <div class="release-list" data-download-release-list aria-live="polite">
+        <p class="muted">Loading release history...</p>
+      </div>
     </section>
   </main>
-
-  <div class="toast" data-toast hidden>Copied</div>
 </body>
 </html>

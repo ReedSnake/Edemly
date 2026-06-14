@@ -14,7 +14,7 @@
   "updates": {
     "windowsStableUrl": "http://localhost:8080/updates/windows/stable",
     "installerUrl": "http://localhost:8080/updates/windows/stable/NSO.Edemly-win-Setup.exe",
-    "latestVersion": "1.0.0",
+    "latestVersion": "1.0.2",
     "minimumRequiredVersion": "1.0.0",
     "mandatory": false
   }

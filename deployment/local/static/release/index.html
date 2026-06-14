@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Edemly Releases</title>
+  <meta name="description" content="View Edemly release history, supported downloads, and archived Windows builds.">
+  <link rel="stylesheet" href="../assets/styles.css">
+  <script src="../assets/app.js" defer></script>
+</head>
+<body data-page="release">
+  <header class="site-header">
+    <a class="brand" href="../">
+      <span class="brand-mark" aria-hidden="true">E</span>
+      <span>Edemly</span>
+    </a>
+    <nav class="site-nav" aria-label="Primary navigation">
+      <a href="../">Overview</a>
+      <a href="../release/">Releases</a>
+      <a href="../download/">Download</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero compact clean-download-hero release-hero">
+      <div class="hero-copy">
+        <p class="eyebrow">Release history</p>
+        <h1>Edemly releases</h1>
+        <p class="lead">
+          Browse every local Windows release. Supported versions include download links, while archived builds remain visible without installers.
+        </p>
+        <div class="hero-actions">
+          <a class="button primary" data-config-href="installer" href="../downloads/windows/1.0.2/NSO.Edemly-win-Setup.exe">
+            Download latest version
+          </a>
+          <a class="button" href="../releases.json">View releases.json</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="version-history release-page-history">
+      <div class="version-heading">
+        <h2>All releases</h2>
+        <p>The download window starts at the latest mandatory release boundary.</p>
+      </div>
+
+      <div class="release-summary" data-release-summary aria-live="polite">
+        <p class="muted">Loading release policy...</p>
+      </div>
+
+      <div class="release-list" data-release-history aria-live="polite">
+        <p class="muted">Loading release history...</p>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

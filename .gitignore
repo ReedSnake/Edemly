@@ -80,8 +80,13 @@ artifacts/
 .artifacts/
 
 # Local Velopack release artifacts
+!deployment/local/static/release/
+!deployment/local/static/release/index.html
 deployment/local/static/updates/windows/stable/*
 !deployment/local/static/updates/windows/stable/.gitkeep
+deployment/local/static/downloads/windows/**
+!deployment/local/static/downloads/windows/
+!deployment/local/static/downloads/windows/.gitkeep
 
 # ASP.NET Scaffolding
 ScaffoldingReadMe.txt

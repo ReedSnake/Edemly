@@ -38,6 +38,7 @@ In a second terminal, check the public endpoints:
 
 ```powershell
 Invoke-WebRequest -UseBasicParsing http://localhost:8080/client.json
+Invoke-WebRequest -UseBasicParsing http://localhost:8080/releases.json
 Invoke-WebRequest -UseBasicParsing http://localhost:3500/health
 Invoke-WebRequest -UseBasicParsing http://localhost:3600/health
 Invoke-WebRequest -UseBasicParsing http://localhost:3700/gateway/health
@@ -115,6 +116,7 @@ Set the baseline metadata in:
 
 ```text
 deployment/local/static/client.json
+deployment/local/static/releases.json
 ```
 
 ```json
@@ -131,9 +133,24 @@ Open and install:
 
 ```text
 http://localhost:8080/download/
+http://localhost:8080/release/
 ```
 
 The installed app should be named `Edemly`, and the main executable should be `Edemly.exe`.
+
+## Preview The Static Site With VS Code Live Server
+
+For visual checks only, you can open:
+
+```text
+deployment/local/static/index.html
+```
+
+with VS Code Live Server. The static pages use relative links, and `assets/app.js` resolves `client.json`, `releases.json`, and `/downloads/...` paths from the real static root. This lets the pages work when Live Server serves the whole repository instead of serving `deployment/local/static` as `/`.
+
+Use nginx at `http://localhost:8080/` for client updater testing. The WPF client still expects the configured `client.json` and Velopack feed URLs, and those should be validated through the local Docker static service.
+
+The sample files under `deployment/local/static/downloads/windows/{version}/` can be empty placeholders for visual checks. Replace them with real installer and portable artifacts before testing actual downloads.
 
 ## Publish A New Version Without Restarting Docker
 
@@ -177,6 +194,10 @@ Invoke-WebRequest -UseBasicParsing http://localhost:8080/updates/windows/stable/
 ```
 
 The installed client checks updates on startup, so restart only the installed Edemly client after changing release files or `client.json`.
+
+Also update `deployment/local/static/releases.json` so the download and release pages show the new version. The static site calculates downloadable releases from the latest release marked `"mandatory": true`; older releases stay visible as archived history without download links.
+
+For the planned local tool that will update both JSON files and copy release files, see `docs/server/LOCAL_RELEASE_MANAGER_PLAN.md`.
 
 ## Test Optional Update
 
