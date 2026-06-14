@@ -33,7 +33,7 @@ namespace Edemly.Server.Application.Messages
             _memoryCache = memoryCache;
         }
 
-        public async Task<ServiceResult<MessageDto>> GetByIdAsync(int messageId)
+        public async Task<ServiceResult<MessageDto>> GetByIdAsync(int currentUserId, int messageId)
         {
             try
             {
@@ -49,6 +49,12 @@ namespace Edemly.Server.Application.Messages
                 if (msg == null)
                 {
                     return ServiceResult<MessageDto>.NotFound("Message not found");
+                }
+
+                var accessResult = await ValidateChatAccessAsync(ctx, currentUserId, msg.ChatId);
+                if (accessResult != null)
+                {
+                    return ToDataFailure<MessageDto>(accessResult);
                 }
 
                 return ServiceResult<MessageDto>.Ok(msg);

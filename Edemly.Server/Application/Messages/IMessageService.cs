@@ -5,7 +5,7 @@ namespace Edemly.Server.Application.Messages
 {
     public interface IMessageService
     {
-        Task<ServiceResult<MessageDto>> GetByIdAsync(int messageId);
+        Task<ServiceResult<MessageDto>> GetByIdAsync(int currentUserId, int messageId);
 
         Task<ServiceResult<List<MessageDto>>> GetByChatAsync(int currentUserId, int chatId, int page, int pageSize);
 
