@@ -127,14 +127,16 @@ namespace Edemly.Server.Application.ChatMembers
 
                 var member = await ctx.Set<ChatMember>()
                     .AsNoTracking()
-                    .FirstOrDefaultAsync(chatMember => chatMember.Id == chatMemberId);
+                    .Where(chatMember => chatMember.Id == chatMemberId)
+                    .Select(ChatMemberMappings.Projection)
+                    .FirstOrDefaultAsync();
 
                 if (member == null)
                 {
                     return ServiceResult<ChatMemberDto>.NotFound("Member not found");
                 }
 
-                return ServiceResult<ChatMemberDto>.Ok(ChatMemberMappings.ToDto(member));
+                return ServiceResult<ChatMemberDto>.Ok(member);
             }
             catch (Exception ex)
             {
@@ -203,9 +205,9 @@ namespace Edemly.Server.Application.ChatMembers
             {
                 var existingMember = await ctx.Set<ChatMember>()
                     .AsNoTracking()
-                    .FirstOrDefaultAsync(chatMember => chatMember.ChatId == chatId && chatMember.UserId == targetUserId);
+                    .AnyAsync(chatMember => chatMember.ChatId == chatId && chatMember.UserId == targetUserId);
 
-                if (existingMember != null)
+                if (existingMember)
                 {
                     _logger.LogInformation("User {UserId} is already a member of chat {ChatId}", targetUserId, chatId);
                     return ServiceResult.Conflict("User is already a member of this chat");
@@ -255,16 +257,13 @@ namespace Edemly.Server.Application.ChatMembers
 
         private static async Task<bool> CanAddChatMemberAsync(DbContext ctx, int currentUserId, int chatId)
         {
-            var currentMember = await ctx.Set<ChatMember>()
+            var currentMemberRole = await ctx.Set<ChatMember>()
                 .AsNoTracking()
-                .FirstOrDefaultAsync(cm => cm.UserId == currentUserId && cm.ChatId == chatId);
+                .Where(cm => cm.UserId == currentUserId && cm.ChatId == chatId)
+                .Select(cm => (ChatMemberRole?)cm.Role)
+                .FirstOrDefaultAsync();
 
-            if (currentMember == null)
-            {
-                return false;
-            }
-
-            return currentMember.Role == ChatMemberRole.Admin || currentMember.Role == ChatMemberRole.Creator;
+            return currentMemberRole == ChatMemberRole.Admin || currentMemberRole == ChatMemberRole.Creator;
         }
 
         private static async Task<bool> CanManageMemberAsync(DbContext ctx, int currentUserId, ChatMember member, bool requireDifferentUser)
@@ -274,21 +273,23 @@ namespace Edemly.Server.Application.ChatMembers
                 return false;
             }
 
-            var currentMember = await ctx.Set<ChatMember>()
+            var currentMemberRole = await ctx.Set<ChatMember>()
                 .AsNoTracking()
-                .FirstOrDefaultAsync(cm => cm.UserId == currentUserId && cm.ChatId == member.ChatId);
+                .Where(cm => cm.UserId == currentUserId && cm.ChatId == member.ChatId)
+                .Select(cm => (ChatMemberRole?)cm.Role)
+                .FirstOrDefaultAsync();
 
-            if (currentMember == null)
+            if (currentMemberRole == null)
             {
                 return false;
             }
 
-            if (currentMember.Role == ChatMemberRole.Creator)
+            if (currentMemberRole == ChatMemberRole.Creator)
             {
                 return true;
             }
 
-            if (currentMember.Role == ChatMemberRole.Admin)
+            if (currentMemberRole == ChatMemberRole.Admin)
             {
                 return member.Role == ChatMemberRole.Base;
             }
