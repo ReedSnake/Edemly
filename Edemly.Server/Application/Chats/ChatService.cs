@@ -191,7 +191,7 @@ namespace Edemly.Server.Application.Chats
                     .AsNoTracking()
                     .Where(chat => chat.ChatMembers.Any(member => member.UserId == currentUserId))
                     .OrderByDescending(chat => chat.LastMessageTime ?? chat.CreatedAt)
-                    .Select(chat => new ChatListRow
+                    .Select(chat => new ChatRow
                     {
                         Id = chat.Id,
                         Name = chat.Name,
@@ -213,18 +213,7 @@ namespace Edemly.Server.Application.Chats
 
                 var directMembers = directChatIds.Count == 0
                     ? new Dictionary<int, DirectChatMemberRow>()
-                    : (await ctx.Set<ChatMember>()
-                        .AsNoTracking()
-                        .Where(member => directChatIds.Contains(member.ChatId) && member.UserId != currentUserId)
-                        .Select(member => new DirectChatMemberRow
-                        {
-                            ChatId = member.ChatId,
-                            UserId = member.UserId,
-                            Username = member.User.Username,
-                            FirstName = member.User.FirstName,
-                            LastName = member.User.LastName
-                        })
-                        .ToListAsync())
+                    : (await GetDirectChatOtherMembersAsync(ctx, directChatIds, currentUserId))
                     .GroupBy(member => member.ChatId)
                     .ToDictionary(group => group.Key, group => group.First());
 
@@ -251,21 +240,38 @@ namespace Edemly.Server.Application.Chats
 
                 var chat = await ctx.Set<Chat>()
                     .AsNoTracking()
-                    .Include(c => c.ChatMembers)
-                        .ThenInclude(cm => cm.User)
-                    .FirstOrDefaultAsync(c => c.Id == chatId);
+                    .Where(chat => chat.Id == chatId)
+                    .Select(chat => new ChatRow
+                    {
+                        Id = chat.Id,
+                        Name = chat.Name,
+                        Description = chat.Description,
+                        IconUrl = chat.IconUrl,
+                        Type = chat.Type,
+                        CreatedAt = chat.CreatedAt,
+                        LastMessageTime = chat.LastMessageTime,
+                        LastMessageId = chat.LastMessageId,
+                        LastMessageText = chat.LastMessageText,
+                        LastMessageSenderId = chat.LastMessageSenderId,
+                        IsCurrentUserMember = chat.ChatMembers.Any(member => member.UserId == currentUserId)
+                    })
+                    .FirstOrDefaultAsync();
 
                 if (chat == null)
                 {
                     return ServiceResult<ChatDto>.NotFound("Chat not found");
                 }
 
-                if (!chat.ChatMembers.Any(member => member.UserId == currentUserId))
+                if (!chat.IsCurrentUserMember)
                 {
                     return ServiceResult<ChatDto>.Forbidden();
                 }
 
-                return ServiceResult<ChatDto>.Ok(ChatMappings.ToDto(chat, ResolveDisplayName(chat, currentUserId)));
+                var otherMember = chat.Type == ChatType.Direct
+                    ? await GetDirectChatOtherMemberAsync(ctx, chat.Id, currentUserId)
+                    : null;
+
+                return ServiceResult<ChatDto>.Ok(chat.ToDto(ResolveDisplayName(chat, otherMember)));
             }
             catch (Exception ex)
             {
@@ -336,7 +342,45 @@ namespace Edemly.Server.Application.Chats
             return ResolveDirectChatDisplayName(user?.Username, user?.FirstName, user?.LastName, targetUserId);
         }
 
-        private static string ResolveDisplayName(ChatListRow chat, DirectChatMemberRow? otherMember)
+        private static Task<List<DirectChatMemberRow>> GetDirectChatOtherMembersAsync(
+            DbContext ctx,
+            IReadOnlyCollection<int> directChatIds,
+            int currentUserId)
+        {
+            return ctx.Set<ChatMember>()
+                .AsNoTracking()
+                .Where(member => directChatIds.Contains(member.ChatId) && member.UserId != currentUserId)
+                .Select(member => new DirectChatMemberRow
+                {
+                    ChatId = member.ChatId,
+                    UserId = member.UserId,
+                    Username = member.User.Username,
+                    FirstName = member.User.FirstName,
+                    LastName = member.User.LastName
+                })
+                .ToListAsync();
+        }
+
+        private static Task<DirectChatMemberRow?> GetDirectChatOtherMemberAsync(
+            DbContext ctx,
+            int chatId,
+            int currentUserId)
+        {
+            return ctx.Set<ChatMember>()
+                .AsNoTracking()
+                .Where(member => member.ChatId == chatId && member.UserId != currentUserId)
+                .Select(member => new DirectChatMemberRow
+                {
+                    ChatId = member.ChatId,
+                    UserId = member.UserId,
+                    Username = member.User.Username,
+                    FirstName = member.User.FirstName,
+                    LastName = member.User.LastName
+                })
+                .FirstOrDefaultAsync();
+        }
+
+        private static string ResolveDisplayName(ChatRow chat, DirectChatMemberRow? otherMember)
         {
             if (chat.Type != ChatType.Direct)
             {
@@ -373,7 +417,7 @@ namespace Edemly.Server.Application.Chats
             return $"User {targetUserId}";
         }
 
-        private sealed class ChatListRow
+        private sealed class ChatRow
         {
             public int Id { get; init; }
             public string Name { get; init; } = string.Empty;
@@ -385,6 +429,7 @@ namespace Edemly.Server.Application.Chats
             public int? LastMessageId { get; init; }
             public string? LastMessageText { get; init; }
             public int? LastMessageSenderId { get; init; }
+            public bool IsCurrentUserMember { get; init; }
 
             public ChatDto ToDto(string displayName)
             {
