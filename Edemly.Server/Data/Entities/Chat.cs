@@ -34,6 +34,15 @@ namespace Edemly.Server.Data.Entities
         [Column("last_message_time")]
         public DateTime? LastMessageTime { get; set; }
 
+        [Column("last_message_id")]
+        public int? LastMessageId { get; set; }
+
+        [Column("last_message_text")]
+        public string? LastMessageText { get; set; }
+
+        [Column("last_message_sender_id")]
+        public int? LastMessageSenderId { get; set; }
+
         public ICollection<ChatMember> ChatMembers { get; set; } = new List<ChatMember>();
         public ICollection<Message> Messages { get; set; } = new List<Message>();
     }

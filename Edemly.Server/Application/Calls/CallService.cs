@@ -4,6 +4,7 @@ using Edemly.Contracts.Realtime;
 using Edemly.Server.Api.Middleware;
 using Edemly.Server.Application.Common;
 using Edemly.Server.Application.Common.Mappers;
+using Edemly.Server.Application.Messages;
 using Edemly.Server.Data;
 using Edemly.Server.Data.Entities;
 using Edemly.Server.Infrastructure.Caching;
@@ -1129,7 +1130,9 @@ public class CallService : TenantAwareServiceBase, ICallService
         ctx.Set<Message>().Add(message);
         await ctx.SaveChangesAsync(cancellationToken);
 
-        await UpdateChatLastMessageTimeAsync(ctx, chatInfo.ChatId, message.SentAt, cancellationToken);
+        await ChatLastMessageSnapshot.ApplyAsync(ctx, message, cancellationToken);
+        await ctx.SaveChangesAsync(cancellationToken);
+
         ClearChatCache(chatInfo.ChatId);
 
         return MessageMappings.ToDto(message);
@@ -1182,6 +1185,8 @@ public class CallService : TenantAwareServiceBase, ICallService
         message.Text = SerializeCallMessagePayload(call, envelope, endedByUserId, reason);
         message.Type = MessageType.Call;
         call.SystemMessageId = envelope.SystemMessageId;
+
+        await ChatLastMessageSnapshot.ApplyIfCurrentAsync(ctx, message, cancellationToken);
 
         await ctx.SaveChangesAsync(cancellationToken);
         ClearChatCache(message.ChatId);
@@ -1245,24 +1250,6 @@ public class CallService : TenantAwareServiceBase, ICallService
             EndedAt = call.EndedAt,
             Participants = ToParticipantDtos(envelope)
         };
-    }
-
-    private static async Task UpdateChatLastMessageTimeAsync(
-        DbContext ctx,
-        int chatId,
-        DateTime lastMessageTime,
-        CancellationToken cancellationToken)
-    {
-        var chat = await ctx.Set<Chat>()
-            .FirstOrDefaultAsync(chat => chat.Id == chatId, cancellationToken);
-
-        if (chat == null)
-        {
-            return;
-        }
-
-        chat.LastMessageTime = lastMessageTime;
-        await ctx.SaveChangesAsync(cancellationToken);
     }
 
     private void ClearChatCache(int chatId)

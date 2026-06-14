@@ -189,6 +189,18 @@ namespace Edemly.Server.Data.Migrations.ServerDb
                         .HasColumnType("varchar(255)")
                         .HasColumnName("icon_url");
 
+                    b.Property<int?>("LastMessageId")
+                        .HasColumnType("int")
+                        .HasColumnName("last_message_id");
+
+                    b.Property<int?>("LastMessageSenderId")
+                        .HasColumnType("int")
+                        .HasColumnName("last_message_sender_id");
+
+                    b.Property<string>("LastMessageText")
+                        .HasColumnType("longtext")
+                        .HasColumnName("last_message_text");
+
                     b.Property<DateTime?>("LastMessageTime")
                         .HasColumnType("datetime(6)")
                         .HasColumnName("last_message_time");

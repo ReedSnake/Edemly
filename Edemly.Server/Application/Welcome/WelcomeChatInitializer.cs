@@ -1,5 +1,6 @@
 using Edemly.Server.Data;
 using Edemly.Server.Data.Entities;
+using Edemly.Server.Application.Messages;
 using Microsoft.EntityFrameworkCore;
 
 namespace Edemly.Server.Application.Welcome
@@ -205,7 +206,7 @@ namespace Edemly.Server.Application.Welcome
                 "All other features can be found in the main menu. Enjoy!"
             };
 
-            var latestSentAt = DateTime.MinValue;
+            Message? latestMessage = null;
             foreach (var messageText in welcomeMessages)
             {
                 var message = new Message
@@ -218,18 +219,18 @@ namespace Edemly.Server.Application.Welcome
                 };
 
                 _serverDbContext.Messages.Add(message);
-                if (message.SentAt > latestSentAt)
+                if (latestMessage == null || message.SentAt > latestMessage.SentAt)
                 {
-                    latestSentAt = message.SentAt;
+                    latestMessage = message;
                 }
             }
 
             await _serverDbContext.SaveChangesAsync();
 
             var chat = await _serverDbContext.Chats.FindAsync(chatId);
-            if (chat != null)
+            if (chat != null && latestMessage != null)
             {
-                chat.LastMessageTime = latestSentAt == DateTime.MinValue ? DateTime.UtcNow : latestSentAt;
+                ChatLastMessageSnapshot.Apply(chat, latestMessage);
                 _serverDbContext.Chats.Update(chat);
                 await _serverDbContext.SaveChangesAsync();
             }

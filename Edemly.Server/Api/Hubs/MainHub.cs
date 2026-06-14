@@ -105,9 +105,12 @@ namespace Edemly.Server.Api.Hubs
                     FileName = messageDto.FileName
                 };
 
-                chat.LastMessageTime = msg.SentAt;
                 ctx.Set<Message>().Add(msg);
                 await ctx.SaveChangesAsync();
+
+                ChatLastMessageSnapshot.Apply(chat, msg);
+                await ctx.SaveChangesAsync();
+
                 _cacheRegistry.ClearChat(msg.ChatId, _cache);
 
                 var messageToSend = MessageMappings.ToDto(msg);
@@ -163,6 +166,8 @@ namespace Edemly.Server.Api.Hubs
                 if (messageDto.ContentUrl != null) message.ContentUrl = messageDto.ContentUrl;
                 if (messageDto.FileName != null) message.FileName = messageDto.FileName;
 
+                await ChatLastMessageSnapshot.ApplyIfCurrentAsync(ctx, message);
+
                 ctx.Update(message);
                 await ctx.SaveChangesAsync();
                 _cacheRegistry.ClearChat(message.ChatId, _cache);
@@ -210,6 +215,8 @@ namespace Edemly.Server.Api.Hubs
                 {
                     throw new HubException("You don't have permission to delete this message");
                 }
+
+                await ChatLastMessageSnapshot.RefreshAfterDeletingAsync(ctx, message);
 
                 ctx.Set<Message>().Remove(message);
                 await ctx.SaveChangesAsync();

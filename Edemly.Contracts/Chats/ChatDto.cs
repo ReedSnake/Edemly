@@ -9,6 +9,7 @@ namespace Edemly.Contracts.Chats
         public int Type { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime? LastMessageTime { get; set; }
+        public int? LastMessageId { get; set; }
         public string? LastMessageText { get; set; }
         public int? LastMessageSenderId { get; set; }
     }

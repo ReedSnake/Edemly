@@ -18,9 +18,10 @@ namespace Edemly.Server.Application.Common.Mappers
                 IconUrl = chat.IconUrl ?? string.Empty,
                 Type = (int)chat.Type,
                 CreatedAt = chat.CreatedAt,
-                LastMessageTime = chat.LastMessageTime,
-                LastMessageText = lastMessage?.Text,
-                LastMessageSenderId = lastMessage?.SenderId
+                LastMessageTime = lastMessage?.SentAt ?? chat.LastMessageTime,
+                LastMessageId = lastMessage?.Id ?? chat.LastMessageId,
+                LastMessageText = lastMessage?.Text ?? chat.LastMessageText,
+                LastMessageSenderId = lastMessage?.SenderId ?? chat.LastMessageSenderId
             };
         }
     }

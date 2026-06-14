@@ -176,6 +176,9 @@ namespace Edemly.Server.Application.Messages
                 ctx.Set<Message>().Add(msg);
                 await ctx.SaveChangesAsync();
 
+                await ChatLastMessageSnapshot.ApplyAsync(ctx, msg);
+                await ctx.SaveChangesAsync();
+
                 ClearChatCache(msg.ChatId);
                 return ServiceResult.Ok("Message created");
             }
@@ -216,6 +219,8 @@ namespace Edemly.Server.Application.Messages
                 if (request.FileName != null)
                     msg.FileName = request.FileName;
 
+                await ChatLastMessageSnapshot.ApplyIfCurrentAsync(ctx, msg);
+
                 await ctx.SaveChangesAsync();
                 ClearChatCache(msg.ChatId);
 
@@ -245,6 +250,8 @@ namespace Edemly.Server.Application.Messages
                 {
                     return ServiceResult.Forbidden();
                 }
+
+                await ChatLastMessageSnapshot.RefreshAfterDeletingAsync(ctx, msg);
 
                 ctx.Set<Message>().Remove(msg);
                 await ctx.SaveChangesAsync();
