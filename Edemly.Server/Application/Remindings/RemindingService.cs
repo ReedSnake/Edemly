@@ -165,7 +165,9 @@ namespace Edemly.Server.Application.Remindings
 
                 var reminding = await ctx.Set<Reminding>()
                     .AsNoTracking()
-                    .FirstOrDefaultAsync(item => item.Id == remindingId);
+                    .Where(item => item.Id == remindingId)
+                    .Select(RemindingMappings.Projection)
+                    .FirstOrDefaultAsync();
 
                 if (reminding == null)
                 {
@@ -177,7 +179,7 @@ namespace Edemly.Server.Application.Remindings
                     return ServiceResult<RemindingDto>.Forbidden();
                 }
 
-                return ServiceResult<RemindingDto>.Ok(RemindingMappings.ToDto(reminding));
+                return ServiceResult<RemindingDto>.Ok(reminding);
             }
             catch (Exception ex)
             {

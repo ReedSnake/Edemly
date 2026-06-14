@@ -64,14 +64,16 @@ namespace Edemly.Server.Application.Payments
 
                 var payment = await ctx.Set<Payment>()
                     .AsNoTracking()
-                    .FirstOrDefaultAsync(p => p.Id == paymentId);
+                    .Where(p => p.Id == paymentId)
+                    .Select(PaymentMappings.Projection)
+                    .FirstOrDefaultAsync();
 
                 if (payment == null)
                 {
                     return ServiceResult<PaymentDto>.NotFound("Payment not found");
                 }
 
-                return ServiceResult<PaymentDto>.Ok(PaymentMappings.ToDto(payment));
+                return ServiceResult<PaymentDto>.Ok(payment);
             }
             catch (Exception ex)
             {

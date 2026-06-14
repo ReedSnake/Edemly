@@ -36,16 +36,18 @@ namespace Edemly.Server.Application.Notes
 
                 var note = await ctx.Set<Note>()
                     .AsNoTracking()
-                    .FirstOrDefaultAsync(n =>
+                    .Where(n =>
                         n.CreatorId == currentUserId &&
-                        n.TargetUserId == targetUserId);
+                        n.TargetUserId == targetUserId)
+                    .Select(NoteMappings.Projection)
+                    .FirstOrDefaultAsync();
 
                 if (note == null)
                 {
                     return ServiceResult<NoteDto>.NotFound("Note not found");
                 }
 
-                return ServiceResult<NoteDto>.Ok(NoteMappings.ToDto(note));
+                return ServiceResult<NoteDto>.Ok(note);
             }
             catch (Exception ex)
             {
