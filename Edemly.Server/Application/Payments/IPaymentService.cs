@@ -14,6 +14,8 @@ namespace Edemly.Server.Application.Payments
 
         Task<ServiceResult> UpdatePaymentStatusAsync(string transactionId, PaymentStatus newStatus);
 
+        Task<ServiceResult> MarkPaidAndUpgradeUserAsync(string transactionId, int durationDays = 30);
+
         Task<ServiceResult> UpgradeUserToPremiumAsync(int targetUserId, int durationDays = 30);
     }
 }

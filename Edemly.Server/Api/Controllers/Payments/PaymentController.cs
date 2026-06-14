@@ -34,7 +34,7 @@ namespace Edemly.Server.Api.Controllers.Payments
         [Authorize]
         public async Task<IActionResult> CreateAsync([FromQuery] decimal amount = 100.00m)
         {
-            var unauthorizedResult = RequireCurrentUserId(out var currentUserId, ClaimTypes.NameIdentifier);
+            var unauthorizedResult = RequireCurrentUserId(out var currentUserId, ClaimTypes.NameIdentifier, "userId", "sub");
             if (unauthorizedResult != null)
             {
                 return unauthorizedResult;
@@ -66,7 +66,7 @@ namespace Edemly.Server.Api.Controllers.Payments
             _logger.LogInformation("User returned from payment for order: {OrderReference}", orderReference);
 
             var isTestMode = _configuration.GetValue<bool>("WayForPay:TestMode", false);
-            bool isPaid = false;
+            bool isPaid;
 
             if (isTestMode && !string.IsNullOrEmpty(testSuccess))
             {
@@ -87,25 +87,30 @@ namespace Edemly.Server.Api.Controllers.Payments
 
             if (isPaid)
             {
-                await _paymentService.UpdatePaymentStatusAsync(orderReference, PaymentStatus.Paid);
-
-                var targetUserId = ExtractUserIdFromOrderReference(orderReference);
-
-                if (targetUserId > 0)
+                var completeResult = await _paymentService.MarkPaidAndUpgradeUserAsync(orderReference, 30);
+                if (completeResult.Success)
                 {
-                    var upgradeResult = await _paymentService.UpgradeUserToPremiumAsync(targetUserId, 30);
-
-                    if (upgradeResult.Success)
-                    {
-                        _logger.LogInformation("User {UserId} successfully upgraded to Premium", targetUserId);
-                        return Content(GenerateResultPage(true, "Оплату успішно підтверджено! Ваш акаунт тепер Premium."), "text/html");
-                    }
+                    _logger.LogInformation("Payment {OrderReference} completed successfully", orderReference);
+                    return Content(GenerateResultPage(true, "Оплату успішно підтверджено! Ваш акаунт тепер Premium."), "text/html");
                 }
+
+                _logger.LogWarning(
+                    "Payment {OrderReference} was reported paid but completion failed: {Message}",
+                    orderReference,
+                    completeResult.Message);
 
                 return Content(GenerateResultPage(false, "Помилка при оновленні статусу користувача"), "text/html");
             }
 
-            await _paymentService.UpdatePaymentStatusAsync(orderReference, PaymentStatus.Failed);
+            var failedUpdateResult = await _paymentService.UpdatePaymentStatusAsync(orderReference, PaymentStatus.Failed);
+            if (!failedUpdateResult.Success)
+            {
+                _logger.LogWarning(
+                    "Failed to mark payment {OrderReference} as failed: {Message}",
+                    orderReference,
+                    failedUpdateResult.Message);
+            }
+
             return Content(GenerateResultPage(false, "Оплату не підтверджено. Спробуйте ще раз."), "text/html");
         }
 
@@ -113,7 +118,7 @@ namespace Edemly.Server.Api.Controllers.Payments
         [Authorize]
         public async Task<IActionResult> GetPaymentHistoryAsync()
         {
-            var unauthorizedResult = RequireCurrentUserId(out var currentUserId, ClaimTypes.NameIdentifier);
+            var unauthorizedResult = RequireCurrentUserId(out var currentUserId, ClaimTypes.NameIdentifier, "userId", "sub");
             if (unauthorizedResult != null)
             {
                 return unauthorizedResult;
@@ -127,6 +132,18 @@ namespace Edemly.Server.Api.Controllers.Payments
         [Authorize]
         public async Task<IActionResult> CheckPaymentStatusAsync(string orderId)
         {
+            var unauthorizedResult = RequireCurrentUserId(out var currentUserId, ClaimTypes.NameIdentifier, "userId", "sub");
+            if (unauthorizedResult != null)
+            {
+                return unauthorizedResult;
+            }
+
+            var orderUserId = ExtractUserIdFromOrderReference(orderId);
+            if (orderUserId <= 0 || orderUserId != currentUserId)
+            {
+                return Forbid();
+            }
+
             var result = await _wayForPayService.CheckPaymentStatusAsync(orderId);
 
             if (!result.Success)

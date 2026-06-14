@@ -138,6 +138,61 @@ namespace Edemly.Server.Application.Payments
             }
         }
 
+        public async Task<ServiceResult> MarkPaidAndUpgradeUserAsync(string transactionId, int durationDays = 30)
+        {
+            try
+            {
+                await using var dbContextLease = ResolveDbContext();
+                var ctx = dbContextLease.Context;
+                var strategy = ctx.Database.CreateExecutionStrategy();
+
+                ServiceResult? result = null;
+                await strategy.ExecuteAsync(async () =>
+                {
+                    await using var transaction = await ctx.Database.BeginTransactionAsync();
+
+                    var payment = await ctx.Set<Payment>()
+                        .FirstOrDefaultAsync(p => p.TransactionId == transactionId);
+
+                    if (payment == null)
+                    {
+                        result = ServiceResult.NotFound("Payment not found");
+                        return;
+                    }
+
+                    var user = await ctx.Set<User>().FindAsync(payment.UserId);
+                    if (user == null)
+                    {
+                        result = ServiceResult.NotFound("User not found");
+                        return;
+                    }
+
+                    payment.Status = PaymentStatus.Paid;
+                    payment.UpdatedAt = DateTime.UtcNow;
+                    user.SubscriptionStatus = SubscriptionStatus.Premium;
+                    user.SubscriptionExpiration = DateTime.UtcNow.AddDays(durationDays);
+
+                    await ctx.SaveChangesAsync();
+                    await transaction.CommitAsync();
+
+                    _logger.LogInformation(
+                        "Payment {TransactionId} marked paid and user {UserId} upgraded to Premium until {Expiration}",
+                        transactionId,
+                        user.Id,
+                        user.SubscriptionExpiration);
+
+                    result = ServiceResult.Ok("Payment paid and user upgraded");
+                });
+
+                return result ?? ServiceResult.Unexpected("Failed to complete payment");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to complete paid payment for transaction {TransactionId}", transactionId);
+                return ServiceResult.Unexpected("Failed to complete payment");
+            }
+        }
+
         public async Task<ServiceResult> UpgradeUserToPremiumAsync(int targetUserId, int durationDays = 30)
         {
             try
