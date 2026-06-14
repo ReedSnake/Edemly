@@ -45,11 +45,9 @@ namespace Edemly.Server.Application.Common
             await using var dbContextLease = ResolveDbContext();
             var ctx = dbContextLease.Context;
 
-            var message = await ctx.Set<Message>()
+            return await ctx.Set<Message>()
                 .AsNoTracking()
-                .FirstOrDefaultAsync(m => m.SenderId == currentUserId && m.Id == messageId);
-
-            return message != null;
+                .AnyAsync(m => m.SenderId == currentUserId && m.Id == messageId);
         }
 
         public async Task<bool> CanDeleteMessageAsync(int requesterId, int messageId)
@@ -59,7 +57,13 @@ namespace Edemly.Server.Application.Common
 
             var message = await ctx.Set<Message>()
                 .AsNoTracking()
-                .FirstOrDefaultAsync(m => m.Id == messageId);
+                .Where(m => m.Id == messageId)
+                .Select(m => new MessagePermissionRow
+                {
+                    ChatId = m.ChatId,
+                    SenderId = m.SenderId
+                })
+                .FirstOrDefaultAsync();
 
             if (message == null)
             {
@@ -97,11 +101,9 @@ namespace Edemly.Server.Application.Common
             await using var dbContextLease = ResolveDbContext();
             var ctx = dbContextLease.Context;
 
-            var note = await ctx.Set<Note>()
+            return await ctx.Set<Note>()
                 .AsNoTracking()
-                .FirstOrDefaultAsync(n => n.Id == noteId);
-
-            return note != null && note.CreatorId == currentUserId;
+                .AnyAsync(n => n.Id == noteId && n.CreatorId == currentUserId);
         }
 
         public async Task<bool> IsRemindingAuthorAsync(int currentUserId, int remindingId)
@@ -109,27 +111,25 @@ namespace Edemly.Server.Application.Common
             await using var dbContextLease = ResolveDbContext();
             var ctx = dbContextLease.Context;
 
-            var reminding = await ctx.Set<Reminding>()
+            return await ctx.Set<Reminding>()
                 .AsNoTracking()
-                .FirstOrDefaultAsync(r => r.Id == remindingId);
-
-            return reminding != null && reminding.UserId == currentUserId;
+                .AnyAsync(r => r.Id == remindingId && r.UserId == currentUserId);
         }
 
         private static async Task<string> CheckRightsAsync(DbContext ctx, int currentUserId, int chatId)
         {
             var chatMember = await ctx.Set<ChatMember>()
                 .AsNoTracking()
-                .FirstOrDefaultAsync(cm => cm.UserId == currentUserId && cm.ChatId == chatId);
+                .Where(cm => cm.UserId == currentUserId && cm.ChatId == chatId)
+                .Select(cm => (ChatMemberRole?)cm.Role)
+                .FirstOrDefaultAsync();
 
-            var role = chatMember?.Role;
-
-            if (role == ChatMemberRole.Creator)
+            if (chatMember == ChatMemberRole.Creator)
             {
                 return "creator";
             }
 
-            if (role == ChatMemberRole.Admin)
+            if (chatMember == ChatMemberRole.Admin)
             {
                 return "admin";
             }
@@ -141,7 +141,14 @@ namespace Edemly.Server.Application.Common
         {
             var chatMember = await ctx.Set<ChatMember>()
                 .AsNoTracking()
-                .FirstOrDefaultAsync(cm => cm.Id == chatMemberId);
+                .Where(cm => cm.Id == chatMemberId)
+                .Select(cm => new ChatMemberPermissionRow
+                {
+                    ChatId = cm.ChatId,
+                    UserId = cm.UserId,
+                    Role = cm.Role
+                })
+                .FirstOrDefaultAsync();
 
             if (chatMember == null || chatMember.UserId == requesterId)
             {
@@ -161,6 +168,19 @@ namespace Edemly.Server.Application.Common
             }
 
             return true;
+        }
+
+        private sealed class MessagePermissionRow
+        {
+            public int ChatId { get; init; }
+            public int SenderId { get; init; }
+        }
+
+        private sealed class ChatMemberPermissionRow
+        {
+            public int ChatId { get; init; }
+            public int UserId { get; init; }
+            public ChatMemberRole Role { get; init; }
         }
     }
 }
