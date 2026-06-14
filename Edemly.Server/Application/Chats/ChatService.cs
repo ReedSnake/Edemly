@@ -189,21 +189,47 @@ namespace Edemly.Server.Application.Chats
 
                 var chats = await ctx.Set<Chat>()
                     .AsNoTracking()
-                    .Include(c => c.ChatMembers)
-                        .ThenInclude(cm => cm.User)
-                    .Where(c => c.ChatMembers.Any(cm => cm.UserId == currentUserId))
+                    .Where(chat => chat.ChatMembers.Any(member => member.UserId == currentUserId))
+                    .OrderByDescending(chat => chat.LastMessageTime ?? chat.CreatedAt)
+                    .Select(chat => new ChatListRow
+                    {
+                        Id = chat.Id,
+                        Name = chat.Name,
+                        Description = chat.Description,
+                        IconUrl = chat.IconUrl,
+                        Type = chat.Type,
+                        CreatedAt = chat.CreatedAt,
+                        LastMessageTime = chat.LastMessageTime,
+                        LastMessageId = chat.LastMessageId,
+                        LastMessageText = chat.LastMessageText,
+                        LastMessageSenderId = chat.LastMessageSenderId
+                    })
                     .ToListAsync();
 
-                var result = new List<ChatDto>();
+                var directChatIds = chats
+                    .Where(chat => chat.Type == ChatType.Direct)
+                    .Select(chat => chat.Id)
+                    .ToList();
 
-                foreach (var chat in chats)
-                {
-                    var displayName = ResolveDisplayName(chat, currentUserId);
-                    result.Add(ChatMappings.ToDto(chat, displayName));
-                }
+                var directMembers = directChatIds.Count == 0
+                    ? new Dictionary<int, DirectChatMemberRow>()
+                    : (await ctx.Set<ChatMember>()
+                        .AsNoTracking()
+                        .Where(member => directChatIds.Contains(member.ChatId) && member.UserId != currentUserId)
+                        .Select(member => new DirectChatMemberRow
+                        {
+                            ChatId = member.ChatId,
+                            UserId = member.UserId,
+                            Username = member.User.Username,
+                            FirstName = member.User.FirstName,
+                            LastName = member.User.LastName
+                        })
+                        .ToListAsync())
+                    .GroupBy(member => member.ChatId)
+                    .ToDictionary(group => group.Key, group => group.First());
 
-                result = result
-                    .OrderByDescending(c => c.LastMessageTime ?? c.CreatedAt)
+                var result = chats
+                    .Select(chat => chat.ToDto(ResolveDisplayName(chat, directMembers.GetValueOrDefault(chat.Id))))
                     .ToList();
 
                 _logger.LogInformation("Returning {Count} chats for user {UserId}", result.Count, currentUserId);
@@ -307,12 +333,36 @@ namespace Edemly.Server.Application.Chats
 
         private static string ResolveDirectChatDisplayName(User? user, int targetUserId)
         {
-            if (!string.IsNullOrWhiteSpace(user?.Username))
+            return ResolveDirectChatDisplayName(user?.Username, user?.FirstName, user?.LastName, targetUserId);
+        }
+
+        private static string ResolveDisplayName(ChatListRow chat, DirectChatMemberRow? otherMember)
+        {
+            if (chat.Type != ChatType.Direct)
             {
-                return user.Username;
+                return chat.Name;
             }
 
-            var fullName = string.Join(" ", new[] { user?.FirstName, user?.LastName }
+            if (otherMember == null)
+            {
+                return chat.Name;
+            }
+
+            return ResolveDirectChatDisplayName(otherMember.Username, otherMember.FirstName, otherMember.LastName, otherMember.UserId);
+        }
+
+        private static string ResolveDirectChatDisplayName(
+            string? username,
+            string? firstName,
+            string? lastName,
+            int targetUserId)
+        {
+            if (!string.IsNullOrWhiteSpace(username))
+            {
+                return username;
+            }
+
+            var fullName = string.Join(" ", new[] { firstName, lastName }
                 .Where(part => !string.IsNullOrWhiteSpace(part)));
 
             if (!string.IsNullOrWhiteSpace(fullName))
@@ -321,6 +371,46 @@ namespace Edemly.Server.Application.Chats
             }
 
             return $"User {targetUserId}";
+        }
+
+        private sealed class ChatListRow
+        {
+            public int Id { get; init; }
+            public string Name { get; init; } = string.Empty;
+            public string? Description { get; init; }
+            public string? IconUrl { get; init; }
+            public ChatType Type { get; init; }
+            public DateTime CreatedAt { get; init; }
+            public DateTime? LastMessageTime { get; init; }
+            public int? LastMessageId { get; init; }
+            public string? LastMessageText { get; init; }
+            public int? LastMessageSenderId { get; init; }
+
+            public ChatDto ToDto(string displayName)
+            {
+                return new ChatDto
+                {
+                    Id = Id,
+                    Name = displayName,
+                    Description = Description ?? string.Empty,
+                    IconUrl = IconUrl ?? string.Empty,
+                    Type = (int)Type,
+                    CreatedAt = CreatedAt,
+                    LastMessageTime = LastMessageTime,
+                    LastMessageId = LastMessageId,
+                    LastMessageText = LastMessageText,
+                    LastMessageSenderId = LastMessageSenderId
+                };
+            }
+        }
+
+        private sealed class DirectChatMemberRow
+        {
+            public int ChatId { get; init; }
+            public int UserId { get; init; }
+            public string? Username { get; init; }
+            public string? FirstName { get; init; }
+            public string? LastName { get; init; }
         }
     }
 }
