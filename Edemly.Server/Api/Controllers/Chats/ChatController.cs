@@ -84,8 +84,14 @@ namespace Edemly.Server.Api.Controllers.Chats
         [HttpPut("{chatId}")]
         public async Task<IActionResult> UpdateChatAsync(int chatId, [FromBody] UpdateChatDto request)
         {
+            var unauthorizedResult = RequireCurrentUserId(out var currentUserId);
+            if (unauthorizedResult != null)
+            {
+                return unauthorizedResult;
+            }
+
             return ToServiceResult(
-                await _chatService.UpdateAsync(chatId, request.Name, request.Description, request.IconUrl));
+                await _chatService.UpdateAsync(currentUserId, chatId, request.Name, request.Description, request.IconUrl));
         }
     }
 }

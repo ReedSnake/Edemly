@@ -13,6 +13,6 @@ namespace Edemly.Server.Application.Chats
 
         Task<ServiceResult<ChatDto>> CreateGroupChatAsync(int requesterId, string groupName, List<int> participantIds);
 
-        Task<ServiceResult> UpdateAsync(int chatId, string? name, string? description, string? iconUrl);
+        Task<ServiceResult> UpdateAsync(int currentUserId, int chatId, string? name, string? description, string? iconUrl);
     }
 }

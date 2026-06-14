@@ -293,7 +293,7 @@ namespace Edemly.Server.Application.Chats
             }
         }
 
-        public async Task<ServiceResult> UpdateAsync(int chatId, string? name, string? description, string? iconUrl)
+        public async Task<ServiceResult> UpdateAsync(int currentUserId, int chatId, string? name, string? description, string? iconUrl)
         {
             try
             {
@@ -305,6 +305,17 @@ namespace Edemly.Server.Application.Chats
                 if (chat == null)
                 {
                     return ServiceResult.NotFound("Chat not found");
+                }
+
+                var requesterRole = await ctx.Set<ChatMember>()
+                    .AsNoTracking()
+                    .Where(member => member.ChatId == chatId && member.UserId == currentUserId)
+                    .Select(member => (ChatMemberRole?)member.Role)
+                    .FirstOrDefaultAsync();
+
+                if (requesterRole != ChatMemberRole.Admin && requesterRole != ChatMemberRole.Creator)
+                {
+                    return ServiceResult.Forbidden();
                 }
 
                 if (!string.IsNullOrWhiteSpace(name))

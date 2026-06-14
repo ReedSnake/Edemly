@@ -68,18 +68,44 @@ namespace Edemly.Server.Api.Controllers.Chats
                         ServiceResult.BadRequest(uploadResult.Error ?? "Failed to upload file"));
                 }
 
+                var uploadedUrl = uploadResult.Url;
+                if (string.IsNullOrWhiteSpace(uploadedUrl))
+                {
+                    return ToServiceResult(ServiceResult.BadRequest("Uploaded file URL is missing"));
+                }
+
                 var updateResult = await _chatService.UpdateAsync(
+                    currentUserId,
                     chatId,
                     name: null,
                     description: null,
-                    iconUrl: uploadResult.Url);
+                    iconUrl: uploadedUrl);
 
                 if (!updateResult.Success)
                 {
+                    try
+                    {
+                        var cleanupResult = await _fileStorageService.DeleteFileAsync(uploadedUrl);
+                        if (!cleanupResult.Success)
+                        {
+                            _logger.LogWarning(
+                                "Failed to delete uploaded chat icon after chat update failure: {Url}. Error: {Error}",
+                                uploadedUrl,
+                                cleanupResult.Error);
+                        }
+                    }
+                    catch (Exception cleanupEx)
+                    {
+                        _logger.LogWarning(
+                            cleanupEx,
+                            "Failed to delete uploaded chat icon after chat update failure: {Url}",
+                            uploadedUrl);
+                    }
+
                     return ToServiceResult(updateResult);
                 }
 
-                return Ok(new { url = uploadResult.Url });
+                return Ok(new { url = uploadedUrl });
             }
             catch (Exception ex)
             {
