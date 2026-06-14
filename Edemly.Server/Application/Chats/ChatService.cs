@@ -44,6 +44,19 @@ namespace Edemly.Server.Application.Chats
                     .Where(c => c.Type == ChatType.Direct)
                     .Where(c => c.ChatMembers.Any(cm => cm.UserId == currentUserId))
                     .Where(c => c.ChatMembers.Any(cm => cm.UserId == targetUserId))
+                    .Select(chat => new ChatRow
+                    {
+                        Id = chat.Id,
+                        Name = chat.Name,
+                        Description = chat.Description,
+                        IconUrl = chat.IconUrl,
+                        Type = chat.Type,
+                        CreatedAt = chat.CreatedAt,
+                        LastMessageTime = chat.LastMessageTime,
+                        LastMessageId = chat.LastMessageId,
+                        LastMessageText = chat.LastMessageText,
+                        LastMessageSenderId = chat.LastMessageSenderId
+                    })
                     .FirstOrDefaultAsync();
 
                 if (existingChat != null)
@@ -54,14 +67,14 @@ namespace Edemly.Server.Application.Chats
                         currentUserId,
                         targetUserId);
 
-                    return ServiceResult<ChatDto>.Ok(ChatMappings.ToDto(existingChat));
+                    return ServiceResult<ChatDto>.Ok(existingChat.ToDto(existingChat.Name));
                 }
 
-                var targetUser = await ctx.Set<User>()
+                var targetUserExists = await ctx.Set<User>()
                     .AsNoTracking()
-                    .FirstOrDefaultAsync(user => user.Id == targetUserId);
+                    .AnyAsync(user => user.Id == targetUserId);
 
-                if (targetUser == null)
+                if (!targetUserExists)
                 {
                     return ServiceResult<ChatDto>.NotFound("User not found");
                 }
