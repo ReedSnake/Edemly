@@ -162,24 +162,34 @@ namespace Edemly.Server.Application.Messages
                     return accessResult;
                 }
 
-                var msg = new Message
+                Message? msg = null;
+                var strategy = ctx.Database.CreateExecutionStrategy();
+
+                await strategy.ExecuteAsync(async () =>
                 {
-                    ChatId = request.ChatId,
-                    SenderId = currentUserId,
-                    Text = request.Text,
-                    Type = (MessageType)request.Type,
-                    ContentUrl = request.ContentUrl,
-                    FileName = request.FileName,
-                    SentAt = DateTime.UtcNow
-                };
+                    await using var transaction = await ctx.Database.BeginTransactionAsync();
 
-                ctx.Set<Message>().Add(msg);
-                await ctx.SaveChangesAsync();
+                    msg = new Message
+                    {
+                        ChatId = request.ChatId,
+                        SenderId = currentUserId,
+                        Text = request.Text,
+                        Type = (MessageType)request.Type,
+                        ContentUrl = request.ContentUrl,
+                        FileName = request.FileName,
+                        SentAt = DateTime.UtcNow
+                    };
 
-                await ChatLastMessageSnapshot.ApplyAsync(ctx, msg);
-                await ctx.SaveChangesAsync();
+                    ctx.Set<Message>().Add(msg);
+                    await ctx.SaveChangesAsync();
 
-                ClearChatCache(msg.ChatId);
+                    await ChatLastMessageSnapshot.ApplyAsync(ctx, msg);
+                    await ctx.SaveChangesAsync();
+
+                    await transaction.CommitAsync();
+                });
+
+                ClearChatCache(msg!.ChatId);
                 return ServiceResult.Ok("Message created");
             }
             catch (Exception ex)

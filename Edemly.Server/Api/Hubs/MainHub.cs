@@ -72,51 +72,61 @@ namespace Edemly.Server.Api.Hubs
                     throw new HubException("User is not a member of this chat");
                 }
 
-                var chat = await ctx.Set<Chat>().FirstOrDefaultAsync(c => c.Id == messageDto.ChatId);
                 var sentAt = DateTime.UtcNow;
+                Chat? chat = null;
+                Message? msg = null;
 
-                if (chat == null)
+                var strategy = ctx.Database.CreateExecutionStrategy();
+                await strategy.ExecuteAsync(async () =>
                 {
-                    _logger.LogWarning("SendMessage: Chat {ChatId} not found. Creating placeholder chat.", messageDto.ChatId);
+                    await using var transaction = await ctx.Database.BeginTransactionAsync();
 
-                    var placeholder = new Chat
+                    chat = await ctx.Set<Chat>().FirstOrDefaultAsync(c => c.Id == messageDto.ChatId);
+                    if (chat == null)
                     {
-                        Name = $"Chat {messageDto.ChatId}",
-                        Type = ChatType.Group,
-                        CreatedAt = sentAt,
-                        LastMessageTime = sentAt
+                        _logger.LogWarning("SendMessage: Chat {ChatId} not found. Creating placeholder chat.", messageDto.ChatId);
+
+                        var placeholder = new Chat
+                        {
+                            Name = $"Chat {messageDto.ChatId}",
+                            Type = ChatType.Group,
+                            CreatedAt = sentAt,
+                            LastMessageTime = sentAt
+                        };
+
+                        ctx.Set<Chat>().Add(placeholder);
+                        await ctx.SaveChangesAsync();
+
+                        chat = placeholder;
+                        _logger.LogInformation("Placeholder chat created with Id {NewChatId} for missing chat {OldChatRef}", chat.Id, messageDto.ChatId);
+                    }
+
+                    msg = new Message
+                    {
+                        ChatId = chat.Id,
+                        SenderId = userId,
+                        Text = messageDto.Text,
+                        SentAt = sentAt,
+                        Type = (MessageType)messageDto.Type,
+                        ContentUrl = messageDto.ContentUrl,
+                        FileName = messageDto.FileName
                     };
 
-                    ctx.Set<Chat>().Add(placeholder);
+                    ctx.Set<Message>().Add(msg);
                     await ctx.SaveChangesAsync();
 
-                    chat = placeholder;
-                    _logger.LogInformation("Placeholder chat created with Id {NewChatId} for missing chat {OldChatRef}", chat.Id, messageDto.ChatId);
-                }
+                    ChatLastMessageSnapshot.Apply(chat, msg);
+                    await ctx.SaveChangesAsync();
 
-                var msg = new Message
-                {
-                    ChatId = chat.Id,
-                    SenderId = userId,
-                    Text = messageDto.Text,
-                    SentAt = sentAt,
-                    Type = (MessageType)messageDto.Type,
-                    ContentUrl = messageDto.ContentUrl,
-                    FileName = messageDto.FileName
-                };
+                    await transaction.CommitAsync();
+                });
 
-                ctx.Set<Message>().Add(msg);
-                await ctx.SaveChangesAsync();
-
-                ChatLastMessageSnapshot.Apply(chat, msg);
-                await ctx.SaveChangesAsync();
-
-                _cacheRegistry.ClearChat(msg.ChatId, _cache);
+                _cacheRegistry.ClearChat(msg!.ChatId, _cache);
 
                 var messageToSend = MessageMappings.ToDto(msg);
 
                 var recipients = ToSignalRUserIds(chatMemberUserIds);
-                if (chat.Id != messageDto.ChatId)
+                if (chat!.Id != messageDto.ChatId)
                 {
                     try
                     {
