@@ -71,8 +71,13 @@ namespace Edemly.Server.Application.Notes
                 await using var dbContextLease = ResolveDbContext();
                 var ctx = dbContextLease.Context;
 
-                var creator = await ctx.Set<User>().FindAsync(currentUserId);
-                if (creator == null)
+                var creatorSubscription = await ctx.Set<User>()
+                    .AsNoTracking()
+                    .Where(user => user.Id == currentUserId)
+                    .Select(user => (SubscriptionStatus?)user.SubscriptionStatus)
+                    .FirstOrDefaultAsync();
+
+                if (creatorSubscription == null)
                 {
                     return ServiceResult<NoteDto>.NotFound("User not found");
                 }
@@ -93,8 +98,8 @@ namespace Edemly.Server.Application.Notes
                 if (note == null)
                 {
                     var isUnlimited = IsTenantRequest
-                        || creator.SubscriptionStatus == SubscriptionStatus.Premium
-                        || creator.SubscriptionStatus == SubscriptionStatus.Vip;
+                        || creatorSubscription == SubscriptionStatus.Premium
+                        || creatorSubscription == SubscriptionStatus.Vip;
 
                     var existingCount = await ctx.Set<Note>()
                         .CountAsync(n => n.CreatorId == currentUserId);

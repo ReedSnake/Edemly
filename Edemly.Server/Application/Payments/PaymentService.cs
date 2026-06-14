@@ -26,8 +26,11 @@ namespace Edemly.Server.Application.Payments
                 await using var dbContextLease = ResolveDbContext();
                 var ctx = dbContextLease.Context;
 
-                var user = await ctx.Set<User>().FindAsync(currentUserId);
-                if (user == null)
+                var userExists = await ctx.Set<User>()
+                    .AsNoTracking()
+                    .AnyAsync(user => user.Id == currentUserId);
+
+                if (!userExists)
                 {
                     return ServiceResult.NotFound("User not found");
                 }
