@@ -111,15 +111,30 @@ namespace Edemly.Server.Application.Users
 
                 var user = await ctx.Set<User>()
                     .AsNoTracking()
-                    .Include(u => u.LoginInfo)
-                    .FirstOrDefaultAsync(u => u.Id == currentUserId);
+                    .Where(user => user.Id == currentUserId)
+                    .Select(user => new UserInfoRow
+                    {
+                        Id = user.Id,
+                        Username = user.Username,
+                        Email = user.LoginInfo.Email,
+                        PhoneNumber = user.PhoneNumber,
+                        PfpUrl = user.PfpUrl,
+                        Description = user.Description,
+                        FirstName = user.FirstName,
+                        LastName = user.LastName,
+                        Location = user.Location,
+                        CreatedAt = user.CreatedAt,
+                        SubscriptionStatus = user.SubscriptionStatus,
+                        SubscriptionExpiration = user.SubscriptionExpiration
+                    })
+                    .FirstOrDefaultAsync();
 
                 if (user == null)
                 {
                     return ServiceResult<UserInfoDto>.NotFound("User not found");
                 }
 
-                return ServiceResult<UserInfoDto>.Ok(UserMappings.ToInfoDto(user));
+                return ServiceResult<UserInfoDto>.Ok(user.ToDto());
             }
             catch (Exception ex)
             {
@@ -137,15 +152,16 @@ namespace Edemly.Server.Application.Users
 
                 var user = await ctx.Set<User>()
                     .AsNoTracking()
-                    .Include(u => u.LoginInfo)
-                    .FirstOrDefaultAsync(u => u.Id == targetUserId);
+                    .Where(u => u.Id == targetUserId)
+                    .Select(UserMappings.SearchProjection)
+                    .FirstOrDefaultAsync();
 
                 if (user == null)
                 {
                     return ServiceResult<UserDto>.NotFound("User not found");
                 }
 
-                return ServiceResult<UserDto>.Ok(UserMappings.ToDto(user));
+                return ServiceResult<UserDto>.Ok(user);
             }
             catch (Exception ex)
             {
@@ -169,7 +185,7 @@ namespace Edemly.Server.Application.Users
                 var query = searchQuery.Trim().ToLower();
 
                 var users = await ctx.Set<User>()
-                    .Include(u => u.LoginInfo)
+                    .AsNoTracking()
                     .Where(u => (u.Username != null && u.Username.ToLower().Contains(query)) ||
                                 u.LoginInfo.Email.ToLower().Contains(query))
                     .Take(5)
@@ -330,6 +346,41 @@ namespace Edemly.Server.Application.Users
                 user.Username != null &&
                 user.Username.ToLower() == normalized &&
                 (!excludeUserId.HasValue || user.Id != excludeUserId.Value));
+        }
+
+        private sealed class UserInfoRow
+        {
+            public int Id { get; init; }
+            public string? Username { get; init; }
+            public string Email { get; init; } = string.Empty;
+            public string? PhoneNumber { get; init; }
+            public string? PfpUrl { get; init; }
+            public string? Description { get; init; }
+            public string? FirstName { get; init; }
+            public string? LastName { get; init; }
+            public string? Location { get; init; }
+            public DateTime CreatedAt { get; init; }
+            public SubscriptionStatus SubscriptionStatus { get; init; }
+            public DateTime? SubscriptionExpiration { get; init; }
+
+            public UserInfoDto ToDto()
+            {
+                return new UserInfoDto
+                {
+                    Id = Id,
+                    Username = Username ?? string.Empty,
+                    Email = Email,
+                    PhoneNumber = PhoneNumber ?? string.Empty,
+                    PfpUrl = PfpUrl ?? string.Empty,
+                    Description = Description ?? string.Empty,
+                    FirstName = FirstName ?? string.Empty,
+                    LastName = LastName ?? string.Empty,
+                    Location = Location ?? string.Empty,
+                    CreatedAt = CreatedAt,
+                    SubscriptionStatus = SubscriptionStatus.ToString(),
+                    SubscriptionExpiration = SubscriptionExpiration
+                };
+            }
         }
     }
 }
