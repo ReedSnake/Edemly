@@ -21,6 +21,8 @@ Describes the overall client structure, architectural organization, and responsi
 
 Topics include:
 
+* Project-wide architecture principles
+* Pragmatic MVVM and layered architecture
 * Project structure
 * Application layers
 * Service organization
@@ -117,5 +119,6 @@ Topics include:
 ## Related Resources
 
 * [Documentation Home](../README.md)
+* [Architecture Principles](../ARCHITECTURE_PRINCIPLES.md)
 * [Project README](../../README.md)
 * [Client Project](../../Edemly.Client/)

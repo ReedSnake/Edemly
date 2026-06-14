@@ -16,6 +16,7 @@ The server is built with ASP.NET Core and provides REST APIs, SignalR realtime c
 * [Deployment](#deployment)
 * [Local Docker Runbook](#local-docker-runbook)
 * [Client Releases](#client-releases)
+* [Safe Optimization Backlog](#safe-optimization-backlog)
 * [Related Resources](#related-resources)
 
 ## [Architecture](ARCHITECTURE.md)
@@ -24,6 +25,7 @@ Describes the overall server structure, architectural layers, project organizati
 
 Topics include:
 
+* Project-wide architecture principles
 * Solution structure
 * Layer responsibilities
 * Dependency flow
@@ -158,8 +160,23 @@ Topics include:
 * Local static download site
 * Docker URLs for API, payment, and hubs
 
+---
+
+## [Safe Optimization Backlog](SAFE_OPTIMIZATION_BACKLOG.md)
+
+Lists safe remaining server optimizations after the current chat/message performance pass.
+
+Topics include:
+
+* Message history and chat snapshot tests
+* Chat list projection optimization
+* Hub/service message write cleanup
+* Transaction boundary improvements
+* Safe index review rules
+
 ## Related Resources
 
 * [Documentation Home](../README.md)
+* [Architecture Principles](../ARCHITECTURE_PRINCIPLES.md)
 * [Project README](../../README.md)
 * [Server Project](../../Edemly.Server/)

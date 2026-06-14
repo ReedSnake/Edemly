@@ -6,25 +6,38 @@ Documentation is organized by application area and is intended to describe the s
 
 ## Contents
 
+* [Architecture Principles](#architecture-principles)
 * [Server Documentation](#server-documentation)
 * [Client Documentation](#client-documentation)
 * [Shared Documentation](#shared-documentation)
+
+## Architecture Principles
+
+Project-wide architecture principles are documented in [ARCHITECTURE_PRINCIPLES](ARCHITECTURE_PRINCIPLES.md).
+
+The short version:
+
+* Client: WPF with pragmatic MVVM and layered architecture.
+* Server: layered architecture / controller-service-infrastructure architecture.
+* The project favors clear responsibilities over strict Clean Architecture ceremony.
+* Intentional architectural debt is allowed when the reason, risk, and cleanup path are understood.
 
 ## Server Documentation
 
 Documentation related to the ASP.NET Core backend, database architecture, realtime communication, testing, and deployment.
 
-| Document                               | Description                                             |
-| -------------------------------------- | ------------------------------------------------------- |
-| [README](server/README.md)             | Server documentation overview                           |
-| [ARCHITECTURE](server/ARCHITECTURE.md) | Server architecture, layers, services, and request flow |
-| [API](server/API.md)                   | REST API endpoints and behavior                         |
-| [AUTH](server/AUTH.md)                 | Authentication and authorization                        |
-| [DATABASE](server/DATABASE.md)         | Database structure and multi-tenant architecture        |
-| [FILE_STORAGE](server/FILE_STORAGE.md) | File upload and storage system                          |
-| [REALTIME](server/REALTIME.md)         | SignalR and realtime communication                      |
-| [TESTING](server/TESTING.md)           | Testing strategy and infrastructure                     |
-| [DEPLOYMENT](server/DEPLOYMENT.md)     | Deployment and environment configuration                |
+| Document                                                       | Description                                             |
+| -------------------------------------------------------------- | ------------------------------------------------------- |
+| [README](server/README.md)                                     | Server documentation overview                           |
+| [ARCHITECTURE](server/ARCHITECTURE.md)                         | Server architecture, layers, services, and request flow |
+| [SAFE_OPTIMIZATION_BACKLOG](server/SAFE_OPTIMIZATION_BACKLOG.md) | Safe remaining server optimization tasks                |
+| [API](server/API.md)                                           | REST API endpoints and behavior                         |
+| [AUTH](server/AUTH.md)                                         | Authentication and authorization                        |
+| [DATABASE](server/DATABASE.md)                                 | Database structure and multi-tenant architecture        |
+| [FILE_STORAGE](server/FILE_STORAGE.md)                         | File upload and storage system                          |
+| [REALTIME](server/REALTIME.md)                                 | SignalR and realtime communication                      |
+| [TESTING](server/TESTING.md)                                   | Testing strategy and infrastructure                     |
+| [DEPLOYMENT](server/DEPLOYMENT.md)                             | Deployment and environment configuration                |
 
 ## Client Documentation
 
@@ -55,6 +68,7 @@ Documentation shared between the server and client projects.
 ```text
 docs/
 |-- README.md
+|-- ARCHITECTURE_PRINCIPLES.md
 |-- server/
 |   |-- README.md
 |   |-- ARCHITECTURE.md
@@ -64,7 +78,8 @@ docs/
 |   |-- FILE_STORAGE.md
 |   |-- REALTIME.md
 |   |-- TESTING.md
-|   `-- DEPLOYMENT.md
+|   |-- DEPLOYMENT.md
+|   `-- SAFE_OPTIMIZATION_BACKLOG.md
 |-- client/
 |   |-- README.md
 |   |-- ARCHITECTURE.md

@@ -4,6 +4,8 @@ This document describes the architecture of the Edemly server application.
 
 The goal of this document is to explain how the backend is structured, which layers it contains, how requests move through the system, and how the server communicates with shared contracts, databases, infrastructure services, and realtime clients.
 
+Project-wide architecture principles are documented in [Edemly Architecture Principles](../ARCHITECTURE_PRINCIPLES.md).
+
 ## Contents
 
 * [Overview](#overview)
@@ -23,7 +25,7 @@ Edemly Server is an ASP.NET Core backend application responsible for REST APIs, 
 
 The server is used by the WPF desktop client and exposes both HTTP endpoints and realtime hub connections.
 
-The backend follows a practical layered architecture. API controllers and SignalR hubs act as entry points, application services contain most of the business and use-case logic, infrastructure components handle technical concerns, and the data layer contains EF Core database contexts, entities, and migrations.
+The backend follows a practical layered architecture, also described as controller-service-infrastructure architecture. API controllers and SignalR hubs act as entry points, application services contain most of the business and use-case logic, infrastructure components handle technical concerns, and the data layer contains EF Core database contexts, entities, and migrations.
 
 The project is not intended to represent strict Clean Architecture. Application services may directly coordinate EF Core contexts and infrastructure services where it keeps the implementation simpler and more practical for the current project size.
 
@@ -206,6 +208,7 @@ The current architecture is suitable for the current project size, but several a
 ## Related Documents
 
 * [Server Documentation](README.md)
+* [Architecture Principles](../ARCHITECTURE_PRINCIPLES.md)
 * [API](API.md)
 * [Authentication](AUTH.md)
 * [Database](DATABASE.md)
