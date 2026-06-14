@@ -20,7 +20,13 @@ namespace Edemly.Server.Api.Controllers.Chats
         [HttpGet("chat-members/{chatMemberId}")]
         public async Task<IActionResult> GetMemberAsync(int chatMemberId)
         {
-            return ToServiceResult(await _chatMemberService.GetMemberAsync(chatMemberId));
+            var unauthorizedResult = RequireCurrentUserId(out var currentUserId);
+            if (unauthorizedResult != null)
+            {
+                return unauthorizedResult;
+            }
+
+            return ToServiceResult(await _chatMemberService.GetMemberAsync(currentUserId, chatMemberId));
         }
 
         [Authorize]

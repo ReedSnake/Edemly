@@ -14,7 +14,7 @@ namespace Edemly.Server.Application.ChatMembers
 
         Task<ServiceResult> DeleteAsync(int requesterId, int chatMemberId);
 
-        Task<ServiceResult<ChatMemberDto>> GetMemberAsync(int chatMemberId);
+        Task<ServiceResult<ChatMemberDto>> GetMemberAsync(int currentUserId, int chatMemberId);
 
         Task<ServiceResult<List<ChatMemberDto>>> GetMembersAsync(int currentUserId, int chatId);
 

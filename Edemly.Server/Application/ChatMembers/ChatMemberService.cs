@@ -118,7 +118,7 @@ namespace Edemly.Server.Application.ChatMembers
             }
         }
 
-        public async Task<ServiceResult<ChatMemberDto>> GetMemberAsync(int chatMemberId)
+        public async Task<ServiceResult<ChatMemberDto>> GetMemberAsync(int currentUserId, int chatMemberId)
         {
             try
             {
@@ -134,6 +134,11 @@ namespace Edemly.Server.Application.ChatMembers
                 if (member == null)
                 {
                     return ServiceResult<ChatMemberDto>.NotFound("Member not found");
+                }
+
+                if (!await IsInChatAsync(ctx, currentUserId, member.ChatId))
+                {
+                    return ServiceResult<ChatMemberDto>.Forbidden();
                 }
 
                 return ServiceResult<ChatMemberDto>.Ok(member);
