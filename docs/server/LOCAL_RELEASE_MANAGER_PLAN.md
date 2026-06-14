@@ -7,7 +7,7 @@ This plan keeps the public static site simple and lets a separate local tool upd
 The static site reads:
 
 * `deployment/local/static/client.json` for client runtime configuration and update policy.
-* `deployment/local/static/releases.json` for release history, release notes, and download links.
+* `deployment/local/static/releases.json` for product copy, platform metadata, system requirements, release history, media, support links, and download links.
 
 The WPF client should not read `releases.json`. It continues to use `client.json` and the Velopack feed under `updates/windows/stable`.
 
@@ -39,24 +39,40 @@ The tool should:
 4. Update `deployment/local/static/releases.json`.
 5. Update `deployment/local/static/client.json` with `updates.latestVersion`.
 6. Update `updates.minimumRequiredVersion` only when the new release starts a new mandatory boundary.
-7. Keep JSON formatting stable.
-8. Leave generated release binaries ignored by Git.
+7. Add platform-specific downloads only for packages that were actually published.
+8. Attach screenshot or video URLs when release media is available.
+9. Keep JSON formatting stable.
+10. Leave generated release binaries ignored by Git.
 
 Because `deployment/local/static` is bind-mounted into nginx, these changes are served immediately without restarting `edemly-local-static`.
 
 For static-page previews, the manager can also create zero-byte placeholder files with the final installer and portable names. That is only for checking links and layout. Real release testing needs real artifacts.
 
-## Download Window Rule
+## Download And Archive Rules
 
-`releases.json` stores the full history. The static site calculates the downloadable window from the latest release where:
+`releases.json` stores the full history. The download page does not list every supported release. It lists only releases with actual platform-specific download links:
 
 ```json
-"mandatory": true
+"downloads": {
+  "windows": {
+    "installer": "/downloads/windows/1.0.3/NSO.Edemly-win-Setup.exe",
+    "portable": "/downloads/windows/1.0.3/NSO.Edemly-win-Portable.zip"
+  }
+}
 ```
 
-Releases older than that boundary remain visible but do not show installer or portable links.
+The release page keeps archived and older releases visible. The static site can still use the latest release marked `"mandatory": true` as the supported-window boundary, but that boundary is a catalog rule, not page copy.
 
 The manager should set `downloads` to `null` for archived releases outside the supported window. It may keep old files on disk temporarily, but the site should not link to them.
+
+## Platform And Media Fields
+
+Keep platform data in the catalog even before every platform has packages:
+
+* `platforms` controls visible platform tabs.
+* `systemRequirements` stores fake or real requirements per platform.
+* release-level `platforms` records whether a version is available, planned, supported, or archived for each platform.
+* release-level `media` can point to screenshots or short videos used on the release detail page.
 
 ## No Admin Endpoint Yet
 

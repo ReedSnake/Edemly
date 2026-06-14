@@ -132,8 +132,10 @@ deployment/local/static/releases.json
 Open and install:
 
 ```text
+http://localhost:8080/
 http://localhost:8080/download/
 http://localhost:8080/release/
+http://localhost:8080/support/
 ```
 
 The installed app should be named `Edemly`, and the main executable should be `Edemly.exe`.
@@ -147,6 +149,13 @@ deployment/local/static/index.html
 ```
 
 with VS Code Live Server. The static pages use relative links, and `assets/app.js` resolves `client.json`, `releases.json`, and `/downloads/...` paths from the real static root. This lets the pages work when Live Server serves the whole repository instead of serving `deployment/local/static` as `/`.
+
+Static page roles:
+
+* `/` is the product home page for the messenger.
+* `/download/` shows only published packages with download links for the selected platform.
+* `/release/` shows full release history with pagination and dynamic details from `releases.json`.
+* `/support/` links to the feedback form and support paths.
 
 Use nginx at `http://localhost:8080/` for client updater testing. The WPF client still expects the configured `client.json` and Velopack feed URLs, and those should be validated through the local Docker static service.
 
@@ -195,7 +204,7 @@ Invoke-WebRequest -UseBasicParsing http://localhost:8080/updates/windows/stable/
 
 The installed client checks updates on startup, so restart only the installed Edemly client after changing release files or `client.json`.
 
-Also update `deployment/local/static/releases.json` so the download and release pages show the new version. The static site calculates downloadable releases from the latest release marked `"mandatory": true`; older releases stay visible as archived history without download links.
+Also update `deployment/local/static/releases.json` so the download and release pages show the new version. The download page only shows releases that expose platform-specific download links. The release page keeps full history, including archived builds without public downloads.
 
 For the planned local tool that will update both JSON files and copy release files, see `docs/server/LOCAL_RELEASE_MANAGER_PLAN.md`.
 

@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Download Edemly</title>
-  <meta name="description" content="Download Edemly for Windows and view previous versions and release notes.">
+  <meta name="description" content="Download supported Edemly packages by platform.">
   <link rel="stylesheet" href="../assets/styles.css">
   <script src="../assets/app.js" defer></script>
 </head>
@@ -15,53 +15,50 @@
       <span>Edemly</span>
     </a>
     <nav class="site-nav" aria-label="Primary navigation">
-      <a href="../">Overview</a>
-      <a href="../release/">Releases</a>
+      <a href="../">Home</a>
+      <a href="../teams/">Teams</a>
       <a href="../download/">Download</a>
+      <a href="../release/">Releases</a>
+      <a href="../support/">Support</a>
     </nav>
   </header>
 
   <main>
-    <section class="hero compact download-hero clean-download-hero">
+    <section class="hero compact clean-download-hero">
       <div class="hero-copy">
-        <p class="eyebrow">Windows desktop app</p>
+        <p class="eyebrow">Available packages</p>
         <h1>Download Edemly</h1>
         <p class="lead">
-          Install the latest version or choose one of the previous releases below. Each version includes short notes about what changed.
+          This page shows only releases that currently expose public installer or portable links. Archived versions stay in the release history.
         </p>
-        <div class="hero-actions">
-          <a class="button primary" data-config-href="installer" href="../downloads/windows/1.0.2/NSO.Edemly-win-Setup.exe">
-            Download latest version
-          </a>
+      </div>
+    </section>
+
+    <section class="download-layout">
+      <aside class="download-panel">
+        <p class="eyebrow">Platform</p>
+        <div class="platform-tabs" data-platform-tabs>
+          <p class="muted">Loading platforms...</p>
         </div>
-      </div>
-    </section>
+        <p class="platform-note" data-platform-note></p>
 
-    <section class="download-release latest-release" data-release-latest aria-live="polite">
-      <p class="muted">Loading latest release...</p>
-    </section>
+        <div class="requirements-panel">
+          <h2>System requirements</h2>
+          <ul class="requirements-list" data-download-requirements>
+            <li>Loading requirements...</li>
+          </ul>
+        </div>
+      </aside>
 
-    <section class="install-flow">
-      <div>
-        <p class="eyebrow">How to install</p>
-        <h2>Three quick steps.</h2>
-      </div>
-      <ol class="plain-steps">
-        <li><strong>Download</strong><span>Save the Windows installer to your computer.</span></li>
-        <li><strong>Install</strong><span>Open the file and follow the setup instructions.</span></li>
-        <li><strong>Launch</strong><span>Open Edemly, sign in or create an account, and start communicating.</span></li>
-      </ol>
-    </section>
-
-    <section class="version-history">
-      <div class="version-heading">
-        <h2>Previous versions</h2>
-        <p>Supported releases can be downloaded. Archived releases stay visible for history but do not expose installers.</p>
-      </div>
-
-      <div class="release-list" data-download-release-list aria-live="polite">
-        <p class="muted">Loading release history...</p>
-      </div>
+      <section class="download-list-section">
+        <div class="version-heading">
+          <h2>Supported downloads</h2>
+          <p>Choose a platform to see only packages that are actually available.</p>
+        </div>
+        <div class="download-list" data-download-list aria-live="polite">
+          <p class="muted">Loading downloads...</p>
+        </div>
+      </section>
     </section>
   </main>
 </body>

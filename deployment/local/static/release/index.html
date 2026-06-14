@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Edemly Releases</title>
-  <meta name="description" content="View Edemly release history, supported downloads, and archived Windows builds.">
+  <meta name="description" content="Browse Edemly release history and open detailed release notes.">
   <link rel="stylesheet" href="../assets/styles.css">
   <script src="../assets/app.js" defer></script>
 </head>
@@ -15,9 +15,11 @@
       <span>Edemly</span>
     </a>
     <nav class="site-nav" aria-label="Primary navigation">
-      <a href="../">Overview</a>
-      <a href="../release/">Releases</a>
+      <a href="../">Home</a>
+      <a href="../teams/">Teams</a>
       <a href="../download/">Download</a>
+      <a href="../release/">Releases</a>
+      <a href="../support/">Support</a>
     </nav>
   </header>
 
@@ -25,32 +27,41 @@
     <section class="hero compact clean-download-hero release-hero">
       <div class="hero-copy">
         <p class="eyebrow">Release history</p>
-        <h1>Edemly releases</h1>
+        <h1>All Edemly releases</h1>
         <p class="lead">
-          Browse every local Windows release. Supported versions include download links, while archived builds remain visible without installers.
+          Open a release to inspect notes, platform availability, media, and download actions. The page is rendered from releases.json.
         </p>
-        <div class="hero-actions">
-          <a class="button primary" data-config-href="installer" href="../downloads/windows/1.0.2/NSO.Edemly-win-Setup.exe">
-            Download latest version
-          </a>
-          <a class="button" href="../releases.json">View releases.json</a>
-        </div>
       </div>
     </section>
 
-    <section class="version-history release-page-history">
-      <div class="version-heading">
-        <h2>All releases</h2>
-        <p>The download window starts at the latest mandatory release boundary.</p>
+    <section class="release-dashboard">
+      <div class="release-summary" data-release-stats aria-live="polite">
+        <p class="muted">Loading release stats...</p>
       </div>
 
-      <div class="release-summary" data-release-summary aria-live="polite">
-        <p class="muted">Loading release policy...</p>
+      <div class="release-browser">
+        <aside class="release-list-panel">
+          <div class="version-heading">
+            <h2>History</h2>
+            <p>Newest releases first. Archived builds remain visible without public downloads.</p>
+          </div>
+          <div class="release-card-list" data-release-list aria-live="polite">
+            <p class="muted">Loading releases...</p>
+          </div>
+          <nav class="pagination" data-release-pagination aria-label="Release pages"></nav>
+        </aside>
+
+        <section class="release-detail" data-release-detail aria-live="polite">
+          <p class="muted">Choose a release...</p>
+        </section>
       </div>
 
-      <div class="release-list" data-release-history aria-live="polite">
-        <p class="muted">Loading release history...</p>
-      </div>
+      <section class="requirements-panel release-requirements">
+        <h2>Selected platform requirements</h2>
+        <ul class="requirements-list" data-release-requirements>
+          <li>Loading requirements...</li>
+        </ul>
+      </section>
     </section>
   </main>
 </body>

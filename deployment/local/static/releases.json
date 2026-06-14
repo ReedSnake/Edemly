@@ -1,10 +1,61 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "channel": "stable",
-  "platform": "windows",
   "latestVersion": "1.0.2",
   "minimumRequiredVersion": "1.0.0",
   "downloadableFromVersion": "1.0.0",
+  "product": {
+    "name": "Edemly",
+    "tagline": "Messenger for focused communication and planning.",
+    "summary": "Edemly brings chats, calls, notes, media, groups, and team context into one calm desktop workspace.",
+    "heroImage": "assets/media/edemly-messenger-hero.png"
+  },
+  "support": {
+    "feedbackUrl": "https://docs.google.com/forms/d/e/1FAIpQLSdeL8Op6FNEp8r7vSrzEjooGSJfk8tPqKFfNoR8gPEHN9EOqA/viewform?usp=dialog",
+    "title": "Share feedback",
+    "summary": "Use the feedback form for bugs, product ideas, release problems, and early access notes."
+  },
+  "platforms": [
+    {
+      "id": "windows",
+      "name": "Windows",
+      "status": "available",
+      "default": true,
+      "summary": "Desktop installer and portable ZIP for local release testing."
+    },
+    {
+      "id": "macos",
+      "name": "macOS",
+      "status": "planned",
+      "summary": "Planned desktop package for Apple silicon and Intel Macs."
+    },
+    {
+      "id": "linux",
+      "name": "Linux",
+      "status": "planned",
+      "summary": "Planned AppImage or archive package for Linux desktops."
+    }
+  ],
+  "systemRequirements": {
+    "windows": [
+      "Windows 10 or later, 64-bit",
+      "4 GB RAM minimum, 8 GB recommended",
+      "500 MB free disk space",
+      "Internet connection for messaging, calls, updates, and media"
+    ],
+    "macos": [
+      "macOS 12 or later",
+      "Apple silicon or Intel processor",
+      "4 GB RAM minimum",
+      "Package is planned and not available yet"
+    ],
+    "linux": [
+      "Ubuntu 22.04 or equivalent desktop distribution",
+      "4 GB RAM minimum",
+      "GTK-compatible desktop session",
+      "Package is planned and not available yet"
+    ]
+  },
   "releases": [
     {
       "version": "1.0.2",
@@ -12,15 +63,45 @@
       "channel": "stable",
       "mandatory": false,
       "title": "Edemly 1.0.2",
-      "summary": "Local stable package with update feed fixes and current Windows artifacts.",
+      "summary": "Current local stable package with release pages, clearer download links, and update feed checks.",
+      "description": "This release is the active local package used to test the static release portal, installer links, and update metadata flow. It keeps the client update policy in client.json while release history lives in releases.json.",
+      "highlights": [
+        "Added release history data for the static site.",
+        "Separated downloads from archived release history.",
+        "Prepared the catalog for future platforms."
+      ],
       "changes": [
         "Published the current Velopack stable feed.",
-        "Prepared the download page for versioned release history."
+        "Added versioned installer and portable links for the supported Windows package.",
+        "Added product media to release details."
       ],
+      "knownIssues": [
+        "macOS and Linux packages are placeholders only.",
+        "Local placeholder binaries may be empty during layout testing."
+      ],
+      "platforms": {
+        "windows": "available",
+        "macos": "planned",
+        "linux": "planned"
+      },
       "downloads": {
-        "windowsInstaller": "/downloads/windows/1.0.2/NSO.Edemly-win-Setup.exe",
-        "windowsPortable": "/downloads/windows/1.0.2/NSO.Edemly-win-Portable.zip"
-      }
+        "windows": {
+          "installer": "/downloads/windows/1.0.2/NSO.Edemly-win-Setup.exe",
+          "portable": "/downloads/windows/1.0.2/NSO.Edemly-win-Portable.zip"
+        }
+      },
+      "media": [
+        {
+          "type": "image",
+          "url": "assets/media/edemly-release-detail.png",
+          "alt": "Edemly release detail mockup"
+        },
+        {
+          "type": "image",
+          "url": "assets/media/edemly-messenger-hero.png",
+          "alt": "Edemly messenger desktop mockup"
+        }
+      ]
     },
     {
       "version": "1.0.1",
@@ -28,12 +109,32 @@
       "channel": "stable",
       "mandatory": false,
       "title": "Edemly 1.0.1",
-      "summary": "Patch release used for local optional update testing.",
-      "changes": [
-        "Validated optional update behavior.",
-        "Kept the release available inside the supported window."
+      "summary": "Optional update test release for local installer behavior.",
+      "description": "A local patch used to validate optional update prompts, installed-client restart flow, and release notes rendering.",
+      "highlights": [
+        "Optional update state verified.",
+        "Release note cards prepared for history browsing."
       ],
-      "downloads": null
+      "changes": [
+        "Improved update prompt wording.",
+        "Adjusted local release metadata."
+      ],
+      "knownIssues": [
+        "No archived download is published for this test version."
+      ],
+      "platforms": {
+        "windows": "supported",
+        "macos": "planned",
+        "linux": "planned"
+      },
+      "downloads": null,
+      "media": [
+        {
+          "type": "image",
+          "url": "assets/media/edemly-release-detail.png",
+          "alt": "Edemly release notes mockup"
+        }
+      ]
     },
     {
       "version": "1.0.0",
@@ -41,51 +142,309 @@
       "channel": "stable",
       "mandatory": true,
       "title": "Edemly 1.0.0",
-      "summary": "Baseline required release for the current local supported window.",
-      "changes": [
-        "Added the first stable Windows installer flow.",
-        "Introduced static client configuration and Velopack update metadata."
+      "summary": "Baseline required release for the current supported window.",
+      "description": "The first stable Windows baseline for the local update workflow. Versions older than this are kept as history only and are not offered on the download page.",
+      "highlights": [
+        "Static client configuration introduced.",
+        "Velopack feed connected to local nginx.",
+        "Required-version boundary established."
       ],
-      "downloads": null
+      "changes": [
+        "Added Windows installer flow.",
+        "Added minimum required version metadata.",
+        "Prepared local update testing."
+      ],
+      "knownIssues": [
+        "Portable archive was not retained in the public catalog."
+      ],
+      "platforms": {
+        "windows": "supported",
+        "macos": "planned",
+        "linux": "planned"
+      },
+      "downloads": null,
+      "media": [
+        {
+          "type": "image",
+          "url": "assets/media/edemly-messenger-hero.png",
+          "alt": "Edemly desktop app mockup"
+        }
+      ]
+    },
+    {
+      "version": "0.9.8",
+      "date": "2026-06-11",
+      "channel": "preview",
+      "mandatory": false,
+      "title": "Edemly 0.9.8",
+      "summary": "Archived preview with chat startup polishing.",
+      "description": "A preview build focused on making the first app launch feel more stable during local testing.",
+      "highlights": [
+        "Cleaner startup status messages.",
+        "Early release metadata experiments."
+      ],
+      "changes": [
+        "Reduced noisy loading states.",
+        "Adjusted chat list placeholders."
+      ],
+      "knownIssues": [
+        "Archived build is not downloadable."
+      ],
+      "platforms": {
+        "windows": "archived"
+      },
+      "downloads": null,
+      "media": []
+    },
+    {
+      "version": "0.9.7",
+      "date": "2026-06-10",
+      "channel": "preview",
+      "mandatory": false,
+      "title": "Edemly 0.9.7",
+      "summary": "Archived preview with media message fixes.",
+      "description": "A test build for media message rendering and attachment layout.",
+      "highlights": [
+        "Media cards became easier to scan.",
+        "Attachment labels were shortened."
+      ],
+      "changes": [
+        "Improved media preview spacing.",
+        "Adjusted file attachment text."
+      ],
+      "knownIssues": [
+        "Archived build is not downloadable."
+      ],
+      "platforms": {
+        "windows": "archived"
+      },
+      "downloads": null,
+      "media": []
+    },
+    {
+      "version": "0.9.6",
+      "date": "2026-06-09",
+      "channel": "preview",
+      "mandatory": false,
+      "title": "Edemly 0.9.6",
+      "summary": "Archived preview with notification experiments.",
+      "description": "A build used to test local notification and background state behavior.",
+      "highlights": [
+        "Notification copy refined.",
+        "Early background status checks added."
+      ],
+      "changes": [
+        "Updated notification timing.",
+        "Added internal debug labels."
+      ],
+      "knownIssues": [
+        "Archived build is not downloadable."
+      ],
+      "platforms": {
+        "windows": "archived"
+      },
+      "downloads": null,
+      "media": []
+    },
+    {
+      "version": "0.9.5",
+      "date": "2026-06-08",
+      "channel": "preview",
+      "mandatory": false,
+      "title": "Edemly 0.9.5",
+      "summary": "Archived preview with group chat refinements.",
+      "description": "A preview build centered on group chat navigation and member context.",
+      "highlights": [
+        "Group list spacing improved.",
+        "Member labels made clearer."
+      ],
+      "changes": [
+        "Adjusted group chat headers.",
+        "Improved member count text."
+      ],
+      "knownIssues": [
+        "Archived build is not downloadable."
+      ],
+      "platforms": {
+        "windows": "archived"
+      },
+      "downloads": null,
+      "media": []
+    },
+    {
+      "version": "0.9.4",
+      "date": "2026-06-07",
+      "channel": "preview",
+      "mandatory": false,
+      "title": "Edemly 0.9.4",
+      "summary": "Archived preview with call flow test notes.",
+      "description": "A preview build for early call state testing and ringtone behavior.",
+      "highlights": [
+        "Call state labels became more explicit.",
+        "Audio flow was prepared for later fixes."
+      ],
+      "changes": [
+        "Added call status experiments.",
+        "Updated local debug messages."
+      ],
+      "knownIssues": [
+        "Archived build is not downloadable."
+      ],
+      "platforms": {
+        "windows": "archived"
+      },
+      "downloads": null,
+      "media": []
+    },
+    {
+      "version": "0.9.3",
+      "date": "2026-06-06",
+      "channel": "preview",
+      "mandatory": false,
+      "title": "Edemly 0.9.3",
+      "summary": "Archived preview with workspace switching cleanup.",
+      "description": "A test build for switching between personal and company contexts.",
+      "highlights": [
+        "Workspace labels were clarified.",
+        "Company switch flow was simplified."
+      ],
+      "changes": [
+        "Adjusted workspace menu state.",
+        "Improved company name fallback."
+      ],
+      "knownIssues": [
+        "Archived build is not downloadable."
+      ],
+      "platforms": {
+        "windows": "archived"
+      },
+      "downloads": null,
+      "media": []
     },
     {
       "version": "0.9.2",
-      "date": "2026-06-10",
-      "channel": "stable",
+      "date": "2026-06-05",
+      "channel": "preview",
       "mandatory": false,
       "title": "Edemly 0.9.2",
-      "summary": "Archived pre-stable build.",
+      "summary": "Archived pre-stable build with chat stability improvements.",
+      "description": "A late preview build used before the first stable baseline.",
+      "highlights": [
+        "Chat stability improved.",
+        "Release candidate metadata prepared."
+      ],
       "changes": [
         "Improved chat stability.",
-        "Prepared the client for the first stable release."
+        "Prepared the client for the stable release."
       ],
-      "downloads": null
+      "knownIssues": [
+        "Archived build is not downloadable."
+      ],
+      "platforms": {
+        "windows": "archived"
+      },
+      "downloads": null,
+      "media": []
+    },
+    {
+      "version": "0.9.1",
+      "date": "2026-06-04",
+      "channel": "preview",
+      "mandatory": false,
+      "title": "Edemly 0.9.1",
+      "summary": "Archived preview with theme adjustments.",
+      "description": "A test build for theme persistence and visual spacing.",
+      "highlights": [
+        "Theme changes persisted more reliably.",
+        "Spacing was softened in dense areas."
+      ],
+      "changes": [
+        "Adjusted theme loading.",
+        "Updated local UI spacing."
+      ],
+      "knownIssues": [
+        "Archived build is not downloadable."
+      ],
+      "platforms": {
+        "windows": "archived"
+      },
+      "downloads": null,
+      "media": []
     },
     {
       "version": "0.9.0",
-      "date": "2026-06-08",
-      "channel": "stable",
+      "date": "2026-06-03",
+      "channel": "preview",
       "mandatory": false,
       "title": "Edemly 0.9.0",
-      "summary": "Archived preview build with early team communication features.",
+      "summary": "Archived preview with early team communication features.",
+      "description": "An early preview build for groups, media sharing, and first workspace structure.",
+      "highlights": [
+        "Early group chat support added.",
+        "Company switching flow introduced."
+      ],
       "changes": [
         "Added early group chat support.",
         "Added first company switching flow."
       ],
-      "downloads": null
+      "knownIssues": [
+        "Archived build is not downloadable."
+      ],
+      "platforms": {
+        "windows": "archived"
+      },
+      "downloads": null,
+      "media": []
+    },
+    {
+      "version": "0.8.5",
+      "date": "2026-06-02",
+      "channel": "preview",
+      "mandatory": false,
+      "title": "Edemly 0.8.5",
+      "summary": "Archived preview with notes experiments.",
+      "description": "A preview build for early user notes and contact context.",
+      "highlights": [
+        "User notes were attached to contact context.",
+        "Search experiments started."
+      ],
+      "changes": [
+        "Added early notes panel.",
+        "Adjusted contact detail copy."
+      ],
+      "knownIssues": [
+        "Archived build is not downloadable."
+      ],
+      "platforms": {
+        "windows": "archived"
+      },
+      "downloads": null,
+      "media": []
     },
     {
       "version": "0.8.0",
-      "date": "2026-06-05",
-      "channel": "stable",
+      "date": "2026-06-01",
+      "channel": "preview",
       "mandatory": false,
       "title": "Edemly 0.8.0",
       "summary": "Archived desktop preview.",
+      "description": "The first public-looking desktop preview for local product testing.",
+      "highlights": [
+        "Account access introduced.",
+        "Personal chats became available."
+      ],
       "changes": [
         "Added account access.",
         "Added the first personal chat interface."
       ],
-      "downloads": null
+      "knownIssues": [
+        "Archived build is not downloadable."
+      ],
+      "platforms": {
+        "windows": "archived"
+      },
+      "downloads": null,
+      "media": []
     }
   ]
 }

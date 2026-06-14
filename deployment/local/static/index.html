@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Edemly — Messenger for communication and planning</title>
-  <meta name="description" content="Edemly is a desktop messenger that combines communication, planning, team chats, user notes, themes, and workspace switching.">
+  <title>Edemly Messenger</title>
+  <meta name="description" content="Edemly is a desktop messenger for chats, calls, notes, teams, and organized communication.">
   <link rel="stylesheet" href="assets/styles.css">
   <script src="assets/app.js" defer></script>
 </head>
@@ -15,50 +15,44 @@
       <span>Edemly</span>
     </a>
     <nav class="site-nav" aria-label="Primary navigation">
-      <a href=".">Overview</a>
-      <a href="release/">Releases</a>
+      <a href=".">Home</a>
+      <a href="teams/">Teams</a>
       <a href="download/">Download</a>
+      <a href="release/">Releases</a>
+      <a href="support/">Support</a>
     </nav>
   </header>
 
   <main>
-    <section class="hero product-hero">
+    <section class="hero product-hero product-hero-with-image">
       <div class="hero-copy">
-        <p class="eyebrow">Messenger + planner</p>
-        <h1>Communication that stays organized.</h1>
+        <p class="eyebrow">Desktop messenger</p>
+        <h1>Chats, calls, notes, and planning in one calm workspace.</h1>
         <p class="lead">
-          Edemly is a desktop messenger for people and teams who want chats, planning, notes, calls, and workspaces in one calm place.
+          Edemly keeps everyday communication close to the context around it: people, teams, files, decisions, reminders, and release-ready desktop updates.
         </p>
         <div class="hero-actions">
           <a class="button primary" href="download/">Download Edemly</a>
-          <a class="button" href="#features">Explore features</a>
+          <a class="button" href="release/">View releases</a>
+          <a class="button" data-feedback-href href="https://docs.google.com/forms/d/e/1FAIpQLSdeL8Op6FNEp8r7vSrzEjooGSJfk8tPqKFfNoR8gPEHN9EOqA/viewform?usp=dialog" target="_blank" rel="noreferrer">Leave feedback</a>
         </div>
       </div>
 
-      <div class="hero-visual no-plate-visual" aria-label="Edemly product visual">
-        <div class="orbit orbit-one"></div>
-        <div class="orbit orbit-two"></div>
-        <div class="edemly-core">
-          <span class="core-face">••</span>
-          <span class="core-leaf">✦</span>
-        </div>
-        <div class="floating-chip chip-one">messages</div>
-        <div class="floating-chip chip-two">planning</div>
-        <div class="floating-chip chip-three">teams</div>
-        <div class="floating-line"></div>
-      </div>
+      <figure class="hero-image-frame">
+        <img data-product-hero-image src="assets/media/edemly-messenger-hero.png" alt="Edemly desktop messenger interface">
+      </figure>
     </section>
 
     <section class="section intro-section story-section">
       <div>
-        <h2>One calm place for chats, context, and next steps.</h2>
+        <h2>A messenger for work that lives inside conversations.</h2>
       </div>
       <div class="story-copy">
         <p>
-          Edemly is a desktop messenger that helps communication feel less scattered. Instead of keeping messages in one app, notes in another, and team context somewhere else, Edemly brings the basic workflow into one clean space.
+          Edemly is built around the idea that messages should not float away from their context. A conversation can lead to a task, a note, a file, a call, or a workspace decision without forcing people to jump between unrelated tools.
         </p>
         <p>
-          You can chat, create groups, share media, use audio features, switch between companies, customize themes, and keep useful notes connected to people or conversations.
+          The current local release is Windows-first, but the site and release catalog are prepared for more platforms as packages become available.
         </p>
       </div>
     </section>
@@ -66,59 +60,88 @@
     <section class="section features-section" id="features">
       <div class="section-heading clean-heading">
         <div>
-          <h2>Small tools that keep the conversation useful.</h2>
+          <h2>Core messenger workflows.</h2>
         </div>
       </div>
 
       <div class="feature-strip">
         <article class="feature-item">
-          <span>💬</span>
+          <span>01</span>
           <div>
             <h3>Real-time messaging</h3>
-            <p>Fast conversations with clear context.</p>
+            <p>Personal and group conversations with clear presence, media, and reply context.</p>
           </div>
         </article>
         <article class="feature-item">
-          <span>👥</span>
+          <span>02</span>
           <div>
-            <h3>Group chats</h3>
-            <p>Separate spaces for teams and projects.</p>
+            <h3>Calls and audio</h3>
+            <p>Use voice when text is too slow, while keeping the chat context nearby.</p>
           </div>
         </article>
         <article class="feature-item">
-          <span>📝</span>
+          <span>03</span>
           <div>
             <h3>User notes</h3>
-            <p>Save important details right where you need them.</p>
+            <p>Keep useful details attached to people and conversations instead of scattered elsewhere.</p>
           </div>
         </article>
         <article class="feature-item">
-          <span>🏢</span>
+          <span>04</span>
           <div>
-            <h3>Company switching</h3>
-            <p>Move between workspaces without losing focus.</p>
+            <h3>Teams and companies</h3>
+            <p>Separate personal chats from company spaces and project groups.</p>
           </div>
         </article>
         <article class="feature-item">
-          <span>🎧</span>
+          <span>05</span>
           <div>
-            <h3>Audio and media</h3>
-            <p>Use calls, audio, and shared files when text is not enough.</p>
+            <h3>Release updates</h3>
+            <p>Windows releases are served through static metadata and update feeds for local testing.</p>
           </div>
         </article>
         <article class="feature-item">
-          <span>🎨</span>
+          <span>06</span>
           <div>
-            <h3>Custom themes</h3>
-            <p>Adjust the look so the app feels comfortable.</p>
+            <h3>Platform foundation</h3>
+            <p>The release catalog already has room for Windows, macOS, and Linux packages.</p>
           </div>
         </article>
       </div>
     </section>
 
+    <section class="section product-media-section">
+      <div>
+        <p class="eyebrow">Product preview</p>
+        <h2>The desktop app is the center of the experience.</h2>
+        <p>
+          The current visual assets are mockups for checking layout. Later, the same slots can use real screenshots, short videos, and release-specific media from the JSON catalog.
+        </p>
+      </div>
+      <figure class="product-shot">
+        <img src="assets/media/edemly-release-detail.png" alt="Edemly release notes and chat improvements mockup">
+      </figure>
+    </section>
+
+    <section class="section platform-section">
+      <div class="section-heading clean-heading">
+        <div>
+          <h2>Platforms.</h2>
+          <p>Windows is available now. The catalog keeps future platforms visible without pretending downloads exist.</p>
+        </div>
+      </div>
+      <div class="platform-grid" data-platform-overview>
+        <p class="muted">Loading platforms...</p>
+      </div>
+    </section>
+
     <section class="cta-section">
-      <h2>Download the Windows app and start organizing your communication.</h2>
-      <a class="button primary" href="download/">Go to download page</a>
+      <h2>Try the Windows build, browse release notes, or leave feedback.</h2>
+      <div class="hero-actions center-actions">
+        <a class="button primary" href="download/">Download</a>
+        <a class="button" href="release/">Release history</a>
+        <a class="button" href="support/">Support</a>
+      </div>
     </section>
   </main>
 </body>
