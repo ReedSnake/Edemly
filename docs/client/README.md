@@ -17,18 +17,18 @@ The client is built with WPF and is responsible for user interaction, realtime c
 
 ## [Architecture](ARCHITECTURE.md)
 
-Describes the overall client structure, architectural organization, and responsibility boundaries.
+Describes the overall client structure, architectural organization, startup model, and responsibility boundaries.
 
 Topics include:
 
 * Project-wide architecture principles
-* Pragmatic MVVM and layered architecture
+* WPF-first layered architecture
 * Project structure
 * Application layers
 * Service organization
-* Navigation flow
+* Startup and composition root behavior
 * Dependency flow
-* Client architecture principles
+* Current limitations
 
 ---
 
@@ -38,12 +38,12 @@ Describes the organization of the user interface and presentation layer.
 
 Topics include:
 
-* Pages
-* Dialogs
-* Controls
-* Resources
-* Navigation
-* UI organization
+* Presentation folder layout
+* Pages and windows
+* Dialogs and controls
+* Rendering helpers
+* Chat workspace controller
+* Navigation boundaries
 
 ---
 
@@ -53,7 +53,7 @@ Describes communication between the client and server.
 
 Topics include:
 
-* ApiClientBase
+* Shared API client context
 * API client organization
 * Request flow
 * DTO usage
@@ -68,12 +68,11 @@ Describes realtime communication with the server.
 
 Topics include:
 
-* SignalR clients
-* Hub connections
+* Main and call hub connections
 * Connection lifecycle
-* Message updates
-* Voice call signaling
-* Realtime events
+* Chat and call events
+* Chat workspace integration
+* Connection status UI
 
 ---
 
@@ -83,11 +82,12 @@ Describes local data storage and caching behavior.
 
 Topics include:
 
-* Profile picture caching
-* File caching
-* Local storage
+* Chat cache
+* Profile picture and file caches
+* Configuration storage
+* Secure token storage
+* Cache scopes
 * Cache invalidation
-* Runtime data storage
 
 ---
 
@@ -102,6 +102,7 @@ Topics include:
 * Shared styles
 * Dynamic resources
 * Theme switching
+* Themed page/window/control lifecycle
 
 ---
 
@@ -114,7 +115,9 @@ Topics include:
 * Test structure
 * Client test project
 * Test execution
-* Testing strategy
+* Current coverage
+* Recommended coverage
+* Manual checks
 
 ## Related Resources
 
