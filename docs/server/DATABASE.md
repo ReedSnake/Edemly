@@ -135,6 +135,8 @@ Most relationships are shown in the diagram above. The main special cases are:
 
 * LoginInfo and User have a one-to-one relationship.
 * User and Session have a one-to-zero-or-one relationship.
+* Chat stores a denormalized last-message snapshot: `LastMessageId`, `LastMessageText`, `LastMessageSenderId`, and `LastMessageTime`.
+* Message rows remain the source of truth for message history; the chat snapshot is a read optimization for chat lists and chat detail.
 * Note has two relationships to User: creator and target user.
 * Call is connected to both Chat and the initiating User.
 * CallParticipant connects a Call to each invited or joined User.
@@ -171,8 +173,18 @@ The database model defines several indexes and uniqueness constraints.
 | CallParticipant | CallId and UserId are unique             |
 | CallParticipant | UserId and Status are indexed            |
 | CallParticipant | CurrentLockUserId is unique when present |
+| ChatMember      | ChatId and UserId are indexed            |
+| ChatMember      | UserId and ChatId are indexed            |
+| Message         | ChatId, SentAt, and Id are indexed       |
+| Note            | CreatorId and TargetUserId are unique    |
+| Payment         | TransactionId is indexed                 |
+| Payment         | UserId and Date are indexed              |
+| Reminding       | UserId, LastTime, and IsCompleted are indexed |
+| Session         | SessionToken is indexed                  |
 
 These constraints prevent duplicate accounts, duplicate user identities, duplicate active session records per user, duplicate company workspace names, duplicate call identifiers, and duplicate participant rows for the same user in one call.
+
+The performance indexes support common chat list, message history, note, payment history, reminder, and session lookup paths. Add new indexes only when there is a concrete query path and the write-cost tradeoff is understood.
 
 ## Enum Storage
 
@@ -276,13 +288,23 @@ The current migration structure is:
 Data/Migrations/ServerDb/
 |-- 20260612180730_InitialCreate.cs
 |-- 20260612180730_InitialCreate.Designer.cs
+|-- 20260614201350_AddPerformanceIndexes.cs
+|-- 20260614201350_AddPerformanceIndexes.Designer.cs
+|-- 20260614205411_AddChatLastMessageSnapshot.cs
+|-- 20260614205411_AddChatLastMessageSnapshot.Designer.cs
 `-- ServerDbContextModelSnapshot.cs
 
 Data/Migrations/CompanyDb/
 |-- 20260612180748_InitialCreate.cs
 |-- 20260612180748_InitialCreate.Designer.cs
+|-- 20260614201407_AddPerformanceIndexes.cs
+|-- 20260614201407_AddPerformanceIndexes.Designer.cs
+|-- 20260614205427_AddChatLastMessageSnapshot.cs
+|-- 20260614205427_AddChatLastMessageSnapshot.Designer.cs
 `-- CompanyDbContextModelSnapshot.cs
 ```
+
+The performance and last-message snapshot migrations exist in source. Applying them to a real database requires an explicit migration rollout plan.
 
 Because the server uses two DbContexts, migrations should be created with an explicit context.
 
@@ -331,6 +353,8 @@ The current database design is suitable for the current project size, but severa
 * ServerDbContext and CompanyDbContext currently share most of the same entities. This is simple, but it can become harder to maintain if global and tenant-specific data start to diverge significantly.
 * Tenant-related abstractions may need clearer separation if multi-tenancy becomes more complex.
 * Company database lifecycle rules should be clarified for backup, deletion, renaming, tenant migration rollout, and failed provisioning rollback.
+* Last-message snapshots need focused tests around create, edit, delete, and backfilled data.
+* Query indexes should continue to be added only from observed query paths, not speculative indexing.
 * Uploaded files, generated runtime data, connection strings, database credentials, payment secrets, JWT keys, and email provider secrets should not be committed to the repository.
 
 ## Related Documents
@@ -338,6 +362,7 @@ The current database design is suitable for the current project size, but severa
 * [Server Architecture](ARCHITECTURE.md)
 * [API](API.md)
 * [Authentication](AUTH.md)
+* [Security](SECURITY.md)
 * [Deployment](DEPLOYMENT.md)
 * [File Storage](FILE_STORAGE.md)
 * [Realtime](REALTIME.md)

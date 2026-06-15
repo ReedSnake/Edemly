@@ -49,6 +49,20 @@ Important fields:
 
 Use `apiBaseUrl` for REST, uploads, and payments. Use `hubBaseUrl` for `/main` and `/call` SignalR connections. The local Docker profile exposes a dedicated hub gateway at `http://localhost:3700`, backed by the same `server1` instance so realtime events stay in one process.
 
+## Server Endpoint Boundaries
+
+The static client config separates server endpoints by responsibility:
+
+| Field | Used for |
+| ----- | -------- |
+| `apiBaseUrl` | REST APIs, authenticated upload reads, and general server health checks |
+| `hubBaseUrl` | `/main` and `/call` SignalR hub connections |
+| `paymentBaseUrl` | payment form and payment return/status routes |
+
+Local gateway fallback covers public gateway availability. It does not provide backend failover because the current local profile still routes every gateway to the same `server1` process.
+
+Uploaded files are served through authenticated server paths under `/uploads/...`; the client does not need a direct MinIO URL.
+
 ## Version Rules
 
 Update the version in two places for a real release:

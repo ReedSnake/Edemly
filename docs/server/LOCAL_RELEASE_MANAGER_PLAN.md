@@ -74,9 +74,9 @@ Keep platform data in the catalog even before every platform has packages:
 * release-level `platforms` records whether a version is available, planned, supported, or archived for each platform.
 * release-level `media` can point to screenshots or short videos used on the release detail page.
 
-## No Admin Endpoint Yet
+## Admin Endpoint Boundary
 
-Do not add `/admin/releases` yet. That would require authentication, upload limits, authorization, and audit behavior. A local tool avoids that risk for the current stage.
+There is no `/admin/releases` endpoint in the current release flow. Adding one would require authentication, upload limits, authorization, and audit behavior. A local tool avoids that risk for the current stage.
 
 ## Optional Later SQLite Mode
 

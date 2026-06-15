@@ -9,6 +9,7 @@ The server is built with ASP.NET Core and provides REST APIs, SignalR realtime c
 * [Architecture](#architecture)
 * [Database](#database)
 * [Authentication](#authentication)
+* [Security](#security)
 * [API](#api)
 * [Realtime Communication](#realtime-communication)
 * [File Storage](#file-storage)
@@ -64,6 +65,20 @@ Topics include:
 
 ---
 
+## [Security](SECURITY.md)
+
+Summarizes the current server-side security boundaries and known hardening gaps.
+
+Topics include:
+
+* Protected endpoints and JWT claim usage
+* Chat, message, file, payment, and company authorization rules
+* Realtime access rules
+* Transaction boundaries for partial-save prevention
+* Current production-hardening gaps
+
+---
+
 ## [API](API.md)
 
 Describes the REST API exposed by the server.
@@ -84,11 +99,12 @@ Describes SignalR communication between clients and the server.
 
 Topics include:
 
-* SignalR hubs
-* Client events
-* Server events
-* Chat updates
-* Voice call signaling
+* Hub routes and authentication
+* `MainHub` methods and events
+* `CallHub` lifecycle and signaling
+* Presence behavior
+* Message snapshot consistency
+* Redis scale-out notes
 
 ---
 
@@ -98,11 +114,12 @@ Describes file upload and storage behavior.
 
 Topics include:
 
-* File storage locations
-* Public file access
+* Local and MinIO-backed storage modes
+* Authenticated file access
 * Upload workflow
 * Profile pictures
 * Attachments
+* Tenant path behavior
 
 ---
 
@@ -115,8 +132,9 @@ Topics include:
 * Integration tests
 * Test infrastructure
 * SQLite in-memory database
-* Test utilities
-* Running tests
+* Message/history/snapshot coverage
+* Security, payment, and file access coverage
+* Running tests and build checks
 
 ---
 
@@ -130,6 +148,8 @@ Topics include:
 * Environment variables
 * Database setup
 * Hosting
+* File storage provider settings
+* Payment and Redis production cautions
 * Production considerations
 
 ---
@@ -169,9 +189,9 @@ Lists safe remaining server optimizations after the current chat/message perform
 Topics include:
 
 * Message history and chat snapshot tests
-* Chat list projection optimization
 * Hub/service message write cleanup
-* Transaction boundary improvements
+* Remaining transaction and authorization coverage
+* Payment and file-storage hardening
 * Safe index review rules
 
 ## Related Resources

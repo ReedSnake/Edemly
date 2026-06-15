@@ -14,6 +14,7 @@ This document does not describe individual API endpoints. Endpoint routes, reque
 * [JWT and Session Tokens](#jwt-and-session-tokens)
 * [User Identity](#user-identity)
 * [Roles and Authorization](#roles-and-authorization)
+* [Authorization Boundaries](#authorization-boundaries)
 * [Tenant-Aware Authentication](#tenant-aware-authentication)
 * [SignalR Authentication](#signalr-authentication)
 * [Configuration](#configuration)
@@ -117,7 +118,9 @@ The generated JWT contains identity claims such as:
 | userId      | User identifier used by controllers and server logic |
 | role / ClaimTypes.Role | User role used by ASP.NET Core authorization |
 
-Controllers usually read the current user id from the userId claim.
+Controllers usually read the current user id from the `userId` claim.
+
+`ApiControllerBase.RequireCurrentUserId` can also check explicit claim names when a controller needs compatibility with another token shape. Payment endpoints currently check `ClaimTypes.NameIdentifier`, `userId`, and `sub`; most other controllers use the default `userId` lookup.
 
 The user id is used internally for operations such as:
 
@@ -154,6 +157,25 @@ Authorization answers what the user is allowed to do.
 
 Feature-specific permission rules should stay in application services or permission services. They should not be implemented inside shared contracts or DTOs.
 
+## Authorization Boundaries
+
+Endpoint attributes such as `[Authorize]` are necessary but not enough for user-owned data.
+
+The current server relies on application-layer checks for:
+
+| Area | Boundary |
+| ---- | -------- |
+| Chat reads | current user must be a chat member |
+| Chat updates | current user must have a chat role allowed to update metadata or icons |
+| Chat-member reads | current user must belong to the same chat |
+| Message reads | current user must have access to the message's chat |
+| Message writes | sender, membership, and chat-role rules are checked before write/broadcast |
+| Notes and remindings | operations are scoped to the current user |
+| Payments | history and status checks are scoped to the current user |
+| Files | upload/download/delete endpoints require authentication; tenant path checks happen in file storage |
+
+Detailed endpoint-level security notes are documented in [SECURITY.md](SECURITY.md).
+
 ## Tenant-Aware Authentication
 
 Authentication is tenant-aware.
@@ -184,6 +206,8 @@ This is used because WebSocket clients commonly cannot send authorization header
 The current bearer configuration accepts query-string tokens for `/main`, `/call`, and the legacy `/hubs` path.
 
 SignalR user identification is handled by JwtUserIdProvider. It resolves the connected user id from available JWT claims.
+
+Current generated tokens include `userId`. Keep that claim stable because some hub method code still reads it directly even though the user id provider has broader fallback logic.
 
 Realtime behavior, hub events, and SignalR-specific flows are described in REALTIME.md.
 
@@ -217,6 +241,7 @@ Authentication-related code should follow these rules:
 * Validate company-specific email restrictions before creating tenant users.
 * Keep permission checks close to application operations, not only in controllers.
 * Use role-based authorization only for operations that are truly administrative.
+* Keep the `userId` claim in generated tokens unless all controller and hub callers are migrated to a different identity claim.
 
 ## Current Limitations
 
@@ -228,11 +253,14 @@ The current authentication model is suitable for the current project state, but 
 * Verification code expiration, retry limits, and abuse protection should be reviewed for production security.
 * Tenant authentication rules should be tested carefully to avoid cross-tenant access issues.
 * Role and permission rules may need a more explicit model if the number of roles grows.
+* Public user profile and public company-list behavior should be reviewed and documented as intentional or protected.
+* Realtime hub method authorization should remain covered when message or call logic is refactored.
 
 ## Related Documents
 
 * [Server Architecture](ARCHITECTURE.md)
 * [Server API](API.md)
+* [Server Security](SECURITY.md)
 * [Server Database](DATABASE.md)
 * [Server Realtime](REALTIME.md)
 * [Shared Contracts](../shared/CONTRACTS.md)

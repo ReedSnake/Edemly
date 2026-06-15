@@ -24,7 +24,9 @@ minio             localhost:9000
 minio console     http://localhost:9001
 ```
 
-`gateway`, `gateway2`, and `hub-gateway` all proxy to the same backend container, `server1`. This is intentional for now so SignalR messages, calls, and in-memory server state stay in one backend process.
+`gateway`, `gateway2`, and `hub-gateway` all proxy to the same backend container, `server1`. The current profile keeps SignalR messages, calls, and in-memory server state in one backend process.
+
+File uploads use the local MinIO bucket through `FileStorageService`. The client receives server URLs under `/uploads/...`; it does not connect to MinIO directly.
 
 ## Start The Local Stack
 
@@ -55,6 +57,20 @@ Default local credentials:
 ```text
 edemly_admin / edemly_password
 ```
+
+## Server Smoke Checks
+
+After startup, the public health and static endpoints should respond:
+
+```powershell
+Invoke-WebRequest -UseBasicParsing http://localhost:3500/health
+Invoke-WebRequest -UseBasicParsing http://localhost:3500/gateway/health
+Invoke-WebRequest -UseBasicParsing http://localhost:8080/client.json
+```
+
+Protected API routes and `/uploads/...` paths should return unauthorized without a JWT. That confirms uploaded files are not exposed anonymously through the local gateway.
+
+Payments run in WayForPay test mode by default. Production payment verification requires a real provider status or signature check.
 
 ## Quick Client Test Without Installer
 
@@ -323,7 +339,7 @@ Real backend server failover needs the Redis work described below.
 
 ## Redis Scale-Out Analysis
 
-Do not add a second backend server just by duplicating `server1`. The current code has state that is local to one process.
+Adding a second backend server requires more than duplicating `server1`. The current code has state that is local to one process.
 
 Redis should be added when you want more than one backend server instance behind the gateways.
 

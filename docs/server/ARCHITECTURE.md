@@ -16,6 +16,7 @@ Project-wide architecture principles are documented in [Edemly Architecture Prin
 * [Tenant Database Resolution](#tenant-database-resolution)
 * [Main Components](#main-components)
 * [Design Notes](#design-notes)
+* [Operational Boundaries](#operational-boundaries)
 * [Current Limitations](#current-limitations)
 * [Related Documents](#related-documents)
 
@@ -169,16 +170,16 @@ Detailed database structure, tenant provisioning, and migration strategy are des
 | -------------------- | ------------------------------------------------------------------ |
 | AuthService          | Authentication, login flow, verification codes, and token creation |
 | UserService          | User profile and user-related operations                           |
-| ChatService          | Chat creation, retrieval, and chat-level operations                |
+| ChatService          | Chat creation, projected chat retrieval, and chat-level operations |
 | ChatMemberService    | Chat membership and member permissions                             |
-| MessageService       | Message creation, retrieval, updates, and deletion                 |
+| MessageService       | Message retrieval, message writes, cache invalidation, and chat last-message snapshots |
 | CallService          | Call lifecycle, participants, system messages, and call state      |
 | MainHub              | Realtime chat, message, group, presence, and WebRTC signaling entry point |
 | CallHub              | Realtime call lifecycle and participant-state entry point          |
 | CompanyService       | Company workspace and tenant-related operations                    |
-| FileStorageService   | File saving and public file access                                 |
+| FileStorageService   | Local or MinIO-backed file saving, retrieval, and deletion         |
 | RemindingService     | Reminder-related operations                                        |
-| PaymentService       | Payments and premium flow                                          |
+| PaymentService       | Payments, payment history, and premium subscription updates        |
 | ChatRealtimeNotifier | Realtime chat notifications                                        |
 | DbContextResolver    | Tenant-aware database context resolution                           |
 
@@ -193,6 +194,23 @@ Detailed database structure, tenant provisioning, and migration strategy are des
 * Infrastructure-specific logic is separated from application services where possible.
 * Server tests use a dedicated test project and isolated test infrastructure.
 * The server follows practical layered architecture rather than strict Clean Architecture.
+* Authorization checks should live in application operations or focused permission services, not only in controller attributes.
+* Query optimizations should preserve public routes, SignalR names, and shared DTO shapes.
+
+## Operational Boundaries
+
+Several server operations have explicit boundaries because they affect client-visible consistency:
+
+| Boundary | Current behavior |
+| -------- | ---------------- |
+| Chat list reads | `ChatService.GetMyChatsAsync` projects only the chat list fields and direct-chat display data needed for `ChatDto`. |
+| Message history reads | `MessageService` projects message DTOs, paginates by `SentAt` and `Id`, and uses per-chat/page cache keys. |
+| Message create | HTTP and hub paths commit the message row and chat last-message snapshot together. |
+| Message update/delete | Snapshot maintenance runs when the edited or deleted message is the current last message. |
+| Payment completion | Payment status and user subscription upgrade are committed in one transaction. |
+| File access | Uploads go through `IFileStorageService`; direct `/uploads` access is authenticated before static files are served. |
+
+These boundaries should be preserved when refactoring services or optimizing queries.
 
 ## Current Limitations
 
@@ -200,6 +218,10 @@ The current architecture is suitable for the current project size, but several a
 
 * `Program.cs` contains most application startup configuration and can be split into extension methods.
 * Some application services directly coordinate infrastructure and EF Core dependencies.
+* `MainHub` still contains duplicated message write logic that overlaps with `MessageService`.
+* `WayForPayService.CheckPaymentStatusAsync` still needs real provider verification before production use.
+* File storage supports local and MinIO-backed storage, but file ownership and retention rules need a stronger model.
+* In-process presence, verification codes, and message cache invalidation need distributed infrastructure before multiple backend instances are used.
 * Tenant-related abstractions may need further separation if the multi-tenant model becomes more complex.
 * Some admin endpoints should be reviewed to ensure authorization rules are applied consistently.
 * Runtime upload folders should not contain committed user files in the repository.
@@ -211,6 +233,7 @@ The current architecture is suitable for the current project size, but several a
 * [Architecture Principles](../ARCHITECTURE_PRINCIPLES.md)
 * [API](API.md)
 * [Authentication](AUTH.md)
+* [Security](SECURITY.md)
 * [Database](DATABASE.md)
 * [Deployment](DEPLOYMENT.md)
 * [File Storage](FILE_STORAGE.md)

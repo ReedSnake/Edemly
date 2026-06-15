@@ -2,7 +2,7 @@
 
 This document describes the current server-side file storage behavior.
 
-The current implementation stores uploaded files on the local server filesystem under `wwwroot`. This is a pragmatic development-time storage model. The planned production direction is to move file storage to MinIO or another S3-compatible object storage service.
+The current `FileStorageService` supports local filesystem storage and MinIO-backed storage behind the same `IFileStorageService` interface. Local development can use `wwwroot/uploads`; the local Docker profile is configured for MinIO.
 
 ## Contents
 
@@ -14,13 +14,13 @@ The current implementation stores uploaded files on the local server filesystem 
 * [Download and Delete Behavior](#download-and-delete-behavior)
 * [Tenant Behavior](#tenant-behavior)
 * [Security Notes](#security-notes)
-* [MinIO Migration Direction](#minio-migration-direction)
+* [MinIO Behavior](#minio-behavior)
 * [Current Limitations](#current-limitations)
 * [Related Documents](#related-documents)
 
 ## Overview
 
-File storage is currently handled by `FileStorageService` through the `IFileStorageService` interface.
+File storage is handled by `FileStorageService` through the `IFileStorageService` interface.
 
 The service is registered in `Program.cs`:
 
@@ -28,7 +28,7 @@ The service is registered in `Program.cs`:
 builder.Services.AddScoped<IFileStorageService, FileStorageService>();
 ```
 
-The implementation uses `IWebHostEnvironment.WebRootPath` and writes files under:
+When `FileStorage:Provider` is `Local`, the implementation uses `IWebHostEnvironment.WebRootPath` and writes files under:
 
 ```text
 Edemly.Server/wwwroot/uploads
@@ -36,22 +36,26 @@ Edemly.Server/wwwroot/uploads
 
 If `WebRootPath` is not available, the service falls back to a `wwwroot` path under the current working directory for path construction.
 
+When `FileStorage:Provider` is `Minio`, the implementation writes objects to the configured MinIO bucket and still returns stable `/uploads/...` URLs for the client.
+
 ## Current Implementation
 
-The current storage implementation is local filesystem storage.
+The current storage implementation is a provider switch inside `FileStorageService`.
 
 Main implementation files:
 
 | File | Responsibility |
 | ---- | -------------- |
 | `Infrastructure/Files/IFileStorageService.cs` | Storage abstraction used by controllers |
-| `Infrastructure/Files/FileStorageService.cs` | Local `wwwroot/uploads` implementation |
+| `Infrastructure/Files/FileStorageService.cs` | Local and MinIO-backed implementation |
 | `Configuration/FileStorageSettings.cs` | Storage-related configuration model |
 | `Api/Controllers/Files/FileController.cs` | Generic file upload, download, and delete endpoints |
 | `Api/Controllers/Users/UserController.cs` | Profile picture upload endpoint |
 | `Api/Controllers/Chats/ChatFilesController.cs` | Group chat icon upload endpoint |
 
-Uploaded files are copied from the request stream into local files. The service then returns a URL string that is stored or sent back to the client.
+Uploaded files are copied from the request stream into the active storage provider. The service then returns a URL string that is stored or sent back to the client.
+
+`Program.cs` registers `IMinioClient` only when `FileStorage:Provider` is `Minio`, then registers `IFileStorageService` as `FileStorageService`.
 
 ## Configuration
 
@@ -59,10 +63,20 @@ The current configuration lives under `FileStorage` in `Edemly.Server/appsetting
 
 ```json
 "FileStorage": {
+  "Provider": "Minio",
   "StoragePath": "uploads",
   "ProfilePicturesFolder": "profile-pictures",
   "FilesFolder": "files",
-  "BaseUrl": "/uploads"
+  "BaseUrl": "/uploads",
+  "Minio": {
+    "Endpoint": "localhost:9000",
+    "AccessKey": "edemly_admin",
+    "SecretKey": "edemly_password",
+    "BucketName": "edemly-uploads",
+    "ObjectPrefix": "",
+    "Secure": false,
+    "AutoCreateBucket": true
+  }
 }
 ```
 
@@ -70,17 +84,34 @@ The settings model also contains:
 
 | Setting | Default | Purpose |
 | ------- | ------- | ------- |
+| `Provider` | `Local` | `Local` or `Minio` |
 | `StoragePath` | `uploads` | Folder under `wwwroot` |
 | `ProfilePicturesFolder` | `profile-pictures` | Subfolder for profile pictures |
 | `FilesFolder` | `files` | Subfolder for generic uploaded files and group icons |
 | `MaxFileSizeMB` | `50` | Maximum file size enforced by `FileStorageService` |
 | `BaseUrl` | `/uploads` | URL prefix returned by the storage service |
+| `Minio.Endpoint` | `localhost:9000` | MinIO API endpoint |
+| `Minio.AccessKey` | empty | MinIO access key |
+| `Minio.SecretKey` | empty | MinIO secret key |
+| `Minio.BucketName` | `edemly-uploads` | Object bucket |
+| `Minio.ObjectPrefix` | empty | Optional object key prefix |
+| `Minio.Secure` | `false` | Whether the MinIO client uses HTTPS |
+| `Minio.AutoCreateBucket` | `true` | Whether the service creates the bucket when needed |
 
 Upload controllers also use `[RequestSizeLimit(52428800)]`, so the effective request limit is currently 50 MB.
 
+When `Provider` is `Minio`, `Program.cs` also accepts these environment fallbacks:
+
+```text
+MINIO_ENDPOINT
+MINIO_ACCESS_KEY
+MINIO_SECRET_KEY
+MINIO_SECURE
+```
+
 ## Storage Layout
 
-For personal or global context uploads, the layout is:
+For local personal or global context uploads, the layout is:
 
 ```text
 wwwroot/
@@ -89,7 +120,7 @@ wwwroot/
     `-- files/
 ```
 
-For tenant/company context uploads, the service adds the current company name as a folder segment:
+For local tenant/company context uploads, the service adds the current company name as a folder segment:
 
 ```text
 wwwroot/
@@ -112,6 +143,8 @@ user_{userId}_{yyyyMMdd_HHmmss}_{safeOriginalName}{extension}
 ```
 
 Group icons are uploaded through the generic file storage method with a generated `group_{chatId}_{ticks}{extension}` file name.
+
+For MinIO, the same relative path is used as the object name, optionally prefixed by `Minio.ObjectPrefix`.
 
 ## Upload Endpoints
 
@@ -139,7 +172,14 @@ Generic files can be downloaded through:
 GET api/files/download?fileUrl={fileUrl}
 ```
 
-This endpoint is currently marked with `[AllowAnonymous]`. It resolves the stored URL through `FileStorageService.GetFileAsync` and returns the file stream with a content type inferred from the file extension.
+This endpoint requires authentication. It resolves the stored URL through `FileStorageService.GetFileAsync` and returns the file stream with a content type inferred from the file extension.
+
+Uploaded files can also be read through authenticated upload paths:
+
+```text
+GET /uploads/{**filePath}
+GET /{company}/uploads/{**filePath}
+```
 
 Generic files can be deleted through:
 
@@ -147,7 +187,7 @@ Generic files can be deleted through:
 DELETE api/files?fileUrl={fileUrl}
 ```
 
-Delete requires authentication. The current service maps the URL back to a local relative path and deletes the matching file from `wwwroot/uploads`.
+Delete requires authentication. The service maps the URL back to a relative storage path and deletes the matching local file or MinIO object.
 
 ## Tenant Behavior
 
@@ -169,28 +209,26 @@ Current local storage is suitable for development and local testing, but it is n
 
 Important current behavior:
 
-* `app.UseStaticFiles()` is enabled, so files under `wwwroot` can be served by ASP.NET Core static file middleware.
-* `EnsureUploadsAuthMiddleware` exists and checks `/uploads` paths, but it is currently registered after `UseStaticFiles()`. Do not rely on it as the only access-control boundary for local uploaded files until middleware ordering and static-file access are reviewed.
-* `api/files/download` is currently anonymous by controller attribute.
+* `EnsureUploadsAuthMiddleware` checks `/uploads` paths and is registered before `UseStaticFiles()`.
+* `api/files/download` and upload proxy paths require authentication.
 * Profile picture and group icon uploads validate file extensions, but generic file upload currently does not have a strict extension allowlist.
+* `FileStorageService` guards tenant-prefixed paths, but there is no per-file ownership or ACL table yet.
 * Local uploaded files should not be committed to the repository.
 * File URLs are currently persisted and passed around as strings. Changing storage backends should preserve a stable URL/key contract for existing messages and profiles.
 
-## MinIO Migration Direction
+## MinIO Behavior
 
-The intended future storage model is MinIO or another S3-compatible object storage service.
+MinIO support is implemented inside `FileStorageService`.
 
-The preferred migration path is:
+When `FileStorage:Provider` is `Minio`:
 
-1. Keep `IFileStorageService` as the application-facing storage boundary.
-2. Add a MinIO-backed implementation, for example `MinioFileStorageService`.
-3. Introduce storage provider configuration such as `FileStorage:Provider = Local | Minio`.
-4. Store object keys separately from public URLs where possible.
-5. Use buckets and object prefixes for global and tenant scopes.
-6. Decide whether file access should use authenticated proxy endpoints or short-lived presigned URLs.
-7. Keep existing local `wwwroot` storage available for development if useful.
+1. `Program.cs` registers `IMinioClient`.
+2. Uploads are written with `PutObjectAsync`.
+3. Reads use `GetObjectAsync` and return a stream through the authenticated server endpoint.
+4. Deletes use `RemoveObjectAsync`.
+5. The bucket is created automatically if `Minio.AutoCreateBucket` is enabled.
 
-Possible MinIO layout:
+Typical MinIO object layout:
 
 ```text
 bucket: edemly-files
@@ -201,7 +239,14 @@ tenants/{company-name}/profile-pictures/{file}
 tenants/{company-name}/files/{file}
 ```
 
-The MinIO implementation should avoid leaking physical storage details into API contracts. Controllers should continue to depend on `IFileStorageService`.
+The current local Docker profile uses:
+
+```text
+bucket: edemly-uploads
+endpoint: minio:9000
+```
+
+The implementation avoids exposing MinIO object URLs directly. Controllers continue to depend on `IFileStorageService`, and clients continue to use returned `/uploads/...` style URLs.
 
 ## Current Limitations
 
@@ -209,7 +254,7 @@ The following areas should be improved before production use:
 
 * Local files are tied to the server instance and are not shared across multiple app instances.
 * Backups, lifecycle cleanup, retention rules, and orphan-file cleanup are not documented yet.
-* Access control for direct `/uploads` static files needs a dedicated review.
+* File ownership and per-attachment ACL rules are not modeled in the database yet.
 * Generic file upload needs stricter validation if arbitrary file types are not intended.
 * There is no virus scanning or content inspection.
 * There is no quota model per user, chat, company, or tenant.
@@ -220,4 +265,5 @@ The following areas should be improved before production use:
 * [Server API](API.md)
 * [Server Architecture](ARCHITECTURE.md)
 * [Server Authentication](AUTH.md)
+* [Server Security](SECURITY.md)
 * [Server Database](DATABASE.md)

@@ -1,6 +1,6 @@
 # Deployment
 
-This document describes the current local deployment profile. It is intended for local end-to-end testing of the server, gateways, static bootstrap site, MinIO uploads, and client update feed.
+This document describes the current local deployment profile. It is intended for local end-to-end testing of the server, gateways, static bootstrap site, file uploads, payments, SignalR routing, and client update feed.
 
 ## Local Stack
 
@@ -43,6 +43,8 @@ edemly_admin / edemly_password
 
 The compose profile creates the `edemly-uploads` bucket through `minio-init`.
 
+`server1` is configured with `FileStorage__Provider=Minio`, so uploads go through `FileStorageService` into the local MinIO bucket while clients still receive `/uploads/...` style URLs.
+
 ## Client Bootstrap
 
 The client can start without a server argument when the static site is running. By default it reads:
@@ -70,11 +72,28 @@ The gateway routes:
 | `/main` and `/call` | SignalR hubs on `server1`. |
 | `/api/payment` | Payment endpoints on `server1`. |
 | `/api` | REST API on `server1`. |
-| `/uploads` | Authenticated upload downloads on `server1`. |
+| `/uploads` | Authenticated upload reads on `server1`. |
 | `/health` | Backend health check on `server1`. |
 | `/gateway/health` | Gateway process health check. |
 
 The local client config uses the dedicated `hub-gateway` endpoint for SignalR while keeping API/payment fallback separate. All gateways still proxy to the same `server1` backend so SignalR events remain in one server process.
+
+This is gateway fallback, not backend failover. Multiple backend instances need Redis/backplane and distributed state work first.
+
+## Runtime Boundaries
+
+Current local runtime boundaries:
+
+| Area | Current state |
+| ---- | ------------- |
+| Database | One MySQL service for local testing. |
+| File storage | MinIO bucket `edemly-uploads` through `FileStorageService`. |
+| Upload access | Authenticated `/uploads/...` requests are proxied to the server. |
+| Payments | WayForPay test configuration is used by default. |
+| SignalR | `/main` and `/call` route to the same backend process. |
+| Cache/presence | In-process; not distributed yet. |
+
+A second backend instance behind the gateways requires distributed SignalR backplane, cache invalidation, presence, and verification-code state first.
 
 ## Static Updates
 
@@ -106,4 +125,7 @@ The following deployment work still needs a real environment or release artifact
 * Generate real Velopack Windows artifacts locally.
 * Decide production static URLs and replace local `localhost` bootstrap/update URLs.
 * Add production secrets handling for database, JWT, Brevo, MinIO, and WayForPay.
+* Replace WayForPay test/stub verification with production provider verification.
+* Add Redis/backplane and distributed state before real multi-backend hosting.
+* Define production upload retention, backups, quotas, and file ownership rules.
 * Add CI/CD publishing for Docker images and Velopack artifacts.

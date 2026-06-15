@@ -161,6 +161,8 @@ Chat endpoints are responsible for private chats, group chats, chat retrieval, a
 
 Chat icon upload uses multipart form-data and has a request size limit.
 
+Chat detail and chat list responses are scoped to the current authenticated user. Chat metadata and icon updates require the current user to have a chat role that can update the chat.
+
 ## Chat Member Endpoints
 
 Chat member endpoints are responsible for retrieving and managing chat membership.
@@ -175,6 +177,8 @@ Chat member endpoints are responsible for retrieving and managing chat membershi
 | DELETE | api/chat-members/{chatMemberId} | Protected | Removes a chat member                |
 
 Permission checks for chat membership operations should be handled by application services.
+
+The `api/chat-members/{chatMemberId}` lookup requires the current user to belong to the same chat as the requested member.
 
 ## Message Endpoints
 
@@ -192,6 +196,8 @@ Message retrieval supports pagination.
 | pageSize  | Number of messages per page |
 
 Message creation, editing, deletion, and realtime delivery should be documented here only if corresponding HTTP endpoints exist.
+
+Message reads require the current user to have access to the message's chat. Message create, edit, delete, and broadcast currently happen through `MainHub` and are documented in [REALTIME.md](REALTIME.md).
 
 ## Note Endpoints
 
@@ -228,12 +234,14 @@ File endpoints are responsible for uploading, downloading, and deleting files.
 | Method | Route                                | Auth      | Purpose                      |
 | ------ | ------------------------------------ | --------- | ---------------------------- |
 | POST   | api/files                            | Protected | Uploads a file               |
-| GET    | api/files/download?fileUrl={fileUrl} | Public    | Downloads a file by file URL |
+| GET    | api/files/download?fileUrl={fileUrl} | Protected | Downloads a file by file URL |
 | DELETE | api/files?fileUrl={fileUrl}          | Protected | Deletes a file by file URL   |
+| GET    | /uploads/{**filePath}                | Protected | Reads an uploaded file path   |
+| GET    | /{company}/uploads/{**filePath}      | Protected | Reads a tenant upload path    |
 
 File upload uses multipart form-data and has a request size limit.
 
-File storage structure, upload folders, public URLs, and storage-related risks are documented in FILE_STORAGE.md.
+File storage structure, upload folders, MinIO/local provider behavior, authenticated upload access, and storage-related risks are documented in FILE_STORAGE.md.
 
 ## Payment Endpoints
 
@@ -249,6 +257,10 @@ Payment endpoints are responsible for starting payments, receiving payment retur
 The current route uses api/Payment because the controller route is based on the controller name.
 
 For consistency with the rest of the API, this route may be renamed later to api/payments.
+
+Payment history is scoped to the current authenticated user. Payment status checks reject order references that do not belong to the current user.
+
+The payment return endpoint is public because the provider posts back to it. It must complete the payment by transaction/order reference and upgrade the user attached to that payment record, not a user id supplied by the caller.
 
 Payment provider details should be documented in deployment notes or a payment-specific document if the payment flow becomes more complex.
 
@@ -290,11 +302,11 @@ api/admin/companies GET is currently public.
 
 Because the route is under api/admin, it should be reviewed and either documented as intentionally public or protected with Admin authorization.
 
-### Public file download
+### Authenticated file download
 
-api/files/download is public.
+api/files/download is protected.
 
-This may be acceptable for URL-based file access, but the access model should be documented clearly in FILE_STORAGE.md.
+Direct `/uploads/...` paths are also protected by middleware and controller routing. The storage model still uses URL strings as file identifiers, so detailed access-control limitations are documented in FILE_STORAGE.md and SECURITY.md.
 
 ### Public user profile endpoint
 
@@ -308,10 +320,15 @@ This document intentionally does not include full JSON request and response exam
 
 Use Swagger / OpenAPI for detailed endpoint schemas and Edemly.Contracts for shared DTO definitions.
 
+### Payment status verification
+
+`WayForPayService.CheckPaymentStatusAsync` currently remains a stub-like implementation. Payment status verification is not production-ready until real provider verification is implemented and tested.
+
 ## Related Documents
 
 * [Server Architecture](ARCHITECTURE.md)
 * [Server Authentication](AUTH.md)
+* [Server Security](SECURITY.md)
 * [Server Database](DATABASE.md)
 * [File Storage](FILE_STORAGE.md)
 * [Server Realtime](REALTIME.md)
