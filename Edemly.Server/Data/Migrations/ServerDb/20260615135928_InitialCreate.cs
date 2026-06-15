@@ -30,7 +30,11 @@ namespace Edemly.Server.Data.Migrations.ServerDb
                     type = table.Column<string>(type: "varchar(20)", maxLength: 20, nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     created_at = table.Column<DateTime>(type: "datetime(6)", nullable: false),
-                    last_message_time = table.Column<DateTime>(type: "datetime(6)", nullable: true)
+                    last_message_time = table.Column<DateTime>(type: "datetime(6)", nullable: true),
+                    last_message_id = table.Column<int>(type: "int", nullable: true),
+                    last_message_text = table.Column<string>(type: "longtext", nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    last_message_sender_id = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -419,14 +423,15 @@ namespace Edemly.Server.Data.Migrations.ServerDb
                 columns: new[] { "UserId", "Status" });
 
             migrationBuilder.CreateIndex(
-                name: "IX_chat_member_chat_id",
+                name: "IX_chat_member_chat_id_user_id",
                 table: "chat_member",
-                column: "chat_id");
+                columns: new[] { "chat_id", "user_id" },
+                unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_chat_member_user_id",
+                name: "IX_chat_member_user_id_chat_id",
                 table: "chat_member",
-                column: "user_id");
+                columns: new[] { "user_id", "chat_id" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_Companies_Name",
@@ -441,9 +446,9 @@ namespace Edemly.Server.Data.Migrations.ServerDb
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_message_chat_id",
+                name: "IX_message_chat_id_sent_at_id",
                 table: "message",
-                column: "chat_id");
+                columns: new[] { "chat_id", "sent_at", "id" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_message_sender_id",
@@ -451,9 +456,10 @@ namespace Edemly.Server.Data.Migrations.ServerDb
                 column: "sender_id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_notes_creator_id",
+                name: "IX_notes_creator_id_user_id",
                 table: "notes",
-                column: "creator_id");
+                columns: new[] { "creator_id", "user_id" },
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_notes_user_id",
@@ -461,14 +467,26 @@ namespace Edemly.Server.Data.Migrations.ServerDb
                 column: "user_id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_payment_user_id",
+                name: "IX_payment_transaction_id",
                 table: "payment",
-                column: "user_id");
+                column: "transaction_id",
+                unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_reminding_user_id",
+                name: "IX_payment_user_id_date",
+                table: "payment",
+                columns: new[] { "user_id", "date" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_reminding_user_id_last_time_is_completed",
                 table: "reminding",
-                column: "user_id");
+                columns: new[] { "user_id", "last_time", "is_completed" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_session_info_session_token",
+                table: "session_info",
+                column: "session_token",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_session_info_user_id",

@@ -9,10 +9,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace Edemly.Server.Data.Migrations.ServerDb
+namespace Edemly.Server.Data.Migrations.CompanyDb
 {
-    [DbContext(typeof(ServerDbContext))]
-    [Migration("20260612180730_InitialCreate")]
+    [DbContext(typeof(CompanyDbContext))]
+    [Migration("20260615135944_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -192,6 +192,18 @@ namespace Edemly.Server.Data.Migrations.ServerDb
                         .HasColumnType("varchar(255)")
                         .HasColumnName("icon_url");
 
+                    b.Property<int?>("LastMessageId")
+                        .HasColumnType("int")
+                        .HasColumnName("last_message_id");
+
+                    b.Property<int?>("LastMessageSenderId")
+                        .HasColumnType("int")
+                        .HasColumnName("last_message_sender_id");
+
+                    b.Property<string>("LastMessageText")
+                        .HasColumnType("longtext")
+                        .HasColumnName("last_message_text");
+
                     b.Property<DateTime?>("LastMessageTime")
                         .HasColumnType("datetime(6)")
                         .HasColumnName("last_message_time");
@@ -242,35 +254,12 @@ namespace Edemly.Server.Data.Migrations.ServerDb
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ChatId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("chat_member");
-                });
-
-            modelBuilder.Entity("Edemly.Server.Data.Entities.Company", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("DbName")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("varchar(255)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Name")
+                    b.HasIndex("ChatId", "UserId")
                         .IsUnique();
 
-                    b.ToTable("Companies");
+                    b.HasIndex("UserId", "ChatId");
+
+                    b.ToTable("chat_member");
                 });
 
             modelBuilder.Entity("Edemly.Server.Data.Entities.Email", b =>
@@ -287,7 +276,7 @@ namespace Edemly.Server.Data.Migrations.ServerDb
 
                     b.HasKey("Id");
 
-                    b.ToTable("email", (string)null);
+                    b.ToTable("Emails");
                 });
 
             modelBuilder.Entity("Edemly.Server.Data.Entities.LoginInfo", b =>
@@ -361,9 +350,9 @@ namespace Edemly.Server.Data.Migrations.ServerDb
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ChatId");
-
                     b.HasIndex("SenderId");
+
+                    b.HasIndex("ChatId", "SentAt", "Id");
 
                     b.ToTable("message");
                 });
@@ -392,9 +381,10 @@ namespace Edemly.Server.Data.Migrations.ServerDb
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CreatorId");
-
                     b.HasIndex("TargetUserId");
+
+                    b.HasIndex("CreatorId", "TargetUserId")
+                        .IsUnique();
 
                     b.ToTable("notes");
                 });
@@ -438,7 +428,10 @@ namespace Edemly.Server.Data.Migrations.ServerDb
 
                     b.HasKey("Id");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("TransactionId")
+                        .IsUnique();
+
+                    b.HasIndex("UserId", "Date");
 
                     b.ToTable("payment");
                 });
@@ -493,7 +486,7 @@ namespace Edemly.Server.Data.Migrations.ServerDb
 
                     b.HasKey("Id");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("UserId", "LastTime", "IsCompleted");
 
                     b.ToTable("reminding");
                 });
@@ -522,6 +515,9 @@ namespace Edemly.Server.Data.Migrations.ServerDb
                         .HasColumnName("user_id");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("SessionToken")
+                        .IsUnique();
 
                     b.HasIndex("UserId")
                         .IsUnique();

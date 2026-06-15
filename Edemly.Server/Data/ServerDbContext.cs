@@ -43,10 +43,9 @@ namespace Edemly.Server.Data
             modelBuilder.Entity<User>()
                 .HasIndex(u => u.PhoneNumber)
                 .IsUnique();
-
+                        
             modelBuilder.Entity<Session>()
-                .HasIndex(s => s.UserId)
-                .IsUnique();
+                .HasIndex(s => s.UserId);
 
             modelBuilder.Entity<Session>()
                 .HasIndex(s => s.SessionToken)
