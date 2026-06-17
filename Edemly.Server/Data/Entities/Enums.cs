@@ -102,4 +102,23 @@ namespace Edemly.Server.Data.Entities
         [Display(Name = "entertainment")]
         Entertainment = 5,
     }
+    public enum CallStatus
+    {
+        Pending,
+        InProgress,
+        Ended,
+        Missed,
+        Rejected
+    }
+
+    public enum CallParticipantStatus
+    {
+        Invited,
+        Ringing,
+        Joined,
+        Left,
+        Rejected,
+        Missed
+    }
+
 }
